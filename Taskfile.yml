@@ -1,0 +1,299 @@
+---
+version: "3"
+
+tasks:
+  hello:
+    cmds:
+      - echo 'Hello World from Task!'
+    silent: true
+
+  init:
+    cmds:
+      - go work init
+      - go work use -r .
+
+  setup:
+    cmds:
+      - pre-commit install
+
+  pre-commit:
+    cmds:
+      - pre-commit run --all-files
+
+  gazelle:
+    cmds:
+      - bazelisk run //:gazelle -- -build_tags=small,medium,large
+
+  mod-tidy:
+    cmds:
+      - bazelisk run @rules_go//go -- mod tidy
+
+  gen-code-project:
+    cmds:
+      - |
+        pushd {{ .PROJECT }}
+        mockery
+    requires:
+      vars: [PROJECT]
+
+  gen-code:
+    cmds:
+      - for:
+          - cocotola-auth
+          - cocotola-core
+          # - cocotola-import
+          - cocotola-synthesizer
+          - cocotola-tatoeba
+        task: gen-code-project
+        vars:
+          PROJECT: "{{ .ITEM }}"
+
+  lint-project:
+    cmds:
+      - |
+        pushd {{ .PROJECT }}
+        golangci-lint run --config ../.github/golangci.yml --timeout=5m
+      # - |
+      #   pushd cocotola-synthesizer
+      #   pkgforbid -config=../.github/pkgforbid.yml ./...
+    requires:
+      vars: [PROJECT]
+
+  lint:
+    cmds:
+      - for:
+          - moonbeam
+          - lib
+          - cocotola-auth
+          - cocotola-core
+          - cocotola-empty
+          - cocotola-import
+          - cocotola-synthesizer
+          - cocotola-tatoeba
+        task: lint-project
+        vars:
+          PROJECT: "{{ .ITEM }}"
+      - |
+        pushd cocotola-web
+        pnpm install
+        pnpm run format
+        pnpm run check
+        popd
+
+  check-project:
+    cmds:
+      - |
+        pushd {{ .PROJECT }}
+        pkgforbid -config=../.github/pkgforbid.yml ./...
+    requires:
+      vars: [PROJECT]
+
+  check:
+    cmds:
+      - for:
+          - moonbeam
+          - lib
+          - cocotola-auth
+          - cocotola-core
+          - cocotola-empty
+          - cocotola-import
+          - cocotola-synthesizer
+          - cocotola-tatoeba
+        task: check-project
+        vars:
+          PROJECT: "{{ .ITEM }}"
+
+  update-mod-project:
+    cmds:
+      - |
+        pushd {{ .PROJECT }}
+        GOPROXY=direct go get -u ./...
+        go mod tidy
+    requires:
+      vars: [PROJECT]
+
+  update-mod:
+    cmds:
+      - for:
+          - moonbeam
+          - lib
+          - cocotola-auth
+          - cocotola-core
+          - cocotola-import
+          - cocotola-synthesizer
+          - cocotola-tatoeba
+        task: update-mod-project
+        vars:
+          PROJECT: "{{ .ITEM }}"
+
+  update-repos:
+    cmds:
+      - bazelisk run //:gazelle-update-repos
+
+  run-hello-world:
+    cmds:
+      - bazelisk run //hello-world:hello-world
+
+  run-third-party-library:
+    cmds:
+      - bazelisk run //third-party-library:third-party-library
+
+  run-app:
+    cmds:
+      - |
+        export GOOGLE_CLIENT_SECRET=aaa
+        export GOOGLE_TEXT_TO_SPEECH_API_KEY=bbb
+        bazelisk run //cocotola-app:cocotola-app
+
+  run-auth:
+    cmds:
+      - bazelisk run //cocotola-auth:cocotola-auth
+
+  run-core:
+    cmds:
+      - bazelisk run //cocotola-core:cocotola-core
+
+  run-empty:
+    cmds:
+      - bazelisk run //cocotola-empty:cocotola-empty
+
+  run-synthesizer:
+    cmds:
+      - bazelisk run //cocotola-synthesizer:cocotola-synthesizer
+
+  run-tatoeba:
+    cmds:
+      - bazelisk run //cocotola-tatoeba:cocotola-tatoeba
+
+  run-import:
+    cmds:
+      - bazelisk run //cocotola-import:cocotola-import
+
+  run-web:
+    dir: '{{.USER_WORKING_DIR}}/cocotola-web'
+    cmds:
+      - pnpm run dev
+
+  build-hello-world:
+    cmds:
+      - bazelisk run //hello-world:load
+
+  build-project:
+    cmds:
+      - bazelisk run //{{ .PROJECT }}:load
+    requires:
+      vars: [PROJECT]
+
+  build-web-react:
+    cmds:
+      - |
+        pushd cocotola-web
+        pnpm install
+        pnpm run build
+        popd
+      - |
+        pushd cocotola-app
+        rm -rf web_dist/react/*
+        popd
+      - cp -r cocotola-web/dist/* cocotola-app/web_dist/react
+      - task: gazelle
+
+  build-web-flutter:
+    cmds:
+      - |
+        pushd cocotola-mobile
+        flutter build web --web-renderer=html --source-maps
+        popd
+      - |
+        pushd cocotola-app
+        rm -rf web_dist/flutter/*
+        popd
+      - cp -r cocotola-mobile/build/web/* cocotola-app/web_dist/flutter
+      - task: gazelle
+
+  build:
+    cmds:
+      - for:
+          - cocotola-app
+          - cocotola-empty
+          - cocotola-auth
+          - cocotola-core
+          - cocotola-import
+          - cocotola-synthesizer
+          - cocotola-tatoeba
+          - third-party-library
+        task: build-project
+        vars:
+          PROJECT: "{{ .ITEM }}"
+
+  all:
+    cmds:
+      - task: gazelle
+      - task: gen-code
+      - task: update-mod
+      - task: update-repos
+      - task: lint
+      - task: test
+      - task: build
+
+  push-project:
+    cmds:
+      - bazelisk run //{{ .PROJECT }}:push -- --tag {{ .TAG }}
+    requires:
+      vars: [PROJECT, TAG]
+
+  push:
+    cmds:
+      - for:
+          - cocotola-synthesizer
+          - cocotola-empty
+          # - cocotola-auth
+        task: push-project
+        vars:
+          PROJECT: "{{ .ITEM }}"
+    requires:
+      vars: [TAG]
+
+  test:
+    cmds:
+      - rm -f ./coverage.lcov
+      - bazelisk test //... --collect_code_coverage=true --test_output=errors --test_timeout=60 --test_size_filters=small
+      - bazelisk coverage //... --combined_report=lcov --test_size_filters=small
+      - |
+        OUTPUT_PATH=$(bazel info output_path)
+        cp "${OUTPUT_PATH}/_coverage/_coverage_report.dat" ./coverage.lcov
+
+  db-reset-core:
+    cmds:
+      - migrate -database 'postgres://user:password@127.0.0.1:5432/postgres?sslmode=disable' -source file://src/sqls/postgres/ drop
+      - migrate -database 'postgres://user:password@127.0.0.1:5432/postgres?sslmode=disable' -source file://src/sqls/postgres/ up
+
+      - migrate -database 'mysql://user:password@tcp(127.0.0.1:3306)/development' -source file://src/sqls/mysql/ drop
+      - migrate -database 'mysql://user:password@tcp(127.0.0.1:3306)/development' -source file://src/sqls/mysql/ up
+
+  gitleaks:
+    cmds:
+      - docker run -v $(pwd):/path zricethezav/gitleaks:latest detect -v --source /path -c /path/.github/gitleaks.toml
+
+  kics:
+    cmds:
+      - docker run -t -v $(pwd):/path checkmarx/kics:latest scan -p /path -o /path/ --config /path/.github/kics.yml
+
+  docker-dev-all-in-one-up:
+    cmds:
+      - docker compose -f docker/dev-all-in-one/compose.yml up -d
+  docker-dev-all-in-one-down:
+    cmds:
+      - docker compose -f docker/dev-all-in-one/compose.yml down
+  docker-dev-microserivce-up:
+    cmds:
+      - docker compose -f docker/dev-microservice/compose.yml up -d
+  docker-dev-microserivce-down:
+    cmds:
+      - docker compose -f docker/dev-microservice/compose.yml down
+  docker-test-up:
+    cmds:
+      - docker compose -f docker/test/compose.yml up -d
+  docker-test-down:
+    cmds:
+      - docker compose -f docker/test/compose.yml down
