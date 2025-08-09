@@ -1,0 +1,9 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "mocks",
+    srcs = ["mocks.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-auth/gateway/mocks",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_stretchr_testify//mock"],
+)

@@ -1,0 +1,12 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "controller",
+    srcs = ["server.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/lib/controller",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/log",
+    ],
+)

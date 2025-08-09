@@ -1,0 +1,8 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "domain",
+    srcs = ["workbook.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/domain",
+    visibility = ["//visibility:public"],
+)

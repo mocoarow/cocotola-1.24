@@ -1,0 +1,9 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "casbinquery",
+    srcs = ["casbin_query.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway/casbinquery",
+    visibility = ["//visibility:public"],
+    deps = ["@io_gorm_gorm//:gorm"],
+)

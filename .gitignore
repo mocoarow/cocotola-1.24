@@ -42,3 +42,4 @@ keys/*serviceAccount.json
 
 tatoeba.db
 *.tsv
+env.sh

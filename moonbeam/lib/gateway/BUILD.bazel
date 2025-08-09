@@ -1,0 +1,45 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "gateway",
+    srcs = [
+        "db.go",
+        "db_mysql.go",
+        "db_postgres.go",
+        "db_sqlite3.go",
+        "metrics_server.go",
+        "password_helper.go",
+        "signal_watch.go",
+        "transaction_manager.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/gateway/sqlite",
+        "//moonbeam/lib/log",
+        "//moonbeam/lib/service",
+        "@com_github_gin_gonic_gin//:gin",
+        "@com_github_glebarez_go_sqlite//:go-sqlite",
+        "@com_github_glebarez_sqlite//:sqlite",
+        "@com_github_go_sql_driver_mysql//:mysql",
+        "@com_github_golang_migrate_migrate_v4//:migrate",
+        "@com_github_golang_migrate_migrate_v4//database",
+        "@com_github_golang_migrate_migrate_v4//database/mysql",
+        "@com_github_golang_migrate_migrate_v4//database/postgres",
+        "@com_github_golang_migrate_migrate_v4//source",
+        "@com_github_golang_migrate_migrate_v4//source/file",
+        "@com_github_golang_migrate_migrate_v4//source/iofs",
+        "@com_github_orandin_slog_gorm//:slog-gorm",
+        "@com_github_prometheus_client_golang//prometheus/promhttp",
+        "@io_gorm_driver_mysql//:mysql",
+        "@io_gorm_driver_postgres//:postgres",
+        "@io_gorm_gorm//:gorm",
+        "@org_golang_x_crypto//bcrypt",
+    ],
+)
+
+go_test(
+    name = "gateway_test",
+    srcs = ["a_test.go"],
+)

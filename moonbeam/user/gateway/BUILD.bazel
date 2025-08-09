@@ -1,0 +1,87 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "gateway",
+    srcs = [
+        "app_user_repository.go",
+        "authorization_manager.go",
+        "init.go",
+        "model_entity.go",
+        "organization_repository.go",
+        "pair_of_user_and_group_repository.go",
+        "rbac_repository.go",
+        "repository_factory.go",
+        "transaction_manager.go",
+        "user_group_repository.go",
+        "wrapped_db.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/gateway",
+        "//moonbeam/user/domain",
+        "//moonbeam/user/service",
+        "@com_github_casbin_casbin_v2//:casbin",
+        "@com_github_casbin_casbin_v2//model",
+        "@com_github_casbin_gorm_adapter_v3//:gorm-adapter",
+        "@com_github_pkg_errors//:errors",
+        "@io_gorm_gorm//:gorm",
+        "@io_opentelemetry_go_otel//:otel",
+        "@org_golang_x_crypto//bcrypt",
+    ],
+)
+
+go_test(
+    name = "gateway_test",
+    srcs = [
+        "app_user_repository_test.go",
+        "authorization_manager_test.go",
+        "authorization_test.go",
+        "export_test.go",
+        "gateway_test.go",
+        "init_test.go",
+        "organization_repository_test.go",
+        "pair_of_user_and_group_repository_test.go",
+        "rbac_repository_test.go",
+    ],
+    embed = [":gateway"],
+    deps = [
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/gateway",
+        "//moonbeam/sqls",
+        "//moonbeam/testlib/gateway",
+        "//moonbeam/user/domain",
+        "//moonbeam/user/service",
+        "@com_github_casbin_casbin_v2//:casbin",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+        "@io_gorm_gorm//:gorm",
+    ],
+)
+
+go_test(
+    name = "gateway_m_test",
+    size = "medium",
+    srcs = [
+        "export_test.go",
+        "gateway_test.go",
+        "init_test.go",
+        "rbac_repository_test.go",
+    ],
+    embed = [":gateway"],
+    gotags = ["medium"],
+    deps = [
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/gateway",
+        "//moonbeam/sqls",
+        "//moonbeam/testlib/gateway",
+        "//moonbeam/user/domain",
+        "//moonbeam/user/service",
+        "@com_github_casbin_casbin_v2//:casbin",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+        "@io_gorm_gorm//:gorm",
+    ],
+)

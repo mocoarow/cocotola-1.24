@@ -1,0 +1,30 @@
+---
+all: false
+dir: '{{.InterfaceDir}}'
+filename: mocks.go
+force-file-write: true
+formatter: goimports
+log-level: info
+structname: '{{.Mock}}{{.InterfaceName}}'
+pkgname: mocks
+recursive: false
+require-template-schema-exists: true
+template: testify
+template-schema: '{{.Template}}.schema.json'
+packages:
+  github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin:
+    config:
+      dir: controller/gin/mocks
+    interfaces:
+      AuthenticationUsecase:
+      GoogleUserUsecase:
+  github.com/mocoarow/cocotola-1.24/cocotola-auth/gateway:
+    config:
+      dir: gateway/mocks
+    interfaces:
+      HTTPClient:
+  github.com/mocoarow/cocotola-1.24/cocotola-auth/service:
+    config:
+      dir: service/mocks
+    interfaces:
+      FirebaseClient:

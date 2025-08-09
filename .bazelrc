@@ -1,0 +1,4 @@
+common --enable_bzlmod
+# build --remote_cache=https://storage.googleapis.com/bazel-cache-cocotola-1-23-develop-24-11-02 --google_default_credentials
+# test --remote_cache=https://storage.googleapis.com/bazel-cache-cocotola-1-23-develop-24-11-02 --google_default_credentials
+# run --remote_cache=https://storage.googleapis.com/bazel-cache-cocotola-1-23-develop-24-11-02 --google_default_credentials

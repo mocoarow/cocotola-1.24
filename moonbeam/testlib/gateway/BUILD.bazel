@@ -1,0 +1,19 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "gateway",
+    srcs = [
+        "db.go",
+        "db_mysql.go",
+        "db_postgres.go",
+        "db_sqlite3.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/testlib/gateway",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/gateway",
+        "@com_github_golang_migrate_migrate_v4//source/file",
+        "@io_gorm_gorm//:gorm",
+    ],
+)

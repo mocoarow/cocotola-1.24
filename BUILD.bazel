@@ -1,0 +1,15 @@
+load("@gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix github.com/mocoarow/cocotola-1.24
+
+gazelle(name = "gazelle")
+
+gazelle(
+    name = "gazelle-update-repos",
+    args = [
+        "-from_file=go.work",
+        "-to_macro=deps.bzl%go_dependencies",
+        "-prune",
+    ],
+    command = "update-repos",
+)

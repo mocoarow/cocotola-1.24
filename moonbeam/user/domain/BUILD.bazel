@@ -1,0 +1,49 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "domain",
+    srcs = [
+        "app_user_model.go",
+        "init.go",
+        "organization_model.go",
+        "owner_model.go",
+        "rbac.go",
+        "system_admin_model.go",
+        "system_owner_model.go",
+        "user_group_model.go",
+        "user_role.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
+    ],
+)
+
+go_test(
+    name = "domain_s_test",
+    size = "small",
+    srcs = ["organization_model_s_test.go"],
+    embed = [":domain"],
+    gotags = ["small"],
+    deps = [
+        "//moonbeam/lib/domain",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)
+
+go_test(
+    name = "domain_test",
+    srcs = [
+        "organization_model_s_test.go",
+        "system_owner_model_test.go",
+    ],
+    deps = [
+        ":domain",
+        "//moonbeam/lib/domain",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

@@ -1,0 +1,8 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "service",
+    srcs = ["transaction_manager.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service",
+    visibility = ["//visibility:public"],
+)

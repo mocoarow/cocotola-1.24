@@ -1,0 +1,44 @@
+---
+app:
+server:
+  name: cocotola-core
+  httpPort: ${CORE_HTTP_PORT:-8020}
+  metricsPort: ${CORE_METRICS_PORT:-8021}
+  readHeaderTimeoutSec: ${CORE_READ_HEADER_TIMEOUT_SEC:-30}
+db:
+  driverName: ${CORE_DB_DRIVER_NAME:-sqlite3}
+  migration: ${CORE_DB_MIGRATION:}
+  sqlite3:
+    file: ${CORE_SQLITE3_FILE:-core.db}
+  mysql:
+    username: ${CORE_MYSQL_USERNAME}
+    password: ${CORE_MYSQL_PASSWORD}
+    host: ${CORE_MYSQL_HOST:-127.0.0.1}
+    port: ${CORE_MYSQL_PORT:-3306}
+    database: ${CORE_MYSQL_DATABASE:}
+  postgres:
+    username: ${CORE_POSTGRES_USERNAME}
+    password: ${CORE_POSTGRES_PASSWORD}
+    host: ${CORE_POSTGRES_HOST:-127.0.0.1}
+    port: ${CORE_POSTGRES_PORT:-5432}
+    database: ${CORE_POSTGRES_DATABASE:-postgres}
+trace:
+  exporter: ${TRACE_EXPORTER:-none}
+  otlp:
+    endpoint: ${TRACE_OTLP_ENDPOINT}
+    insecure: ${TRACE_OTLP_INSECURE:-true}
+cors:
+  allowOrigins:
+    - ${CORS_ALLOW_ORIGINS:-'*'}
+shutdown:
+  timeSec1: ${CORE_SHUTDOWN_TIME_SEC1:-1}
+  timeSec2: ${CORE_SHUTDOWN_TIME_SEC2:-1}
+log:
+  level: ${CORE_LOG_LEVEL:-info}
+swagger:
+  enabled: ${SWAGGER_ENABLED:-true}
+  host: ${SWAGGER_HOST:-localhost:8020}
+  schema: ${SWAGGER_SCHEMA:-http}
+debug:
+  gin: ${CORE_DEBUG_GIN:-false}
+  wait: ${CORE_DEBUG_WAIT:-false}

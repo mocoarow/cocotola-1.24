@@ -1,6 +1,8 @@
 ---
 version: "3"
 
+dotenv: ['.env', '{{.ENV}}/.env', '{{.HOME}}/.env']
+
 tasks:
   hello:
     cmds:
@@ -39,11 +41,12 @@ tasks:
   gen-code:
     cmds:
       - for:
+          - cocotola-app
           - cocotola-auth
           - cocotola-core
           # - cocotola-import
-          - cocotola-synthesizer
-          - cocotola-tatoeba
+          # - cocotola-synthesizer
+          # - cocotola-tatoeba
         task: gen-code-project
         vars:
           PROJECT: "{{ .ITEM }}"
@@ -64,12 +67,13 @@ tasks:
       - for:
           - moonbeam
           - lib
+          - cocotola-app
           - cocotola-auth
           - cocotola-core
           - cocotola-empty
-          - cocotola-import
-          - cocotola-synthesizer
-          - cocotola-tatoeba
+          # - cocotola-import
+          # - cocotola-synthesizer
+          # - cocotola-tatoeba
         task: lint-project
         vars:
           PROJECT: "{{ .ITEM }}"
@@ -93,12 +97,13 @@ tasks:
       - for:
           - moonbeam
           - lib
+          - cocotola-app
           - cocotola-auth
           - cocotola-core
           - cocotola-empty
-          - cocotola-import
-          - cocotola-synthesizer
-          - cocotola-tatoeba
+          # - cocotola-import
+          # - cocotola-synthesizer
+          # - cocotola-tatoeba
         task: check-project
         vars:
           PROJECT: "{{ .ITEM }}"
@@ -117,11 +122,12 @@ tasks:
       - for:
           - moonbeam
           - lib
+          - cocotola-app
           - cocotola-auth
           - cocotola-core
-          - cocotola-import
-          - cocotola-synthesizer
-          - cocotola-tatoeba
+          # - cocotola-import
+          # - cocotola-synthesizer
+          # - cocotola-tatoeba
         task: update-mod-project
         vars:
           PROJECT: "{{ .ITEM }}"
@@ -211,6 +217,9 @@ tasks:
       - cp -r cocotola-mobile/build/web/* cocotola-app/web_dist/flutter
       - task: gazelle
 
+  build-auth:
+    cmds:
+      - bazelisk run //cocotola-auth:load
   build:
     cmds:
       - for:
@@ -218,9 +227,9 @@ tasks:
           - cocotola-empty
           - cocotola-auth
           - cocotola-core
-          - cocotola-import
-          - cocotola-synthesizer
-          - cocotola-tatoeba
+          # - cocotola-import
+          # - cocotola-synthesizer
+          # - cocotola-tatoeba
           - third-party-library
         task: build-project
         vars:
@@ -247,7 +256,7 @@ tasks:
       - for:
           - cocotola-synthesizer
           - cocotola-empty
-          # - cocotola-auth
+          - cocotola-auth
         task: push-project
         vars:
           PROJECT: "{{ .ITEM }}"
