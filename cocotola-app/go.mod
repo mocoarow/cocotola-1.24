@@ -4,10 +4,10 @@ go 1.24.0
 
 require (
 	github.com/gin-gonic/gin v1.10.1
-	github.com/mocoarow/cocotola-1.24/cocotola-auth v0.0.0-20250817020657-91f42eb6535d
-	github.com/mocoarow/cocotola-1.24/cocotola-core v0.0.0-20250817020657-91f42eb6535d
-	github.com/mocoarow/cocotola-1.24/lib v0.0.0-20250817020657-91f42eb6535d
-	github.com/mocoarow/cocotola-1.24/moonbeam v0.0.0-20250817020657-91f42eb6535d
+	github.com/mocoarow/cocotola-1.24/cocotola-auth v0.0.0-20250817022357-042746fe2b79
+	github.com/mocoarow/cocotola-1.24/cocotola-core v0.0.0-20250817022357-042746fe2b79
+	github.com/mocoarow/cocotola-1.24/lib v0.0.0-20250817022357-042746fe2b79
+	github.com/mocoarow/cocotola-1.24/moonbeam v0.0.0-20250817022357-042746fe2b79
 	go.opentelemetry.io/otel v1.37.0
 	go.yaml.in/yaml/v4 v4.0.0-rc.1
 )

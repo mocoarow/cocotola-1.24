@@ -1,0 +1,60 @@
+---
+version: "2"
+run:
+  go: "1.24"
+  build-tags:
+    - small
+    - medium
+    - large
+linters:
+  enable:
+    - bodyclose
+    - errorlint
+    - exhaustive
+    - forbidigo
+    - forcetypeassert
+    - gocognit
+    - gocyclo
+    - gosec
+    - noctx
+    - testpackage
+    - thelper
+    - unconvert
+    - whitespace
+  settings:
+    forbidigo:
+      forbid:
+        - pattern: ^fmt\.Print.*$
+    gocognit:
+      min-complexity: 20
+    gocyclo:
+      min-complexity: 10
+    gosec:
+      excludes:
+        - G115
+    staticcheck:
+      checks:
+        - all
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - lib/gateway/sqlite/db_sqlite3_migrate.go
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - lib/gateway/sqlite/db_sqlite3_migrate.go
+      - third_party$
+      - builtin$
+      - examples$

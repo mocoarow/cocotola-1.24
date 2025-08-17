@@ -4,7 +4,7 @@ import (
 	"embed"
 	"os"
 
-	_ "embed"
+	// _ "embed"
 
 	"go.yaml.in/yaml/v4"
 

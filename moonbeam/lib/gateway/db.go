@@ -21,23 +21,15 @@ type DialectRDBMS interface {
 	BoolDefaultValue() string
 }
 
-// "github.com/golang-migrate/migrate/v4"
-// "github.com/golang-migrate/migrate/v4/database"
-// "github.com/golang-migrate/migrate/v4/source"
-// _ "github.com/golang-migrate/migrate/v4/source/file"
-// "gorm.io/gorm
+const MySQLErDupEntry = 1062
+const MySQLErNoReferencedRow2 = 1452
 
-// liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
-
-const MYSQL_ER_DUP_ENTRY = 1062
-const MYSQL_ER_NO_REFERENCED_ROW_2 = 1452
-
-const SQLITE_CONSTRAINT_PRIMARYKEY = 1555
-const SQLITE_CONSTRAINT_UNIQUE = 2067
+const SQLiteConstraintPrimaryKey = 1555
+const SQLiteConstraintUnique = 2067
 
 func ConvertDuplicatedError(err error, newErr error) error {
 	var mysqlErr *mysql.MySQLError
-	if ok := errors.As(err, &mysqlErr); ok && mysqlErr.Number == MYSQL_ER_DUP_ENTRY {
+	if ok := errors.As(err, &mysqlErr); ok && mysqlErr.Number == MySQLErDupEntry {
 		return newErr
 	}
 
@@ -46,9 +38,9 @@ func ConvertDuplicatedError(err error, newErr error) error {
 	// TODO: Implement this for sqlite3
 	var sqlite3Err *sqlite3.Error
 	if ok := errors.As(err, &sqlite3Err); ok {
-		if sqlite3Err.Code() == SQLITE_CONSTRAINT_PRIMARYKEY {
+		if sqlite3Err.Code() == SQLiteConstraintPrimaryKey {
 			return newErr
-		} else if sqlite3Err.Code() == SQLITE_CONSTRAINT_UNIQUE {
+		} else if sqlite3Err.Code() == SQLiteConstraintUnique {
 			return newErr
 		}
 	}

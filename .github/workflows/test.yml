@@ -1,0 +1,129 @@
+---
+name: Test
+# permissions: read-all
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+jobs:
+  test_go:
+    strategy:
+      matrix:
+        go-version: [1.24.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      # kics-scan ignore-line
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.REGISTRY_SERVICE_ACCOUNT_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Setup MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          host port: 3307
+          mysql version: "5.7"
+          mysql database: testdb
+          mysql user: user
+          # kics-scan ignore-line
+          mysql password: password
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      # - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-version: 1.x
+
+      # - name: Mount bazel cache
+      #   id: bazel_cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.cache/bazel
+      #     key: bazel
+
+      # - name: Check cache
+      #   run: echo "cache=${{ steps.bazel_cache.outputs.cache-hit }}"
+
+      - run: bazel info
+
+      - uses: arduino/setup-task@v2
+
+      - run: task test
+
+      - uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.lcov
+
+  test_typescript:
+    strategy:
+      matrix:
+        node-version: [23]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      # kics-scan ignore-line
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.REGISTRY_SERVICE_ACCOUNT_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: arduino/setup-task@v2
+
+      # - run: task build-web-react
+
+  test_flutter:
+    strategy:
+      matrix:
+        flutter-version: [3.27.1]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      # kics-scan ignore-line
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.REGISTRY_SERVICE_ACCOUNT_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ matrix.flutter-version }}
+      - run: flutter --version
+
+      - uses: arduino/setup-task@v2
+
+      # - run: task build-web-flutter

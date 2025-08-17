@@ -76,7 +76,7 @@ func InitSqlite3(ctx context.Context, cfg *SQLite3Config, migration bool, fs fs.
 		return nil, nil, nil, liberrors.Errorf("DB. file: %s err: %w", cfg.File, err)
 	}
 
-	if err := sqlDB.Ping(); err != nil {
+	if err := sqlDB.PingContext(ctx); err != nil {
 		return nil, nil, nil, liberrors.Errorf("Ping. file: %s err: %w", cfg.File, err)
 	}
 

@@ -2,7 +2,7 @@ package sqls
 
 import (
 	"embed"
-	_ "embed"
+	// _ "embed"
 )
 
 //go:embed mysql/*.sql

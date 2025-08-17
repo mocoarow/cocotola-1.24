@@ -15,7 +15,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
-type test_sdoa struct {
+type testSDOA struct {
 	subject string
 	domain  string
 	object  string
@@ -23,7 +23,7 @@ type test_sdoa struct {
 	want    bool
 }
 
-func (t *test_sdoa) String() string {
+func (t *testSDOA) String() string {
 	return fmt.Sprintf("%s,%s,%s,%s,%v", t.subject, t.domain, t.object, t.action, t.want)
 }
 
@@ -73,7 +73,7 @@ func TestA(t *testing.T) {
 		// rbacRepo.AddPolicy(domain.NewRBACDomain("domain1"), domain.NewRBACUser("alice"), domain.NewRBACAction("write"), domain.NewRBACObject("data1"), service.RBACAllowEffect)
 		addObjectGroupingPolicy(t, ctx, rbacRepo, "domain1", "domain:1,child:1", "domain:1,data:1")
 
-		tests := []test_sdoa{
+		tests := []testSDOA{
 			{subject: "alice", domain: "domain1", object: "domain:1,data:1", action: "read", want: true},
 			{subject: "alice", domain: "domain1", object: "domain:1,data:1", action: "write", want: false},
 			{subject: "alice", domain: "domain1", object: "domain:1,data:2", action: "read", want: false},
@@ -127,7 +127,7 @@ func TestB(t *testing.T) {
 
 		addObjectGroupingPolicy(t, ctx, rbacRepo, "domain1", "domain:1,child:1", "domain:1,data:1")
 
-		tests := []test_sdoa{
+		tests := []testSDOA{
 			{subject: "alice", domain: "domain1", object: "domain:1,data:1", action: "read", want: true},
 			{subject: "alice", domain: "domain1", object: "domain:1,data:1", action: "write", want: false},
 			{subject: "alice", domain: "domain1", object: "domain:1,data:2", action: "read", want: false},
@@ -185,7 +185,7 @@ func TestC(t *testing.T) {
 		//     - 4/ <= alice can't read
 		//	     - 5/ <= alice also can't read
 
-		tests := []test_sdoa{
+		tests := []testSDOA{
 			{subject: "alice", domain: "domain1", object: "domain:1,data:1", action: "read", want: false},
 			{subject: "alice", domain: "domain1", object: "domain:1,data:2", action: "read", want: true},
 			{subject: "alice", domain: "domain1", object: "domain:1,data:3", action: "read", want: true},

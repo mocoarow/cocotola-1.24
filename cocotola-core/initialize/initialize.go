@@ -47,12 +47,12 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect rslibgateway.Di
 	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs()
 	privateRouterGroupFuncs := controller.GetPrivateRouterGroupFuncs(db, txManager, nonTxManager)
 
-	initApiServer(ctx, parent, AppName, authMiddleware, publicRouterGroupFuncs, privateRouterGroupFuncs)
+	initAPIServer(ctx, parent, AppName, authMiddleware, publicRouterGroupFuncs, privateRouterGroupFuncs)
 
 	return nil
 }
 
-func initApiServer(ctx context.Context, root gin.IRouter, appName string, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
+func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
 	// api
 	api := libcontroller.InitAPIRouterGroup(ctx, root, appName)
 

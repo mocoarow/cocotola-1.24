@@ -51,5 +51,5 @@ oci_push(
     name = "push",
     image = ":image",
     remote_tags = ["latest"],
-    repository = "us-east1-docker.pkg.dev/cocotola-1-23-develop-24-11-02/cocotola-auth/cocotola-auth",
+    repository = "us-west1-docker.pkg.dev/cocotola-1-23-develop-24-11-02/cocotola-auth/cocotola-auth",
 )

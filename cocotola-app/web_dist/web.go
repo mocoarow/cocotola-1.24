@@ -2,7 +2,7 @@ package web
 
 import (
 	"embed"
-	_ "embed"
+	// _ "embed"
 )
 
 //go:embed react/**

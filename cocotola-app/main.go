@@ -104,19 +104,19 @@ func initGinWeb(ctx context.Context, router *gin.Engine, viteStaticFS fs.FS, web
 	router.NoRoute(func(c *gin.Context) {
 		logger := slog.Default()
 		logger.InfoContext(c.Request.Context(), c.Request.URL.Path)
-		if webType == "flutter" {
-			for _, prefix := range web.GetFlutterResources() {
-				if strings.HasPrefix(c.Request.RequestURI, prefix) {
-					c.FileFromFS(c.Request.URL.Path, http.FS(viteStaticFS))
-					return
-				}
-			}
-		} else if webType == "react" {
-			for _, prefix := range web.GetReactResources() {
-				if strings.HasPrefix(c.Request.RequestURI, prefix) {
-					c.FileFromFS(c.Request.URL.Path, http.FS(viteStaticFS))
-					return
-				}
+
+		var getReactResourcesFunc func() []string
+		switch webType {
+		case "flutter":
+			getReactResourcesFunc = web.GetFlutterResources
+		case "react":
+			getReactResourcesFunc = web.GetReactResources
+		}
+
+		for _, prefix := range getReactResourcesFunc() {
+			if strings.HasPrefix(c.Request.RequestURI, prefix) {
+				c.FileFromFS(c.Request.URL.Path, http.FS(viteStaticFS))
+				return
 			}
 		}
 

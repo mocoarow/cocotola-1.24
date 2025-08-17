@@ -9,10 +9,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 
-	"github.com/gin-gonic/gin"
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 

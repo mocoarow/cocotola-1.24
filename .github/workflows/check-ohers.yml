@@ -1,0 +1,53 @@
+---
+name: Check Others
+on:
+  pull_request:
+    branches:
+      - main
+permissions: read-all
+jobs:
+  others:
+    name: others
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: misspell
+        uses: reviewdog/action-misspell@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          locale: US
+          fail_on_error: true
+          exclude: |
+            ./cocotola-app/web_dist/*
+
+      - name: yamllint
+        uses: reviewdog/action-yamllint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          yamllint_flags: -c .github/yamllint.yml .
+          fail_on_error: true
+
+      - name: gitleaks
+        uses: reviewdog/action-gitleaks@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: warning
+          fail_level: any
+          gitleaks_flags: -c .github/gitleaks.toml
+
+      - name: markdownlint
+        uses: reviewdog/action-markdownlint@v0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: warning
+          fail_level: any
+          markdownlint_flags: "--config .github/markdownlint.yaml ."
