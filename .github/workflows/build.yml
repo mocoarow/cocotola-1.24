@@ -46,7 +46,7 @@ jobs:
 
       # - run: echo ${{ github.ref_name}}
 
-      - run: gcloud artifacts repositories describe --location us-west1 cocotola-synthesizer
+      # - run: gcloud artifacts repositories describe --location us-west1 cocotola-synthesizer
 
       # - uses: bazelbuild/setup-bazelisk@v2
       - uses: bazel-contrib/setup-bazel@0.15.0
