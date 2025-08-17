@@ -1,0 +1,25 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "service",
+    srcs = [
+        "cocotola_auth_client.go",
+        "repository_factory.go",
+        "service.go",
+        "workbook_repository.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cocotola-core/domain",
+        "//lib/api",
+        "//moonbeam/lib/service",
+        "//moonbeam/user/domain",
+    ],
+)
+
+go_test(
+    name = "service_test",
+    srcs = ["service_s_test.go"],
+    deps = [":service"],
+)

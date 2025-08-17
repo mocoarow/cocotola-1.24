@@ -1,0 +1,54 @@
+---
+app:
+  auth:
+    signingKey: ${AUTH_SIGNING_KEY}
+    accessTokenTtlMin: ${AUTH_ACCESS_TOKEN_TTL_MIN:-5}
+    refreshTokenTtlHour: ${AUTH_REFRESH_TOKEN_TTL_HOUR:-720}
+    googleProjectId: ${AUTH_GOOGLE_PROJECT_ID}
+    googleCallbackUrl: ${AUTH_GOOGLE_CALLBACK_URL:-http://localhost:5173/app/auth/callback}
+    googleClientId: ${GOOGLE_CLIENT_ID}
+    googleClientSecret: ${GOOGLE_CLIENT_SECRET}
+    apiTimeoutSec: ${AUTH_API_TIMEOUT_SEC:-5}
+  ownerLoginId: ${OWNER_LOGIN_ID}
+  ownerPassword: ${OWNER_PASSWORD}
+server:
+  httpPort: ${AUTH_HTTP_PORT:-8010}
+  metricsPort: ${AUTH_METRICS_PORT:-8011}
+  readHeaderTimeoutSec: ${AUTH_READ_HEADER_TIMEOUT_SEC:-30}
+db:
+  driverName: ${AUTH_DB_DRIVER_NAME:-sqlite3}
+  migration: ${AUTH_DB_MIGRATION:}
+  sqlite3:
+    file: ${AUTH_SQLITE3_FILE:-auth.db}
+  mysql:
+    username: ${AUTH_MYSQL_USERNAME}
+    password: ${AUTH_MYSQL_PASSWORD}
+    host: ${AUTH_MYSQL_HOST:-127.0.0.1}
+    port: ${AUTH_MYSQL_PORT:-3306}
+    database: ${AUTH_MYSQL_DATABASE:}
+  postgres:
+    username: ${AUTH_POSTGRES_USERNAME}
+    password: ${AUTH_POSTGRES_PASSWORD}
+    host: ${AUTH_POSTGRES_HOST:-127.0.0.1}
+    port: ${AUTH_POSTGRES_PORT:-5432}
+    database: ${AUTH_POSTGRES_DATABASE:-postgres}
+trace:
+  exporter: ${TRACE_EXPORTER:-none}
+  otlp:
+    endpoint: ${TRACE_OTLP_ENDPOINT}
+    insecure: ${TRACE_OTLP_INSECURE:-true}
+cors:
+  allowOrigins:
+    - ${CORS_ALLOW_ORIGINS:-'*'}
+shutdown:
+  timeSec1: ${AUTH_SHUTDOWN_TIME_SEC1:-1}
+  timeSec2: ${AUTH_SHUTDOWN_TIME_SEC2:-1}
+log:
+  level: ${AUTH_LOG_LEVEL:-info}
+swagger:
+  enabled: ${SWAGGER_ENABLED:-true}
+  host: ${SWAGGER_HOST:-localhost:8010}
+  schema: ${SWAGGER_SCHEMA:-http}
+debug:
+  gin: ${AUTH_DEBUG_GIN:-false}
+  wait: ${AUTH_DEBUG_WAIT:-false}

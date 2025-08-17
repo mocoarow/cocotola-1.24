@@ -1,0 +1,17 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "gin",
+    srcs = ["router.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/lib/controller/gin",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//lib/config",
+        "//lib/controller/gin/middleware",
+        "//moonbeam/lib/config",
+        "@com_github_gin_contrib_cors//:cors",
+        "@com_github_gin_gonic_gin//:gin",
+        "@com_github_samber_slog_gin//:slog-gin",
+        "@io_opentelemetry_go_contrib_instrumentation_github_com_gin_gonic_gin_otelgin//:otelgin",
+    ],
+)

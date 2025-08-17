@@ -1,0 +1,40 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "domain",
+    srcs = [
+        "errors.go",
+        "init.go",
+        "lang.go",
+        "strings.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/lib/domain",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
+    ],
+)
+
+# keep
+go_test(
+    name = "domain_s_test",
+    size = "small",
+    srcs = ["lang_s_test.go"],
+    gotags = ["small"],
+    deps = [
+        ":domain",
+        "//moonbeam/lib/domain",
+        "@com_github_stretchr_testify//assert",
+    ],
+)
+
+go_test(
+    name = "domain_test",
+    srcs = ["lang_s_test.go"],
+    deps = [
+        ":domain",
+        "//moonbeam/lib/domain",
+        "@com_github_stretchr_testify//assert",
+    ],
+)

@@ -1,0 +1,75 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "gateway",
+    srcs = [
+        "auth_token_manager.go",
+        "firebase_client.go",
+        "google_auth_client.go",
+        "init.go",
+        "repository_factory.go",
+        "state_repository.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-auth/gateway",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cocotola-auth/domain",
+        "//cocotola-auth/service",
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/gateway",
+        "//moonbeam/lib/log",
+        "//moonbeam/user/domain",
+        "//moonbeam/user/gateway",
+        "//moonbeam/user/service",
+        "@com_github_golang_jwt_jwt_v5//:jwt",
+        "@com_github_google_uuid//:uuid",
+        "@com_google_firebase_go_v4//:go",
+        "@com_google_firebase_go_v4//auth",
+        "@io_gorm_gorm//:gorm",
+        "@io_opentelemetry_go_otel//:otel",
+    ],
+)
+
+go_test(
+    name = "gateway_test",
+    srcs = [
+        "auth_token_manager_s_test.go",
+        "google_auth_client_s_test.go",
+        "helper_test.go",
+    ],
+    deps = [
+        ":gateway",
+        "//cocotola-auth/domain",
+        "//cocotola-auth/gateway/mocks",
+        "//cocotola-auth/service",
+        "//cocotola-auth/service/mocks",
+        "//moonbeam/user/domain",
+        "@com_github_golang_jwt_jwt_v5//:jwt",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//mock",
+        "@com_github_stretchr_testify//require",
+    ],
+)
+
+# keep
+go_test(
+    name = "gateway_s_test",
+    size = "small",
+    srcs = [
+        "auth_token_manager_s_test.go",
+        "helper_test.go",
+    ],
+    gotags = ["small"],
+    deps = [
+        ":gateway",
+        "//cocotola-auth/domain",
+        "//cocotola-auth/gateway/mocks",
+        "//cocotola-auth/service",
+        "//cocotola-auth/service/mocks",
+        "//moonbeam/user/domain",
+        "@com_github_golang_jwt_jwt_v5//:jwt",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

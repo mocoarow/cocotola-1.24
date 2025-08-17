@@ -1,0 +1,20 @@
+---
+with-expecter: true
+
+mockname: "{{.InterfaceName}}"
+outpkg: mocks
+filename: "{{.MockName}}.go"
+packages:
+  github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin:
+    config:
+      dir: controller/gin/mocks
+    interfaces:
+      WorkbookQueryUsecase:
+      WorkbookCommandUsecase:
+  github.com/mocoarow/cocotola-1.24/cocotola-core/service:
+    config:
+      dir: service/mocks
+    interfaces:
+      CocotolaAuthClient:
+issue-845-fix: True
+resolve-type-alias: False

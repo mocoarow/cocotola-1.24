@@ -1,0 +1,31 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "service",
+    srcs = [
+        "app_user.go",
+        "app_user_repository.go",
+        "authorization_manager.go",
+        "init.go",
+        "organization.go",
+        "organization_repository.go",
+        "owner.go",
+        "pair_of_user_and_group_repository.go",
+        "rbac_repository.go",
+        "repository_factory.go",
+        "system_admin.go",
+        "system_owner.go",
+        "user_group.go",
+        "user_group_repository.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/user/service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/log",
+        "//moonbeam/lib/service",
+        "//moonbeam/user/domain",
+        "@com_github_casbin_casbin_v2//:casbin",
+    ],
+)

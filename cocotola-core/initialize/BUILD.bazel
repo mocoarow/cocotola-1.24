@@ -1,0 +1,18 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "initialize",
+    srcs = ["initialize.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/initialize",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cocotola-core/config",
+        "//cocotola-core/controller/gin",
+        "//cocotola-core/gateway",
+        "//cocotola-core/service",
+        "//lib/controller/gin",
+        "//moonbeam/lib/gateway",
+        "@com_github_gin_gonic_gin//:gin",
+        "@io_gorm_gorm//:gorm",
+    ],
+)

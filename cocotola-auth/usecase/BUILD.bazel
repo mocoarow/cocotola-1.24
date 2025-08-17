@@ -1,0 +1,25 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "usecase",
+    srcs = [
+        "authentication_usecase.go",
+        "google_user_usecase.go",
+        "init.go",
+        "organization_action.go",
+        "password_usecase.go",
+        "rbac_usecase.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-auth/usecase",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cocotola-auth/domain",
+        "//cocotola-auth/service",
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/log",
+        "//moonbeam/lib/service",
+        "//moonbeam/user/domain",
+        "//moonbeam/user/service",
+        "@com_github_golang_jwt_jwt_v5//:jwt",
+    ],
+)

@@ -1,0 +1,36 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "config",
+    srcs = [
+        "config_cors.go",
+        "config_db.go",
+        "config_db_mysql.go",
+        "config_db_postgres.go",
+        "config_db_sqlite3.go",
+        "config_env.go",
+        "config_log.go",
+        "config_swagger.go",
+        "config_trace.go",
+        "config_trace_gcp.go",
+        "config_trace_none.go",
+        "config_trace_otel.go",
+        "config_trace_stdout.go",
+        "init.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/gateway",
+        "@com_github_gin_contrib_cors//:cors",
+        "@com_github_googlecloudplatform_opentelemetry_operations_go_exporter_trace//:trace",
+        "@io_gorm_gorm//:gorm",
+        "@io_opentelemetry_go_otel//semconv/v1.27.0:v1_27_0",
+        "@io_opentelemetry_go_otel_exporters_otlp_otlptrace_otlptracehttp//:otlptracehttp",
+        "@io_opentelemetry_go_otel_exporters_stdout_stdouttrace//:stdouttrace",
+        "@io_opentelemetry_go_otel_sdk//resource",
+        "@io_opentelemetry_go_otel_sdk//trace",
+    ],
+)
