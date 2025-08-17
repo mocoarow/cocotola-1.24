@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	rsuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
@@ -28,8 +28,8 @@ type WorkbookUpdateParameter struct {
 }
 
 type OperatorInterface interface {
-	AppUserID() *rsuserdomain.AppUserID
-	OrganizationID() *rsuserdomain.OrganizationID
+	AppUserID() *mbuserdomain.AppUserID
+	OrganizationID() *mbuserdomain.OrganizationID
 	// LoginID() string
 	// Username() string
 }

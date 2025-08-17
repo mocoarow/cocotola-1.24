@@ -1,4 +1,4 @@
-create table `app_user` (
+create table `mb_app_user` (
  `id` integer primary key
 ,`version` int not null default 1
 ,`created_at` datetime not null default current_timestamp

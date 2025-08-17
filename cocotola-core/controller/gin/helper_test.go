@@ -11,8 +11,8 @@ import (
 )
 
 // type Operator struct {
-// 	organizationID *rsuserdomain.OrganizationID
-// 	appUserID      *rsuserdomain.AppUserID
+// 	organizationID *mbuserdomain.OrganizationID
+// 	appUserID      *mbuserdomain.AppUserID
 // }
 
 // func newOperator(t *testing.T, organizationIDValue, appUserIDValue int) *Operator {
@@ -23,23 +23,23 @@ import (
 // 	}
 // }
 
-// func (o *Operator) AppUserID() *rsuserdomain.AppUserID {
+// func (o *Operator) AppUserID() *mbuserdomain.AppUserID {
 // 	return o.appUserID
 // }
-// func (o *Operator) OrganizationID() *rsuserdomain.OrganizationID {
+// func (o *Operator) OrganizationID() *mbuserdomain.OrganizationID {
 // 	return o.organizationID
 // }
 
-// func organizationID(t *testing.T, organizationID int) *rsuserdomain.OrganizationID {
+// func organizationID(t *testing.T, organizationID int) *mbuserdomain.OrganizationID {
 // 	t.Helper()
-// 	id, err := rsuserdomain.NewOrganizationID(organizationID)
+// 	id, err := mbuserdomain.NewOrganizationID(organizationID)
 // 	require.NoError(t, err)
 // 	return id
 // }
 
-// func appUserID(t *testing.T, appUserID int) *rsuserdomain.AppUserID {
+// func appUserID(t *testing.T, appUserID int) *mbuserdomain.AppUserID {
 // 	t.Helper()
-// 	id, err := rsuserdomain.NewAppUserID(appUserID)
+// 	id, err := mbuserdomain.NewAppUserID(appUserID)
 // 	require.NoError(t, err)
 // 	return id
 // }

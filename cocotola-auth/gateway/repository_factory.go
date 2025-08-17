@@ -9,7 +9,7 @@ import (
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
-	rsusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
+	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
@@ -36,7 +36,7 @@ func NewRepositoryFactory(ctx context.Context, dialect mblibgateway.DialectRDBMS
 }
 
 func (f *RepositoryFactory) NewmoonbeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error) {
-	return rsusergateway.NewRepositoryFactory(ctx, f.dialect, f.driverName, f.db, f.location)
+	return mbusergateway.NewRepositoryFactory(ctx, f.dialect, f.driverName, f.db, f.location)
 }
 
 func (f *RepositoryFactory) NewStateRepository(ctx context.Context) (service.StateRepository, error) {

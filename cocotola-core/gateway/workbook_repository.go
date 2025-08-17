@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
-	rslibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
+	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 
@@ -111,7 +111,7 @@ func (r *workbookRepository) AddWorkbook(ctx context.Context, operator service.O
 		Content:        param.Content,
 	}
 	if result := r.db.Create(&workbook); result.Error != nil {
-		return nil, mbliberrors.Errorf("workbookRepository.AddWorkbook. err: %w", rslibgateway.ConvertDuplicatedError(result.Error, service.ErrWorkbookAlreadyExists))
+		return nil, mbliberrors.Errorf("workbookRepository.AddWorkbook. err: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrWorkbookAlreadyExists))
 	}
 
 	workbookID, err := domain.NewWorkbookID(workbook.ID)
@@ -136,7 +136,7 @@ func (r *workbookRepository) UpdateWorkbook(ctx context.Context, operator servic
 			"description": param.Description,
 			"content":     param.Content,
 		}); result.Error != nil {
-		return mbliberrors.Errorf("workbookRepository.UpdateWorkbook. err: %w", rslibgateway.ConvertDuplicatedError(result.Error, service.ErrWorkbookAlreadyExists))
+		return mbliberrors.Errorf("workbookRepository.UpdateWorkbook. err: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrWorkbookAlreadyExists))
 	}
 
 	return nil

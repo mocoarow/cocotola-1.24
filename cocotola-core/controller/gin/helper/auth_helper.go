@@ -8,20 +8,20 @@ import (
 	"github.com/gin-gonic/gin"
 
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	rsuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
 type operator struct {
-	appUserID      *rsuserdomain.AppUserID
-	organizationID *rsuserdomain.OrganizationID
+	appUserID      *mbuserdomain.AppUserID
+	organizationID *mbuserdomain.OrganizationID
 }
 
-func (o *operator) AppUserID() *rsuserdomain.AppUserID {
+func (o *operator) AppUserID() *mbuserdomain.AppUserID {
 	return o.appUserID
 }
-func (o *operator) OrganizationID() *rsuserdomain.OrganizationID {
+func (o *operator) OrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
 }
 
@@ -35,7 +35,7 @@ func HandleSecuredFunction(c *gin.Context, fn func(ctx context.Context, operator
 		return
 	}
 
-	organizationID, err := rsuserdomain.NewOrganizationID(organizationIDInt)
+	organizationID, err := mbuserdomain.NewOrganizationID(organizationIDInt)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 		return
@@ -47,7 +47,7 @@ func HandleSecuredFunction(c *gin.Context, fn func(ctx context.Context, operator
 		return
 	}
 
-	operatorID, err := rsuserdomain.NewAppUserID(appUserID)
+	operatorID, err := mbuserdomain.NewAppUserID(appUserID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 		return

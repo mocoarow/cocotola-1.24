@@ -24,7 +24,7 @@ type organizationEntity struct {
 }
 
 func (e *organizationEntity) TableName() string {
-	return "organization"
+	return OrganizationTableName
 }
 
 func (e *organizationEntity) toModel() (*service.Organization, error) {

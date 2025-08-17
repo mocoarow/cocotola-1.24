@@ -11,10 +11,6 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
-var (
-	UserGroupTableName = "user_group"
-)
-
 type userGroupEntity struct {
 	BaseModelEntity
 	ID             int
