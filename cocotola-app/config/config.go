@@ -50,8 +50,7 @@ type Config struct {
 	Debug    *libconfig.DebugConfig     `yaml:"debug"`
 }
 
-//go:embed local.yml
-//go:embed production.yml
+//go:embed config.yml
 var config embed.FS
 
 func LoadConfig(env string) (*Config, error) {

@@ -4,8 +4,7 @@ go_library(
     name = "config",
     srcs = ["config.go"],
     embedsrcs = [
-        "local.yml",
-        "production.yml",
+        "config.yml",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-app/config",
     visibility = ["//visibility:public"],
