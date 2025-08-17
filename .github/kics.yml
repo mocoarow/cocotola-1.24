@@ -1,0 +1,9 @@
+---
+report-formats: json
+no-progress: true
+no-color: true
+minimal-ui: true
+enable_comments: true
+exclude-severities:
+  - low
+  - info

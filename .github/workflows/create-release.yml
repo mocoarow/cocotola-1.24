@@ -1,0 +1,32 @@
+---
+name: Create Release
+on:
+  workflow_dispatch:
+permissions: read-all
+jobs:
+  create-release:
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APPS_APP_ID }}
+          private-key: ${{ secrets.APPS_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - run: go install github.com/k1LoW/calver/cmd/calver@latest
+
+      - name: Create Release
+        run: |
+          TAG=$(gh release list | cut -f 1 | calver --next)
+          gh release create "${TAG}" --generate-notes --target main
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}

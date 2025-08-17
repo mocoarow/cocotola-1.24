@@ -55,7 +55,7 @@ tasks:
     cmds:
       - |
         pushd {{ .PROJECT }}
-        golangci-lint run --config ../.github/golangci.yml --timeout=5m
+        golangci-lint run --config ../.golangci.yml --timeout=5m
       # - |
       #   pushd cocotola-synthesizer
       #   pkgforbid -config=../.github/pkgforbid.yml ./...
@@ -71,17 +71,14 @@ tasks:
           - cocotola-auth
           - cocotola-core
           - cocotola-empty
-          # - cocotola-import
-          # - cocotola-synthesizer
-          # - cocotola-tatoeba
         task: lint-project
         vars:
           PROJECT: "{{ .ITEM }}"
       - |
         pushd cocotola-web
-        pnpm install
-        pnpm run format
-        pnpm run check
+        npm install
+        npm run format
+        npm run check
         popd
 
   check-project:
@@ -125,6 +122,7 @@ tasks:
           - cocotola-app
           - cocotola-auth
           - cocotola-core
+          - cocotola-empty
           # - cocotola-import
           # - cocotola-synthesizer
           # - cocotola-tatoeba
@@ -178,7 +176,7 @@ tasks:
   run-web:
     dir: '{{.USER_WORKING_DIR}}/cocotola-web'
     cmds:
-      - pnpm run dev
+      - npm run dev
 
   build-hello-world:
     cmds:
@@ -194,8 +192,8 @@ tasks:
     cmds:
       - |
         pushd cocotola-web
-        pnpm install
-        pnpm run build
+        npm install
+        npm run build
         popd
       - |
         pushd cocotola-app
@@ -254,7 +252,7 @@ tasks:
   push:
     cmds:
       - for:
-          - cocotola-synthesizer
+          # - cocotola-synthesizer
           - cocotola-empty
           - cocotola-auth
         task: push-project

@@ -98,7 +98,7 @@ func InitMySQL(ctx context.Context, cfg *MySQLConfig, migration bool, fs fs.FS) 
 		return nil, nil, nil, err
 	}
 
-	if err := sqlDB.Ping(); err != nil {
+	if err := sqlDB.PingContext(ctx); err != nil {
 		return nil, nil, nil, err
 	}
 

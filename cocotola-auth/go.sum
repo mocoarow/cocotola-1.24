@@ -246,10 +246,10 @@ github.com/moby/docker-image-spec v1.3.1 h1:jMKff3w6PgbfSa69GfNg+zN/XLhfXJGnEx3N
 github.com/moby/docker-image-spec v1.3.1/go.mod h1:eKmb5VW8vQEh/BAr2yvVNvuiJuY6UIocYsFu/DxxRpo=
 github.com/moby/term v0.5.0 h1:xt8Q1nalod/v7BqbG21f8mQPqH+xAaC9C3N3wfWbVP0=
 github.com/moby/term v0.5.0/go.mod h1:8FzsFHVUBGZdbDsJw/ot+X+d5HLUbvklYLJ9uGfcI3Y=
-github.com/mocoarow/cocotola-1.24/lib v0.0.0-20250817020657-91f42eb6535d h1:GCKC9QtSC7HGwvT1SFe1N1jxsR5kQrRSRRqJha5+0Xo=
-github.com/mocoarow/cocotola-1.24/lib v0.0.0-20250817020657-91f42eb6535d/go.mod h1:iMXNwUQCuzHqtfTXgWV208f75R9AGgNNqnpLeWRNCEw=
-github.com/mocoarow/cocotola-1.24/moonbeam v0.0.0-20250817020657-91f42eb6535d h1:wWmJXaYXn6ttaWA438+xJfjLKUQSvb7XlZydVNQiAqc=
-github.com/mocoarow/cocotola-1.24/moonbeam v0.0.0-20250817020657-91f42eb6535d/go.mod h1:EcKrWE+0XpUH55pMUlgIsrlBUYb4ROXrobxpVbZ8gyA=
+github.com/mocoarow/cocotola-1.24/lib v0.0.0-20250817022357-042746fe2b79 h1:PAA4LUrf6ksPXwY1NUirlYKkUjsZ5kCAjcmmoYaw7rQ=
+github.com/mocoarow/cocotola-1.24/lib v0.0.0-20250817022357-042746fe2b79/go.mod h1:b2r3yltWPzXvQBuhobLTDYAjQoUrQ5uNxQeq/om+iVw=
+github.com/mocoarow/cocotola-1.24/moonbeam v0.0.0-20250817022357-042746fe2b79 h1:ZyXPvT8ChGF8PZvwJfS88zmTdDzQtm1Tl5N/V0Ki68Q=
+github.com/mocoarow/cocotola-1.24/moonbeam v0.0.0-20250817022357-042746fe2b79/go.mod h1:B3RmGm9qEYcbrQmbYg+qYKy0CYb/QSYRIm+XlBVkEUQ=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

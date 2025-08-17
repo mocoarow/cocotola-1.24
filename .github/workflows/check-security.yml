@@ -1,0 +1,52 @@
+---
+name: Check Security
+on:
+  pull_request:
+    branches:
+      - main
+permissions: read-all
+jobs:
+  terraform_check:
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # - name: Run trivy with filesystem command
+      #   uses: reviewdog/action-trivy@v1
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     trivy_command: filesystem
+      #     trivy_target: .
+      #     reporter: github-pr-review
+      #     fail_on_error: true
+      #     level: warning
+      #     # trivy_flags: --debug
+      #     # flags: -tee
+      #     filter_mode: nofilter
+
+      # - name: Run trivy with config command
+      #   uses: reviewdog/action-trivy@v1
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     trivy_command: config
+      #     trivy_target: .
+      #     reporter: github-pr-review
+      #     fail_on_error: true
+      #     level: warning
+      #     # trivy_flags: --debug
+      #     # flags: -tee
+      #     filter_mode: nofilter
+
+      - name: Fail build on High/Criticial Vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          format: table
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1

@@ -1,0 +1,14 @@
+---
+extends: default
+
+rules:
+  # 80 chars should be enough, but don't fail if a line is longer
+  line-length:
+    max: 200
+  truthy: disable
+
+ignore:
+  - swagger.yaml
+  - pnpm-lock.yaml
+  - analysis_options.yaml
+  - pubspec.yaml

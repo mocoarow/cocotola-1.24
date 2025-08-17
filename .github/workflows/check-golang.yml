@@ -1,0 +1,48 @@
+---
+name: Check Go
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+permissions: read-all
+jobs:
+  golang:
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    strategy:
+      matrix:
+        workdir:
+          - cocotola-auth
+          - cocotola-synthesizer
+          - lib
+          - redstart
+    name: golang
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            ${{ matrix.workdir }}/**
+
+      - name: golangci-lint
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        uses: reviewdog/action-golangci-lint@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          golangci_lint_flags: --config=../.golangci.yml --timeout=10m
+          tool_name: golangci-lint
+          filter_mode: nofilter
+          fail_on_error: true
+          workdir: ${{ matrix.workdir }}

@@ -9,7 +9,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
 
-var ErrWorkbookAlreadyExists = errors.New("Workbook already exists")
+var ErrWorkbookAlreadyExists = errors.New("workbook already exists")
 
 var ErrWorkbookNotFound = errors.New("workbook not found")
 

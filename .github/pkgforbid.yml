@@ -1,0 +1,46 @@
+---
+packageConfigs:
+  # core
+  "github.com/mocoarow/cocotola-1.24/cocotola-core/domain":
+    forbiddenPackages:
+      - net/http
+      - database/sql
+      - gorm.io/gorm
+      - github.com/mocoarow/cocotola-1.24/cocotola-core/gateway
+  "github.com/mocoarow/cocotola-1.24/cocotola-core/service":
+    forbiddenPackages:
+      - net/http
+      - database/sql
+      - gorm.io/gorm
+      - github.com/mocoarow/cocotola-1.24/cocotola-core/gateway
+  # tatoeba
+  "github.com/mocoarow/cocotola-1.24/cocotola-tatoeba/domain":
+    forbiddenPackages:
+      - net/http
+      - database/sql
+      - gorm.io/gorm
+      - github.com/mocoarow/cocotola-1.24/cocotola-tatoeba/gateway
+  "github.com/mocoarow/cocotola-1.24/cocotola-tatoeba/service":
+    forbiddenPackages:
+      - net/http
+      - database/sql
+      - gorm.io/gorm
+      - github.com/mocoarow/cocotola-1.24/cocotola-tatoeba/gateway
+  # synthesizer
+  "github.com/mocoarow/cocotola-1.24/cocotola-synthesizer/domain":
+    forbiddenPackages:
+      - net/http
+      - database/sql
+      - gorm.io/gorm
+      - github.com/mocoarow/cocotola-1.24/cocotola-synthesizer/gateway
+  "github.com/mocoarow/cocotola-1.24/cocotola-synthesizer/service":
+    forbiddenPackages:
+      - net/http
+      - database/sql
+      - gorm.io/gorm
+      - github.com/mocoarow/cocotola-1.24/cocotola-synthesizer/gateway
+
+  "main":
+    forbiddenPackages:
+
+debug: false

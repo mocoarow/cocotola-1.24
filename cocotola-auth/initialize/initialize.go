@@ -53,14 +53,14 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 		return err
 	}
 
-	initApiServer(ctx, parent, AppName, publicRouterGroupFuncs)
+	initAPIServer(ctx, parent, AppName, publicRouterGroupFuncs)
 
 	initApp1(ctx, txManager, nonTxManager, "cocotola", cfg.OwnerLoginID, cfg.OwnerPassword)
 
 	return nil
 }
 
-func initApiServer(ctx context.Context, root gin.IRouter, appName string, publicRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
+func initAPIServer(ctx context.Context, root gin.IRouter, appName string, publicRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
 	// api
 	api := libcontroller.InitAPIRouterGroup(ctx, root, appName)
 
