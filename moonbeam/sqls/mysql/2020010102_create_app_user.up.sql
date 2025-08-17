@@ -1,4 +1,4 @@
-create table `app_user` (
+create table `mb_app_user` (
  `id` int auto_increment
 ,`version` int not null default 1
 ,`created_at` datetime not null default current_timestamp
@@ -16,5 +16,5 @@ create table `app_user` (
 ,`removed` tinyint(1) not null
 ,primary key(`id`)
 ,unique(`organization_id`, `login_id`)
-,foreign key(`organization_id`) references `organization`(`id`) on delete cascade
+,foreign key(`organization_id`) references `mb_organization`(`id`) on delete cascade
 );

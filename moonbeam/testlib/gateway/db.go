@@ -30,7 +30,7 @@ func ListDB() map[libgateway.DialectRDBMS]*gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	sqlite3 := libgateway.DialectPostgres{}
+	sqlite3 := libgateway.DialectSQLite3{}
 	list[&sqlite3] = s
 
 	return list

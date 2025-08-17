@@ -12,10 +12,6 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
-var (
-	PairOfUserAndGroupTableName = "user_n_group"
-)
-
 type pairOfUserAndGroupRepository struct {
 	dialect libgateway.DialectRDBMS
 	db      *gorm.DB
@@ -242,14 +238,14 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 
 func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator service.AppUserInterface, appUserID *domain.AppUserID) ([]*domain.UserGroupModel, error) {
 	userGroups := []userGroupEntity{}
-	if result := r.db.Table("user_group").Select("user_group.*").
-		Where("user_group.organization_id = ?", operator.OrganizationID().Int()).
-		Where("user_group.removed = ?", r.dialect.BoolDefaultValue()).
-		Where("app_user.organization_id = ?", operator.OrganizationID().Int()).
-		Where("app_user.id = ? and app_user.removed = ?", appUserID.Int(), r.dialect.BoolDefaultValue()).
-		Joins("inner join user_n_group on user_group.id = user_n_group.user_group_id").
-		Joins("inner join app_user on user_n_group.app_user_id = app_user.id").
-		Order("user_group.key_name").
+	if result := r.db.Table(UserGroupTableName).Select(UserGroupTableName+".*").
+		Where(UserGroupTableName+".organization_id = ?", operator.OrganizationID().Int()).
+		Where(UserGroupTableName+".removed = ?", r.dialect.BoolDefaultValue()).
+		Where(AppUserTableName+".organization_id = ?", operator.OrganizationID().Int()).
+		Where(AppUserTableName+".id = ? and "+AppUserTableName+".removed = ?", appUserID.Int(), r.dialect.BoolDefaultValue()).
+		Joins("inner join " + PairOfUserAndGroupTableName + " on " + UserGroupTableName + ".id = " + PairOfUserAndGroupTableName + ".user_group_id").
+		Joins("inner join " + AppUserTableName + " on " + PairOfUserAndGroupTableName + ".app_user_id = " + AppUserTableName + ".id").
+		Order(UserGroupTableName + ".key_name").
 		Find(&userGroups); result.Error != nil {
 		return nil, result.Error
 	}

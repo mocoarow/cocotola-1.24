@@ -198,8 +198,8 @@ func teardownOrganization(t *testing.T, ts testService, orgID *domain.Organizati
 	t.Helper()
 	// delete all organizations
 	// ts.db.Exec("delete from space where organization_id = ?", orgID.Int())
-	ts.db.Exec("delete from app_user where organization_id = ?", orgID.Int())
-	ts.db.Exec("delete from organization where id = ?", orgID.Int())
+	ts.db.Exec("delete from mb_app_user where organization_id = ?", orgID.Int())
+	ts.db.Exec("delete from mb_organization where id = ?", orgID.Int())
 	// db.Where("true").Delete(&spaceEntity{})
 	// db.Where("true").Delete(&appUserEntity{})
 	// db.Where("true").Delete(&organizationEntity{})

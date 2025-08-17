@@ -1,4 +1,4 @@
-create table `organization` (
+create table `mb_organization` (
  `id` int auto_increment
 ,`version` int not null default 1
 ,`created_at` datetime not null default current_timestamp

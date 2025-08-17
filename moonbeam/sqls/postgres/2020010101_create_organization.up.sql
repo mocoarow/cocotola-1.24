@@ -1,4 +1,4 @@
-create table organization (
+create table mb_organization (
  id serial not null
 ,version int not null default 1
 ,created_at timestamp not null default current_timestamp

@@ -1,4 +1,4 @@
-create table user_group_details (
+create table mb_user_group_details (
  id serial not null
 ,version int not null default 1
 ,created_at timestamp not null default current_timestamp
@@ -10,8 +10,8 @@ create table user_group_details (
 ,details json not null
 ,primary key(id)
 ,unique(organization_id, user_group_id)
-,foreign key(created_by) references app_user(id) on delete cascade
-,foreign key(updated_by) references app_user(id) on delete cascade
-,foreign key(organization_id) references organization(id) on delete cascade
-,foreign key(user_group_id) references user_group(id) on delete cascade
+,foreign key(created_by) references mb_app_user(id) on delete cascade
+,foreign key(updated_by) references mb_app_user(id) on delete cascade
+,foreign key(organization_id) references mb_organization(id) on delete cascade
+,foreign key(user_group_id) references mb_user_group(id) on delete cascade
 );

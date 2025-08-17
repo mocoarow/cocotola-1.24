@@ -1,4 +1,4 @@
-create table `user_group` (
+create table `mb_user_group` (
  `id` integer primary key
 ,`version` int not null default 1
 ,`created_at` datetime not null default current_timestamp
@@ -11,7 +11,7 @@ create table `user_group` (
 ,`description` text
 ,`removed` tinyint(1) not null
 ,unique(`organization_id`, `key_name`)
-,foreign key(`created_by`) references `app_user`(`id`) on delete cascade
-,foreign key(`updated_by`) references `app_user`(`id`) on delete cascade
-,foreign key(`organization_id`) references `organization`(`id`) on delete cascade
+,foreign key(`created_by`) references `mb_app_user`(`id`) on delete cascade
+,foreign key(`updated_by`) references `mb_app_user`(`id`) on delete cascade
+,foreign key(`organization_id`) references `mb_organization`(`id`) on delete cascade
 );

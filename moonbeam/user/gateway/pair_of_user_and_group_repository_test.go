@@ -6,10 +6,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
-	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
 func Test_pairOfUserAndGroupRepository_FindUserGroupsByUserID(t *testing.T) {

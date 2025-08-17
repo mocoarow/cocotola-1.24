@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	rslibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
+	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
@@ -19,7 +19,7 @@ import (
 
 const AppName = "cocotola-core"
 
-func Initialize(ctx context.Context, parent gin.IRouter, dialect rslibgateway.DialectRDBMS, driverName string, db *gorm.DB, cfg *config.AppConfig) error {
+func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, cfg *config.AppConfig) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC) // nolint:wrapcheck
 	}
@@ -28,12 +28,12 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect rslibgateway.Di
 		return err
 	}
 	// init transaction manager
-	txManager, err := rslibgateway.NewTransactionManagerT(db, rff)
+	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
 	if err != nil {
 		return err
 	}
 	// init non transaction manager
-	nonTxManager, err := rslibgateway.NewNonTransactionManagerT(rf)
+	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
 	if err != nil {
 		return err
 	}
@@ -71,12 +71,12 @@ func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMi
 // type systemOwnerByOrganizationName struct {
 // }
 
-// func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*rsuserservice.SystemOwner, error) {
+// func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
 // 	rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
 // 	if err != nil {
 // 		return nil, err
 // 	}
-// 	systemAdmin, err := rsuserservice.NewSystemAdmin(ctx, rsrf)
+// 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
 // 	if err != nil {
 // 		return nil, err
 // 	}
@@ -159,14 +159,14 @@ func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMi
 // 	return nil
 // }
 
-// func systemOwnerAction(ctx context.Context, organizationName string, txManager service.TransactionManager, fn func(context.Context, *rsuserservice.SystemOwner) error) error {
+// func systemOwnerAction(ctx context.Context, organizationName string, txManager service.TransactionManager, fn func(context.Context, *mbuserservice.SystemOwner) error) error {
 // 	return txManager.Do(ctx, func(rf service.RepositoryFactory) error {
 // 		rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
 // 		if err != nil {
 // 			return mbliberrors.Errorf(". err: %w", err)
 // 		}
 
-// 		systemAdmin, err := rsuserservice.NewSystemAdmin(ctx, rsrf)
+// 		systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
 // 		if err != nil {
 // 			return mbliberrors.Errorf(". err: %w", err)
 // 		}

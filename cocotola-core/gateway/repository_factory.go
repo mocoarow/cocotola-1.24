@@ -8,19 +8,19 @@ import (
 
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
-	rslibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
+	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
 type RepositoryFactory struct {
-	dialect    rslibgateway.DialectRDBMS
+	dialect    mblibgateway.DialectRDBMS
 	driverName string
 	db         *gorm.DB
 	location   *time.Location
 }
 
-func NewRepositoryFactory(ctx context.Context, dialect rslibgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location) (*RepositoryFactory, error) {
+func NewRepositoryFactory(ctx context.Context, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location) (*RepositoryFactory, error) {
 	if db == nil {
 		return nil, mbliberrors.Errorf("db is nil. err: %w", mblibdomain.ErrInvalidArgument)
 	}
