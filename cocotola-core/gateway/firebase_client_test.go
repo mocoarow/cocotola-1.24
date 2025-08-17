@@ -14,7 +14,7 @@ func Test_VerifyFirebase(t *testing.T) {
 	ctx := context.Background()
 
 	app, err := firebase.NewApp(ctx, &firebase.Config{
-		ProjectID: "cocotola-1-23-develop-24-11-02",
+		ProjectID: "mocoarow-25-08",
 	})
 	require.NoError(t, err)
 

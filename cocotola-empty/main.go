@@ -55,7 +55,7 @@ func main() {
 		Trace: &mblibconfig.TraceConfig{
 			Exporter: "gcp",
 			Google: &mblibconfig.GoogleTraceConfig{
-				ProjectID: "cocotola-1-23-develop-24-11-02",
+				ProjectID: "mocoarow-25-08",
 			},
 		},
 		CORS: &mblibconfig.CORSConfig{
