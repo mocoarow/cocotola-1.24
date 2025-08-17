@@ -15,7 +15,7 @@ type BaseModelEntity struct {
 	UpdatedBy int
 }
 
-func (e *BaseModelEntity) toBaseModel() (*libdomain.BaseModel, error) {
+func (e *BaseModelEntity) ToBaseModel() (*libdomain.BaseModel, error) {
 	model, err := libdomain.NewBaseModel(e.Version, e.CreatedAt, e.UpdatedAt, e.CreatedBy, e.UpdatedBy)
 	if err != nil {
 		return nil, liberrors.Errorf("libdomain.NewBaseModel. err: %w", err)

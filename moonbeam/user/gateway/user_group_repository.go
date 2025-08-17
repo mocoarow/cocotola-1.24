@@ -26,7 +26,7 @@ func (e *userGroupEntity) TableName() string {
 }
 
 func (e *userGroupEntity) toUserGroupModel() (*domain.UserGroupModel, error) {
-	baseModel, err := e.toBaseModel()
+	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, liberrors.Errorf("toBaseModel. err: %w", err)
 	}

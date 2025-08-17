@@ -8,6 +8,7 @@ import (
 
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	libgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
+
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )

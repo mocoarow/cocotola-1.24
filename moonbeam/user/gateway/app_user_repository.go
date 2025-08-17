@@ -51,7 +51,7 @@ func (e *appUserEntity) TableName() string {
 //		return appUser, nil
 //	}
 func (e *appUserEntity) toAppUserModel(userGroups []*domain.UserGroupModel) (*domain.AppUserModel, error) {
-	baseModel, err := e.toBaseModel()
+	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, liberrors.Errorf("e.toModel. err: %w", err)
 	}

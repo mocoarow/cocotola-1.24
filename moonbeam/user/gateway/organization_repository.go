@@ -6,7 +6,6 @@ import (
 
 	"gorm.io/gorm"
 
-	libdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	libgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
@@ -28,9 +27,9 @@ func (e *organizationEntity) TableName() string {
 }
 
 func (e *organizationEntity) toModel() (*service.Organization, error) {
-	baseModel, err := libdomain.NewBaseModel(e.Version, e.CreatedAt, e.UpdatedAt, e.CreatedBy, e.UpdatedBy)
+	baseModel, err := e.ToBaseModel()
 	if err != nil {
-		return nil, liberrors.Errorf("libdomain.NewBaseModel. err: %w", err)
+		return nil, liberrors.Errorf("e.ToBaseModel: %w", err)
 	}
 
 	organizationID, err := domain.NewOrganizationID(e.ID)

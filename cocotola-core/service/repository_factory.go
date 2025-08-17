@@ -7,7 +7,8 @@ import (
 )
 
 type RepositoryFactory interface {
-	NewWorkbookRepository(ctx context.Context) (WorkbookRepository, error)
+	// NewWorkbookRepository(ctx context.Context) (WorkbookRepository, error)
+	NewDeckRepository(ctx context.Context) (DeckRepository, error)
 }
 
 type TransactionManager mblibservice.TransactionManagerT[RepositoryFactory]
