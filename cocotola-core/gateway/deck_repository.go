@@ -48,15 +48,16 @@ func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 		e.Description,
 	)
 	if err != nil {
-		return nil, mbliberrors.Errorf("domain.NewDeckModel: %w", err)
+		return nil, mbliberrors.Errorf("new deck model: %w", err)
 	}
+
 	return deckModel, nil
 }
 
 func (e *DeckEntity) toDeck() (*service.Deck, error) {
 	deckModel, err := e.ToModel()
 	if err != nil {
-		return nil, mbliberrors.Errorf("DeckEntity.ToModel: %w", err)
+		return nil, mbliberrors.Errorf("to deck model: %w", err)
 	}
 	deck := &service.Deck{
 		DeckModel: deckModel,
@@ -121,7 +122,7 @@ func (r *deckRepository) UpdateDeck(ctx context.Context, operator service.Operat
 	return nil
 }
 
-func (r *deckRepository) FindDecks(ctx context.Context, deckID *domain.DeckID) ([]*service.Deck, error) {
+func (r *deckRepository) FindDecks(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) ([]*service.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.FindDecks")
 	defer span.End()
 

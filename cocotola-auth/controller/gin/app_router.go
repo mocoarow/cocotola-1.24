@@ -23,7 +23,7 @@ type systemOwnerByOrganizationName struct {
 }
 
 func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
-	rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
+	rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func GetPublicRouterGroupFuncs(ctx context.Context, authConfig *config.AuthConfi
 	}, nil
 }
 
-func GetPrivateRouterGroupFuncs(txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
+func GetPrivateRouterGroupFuncs(ctx context.Context, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
 	// - rbac
 	rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
 
@@ -89,6 +89,13 @@ func GetPrivateRouterGroupFuncs(txManager, nonTxManager service.TransactionManag
 	return []libcontroller.InitRouterGroupFunc{
 		NewInitRBACRouterFunc(rbacUsecase),
 	}
+}
+
+func InitAuthMiddleware(authConfig *config.AuthConfig) (gin.HandlerFunc, error) {
+	authMiddleware := gin.BasicAuth(gin.Accounts{
+		authConfig.Username: authConfig.Password,
+	})
+	return authMiddleware, nil
 }
 
 // func InitRootRouterGroup(ctx context.Context, rootRouterGroup gin.IRouter, corsConfig cors.Config, debugConfig *libconfig.DebugConfig) {

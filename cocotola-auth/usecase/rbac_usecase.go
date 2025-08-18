@@ -22,9 +22,9 @@ func NewRBACUsecase(txManager, nonTxManager service.TransactionManager) *RBACUse
 	}
 }
 
-func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject, effect mbuserdomain.RBACEffect) error {
+func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, listOfActionObjectEffect []mbuserdomain.RBACActionObjectEffect) error {
 	return mblibservice.Do0(ctx, u.txManager, func(rf service.RepositoryFactory) error {
-		rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
+		rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 		if err != nil {
 			return err
 		}
@@ -39,8 +39,13 @@ func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuse
 			return err
 		}
 
-		if err := authorizationManager.AddPolicyToUserBySystemAdmin(ctx, sysAdmin, organizationID, subject, action, object, effect); err != nil {
-			return err
+		for _, aoe := range listOfActionObjectEffect {
+			action := aoe.Action
+			object := aoe.Object
+			effect := aoe.Effect
+			if err := authorizationManager.AddPolicyToUserBySystemAdmin(ctx, sysAdmin, organizationID, subject, action, object, effect); err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -49,7 +54,7 @@ func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuse
 
 func (u *RBACUsecase) Authorize(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error) {
 	return mblibservice.Do1(ctx, u.nonTxManager, func(rf service.RepositoryFactory) (bool, error) {
-		rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
+		rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 		if err != nil {
 			return false, err
 		}

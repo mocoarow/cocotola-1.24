@@ -21,16 +21,12 @@ type HTTPClient interface {
 type cocotolaAuthClient struct {
 	httpClient   HTTPClient
 	authEndpoint *url.URL
-	authUsername string
-	authPassword string
 }
 
 func NewCocotolaAuthClient(httpClient HTTPClient, authEndpoint *url.URL, authUsername, authPassword string) service.CocotolaAuthClient {
 	return &cocotolaAuthClient{
 		httpClient:   httpClient,
 		authEndpoint: authEndpoint,
-		authUsername: authUsername,
-		authPassword: authPassword,
 	}
 }
 

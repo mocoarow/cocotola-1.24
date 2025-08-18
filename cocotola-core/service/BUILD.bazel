@@ -4,6 +4,8 @@ go_library(
     name = "service",
     srcs = [
         "cocotola_auth_client.go",
+        "deck.go",
+        "deck_repository.go",
         "repository_factory.go",
         "service.go",
         "workbook_repository.go",

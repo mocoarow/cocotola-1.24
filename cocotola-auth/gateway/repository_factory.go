@@ -35,7 +35,7 @@ func NewRepositoryFactory(ctx context.Context, dialect mblibgateway.DialectRDBMS
 	}, nil
 }
 
-func (f *RepositoryFactory) NewmoonbeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error) {
+func (f *RepositoryFactory) NewMoonBeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error) {
 	return mbusergateway.NewRepositoryFactory(ctx, f.dialect, f.driverName, f.db, f.location)
 }
 
