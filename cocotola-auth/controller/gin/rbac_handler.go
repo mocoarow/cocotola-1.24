@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -20,7 +21,7 @@ type SystemAdminInterface interface {
 
 type RBACUsecase interface {
 	// Who can do what actions on which resources
-	AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject, effect mbuserdomain.RBACEffect) error
+	AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, listOfActionObjectEffect []mbuserdomain.RBACActionObjectEffect) error
 }
 
 type RBACHandler struct {
@@ -47,12 +48,22 @@ func (h *RBACHandler) AddPolicyToUser(c *gin.Context) {
 		return
 	}
 
-	subject := mbuserdomain.NewRBACUser(apiParam.Subject)
-	action := mbuserdomain.NewRBACAction(apiParam.Action)
-	object := mbuserdomain.NewRBACObject(apiParam.Object)
-	effect := mbuserdomain.NewRBACEffect(apiParam.Effect)
+	subject := mbuserdomain.NewRBACUser(strconv.Itoa(apiParam.AppUserID))
+	// action := mbuserdomain.NewRBACAction(apiParam.Action)
+	// object := mbuserdomain.NewRBACObject(apiParam.Object)
+	// effect := mbuserdomain.NewRBACEffect(apiParam.Effect)
 
-	if err := h.rbacUsecase.AddPolicyToUser(ctx, organizationID, subject, action, object, effect); err != nil {
+	listofActionObjectEffect := make([]mbuserdomain.RBACActionObjectEffect, 0)
+	for _, aoe := range apiParam.ListOfActionObjectEffect {
+		actionObj := mbuserdomain.RBACActionObjectEffect{
+			Action: mbuserdomain.NewRBACAction(aoe.Action),
+			Object: mbuserdomain.NewRBACObject(aoe.Object),
+			Effect: mbuserdomain.NewRBACEffect(aoe.Effect),
+		}
+		listofActionObjectEffect = append(listofActionObjectEffect, actionObj)
+	}
+
+	if err := h.rbacUsecase.AddPolicyToUser(ctx, organizationID, subject, listofActionObjectEffect); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
 		return
 	}

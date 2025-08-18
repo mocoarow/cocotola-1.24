@@ -14,9 +14,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/config"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/middleware"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
-	studentusecasegateway "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/usecase/student"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
-	studentusecase "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/student"
 )
 
 const authClientTimeout = time.Duration(5) * time.Second
@@ -43,15 +41,15 @@ func GetPublicRouterGroupFuncs() []libcontroller.InitRouterGroupFunc {
 }
 
 func GetPrivateRouterGroupFuncs(db *gorm.DB, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
-	// - workbookQueryUsecase
-	workbookQuerySerivce := studentusecasegateway.NewWorkbookQueryService(db)
-	workbookQueryUsecase := studentusecase.NewWorkbookQueryUsecase(txManager, nonTxManager, workbookQuerySerivce)
-	// - workbookCommandUsecase
-	workbookCommandUsecase := studentusecase.NewWorkbookCommandUsecase(txManager, nonTxManager)
+	// // - workbookQueryUsecase
+	// workbookQuerySerivce := studentusecasegateway.NewWorkbookQueryService(db)
+	// workbookQueryUsecase := studentusecase.NewWorkbookQueryUsecase(txManager, nonTxManager, workbookQuerySerivce)
+	// // - workbookCommandUsecase
+	// workbookCommandUsecase := studentusecase.NewWorkbookCommandUsecase(txManager, nonTxManager)
 
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
-		NewInitWorkbookRouterFunc(workbookQueryUsecase, workbookCommandUsecase),
+		// NewInitWorkbookRouterFunc(workbookQueryUsecase, workbookCommandUsecase),
 	}
 }
 

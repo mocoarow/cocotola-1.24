@@ -22,7 +22,7 @@ func NewRBACUser(value string) RBACUser {
 }
 
 func (r *rbacUser) Subject() string {
-	return r.value
+	return "user:" + r.value
 }
 
 type RBACRole interface {
@@ -107,4 +107,10 @@ func NewRBACEffect(value string) RBACEffect {
 
 func (r *rbacEffect) Effect() string {
 	return r.value
+}
+
+type RBACActionObjectEffect struct {
+	Action RBACAction
+	Object RBACObject
+	Effect RBACEffect
 }

@@ -15,7 +15,7 @@ type OperatorInterface interface {
 	// Username() string
 }
 type RepositoryFactory interface {
-	NewmoonbeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error)
+	NewMoonBeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error)
 
 	NewStateRepository(ctx context.Context) (StateRepository, error)
 }

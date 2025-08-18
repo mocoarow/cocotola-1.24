@@ -25,7 +25,7 @@ func (a *organizationAction) initRsrf(ctx context.Context) error {
 		return nil
 	}
 
-	rsrf, err := a.rf.NewmoonbeamRepositoryFactory(ctx)
+	rsrf, err := a.rf.NewMoonBeamRepositoryFactory(ctx)
 	if err != nil {
 		return err
 	}

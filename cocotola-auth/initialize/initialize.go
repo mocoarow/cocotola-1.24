@@ -46,21 +46,26 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	if err != nil {
 		return err
 	}
+	authMiddleware, err := controller.InitAuthMiddleware(cfg.Auth)
+	if err != nil {
+		return err
+	}
 
 	// init public and private router group functions
 	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, cfg.Auth, txManager, nonTxManager)
 	if err != nil {
 		return err
 	}
+	priavteRouterGroupFuncs := controller.GetPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
 
-	initAPIServer(ctx, parent, AppName, publicRouterGroupFuncs)
+	initAPIServer(ctx, parent, AppName, authMiddleware, publicRouterGroupFuncs, priavteRouterGroupFuncs)
 
 	initApp1(ctx, txManager, nonTxManager, "cocotola", cfg.OwnerLoginID, cfg.OwnerPassword)
 
 	return nil
 }
 
-func initAPIServer(ctx context.Context, root gin.IRouter, appName string, publicRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
+func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
 	// api
 	api := libcontroller.InitAPIRouterGroup(ctx, root, appName)
 
@@ -69,6 +74,9 @@ func initAPIServer(ctx context.Context, root gin.IRouter, appName string, public
 
 	// public router
 	libcontroller.InitPublicAPIRouterGroup(ctx, v1, publicRouterGroupFuncs)
+
+	// private router
+	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, authMiddleware, privateRouterGroupFuncs)
 }
 
 func initApp1(ctx context.Context, txManager, nonTxManager service.TransactionManager, organizationName, loginID, password string) {
@@ -109,7 +117,7 @@ func initApp1(ctx context.Context, txManager, nonTxManager service.TransactionMa
 
 func systemAdminAction(ctx context.Context, transactionManager service.TransactionManager, fn func(context.Context, *mbuserservice.SystemAdmin) error) error {
 	return transactionManager.Do(ctx, func(rf service.RepositoryFactory) error {
-		rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
+		rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 		if err != nil {
 			return mbliberrors.Errorf(". err: %w", err)
 		}
