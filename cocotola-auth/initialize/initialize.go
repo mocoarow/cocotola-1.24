@@ -26,7 +26,7 @@ import (
 
 const AppName = "cocotola-auth"
 
-func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, cfg *config.AppConfig) error {
+func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, authConfig *config.AuthConfig) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC) // nolint:wrapcheck
 	}
@@ -46,13 +46,13 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	if err != nil {
 		return err
 	}
-	authMiddleware, err := controller.InitAuthMiddleware(cfg.Auth)
+	authMiddleware, err := controller.InitAuthMiddleware(authConfig)
 	if err != nil {
 		return err
 	}
 
 	// init public and private router group functions
-	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, cfg.Auth, txManager, nonTxManager)
+	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, authConfig, txManager, nonTxManager)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 
 	initAPIServer(ctx, parent, AppName, authMiddleware, publicRouterGroupFuncs, priavteRouterGroupFuncs)
 
-	initApp1(ctx, txManager, nonTxManager, "cocotola", cfg.OwnerLoginID, cfg.OwnerPassword)
+	initApp1(ctx, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
 
 	return nil
 }

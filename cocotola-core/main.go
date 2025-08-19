@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -27,20 +25,16 @@ import (
 
 func main() {
 	ctx := context.Background()
-	env := flag.String("env", "", "environment")
-	flag.Parse()
-	appEnv := libdomain.GetNonEmptyValue(*env, os.Getenv("APP_ENV"), "local")
 
 	mbliberrors.UseXerrorsErrorf()
 
 	// load config
-	cfg, err := config.LoadConfig(appEnv)
+	cfg, err := config.LoadConfig()
 	libdomain.CheckError(err)
 
 	// init log
 	mblibconfig.InitLog(cfg.Log)
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "main"))
-	logger.InfoContext(ctx, fmt.Sprintf("env: %s", appEnv))
 
 	// init tracer
 	tp, err := mblibconfig.InitTracerProvider(ctx, initialize.AppName, cfg.Trace)

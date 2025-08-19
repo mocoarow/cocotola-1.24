@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"flag"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -35,20 +35,20 @@ const AppName = "cocotola-app"
 
 func main() {
 	ctx := context.Background()
-	env := flag.String("env", "", "environment")
-	flag.Parse()
-	appEnv := libdomain.GetNonEmptyValue(*env, os.Getenv("APP_ENV"), "local")
-	slog.InfoContext(ctx, fmt.Sprintf("env: %s", appEnv))
 
 	mbliberrors.UseXerrorsErrorf()
 
-	cfg, err := config.LoadConfig(appEnv)
+	cfg, err := config.LoadConfig()
+
 	libdomain.CheckError(err)
 
 	// init log
 	mblibconfig.InitLog(cfg.Log)
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "main"))
-	logger.InfoContext(ctx, fmt.Sprintf("env: %s", appEnv))
+
+	confBytes, err := json.Marshal(cfg)
+	libdomain.CheckError(err)
+	slog.Default().InfoContext(ctx, fmt.Sprintf("conf: %s", string(confBytes)))
 
 	// init tracer
 	tp, err := mblibconfig.InitTracerProvider(ctx, AppName, cfg.Trace)
@@ -73,14 +73,14 @@ func main() {
 	// auth
 	{
 		auth := router.Group("auth")
-		if err := authinit.Initialize(ctx, auth, dialect, cfg.DB.DriverName, db, cfg.Auth); err != nil {
+		if err := authinit.Initialize(ctx, auth, dialect, cfg.DB.DriverName, db, cfg.App.Auth); err != nil {
 			libdomain.CheckError(err)
 		}
 	}
 	// core
 	{
 		core := router.Group("core")
-		if err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Core); err != nil {
+		if err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.App.Core); err != nil {
 			libdomain.CheckError(err)
 		}
 	}

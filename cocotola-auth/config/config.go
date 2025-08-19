@@ -32,16 +32,12 @@ type AuthConfig struct {
 	APITimeoutSec       int    `yaml:"apiTimeoutSec" validate:"gte=1"`
 	Username            string `yaml:"username" validate:"required"`
 	Password            string `yaml:"password" validate:"required"`
-}
-
-type AppConfig struct {
-	Auth          *AuthConfig `yaml:"auth" validate:"required"`
-	OwnerLoginID  string      `yaml:"ownerLoginId" validate:"required"`
-	OwnerPassword string      `yaml:"ownerPassword" validate:"required"`
+	OwnerLoginID        string `yaml:"ownerLoginId" validate:"required"`
+	OwnerPassword       string `yaml:"ownerPassword" validate:"required"`
 }
 
 type Config struct {
-	App      *AppConfig                 `yaml:"app" validate:"required"`
+	App      *AuthConfig                `yaml:"app" validate:"required"`
 	Server   *ServerConfig              `yaml:"server" validate:"required"`
 	DB       *mblibconfig.DBConfig      `yaml:"db" validate:"required"`
 	Trace    *mblibconfig.TraceConfig   `yaml:"trace" validate:"required"`
@@ -55,8 +51,8 @@ type Config struct {
 //go:embed config.yml
 var config embed.FS
 
-func LoadConfig(env string) (*Config, error) {
-	filename := env + ".yml"
+func LoadConfig() (*Config, error) {
+	filename := "config.yml"
 	confContent, err := config.ReadFile(filename)
 	if err != nil {
 		return nil, mbliberrors.Errorf("config.ReadFile. filename: %s, err: %w", filename, err)

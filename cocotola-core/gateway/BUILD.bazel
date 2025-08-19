@@ -4,6 +4,7 @@ go_library(
     name = "gateway",
     srcs = [
         "cocotola_auth_client.go",
+        "cocotola_rbac_client.go",
         "deck_repository.go",
         "firebase_client.go",
         "init.go",

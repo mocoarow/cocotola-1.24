@@ -9,3 +9,8 @@ type DebugConfig struct {
 	Gin  bool `yaml:"gin"`
 	Wait bool `yaml:"wait"`
 }
+
+type OwnerConfig struct {
+	OwnerLoginID  string `yaml:"ownerLoginId" validate:"required"`
+	OwnerPassword string `yaml:"ownerPassword" validate:"required"`
+}

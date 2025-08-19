@@ -31,14 +31,11 @@ type AuthAPIonfig struct {
 }
 
 type AppConfig struct {
-	AuthAPI       *AuthAPIonfig `yaml:"authApi" validate:"required"`
-	OwnerLoginID  string        `yaml:"ownerLoginId" validate:"required"`
-	OwnerPassword string        `yaml:"ownerPassword" validate:"required"`
+	Auth *authconfig.AuthConfig `yaml:"auth" validate:"required"`
+	Core *coreconfig.CoreConfig `yaml:"core" validate:"required"`
 }
 
 type Config struct {
-	Auth     *authconfig.AppConfig      `yaml:"auth" validate:"required"`
-	Core     *coreconfig.AppConfig      `yaml:"core" validate:"required"`
 	App      *AppConfig                 `yaml:"app" validate:"required"`
 	Server   *ServerConfig              `yaml:"server" validate:"required"`
 	DB       *mblibconfig.DBConfig      `yaml:"db" validate:"required"`
@@ -53,14 +50,14 @@ type Config struct {
 //go:embed config.yml
 var config embed.FS
 
-func LoadConfig(env string) (*Config, error) {
-	filename := env + ".yml"
+func LoadConfig() (*Config, error) {
+	filename := "config.yml"
 	confContent, err := config.ReadFile(filename)
 	if err != nil {
 		return nil, mbliberrors.Errorf("config.ReadFile. filename: %s, err: %w", filename, err)
 	}
 
-	confContent = []byte(os.ExpandEnv(string(confContent)))
+	confContent = []byte(os.Expand(string(confContent), mblibconfig.ExpandEnvWithDefaults))
 	conf := &Config{}
 	if err := yaml.Unmarshal(confContent, conf); err != nil {
 		return nil, mbliberrors.Errorf("yaml.Unmarshal. filename: %s, err: %w", filename, err)

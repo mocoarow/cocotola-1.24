@@ -19,7 +19,7 @@ import (
 
 const AppName = "cocotola-core"
 
-func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, cfg *config.AppConfig) error {
+func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, coreConfig *config.CoreConfig) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC) // nolint:wrapcheck
 	}
@@ -38,7 +38,7 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 		return err
 	}
 
-	authMiddleware, err := controller.InitAuthMiddleware(cfg.AuthAPI)
+	authMiddleware, err := controller.InitAuthMiddleware(coreConfig.AuthAPI)
 	if err != nil {
 		return err
 	}
