@@ -28,5 +28,7 @@ type DeckRepository interface {
 
 	UpdateDeck(ctx context.Context, operator OperatorInterface, deckID *domain.DeckID, version int, param *DeckUpdateParameter) error
 
-	FindDecks(ctx context.Context, operator OperatorInterface, deckID *domain.DeckID) ([]*Deck, error)
+	FindDecks(ctx context.Context, operator OperatorInterface) ([]*Deck, error)
+
+	RetrieveDeckByID(ctx context.Context, operator OperatorInterface, deckID *domain.DeckID) (*Deck, error)
 }

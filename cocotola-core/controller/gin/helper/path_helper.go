@@ -34,3 +34,17 @@ func GetWorkbookIDFromPath(c *gin.Context, param string) (*domain.WorkbookID, er
 
 	return workbookID, nil
 }
+
+func GetDeckIDFromPath(c *gin.Context, param string) (*domain.DeckID, error) {
+	value, err := GetIntFromPath(c, param)
+	if err != nil {
+		return nil, err
+	}
+
+	deckID, err := domain.NewDeckID(value)
+	if err != nil {
+		return nil, err
+	}
+
+	return deckID, nil
+}

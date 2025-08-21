@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
@@ -56,9 +57,26 @@ func (a *organizationAction) initSystemOwnerByOrganizationName(ctx context.Conte
 	}
 	systemOwner, err := a.systemAdmin.FindSystemOwnerByOrganizationName(ctx, organizationName)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("find system owner by organization name %s: %w", organizationName, err)
 	}
 	a.systemOwner = systemOwner
+	return nil
+}
+
+func (a *organizationAction) initOrganization(ctx context.Context, organizationName string) error {
+	if a.organization != nil {
+		return nil
+	}
+
+	if err := a.initSystemAdmin(ctx); err != nil {
+		return err
+	}
+
+	organization, err := a.systemAdmin.FindOrganizationByName(ctx, organizationName)
+	if err != nil {
+		return mbliberrors.Errorf("find organization by name %s: %w", organizationName, err)
+	}
+	a.organization = organization
 	return nil
 }
 
@@ -94,6 +112,9 @@ func WithAppUserRepository() OrganizationActionOption {
 func WithOrganization(organizationName string) OrganizationActionOption {
 	return func(ctx context.Context, action *organizationAction) error {
 		if err := action.initSystemOwnerByOrganizationName(ctx, organizationName); err != nil {
+			return err
+		}
+		if err := action.initOrganization(ctx, organizationName); err != nil {
 			return err
 		}
 		return nil

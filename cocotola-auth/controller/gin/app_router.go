@@ -54,7 +54,7 @@ func NewInitTestRouterFunc() libcontroller.InitRouterGroupFunc {
 func GetPublicRouterGroupFuncs(ctx context.Context, authConfig *config.AuthConfig, txManager, nonTxManager service.TransactionManager) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - google
 	httpClient := http.Client{
-		Timeout:   time.Duration(authConfig.APITimeoutSec) * time.Second,
+		Timeout:   time.Duration(authConfig.GoogleAPITimeoutSec) * time.Second,
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
 	signingKey := []byte(authConfig.SigningKey)

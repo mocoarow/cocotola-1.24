@@ -15,25 +15,27 @@ import (
 )
 
 type DeckCommandUseCase struct {
-	txManager  service.TransactionManager
-	rbacClient service.CocotolaRBACClient
+	txManager    service.TransactionManager
+	nonTxManager service.TransactionManager
+	rbacClient   service.CocotolaRBACClient
 }
 
-func NewDeckCommandUsecase(txmanager service.TransactionManager, rbacClient service.CocotolaRBACClient) *DeckCommandUseCase {
+func NewDeckCommandUsecase(txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) *DeckCommandUseCase {
 	return &DeckCommandUseCase{
-		txManager:  txmanager,
-		rbacClient: rbacClient,
+		txManager:    txManager,
+		nonTxManager: nonTxManager,
+		rbacClient:   rbacClient,
 	}
 }
 
-func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.OperatorInterface, deck *service.DeckAddParameter) (*domain.DeckID, error) {
+func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.OperatorInterface, param *service.DeckAddParameter) (*domain.DeckID, error) {
 	//
 	deckID, err := mblibservice.Do1(ctx, u.txManager, func(rf service.RepositoryFactory) (*domain.DeckID, error) {
 		deckRepo, err := rf.NewDeckRepository(ctx)
 		if err != nil {
 			return nil, err
 		}
-		return deckRepo.AddDeck(ctx, operator, deck)
+		return deckRepo.AddDeck(ctx, operator, param)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("add deck: %w", err)
@@ -47,17 +49,22 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 		AppUserID:      operator.AppUserID().Int(),
 		ListOfActionObjectEffect: []libapi.ActionObjectEffect{
 			{
-				Action: mbuserdomain.NewRBACAction("ListObject").Action(),
+				Action: mbuserdomain.NewRBACAction("ListCards").Action(),
 				Object: deckObject,
 				Effect: mbuserservice.RBACAllowEffect.Effect(),
 			},
 			{
-				Action: mbuserdomain.NewRBACAction("GetObject").Action(),
+				Action: mbuserdomain.NewRBACAction("GetDeck").Action(),
 				Object: deckObject,
 				Effect: mbuserservice.RBACAllowEffect.Effect(),
 			},
 			{
-				Action: mbuserdomain.NewRBACAction("DeleteObject").Action(),
+				Action: mbuserdomain.NewRBACAction("DeleteDeck").Action(),
+				Object: deckObject,
+				Effect: mbuserservice.RBACAllowEffect.Effect(),
+			},
+			{
+				Action: mbuserdomain.NewRBACAction("UpdateDeck").Action(),
 				Object: deckObject,
 				Effect: mbuserservice.RBACAllowEffect.Effect(),
 			},
@@ -65,4 +72,20 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 	})
 
 	return deckID, nil
+}
+
+func (u *DeckCommandUseCase) UpdateDeck(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID, version int, param *service.DeckUpdateParameter) error {
+	//
+	err := mblibservice.Do0(ctx, u.txManager, func(rf service.RepositoryFactory) error {
+		deckRepo, err := rf.NewDeckRepository(ctx)
+		if err != nil {
+			return err
+		}
+		return deckRepo.UpdateDeck(ctx, operator, deckID, version, param)
+	})
+	if err != nil {
+		return fmt.Errorf("add deck: %w", err)
+	}
+
+	return nil
 }

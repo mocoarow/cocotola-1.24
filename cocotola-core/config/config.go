@@ -21,16 +21,23 @@ type ServerConfig struct {
 	ReadHeaderTimeoutSec int `yaml:"readHeaderTimeoutSec" validate:"gte=1"`
 }
 
-type AuthAPIonfig struct {
-	Endpoint string `yaml:"endpoint" validate:"required"`
-	Username string `yaml:"username" validate:"required"`
-	Password string `yaml:"password" validate:"required"`
+type AuthAPIClientConfig struct {
+	Endpoint   string `yaml:"endpoint" validate:"required"`
+	Username   string `yaml:"username" validate:"required"`
+	Password   string `yaml:"password" validate:"required"`
+	TimeoutSec int    `yaml:"timeoutSec" validate:"gte=1"`
 }
 
+// type CoreAPIServerConfig struct {
+// 	Username string `yaml:"username" validate:"required"`
+// 	Password string `yaml:"password" validate:"required"`
+// }
+
 type CoreConfig struct {
-	AuthAPI       *AuthAPIonfig `yaml:"authApi" validate:"required"`
-	OwnerLoginID  string        `yaml:"ownerLoginId" validate:"required"`
-	OwnerPassword string        `yaml:"ownerPassword" validate:"required"`
+	AuthAPIClient *AuthAPIClientConfig `yaml:"authApiClient" validate:"required"`
+	// CoreAPIServer *CoreAPIServerConfig `yaml:"coreApiServer" validate:"required"`
+	OwnerLoginID  string `yaml:"ownerLoginId" validate:"required"`
+	OwnerPassword string `yaml:"ownerPassword" validate:"required"`
 }
 
 type Config struct {

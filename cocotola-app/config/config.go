@@ -24,12 +24,6 @@ type ServerConfig struct {
 	ReadHeaderTimeoutSec int `yaml:"readHeaderTimeoutSec" validate:"gte=1"`
 }
 
-type AuthAPIonfig struct {
-	Endpoint string `yaml:"endpoint" validate:"required"`
-	Username string `yaml:"username" validate:"required"`
-	Password string `yaml:"password" validate:"required"`
-}
-
 type AppConfig struct {
 	Auth *authconfig.AuthConfig `yaml:"auth" validate:"required"`
 	Core *coreconfig.CoreConfig `yaml:"core" validate:"required"`

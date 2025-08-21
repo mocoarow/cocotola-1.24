@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"time"
@@ -15,9 +16,10 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/middleware"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
-)
 
-const authClientTimeout = time.Duration(5) * time.Second
+	resourcemanagergateway "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/resource_manager"
+	resourcemanager "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/resource_manager"
+)
 
 // type NewIteratorFunc func(ctx context.Context, workbookID appD.WorkbookID, problemType appD.ProblemTypeName, reader io.Reader) (appS.ProblemAddParameterIterator, error)
 
@@ -40,29 +42,38 @@ func GetPublicRouterGroupFuncs() []libcontroller.InitRouterGroupFunc {
 	}
 }
 
-func GetPrivateRouterGroupFuncs(db *gorm.DB, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
-	// // - workbookQueryUsecase
-	// workbookQuerySerivce := studentusecasegateway.NewWorkbookQueryService(db)
-	// workbookQueryUsecase := studentusecase.NewWorkbookQueryUsecase(txManager, nonTxManager, workbookQuerySerivce)
-	// // - workbookCommandUsecase
-	// workbookCommandUsecase := studentusecase.NewWorkbookCommandUsecase(txManager, nonTxManager)
-
-	// private router
-	return []libcontroller.InitRouterGroupFunc{
-		// NewInitWorkbookRouterFunc(workbookQueryUsecase, workbookCommandUsecase),
-	}
-}
-
-func InitAuthMiddleware(authAPIConfig *config.AuthAPIonfig) (gin.HandlerFunc, error) {
-	// middleware
+func GetPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager) ([]libcontroller.InitRouterGroupFunc, error) {
+	// - rbacClient
 	httpClient := http.Client{
-		Timeout:   authClientTimeout,
+		Timeout:   time.Duration(coreConfig.AuthAPIClient.TimeoutSec) * time.Second,
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
-	authEndpoint, err := url.Parse(authAPIConfig.Endpoint)
+	authEndpoint, err := url.Parse(coreConfig.AuthAPIClient.Endpoint)
 	if err != nil {
 		return nil, err
 	}
-	cocotolaAuthClient := gateway.NewCocotolaAuthClient(&httpClient, authEndpoint, authAPIConfig.Username, authAPIConfig.Password)
+	rbacClient := gateway.NewCocotolaRBACClient(&httpClient, authEndpoint, coreConfig.AuthAPIClient.Username, coreConfig.AuthAPIClient.Password)
+	// - workbookQueryUsecase
+	deckQueryUsecase := resourcemanagergateway.NewDeckQueryUsecase(db)
+	// - workbookCommandUsecase
+	deckCommandUsecase := resourcemanager.NewDeckCommandUsecase(txManager, nonTxManager, rbacClient)
+
+	// private router
+	return []libcontroller.InitRouterGroupFunc{
+		NewInitDeckRouterFunc(deckQueryUsecase, deckCommandUsecase),
+	}, nil
+}
+
+func InitAuthMiddleware(authClientConfig *config.AuthAPIClientConfig) (gin.HandlerFunc, error) {
+	// middleware
+	httpClient := http.Client{
+		Timeout:   time.Duration(authClientConfig.TimeoutSec) * time.Second,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+	}
+	authEndpoint, err := url.Parse(authClientConfig.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	cocotolaAuthClient := gateway.NewCocotolaAuthClient(&httpClient, authEndpoint)
 	return middleware.NewAuthMiddleware(cocotolaAuthClient), nil
 }

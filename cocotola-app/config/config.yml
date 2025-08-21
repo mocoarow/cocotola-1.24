@@ -8,16 +8,17 @@ app:
     googleCallbackUrl: ${APP_AUTH_GOOGLE_CALLBACK_URL:-http://localhost:5173/app/auth/callback}
     googleClientId: ${GOOGLE_CLIENT_ID}
     googleClientSecret: ${GOOGLE_CLIENT_SECRET}
-    apiTimeoutSec: ${APP_AUTH_API_TIMEOUT_SEC:-5}
+    googleApiTimeoutSec: ${GOOGLE_API_TIMEOUT_SEC:-5}
     username: ${APP_AUTH_USERNAME}
     password: ${APP_AUTH_PASSWORD}
     ownerLoginId: ${OWNER_LOGIN_ID}
     ownerPassword: ${OWNER_PASSWORD}
   core:
-    authApi:
+    authApiClient:
       endpoint: ${APP_AUTH_ENDPOINT:-http://localhost:8000/api/auth}
       username: ${APP_AUTH_USERNAME}
       password: ${APP_AUTH_PASSWORD}
+      timeoutSec: ${APP_AUTH_TIMEOUT_SEC:-5}
     ownerLoginId: ${OWNER_LOGIN_ID}
     ownerPassword: ${OWNER_PASSWORD}
 server:

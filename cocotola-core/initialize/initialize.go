@@ -38,14 +38,17 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 		return err
 	}
 
-	authMiddleware, err := controller.InitAuthMiddleware(coreConfig.AuthAPI)
+	authMiddleware, err := controller.InitAuthMiddleware(coreConfig.AuthAPIClient)
 	if err != nil {
 		return err
 	}
 
 	// init public and private router group functions
 	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs()
-	privateRouterGroupFuncs := controller.GetPrivateRouterGroupFuncs(db, txManager, nonTxManager)
+	privateRouterGroupFuncs, err := controller.GetPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager)
+	if err != nil {
+		return err
+	}
 
 	initAPIServer(ctx, parent, AppName, authMiddleware, publicRouterGroupFuncs, privateRouterGroupFuncs)
 

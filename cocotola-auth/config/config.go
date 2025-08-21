@@ -29,7 +29,7 @@ type AuthConfig struct {
 	GoogleCallbackURL   string `yaml:"googleCallbackUrl" validate:"required"`
 	GoogleClientID      string `yaml:"googleClientId" validate:"required"`
 	GoogleClientSecret  string `yaml:"googleClientSecret" validate:"required"`
-	APITimeoutSec       int    `yaml:"apiTimeoutSec" validate:"gte=1"`
+	GoogleAPITimeoutSec int    `yaml:"googleApiTimeoutSec" validate:"gte=1"`
 	Username            string `yaml:"username" validate:"required"`
 	Password            string `yaml:"password" validate:"required"`
 	OwnerLoginID        string `yaml:"ownerLoginId" validate:"required"`

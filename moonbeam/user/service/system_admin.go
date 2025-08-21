@@ -64,7 +64,7 @@ func (m *SystemAdmin) FindSystemOwnerByOrganizationID(ctx context.Context, organ
 func (m *SystemAdmin) FindSystemOwnerByOrganizationName(ctx context.Context, organizationName string) (*SystemOwner, error) {
 	sysOwner, err := m.appUserRepo.FindSystemOwnerByOrganizationName(ctx, m, organizationName)
 	if err != nil {
-		return nil, liberrors.Errorf("m.appUserRepo.FindSystemOwnerByOrganizationName. error: %w", err)
+		return nil, liberrors.Errorf("find system owner by organization name: %w", err)
 	}
 
 	return sysOwner, nil

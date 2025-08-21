@@ -36,12 +36,18 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 			WithAppUserRepository(),
 		)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, mbliberrors.Errorf("new organization action: %w", err)
+		}
+		if action.appUserRepo == nil {
+			return nil, nil, mbliberrors.Errorf("app user repository is nil")
+		}
+		if action.organization == nil {
+			return nil, nil, mbliberrors.Errorf("organization is nil")
 		}
 
 		verified, err := action.appUserRepo.VerifyPassword(ctx, action.systemAdmin, action.organization.OrganizationModel.OrganizationID, loginID, password)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, mbliberrors.Errorf("action.appUserRepo.VerifyPassword: %w", err)
 		}
 
 		if !verified {
@@ -50,7 +56,7 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 
 		tmpAppUser, err := action.appUserRepo.FindAppUserByLoginID(ctx, action.systemOwner, loginID)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, mbliberrors.Errorf("find app user by login id: %w", err)
 		}
 
 		targetOorganization := &organization{
@@ -70,9 +76,9 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 
 	if err != nil {
 		if errors.Is(err, mbuserservice.ErrAppUserNotFound) {
-			return nil, mbliberrors.Errorf("AppUserNotFound. err: %w", domain.ErrUnauthenticated)
+			return nil, mbliberrors.Errorf("app user not found: %w", domain.ErrUnauthenticated)
 		}
-		return nil, mbliberrors.Errorf("RegisterAppUser. err: %w", err)
+		return nil, mbliberrors.Errorf("authenticate: %w", err)
 	}
 
 	tokenSetTmp, err := u.authTokenManager.CreateTokenSet(ctx, targetAppUser, targetOorganization)

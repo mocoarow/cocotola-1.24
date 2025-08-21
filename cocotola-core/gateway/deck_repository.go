@@ -122,18 +122,14 @@ func (r *deckRepository) UpdateDeck(ctx context.Context, operator service.Operat
 	return nil
 }
 
-func (r *deckRepository) FindDecks(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) ([]*service.Deck, error) {
+func (r *deckRepository) FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*service.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.FindDecks")
 	defer span.End()
 
 	var decksE []DeckEntity
-	query := r.db.Model(&DeckEntity{})
-
-	if deckID != nil {
-		query = query.Where("id = ?", deckID.Int())
-	}
-
-	if result := query.Find(&decksE); result.Error != nil {
+	if result := r.db.Model(&DeckEntity{}).
+		Where("organization_id = ?", uint(operator.OrganizationID().Value)).
+		Find(&decksE); result.Error != nil {
 		return nil, mbliberrors.Errorf("deckRepository.FindDecks: %w", result.Error)
 	}
 
@@ -147,4 +143,23 @@ func (r *deckRepository) FindDecks(ctx context.Context, operator service.Operato
 	}
 
 	return decks, nil
+}
+
+func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) (*service.Deck, error) {
+	_, span := tracer.Start(ctx, "deckRepository.RetrieveDeckByID")
+	defer span.End()
+
+	var deckE DeckEntity
+	if result := r.db.Model(&DeckEntity{}).Where("organization_id = ?", uint(operator.OrganizationID().Int())).Where("id = ?", deckID.Int()).First(&deckE); result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, service.ErrDeckNotFound
+		}
+		return nil, mbliberrors.Errorf("deckRepository.RetrieveDeckByID: %w", result.Error)
+	}
+
+	deck, err := deckE.toDeck()
+	if err != nil {
+		return nil, mbliberrors.Errorf("deckE.toDeck: %w", err)
+	}
+	return deck, nil
 }

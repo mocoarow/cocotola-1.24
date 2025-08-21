@@ -23,7 +23,7 @@ type cocotolaAuthClient struct {
 	authEndpoint *url.URL
 }
 
-func NewCocotolaAuthClient(httpClient HTTPClient, authEndpoint *url.URL, authUsername, authPassword string) service.CocotolaAuthClient {
+func NewCocotolaAuthClient(httpClient HTTPClient, authEndpoint *url.URL) service.CocotolaAuthClient {
 	return &cocotolaAuthClient{
 		httpClient:   httpClient,
 		authEndpoint: authEndpoint,
