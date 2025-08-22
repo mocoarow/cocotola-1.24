@@ -13,6 +13,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 
@@ -77,7 +78,7 @@ func main() {
 
 	// init log
 	mblibconfig.InitLog(cfg.Log)
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "main"))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-main"))
 	logger.InfoContext(ctx, fmt.Sprintf("env: %s", appEnv))
 
 	// init tracer
@@ -86,10 +87,10 @@ func main() {
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
-	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
+	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Log, cfg.Debug)
 
 	// api
-	api := libcontroller.InitAPIRouterGroup(ctx, router, AppName)
+	api := libcontroller.InitAPIRouterGroup(ctx, router, domain.AppName, cfg.Log)
 	// v1
 	v1 := api.Group("v1")
 	// public router

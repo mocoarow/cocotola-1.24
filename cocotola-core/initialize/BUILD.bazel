@@ -8,9 +8,11 @@ go_library(
     deps = [
         "//cocotola-core/config",
         "//cocotola-core/controller/gin",
+        "//cocotola-core/domain",
         "//cocotola-core/gateway",
         "//cocotola-core/service",
         "//lib/controller/gin",
+        "//moonbeam/lib/config",
         "//moonbeam/lib/gateway",
         "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//:gorm",

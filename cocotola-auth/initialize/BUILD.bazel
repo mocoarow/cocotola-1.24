@@ -8,9 +8,11 @@ go_library(
     deps = [
         "//cocotola-auth/config",
         "//cocotola-auth/controller/gin",
+        "//cocotola-auth/domain",
         "//cocotola-auth/gateway",
         "//cocotola-auth/service",
         "//lib/controller/gin",
+        "//moonbeam/lib/config",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",
         "//moonbeam/lib/log",

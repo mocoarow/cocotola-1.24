@@ -30,6 +30,7 @@ var (
 	anyOfCtx = mock.MatchedBy(func(_ context.Context) bool { return true })
 	// corsConfig   cors.Config
 	corsConfig   *mblibconfig.CORSConfig
+	logConfig    *mblibconfig.LogConfig
 	serverConfig *config.ServerConfig
 	authConfig   *config.AuthConfig
 	debugConfig  *libconfig.DebugConfig
@@ -39,6 +40,12 @@ var (
 func init() {
 	corsConfig = &mblibconfig.CORSConfig{
 		AllowOrigins: []string{"*"},
+	}
+	logConfig = &mblibconfig.LogConfig{
+		Enabled: map[string]bool{
+			"accessLog": false,
+			"traceLog":  false,
+		},
 	}
 	serverConfig = &config.ServerConfig{
 		HTTPPort:    8080,
@@ -62,7 +69,7 @@ func initAuthRouter(t *testing.T, ctx context.Context, authentication controller
 	initPublicRouterFuncs := []libcontroller.InitRouterGroupFunc{fn}
 	// initPrivateRouterFuncs := []libcontroller.InitRouterGroupFunc{}
 
-	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, debugConfig)
+	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, logConfig, debugConfig)
 	api := router.Group("api")
 	v1 := api.Group("v1")
 

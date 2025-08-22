@@ -9,10 +9,11 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 )
 
-func NewTraceLogMiddleware(appName string) gin.HandlerFunc {
+func NewTraceLogMiddleware(appName string, logEnabled bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sc := trace.SpanFromContext(c.Request.Context()).SpanContext()
 		if !sc.TraceID().IsValid() || !sc.SpanID().IsValid() {
+			c.Next()
 			return
 		}
 		otTraceID := sc.TraceID().String()
@@ -23,8 +24,10 @@ func NewTraceLogMiddleware(appName string) gin.HandlerFunc {
 			c.Request = c.Request.WithContext(savedCtx)
 		}()
 
-		logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "TraceLogMiddleware"))
-		logger.InfoContext(ctx, "", slog.String("uri", c.Request.RequestURI), slog.String("method", c.Request.Method), slog.String("trace_id", otTraceID))
+		if logEnabled {
+			logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, appName+"-TraceLogMiddleware"))
+			logger.InfoContext(ctx, "", slog.String("uri", c.Request.RequestURI), slog.String("method", c.Request.Method), slog.String("trace_id", otTraceID))
+		}
 
 		ctx, span := tracer.Start(ctx, "TraceLog")
 		defer span.End()

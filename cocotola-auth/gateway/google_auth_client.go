@@ -45,7 +45,7 @@ func NewGoogleAuthClient(httpClient HTTPClient, clientID, clientSecret, redirect
 		ClientSecret: clientSecret,
 		RedirectURI:  redirectURI,
 		GrantType:    "authorization_code",
-		logger:       slog.Default().With(slog.String(mbliblog.LoggerNameKey, "GoogleAuthClient")),
+		logger:       slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-GoogleAuthClient")),
 	}
 }
 

@@ -104,6 +104,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
 		apiParam := libapi.DeckAddParameter{}
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
+			h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}
@@ -116,7 +117,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 		}
 		deckID, err := h.deckCommandUsecase.AddDeck(ctx, operator, &param)
 		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("deckCommandUsecase.AddDeck: %+v", err))
+			h.logger.ErrorContext(ctx, fmt.Sprintf("deckCommandUsecase.AddDeck: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}

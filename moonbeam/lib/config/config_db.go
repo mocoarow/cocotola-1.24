@@ -57,7 +57,7 @@ func (f *mergedFS) Open(name string) (fs.File, error) {
 func (f *mergedFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	return f.entries, nil
 }
-func InitDB(ctx context.Context, cfg *DBConfig, sqlFSs ...fs.FS) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error) {
+func InitDB(ctx context.Context, cfg *DBConfig, appName string, sqlFSs ...fs.FS) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error) {
 	mergedFS, err := MergeFS(cfg.DriverName, sqlFSs...)
 	if err != nil {
 		return nil, nil, nil, liberrors.Errorf("merge sql files in %q directory: %w", cfg.DriverName, err)
@@ -67,7 +67,7 @@ func InitDB(ctx context.Context, cfg *DBConfig, sqlFSs ...fs.FS) (libgateway.Dia
 	if !ok {
 		return nil, nil, nil, libdomain.ErrInvalidArgument
 	}
-	return initDBFunc(ctx, cfg, mergedFS)
+	return initDBFunc(ctx, cfg, mergedFS, appName)
 	// switch cfg.DriverName {
 	// case "sqlite3":
 	//

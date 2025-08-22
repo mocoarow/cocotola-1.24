@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -8,6 +9,7 @@ import (
 
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
@@ -17,7 +19,7 @@ func NewAuthMiddleware(cocotolaAuthClient service.CocotolaAuthClient) gin.Handle
 		ctx, span := tracer.Start(ctx, "AuthMiddleware")
 		defer span.End()
 
-		logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "AuthMiddleware"))
+		logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AuthMiddleware"))
 
 		authorization := c.GetHeader("Authorization")
 		if !strings.HasPrefix(authorization, "Bearer ") {
@@ -28,7 +30,7 @@ func NewAuthMiddleware(cocotolaAuthClient service.CocotolaAuthClient) gin.Handle
 		bearerToken := authorization[len("Bearer "):]
 		appUserInfo, err := cocotolaAuthClient.RetrieveUserInfo(ctx, bearerToken)
 		if err != nil {
-			logger.WarnContext(ctx, "getUserInfo")
+			logger.WarnContext(ctx, fmt.Sprintf("getUserInfo: %v", err))
 			return
 		}
 

@@ -8,6 +8,7 @@ go_library(
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-empty",
     visibility = ["//visibility:private"],
     deps = [
+        "//cocotola-auth/domain",
         "//lib/config",
         "//lib/controller/gin",
         "//lib/domain",

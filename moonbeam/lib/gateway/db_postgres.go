@@ -39,7 +39,7 @@ type PostgresConfig struct {
 	Database string `yaml:"database" validate:"required"`
 }
 
-func OpenPostgres(cfg *PostgresConfig) (*gorm.DB, error) {
+func OpenPostgres(cfg *PostgresConfig, appName string) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s", cfg.Host, cfg.Username, cfg.Password, cfg.Database, cfg.Port, "disable", time.UTC.String())
 
 	gormDialector := gorm_postgres.Open(dsn)
@@ -48,7 +48,7 @@ func OpenPostgres(cfg *PostgresConfig) (*gorm.DB, error) {
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
 			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(ctx context.Context) (slog.Value, bool) {
-				return slog.StringValue("gorm"), true
+				return slog.StringValue(appName + "-gorm"), true
 			}),
 		),
 	}
@@ -68,8 +68,8 @@ func MigratePostgresDB(db *gorm.DB, sqlFS fs.FS) error {
 	})
 }
 
-func InitPostgres(ctx context.Context, cfg *PostgresConfig, migration bool, fs fs.FS) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	db, err := OpenPostgres(cfg)
+func InitPostgres(ctx context.Context, cfg *PostgresConfig, migration bool, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
+	db, err := OpenPostgres(cfg, appName)
 	if err != nil {
 		return nil, nil, nil, err
 	}

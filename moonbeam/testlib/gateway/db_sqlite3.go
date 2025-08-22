@@ -16,7 +16,7 @@ var testDBFile string
 func openSQLiteForTest() (*gorm.DB, error) {
 	return libgateway.OpenSQLite3(&libgateway.SQLite3Config{
 		File: testDBFile,
-	})
+	}, "test")
 }
 
 // func OpenSQLiteInMemory(sqlFS embed.FS) (*gorm.DB, error) {

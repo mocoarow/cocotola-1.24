@@ -27,7 +27,7 @@ func initGoogleRouter(t *testing.T, ctx context.Context, googleUser controller.G
 	initPublicRouterFuncs := []libcontroller.InitRouterGroupFunc{fn}
 	// initPrivateRouterFuncs := []libcontroller.InitRouterGroupFunc{}
 
-	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, debugConfig)
+	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, logConfig, debugConfig)
 	api := router.Group("api")
 	v1 := api.Group("v1")
 

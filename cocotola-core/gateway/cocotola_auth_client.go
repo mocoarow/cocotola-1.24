@@ -35,7 +35,7 @@ func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken s
 	defer span.End()
 
 	u := *c.authEndpoint
-	u.Path = path.Join(u.Path, "v1", "auth", "userinfo")
+	u.Path = path.Join(u.Path, "api", "v1", "userinfo")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
@@ -46,13 +46,13 @@ func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken s
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, mbliberrors.Errorf("auth request. err: %w", err)
+		return nil, mbliberrors.Errorf("auth request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	response := libapi.AppUserInfoResponse{}
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, mbliberrors.Errorf("json.NewDecoder. err: %w", err)
+		return nil, mbliberrors.Errorf("json.NewDecoder: %w", err)
 	}
 
 	return &response, nil

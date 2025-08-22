@@ -31,7 +31,7 @@ type AuthHandler struct {
 func NewAuthHandler(authenticationUsecase AuthenticationUsecase) *AuthHandler {
 	return &AuthHandler{
 		authenticationUsecase: authenticationUsecase,
-		logger:                slog.Default().With(slog.String(mbliblog.LoggerNameKey, "AuthHandler")),
+		logger:                slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AuthHandler")),
 	}
 }
 

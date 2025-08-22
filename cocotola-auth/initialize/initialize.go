@@ -12,6 +12,7 @@ import (
 
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 
+	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
@@ -20,13 +21,12 @@ import (
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/config"
 	controller "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-const AppName = "cocotola-auth"
-
-func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, authConfig *config.AuthConfig) error {
+func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC) // nolint:wrapcheck
 	}
@@ -58,16 +58,16 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	}
 	priavteRouterGroupFuncs := controller.GetPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
 
-	initAPIServer(ctx, parent, AppName, authMiddleware, publicRouterGroupFuncs, priavteRouterGroupFuncs)
+	initAPIServer(ctx, parent, domain.AppName, logConfig, authMiddleware, publicRouterGroupFuncs, priavteRouterGroupFuncs)
 
 	initApp1(ctx, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
 
 	return nil
 }
 
-func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
+func initAPIServer(ctx context.Context, root gin.IRouter, appName string, logConfig *mblibconfig.LogConfig, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
 	// api
-	api := libcontroller.InitAPIRouterGroup(ctx, root, appName)
+	api := libcontroller.InitAPIRouterGroup(ctx, root, appName, logConfig)
 
 	// v1
 	v1 := api.Group("v1")
@@ -80,7 +80,7 @@ func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMi
 }
 
 func initApp1(ctx context.Context, txManager, nonTxManager service.TransactionManager, organizationName, loginID, password string) {
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "InitApp1"))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
 
 	addOrganizationFunc := func(ctx context.Context, systemAdmin *mbuserservice.SystemAdmin) error {
 		organization, err := systemAdmin.FindOrganizationByName(ctx, organizationName)

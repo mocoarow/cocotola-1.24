@@ -80,7 +80,7 @@ func NewGoogleUser(txManager, nonTxManager service.TransactionManager, authToken
 		nonTxManager:     nonTxManager,
 		authTokenManager: authTokenManager,
 		googleAuthClient: googleAuthClient,
-		logger:           slog.Default().With(slog.String(mbliblog.LoggerNameKey, "GoogleUserUsecase")),
+		logger:           slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-GoogleUserUsecase")),
 	}
 }
 

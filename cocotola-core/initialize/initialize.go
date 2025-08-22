@@ -7,19 +7,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/config"
 	controller "github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-const AppName = "cocotola-core"
-
-func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, coreConfig *config.CoreConfig) error {
+func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC) // nolint:wrapcheck
 	}
@@ -50,14 +50,14 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 		return err
 	}
 
-	initAPIServer(ctx, parent, AppName, authMiddleware, publicRouterGroupFuncs, privateRouterGroupFuncs)
+	initAPIServer(ctx, parent, domain.AppName, logConfig, authMiddleware, publicRouterGroupFuncs, privateRouterGroupFuncs)
 
 	return nil
 }
 
-func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
+func initAPIServer(ctx context.Context, root gin.IRouter, appName string, logConfig *mblibconfig.LogConfig, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
 	// api
-	api := libcontroller.InitAPIRouterGroup(ctx, root, appName)
+	api := libcontroller.InitAPIRouterGroup(ctx, root, appName, logConfig)
 
 	// v1
 	v1 := api.Group("v1")

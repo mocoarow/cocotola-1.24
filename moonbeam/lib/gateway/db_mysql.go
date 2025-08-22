@@ -40,14 +40,14 @@ type MySQLConfig struct {
 	Database string `yaml:"database" validate:"required"`
 }
 
-func OpenMySQLWithDSN(dsn string) (*gorm.DB, error) {
+func OpenMySQLWithDSN(dsn string, appName string) (*gorm.DB, error) {
 	gormDialector := gorm_mysql.Open(dsn)
 
 	gormConfig := gorm.Config{
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
 			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(ctx context.Context) (slog.Value, bool) {
-				return slog.StringValue("gorm"), true
+				return slog.StringValue(appName + "-gorm"), true
 			}),
 		),
 	}
@@ -55,7 +55,7 @@ func OpenMySQLWithDSN(dsn string) (*gorm.DB, error) {
 	return gorm.Open(gormDialector, &gormConfig)
 }
 
-func OpenMySQL(cfg *MySQLConfig) (*gorm.DB, error) {
+func OpenMySQL(cfg *MySQLConfig, appName string) (*gorm.DB, error) {
 	c := mysql.Config{
 		DBName:               cfg.Database,
 		User:                 cfg.Username,
@@ -72,7 +72,7 @@ func OpenMySQL(cfg *MySQLConfig) (*gorm.DB, error) {
 		Loc:                  time.UTC,
 	}
 
-	return OpenMySQLWithDSN(c.FormatDSN())
+	return OpenMySQLWithDSN(c.FormatDSN(), appName)
 }
 
 func MigrateMySQLDB(db *gorm.DB, sqlFS fs.FS) error {
@@ -87,8 +87,8 @@ func MigrateMySQLDB(db *gorm.DB, sqlFS fs.FS) error {
 	})
 }
 
-func InitMySQL(ctx context.Context, cfg *MySQLConfig, migration bool, fs fs.FS) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	db, err := OpenMySQL(cfg)
+func InitMySQL(ctx context.Context, cfg *MySQLConfig, migration bool, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
+	db, err := OpenMySQL(cfg, appName)
 	if err != nil {
 		return nil, nil, nil, err
 	}

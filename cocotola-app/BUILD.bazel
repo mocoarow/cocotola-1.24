@@ -11,6 +11,7 @@ go_library(
         "//cocotola-app/config",
         "//cocotola-app/web_dist",
         "//cocotola-auth/initialize",
+        "//cocotola-core/domain",
         "//cocotola-core/initialize",
         "//lib/controller/gin",
         "//lib/domain",

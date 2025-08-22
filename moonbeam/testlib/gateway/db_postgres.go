@@ -19,7 +19,7 @@ func openPostgresForTest() (*gorm.DB, error) {
 		Host:     testPostgresHost,
 		Port:     testPostgresPort,
 		Database: "postgres",
-	})
+	}, "test")
 }
 
 // func setupPostgres(sqlFS embed.FS, db *gorm.DB) error {

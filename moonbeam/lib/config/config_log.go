@@ -5,11 +5,14 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+
+	slogotel "github.com/remychantenay/slog-otel"
 )
 
 type LogConfig struct {
-	Level    string `yaml:"level"`
-	Platform string `yaml:"platform"`
+	Level    string          `yaml:"level"`
+	Platform string          `yaml:"platform"`
+	Enabled  map[string]bool `yaml:"enabled"`
 }
 
 func newReplaceAttr(platform string) func([]string, slog.Attr) slog.Attr {
@@ -32,10 +35,12 @@ func newReplaceAttr(platform string) func([]string, slog.Attr) slog.Attr {
 func InitLog(cfg *LogConfig) {
 	defaultLogLevel := stringToLogLevel(cfg.Level)
 
-	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:       defaultLogLevel,
-		ReplaceAttr: newReplaceAttr(cfg.Platform),
-	})))
+	slog.SetDefault(slog.New(slogotel.OtelHandler{
+		Next: slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level:       defaultLogLevel,
+			ReplaceAttr: newReplaceAttr(cfg.Platform),
+		}),
+	}))
 }
 
 func stringToLogLevel(value string) slog.Level {

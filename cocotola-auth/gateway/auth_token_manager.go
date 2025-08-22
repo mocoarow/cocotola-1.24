@@ -76,7 +76,7 @@ func NewAuthTokenManager(ctx context.Context, firebaseAuthClient service.Firebas
 		SigningMethod:      signingMethod,
 		TokenTimeout:       tokenTimeout,
 		RefreshTimeout:     refreshTimeout,
-		logger:             slog.Default().With(slog.String(mbliblog.LoggerNameKey, "AuthTokenManager")),
+		logger:             slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"AuthTokenManager")),
 	}
 }
 

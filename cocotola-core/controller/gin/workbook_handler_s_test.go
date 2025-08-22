@@ -32,6 +32,7 @@ var (
 	anyOfCtx = mock.MatchedBy(func(_ context.Context) bool { return true })
 	// corsConfig   cors.Config
 	corsConfig   *mblibconfig.CORSConfig
+	logConfig    *mblibconfig.LogConfig
 	serverConfig *config.ServerConfig
 	debugConfig  *libconfig.DebugConfig
 	// authTokenManager  auth.AuthTokenManager
@@ -40,6 +41,12 @@ var (
 func init() {
 	corsConfig = &mblibconfig.CORSConfig{
 		AllowOrigins: []string{"*"},
+	}
+	logConfig = &mblibconfig.LogConfig{
+		Enabled: map[string]bool{
+			"accessLog": false,
+			"traceLog":  false,
+		},
 	}
 	serverConfig = &config.ServerConfig{
 		HTTPPort:    8080,
@@ -59,7 +66,7 @@ func initWorkbookRouter(t *testing.T, ctx context.Context, cocotolaAuthClient se
 	initPublicRouterFuncs := []libcontroller.InitRouterGroupFunc{}
 	initPrivateRouterFuncs := []libcontroller.InitRouterGroupFunc{fn}
 
-	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, debugConfig)
+	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, logConfig, debugConfig)
 	api := router.Group("api")
 	v1 := api.Group("v1")
 

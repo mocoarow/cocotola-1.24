@@ -15,7 +15,7 @@ app:
     ownerPassword: ${OWNER_PASSWORD}
   core:
     authApiClient:
-      endpoint: ${APP_AUTH_ENDPOINT:-http://localhost:8000/api/auth}
+      endpoint: ${APP_AUTH_ENDPOINT:-http://localhost:8000/auth}
       username: ${APP_AUTH_USERNAME}
       password: ${APP_AUTH_PASSWORD}
       timeoutSec: ${APP_AUTH_TIMEOUT_SEC:-5}
@@ -55,6 +55,9 @@ shutdown:
   timeSec2: ${APP_SHUTDOWN_TIME_SEC2:-1}
 log:
   level: ${APP_LOG_LEVEL:-info}
+  enabled:
+    traceLog: ${APP_LOG_ENABLED_TRACE_LOG:-false}
+    accessLog: ${APP_LOG_ENABLED_ACCESS_LOG:-false}
 swagger:
   enabled: ${SWAGGER_ENABLED:-true}
   host: ${SWAGGER_HOST:-localhost:8010}

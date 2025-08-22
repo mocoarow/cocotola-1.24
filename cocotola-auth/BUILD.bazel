@@ -9,6 +9,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//cocotola-auth/config",
+        "//cocotola-auth/domain",
         "//cocotola-auth/initialize",
         "//lib/controller/gin",
         "//lib/domain",

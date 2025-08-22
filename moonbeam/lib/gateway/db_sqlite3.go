@@ -35,14 +35,14 @@ type SQLite3Config struct {
 	File string `yaml:"file" validate:"required"`
 }
 
-func OpenSQLite3(cfg *SQLite3Config) (*gorm.DB, error) {
+func OpenSQLite3(cfg *SQLite3Config, appName string) (*gorm.DB, error) {
 	gormDialector := gorm_sqlite.Open(cfg.File)
 
 	gormConfig := gorm.Config{
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
 			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(ctx context.Context) (slog.Value, bool) {
-				return slog.StringValue("gorm"), true
+				return slog.StringValue(appName + "-gorm"), true
 			}),
 			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, slog.LevelDebug),
 		),
@@ -65,8 +65,8 @@ func MigrateSQLite3DB(db *gorm.DB, sqlFS fs.FS) error {
 	})
 }
 
-func InitSqlite3(ctx context.Context, cfg *SQLite3Config, migration bool, fs fs.FS) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	db, err := OpenSQLite3(cfg)
+func InitSqlite3(ctx context.Context, cfg *SQLite3Config, migration bool, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
+	db, err := OpenSQLite3(cfg, appName)
 	if err != nil {
 		return nil, nil, nil, liberrors.Errorf("OpenSQLite file: %s err: %w", cfg.File, err)
 	}

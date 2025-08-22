@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
@@ -38,7 +39,7 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 		return deckRepo.AddDeck(ctx, operator, param)
 	})
 	if err != nil {
-		return nil, fmt.Errorf("add deck: %w", err)
+		return nil, mbliberrors.Errorf("add deck: %w", err)
 	}
 
 	// RBAC
@@ -84,7 +85,7 @@ func (u *DeckCommandUseCase) UpdateDeck(ctx context.Context, operator service.Op
 		return deckRepo.UpdateDeck(ctx, operator, deckID, version, param)
 	})
 	if err != nil {
-		return fmt.Errorf("add deck: %w", err)
+		return mbliberrors.Errorf("add deck: %w", err)
 	}
 
 	return nil

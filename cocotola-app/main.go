@@ -25,6 +25,7 @@ import (
 	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
 
 	authinit "github.com/mocoarow/cocotola-1.24/cocotola-auth/initialize"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	coreinit "github.com/mocoarow/cocotola-1.24/cocotola-core/initialize"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-app/config"
@@ -44,7 +45,7 @@ func main() {
 
 	// init log
 	mblibconfig.InitLog(cfg.Log)
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "main"))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "-main"))
 
 	confBytes, err := json.Marshal(cfg)
 	libdomain.CheckError(err)
@@ -57,12 +58,12 @@ func main() {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
 	// init db
-	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, sqls.SQL)
+	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, domain.AppName, sqls.SQL)
 	libdomain.CheckError(err)
 	defer sqlDB.Close()
 	defer tp.ForceFlush(ctx) // flushes any pending spans
 
-	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
+	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Log, cfg.Debug)
 
 	// web
 	{
@@ -73,14 +74,14 @@ func main() {
 	// auth
 	{
 		auth := router.Group("auth")
-		if err := authinit.Initialize(ctx, auth, dialect, cfg.DB.DriverName, db, cfg.App.Auth); err != nil {
+		if err := authinit.Initialize(ctx, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth); err != nil {
 			libdomain.CheckError(err)
 		}
 	}
 	// core
 	{
 		core := router.Group("core")
-		if err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.App.Core); err != nil {
+		if err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Core); err != nil {
 			libdomain.CheckError(err)
 		}
 	}

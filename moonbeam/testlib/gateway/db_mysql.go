@@ -15,7 +15,7 @@ var testDBPort int
 
 func openMySQLForTest() (*gorm.DB, error) {
 	if testDSN != "" {
-		return libgateway.OpenMySQLWithDSN(testDSN)
+		return libgateway.OpenMySQLWithDSN(testDSN, "test")
 	}
 
 	return libgateway.OpenMySQL(&libgateway.MySQLConfig{
@@ -24,7 +24,7 @@ func openMySQLForTest() (*gorm.DB, error) {
 		Database: "testdb",
 		Host:     testDBHost,
 		Port:     testDBPort,
-	})
+	}, "test")
 }
 
 // func setupMySQL(sqlFS embed.FS, db *gorm.DB) error {

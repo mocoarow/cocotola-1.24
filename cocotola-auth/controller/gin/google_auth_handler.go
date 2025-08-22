@@ -37,7 +37,7 @@ type GoogleUserHandler struct {
 func NewGoogleAuthHandler(googleUserUsecase GoogleUserUsecase) *GoogleUserHandler {
 	return &GoogleUserHandler{
 		googleUserUsecase: googleUserUsecase,
-		logger:            slog.Default().With(slog.String(mbliblog.LoggerNameKey, "GoogleUserHandler")),
+		logger:            slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-GoogleUserHandler")),
 	}
 }
 

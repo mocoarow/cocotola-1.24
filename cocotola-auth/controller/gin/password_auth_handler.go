@@ -30,7 +30,7 @@ type PasswordAuthHandler struct {
 func NewPasswordAuthHandler(passwordUsecase PasswordUsecaseInterface) *PasswordAuthHandler {
 	return &PasswordAuthHandler{
 		passwordUsecase: passwordUsecase,
-		logger:          slog.Default().With(slog.String(mbliblog.LoggerNameKey, "PasswordAuthHandler")),
+		logger:          slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-PasswordAuthHandler")),
 	}
 }
 
