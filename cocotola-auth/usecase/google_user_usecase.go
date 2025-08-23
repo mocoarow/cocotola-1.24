@@ -3,13 +3,14 @@ package usecase
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
@@ -67,6 +68,7 @@ type GoogleUserInfo struct {
 }
 
 type GoogleUserUsecase struct {
+	systemToken      libdomain.SystemToken
 	txManager        service.TransactionManager
 	nonTxManager     service.TransactionManager
 	authTokenManager service.AuthTokenManager
@@ -74,8 +76,9 @@ type GoogleUserUsecase struct {
 	logger           *slog.Logger
 }
 
-func NewGoogleUser(txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager, googleAuthClient GoogleAuthClient) *GoogleUserUsecase {
+func NewGoogleUser(systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager, googleAuthClient GoogleAuthClient) *GoogleUserUsecase {
 	return &GoogleUserUsecase{
+		systemToken:      systemToken,
 		txManager:        txManager,
 		nonTxManager:     nonTxManager,
 		authTokenManager: authTokenManager,
@@ -151,15 +154,36 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 
 	accessToken, refreshToken, info, err := u.getTokensAndUserInfo(ctx, code)
 	if err != nil {
-		return nil, mbliberrors.Errorf(". err: %w", err)
+		return nil, mbliberrors.Errorf("get tokens and user info err: %w", err)
+	}
+
+	createAppUserParameterFunc := func() (*mbuserservice.AppUserAddParameter, error) {
+		return mbuserservice.NewAppUserAddParameter(
+			info.Email, //googleUserInfo.Email,
+			info.Name,  //googleUserInfo.Name,
+			"",
+			"google",
+			info.Email,   // googleUserInfo.Email,
+			accessToken,  // googleAuthResponse.AccessToken,
+			refreshToken, // googleAuthResponse.RefreshToken,
+		)
 	}
 
 	var tokenSet *domain.AuthTokenSet
-
 	var targetOorganization *organization
 	var targetAppUser *appUser
 	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
-		tmpOrganization, tmpAppUser, err := u.registerAppUser(ctx, rf, organizationName, info.Email, info.Name, info.Email, accessToken, refreshToken)
+		action, err := service.NewOrganizationAction(ctx, u.systemToken, rf,
+			service.WithOrganizationRepository(),
+			service.WithOrganizationByName(organizationName),
+			service.WithAppUserRepository(),
+		)
+		if err != nil {
+			return err
+		}
+		organizationID := action.Organization.OrganizationID()
+
+		tmpOrganization, tmpAppUser, err := registerAppUser(ctx, u.systemToken, rf, organizationID, info.Email, createAppUserParameterFunc)
 		if err != nil && !errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
 			return mbliberrors.Errorf("s.registerAppUser. err: %w", err)
 		}
@@ -243,74 +267,3 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 // 	tokenSet = tokenSetTmp
 // 	return tokenSet, nil
 // }
-
-func (u *GoogleUserUsecase) registerAppUser(ctx context.Context, rf service.RepositoryFactory, organizationName string, loginID string, username string, providerID, providerAccessToken, providerRefreshToken string) (*mbuserdomain.OrganizationModel, *mbuserdomain.AppUserModel, error) {
-	action, err := NewOrganizationAction(ctx, rf,
-		WithOrganizationRepository(),
-		WithOrganization(organizationName),
-		WithAppUserRepository(),
-	)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// findOrganization := func() (*mbuserdomain.OrganizationModel, error) {
-	// 	organization, err := action.systemAdmin.FindOrganizationByName(ctx, organizationName)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	return organization.OrganizationModel, nil
-	// }
-
-	findAppUser := func() (*mbuserdomain.AppUserModel, error) {
-		appUser1, err := action.systemOwner.FindAppUserByLoginID(ctx, loginID)
-		if err == nil {
-			return appUser1.AppUserModel, nil
-		}
-
-		if !errors.Is(err, mbuserservice.ErrAppUserNotFound) {
-			u.logger.InfoContext(ctx, fmt.Sprintf("Unsupported %v", err))
-			return nil, mbliberrors.Errorf("systemOwner.FindAppUserByLoginID. err: %w", err)
-		}
-
-		u.logger.InfoContext(ctx, fmt.Sprintf("Add student. %+v", appUser1))
-		parameter, err := mbuserservice.NewAppUserAddParameter(
-			loginID,  //googleUserInfo.Email,
-			username, //googleUserInfo.Name,
-			"",
-			"google",
-			providerID,           // googleUserInfo.Email,
-			providerAccessToken,  // googleAuthResponse.AccessToken,
-			providerRefreshToken, // googleAuthResponse.RefreshToken,
-		)
-		if err != nil {
-			return nil, mbliberrors.Errorf("invalid AppUserAddParameter. err: %w", err)
-		}
-
-		studentID, err := action.systemOwner.AddAppUser(ctx, parameter)
-		if err != nil {
-			return nil, mbliberrors.Errorf("failed to AddStudent. err: %w", err)
-		}
-
-		appUser2, err := action.systemOwner.FindAppUserByID(ctx, studentID)
-		if err != nil {
-			return nil, mbliberrors.Errorf("failed to FindStudentByID. err: %w", err)
-		}
-
-		return appUser2.AppUserModel, nil
-	}
-
-	// organization, err := findOrganization()
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
-
-	appUser, err := findAppUser()
-	if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
-		return action.organization.OrganizationModel, appUser, nil
-	} else if err != nil {
-		return nil, nil, mbliberrors.Errorf("registerAppUser. err: %w", err)
-	}
-
-	return action.organization.OrganizationModel, appUser, nil
-}

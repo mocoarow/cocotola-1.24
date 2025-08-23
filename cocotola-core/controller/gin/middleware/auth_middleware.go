@@ -26,7 +26,6 @@ func NewAuthMiddleware(cocotolaAuthClient service.CocotolaAuthClient) gin.Handle
 			logger.InfoContext(ctx, "invalid header. Bearer not found")
 			return
 		}
-
 		bearerToken := authorization[len("Bearer "):]
 		appUserInfo, err := cocotolaAuthClient.RetrieveUserInfo(ctx, bearerToken)
 		if err != nil {
@@ -37,6 +36,6 @@ func NewAuthMiddleware(cocotolaAuthClient service.CocotolaAuthClient) gin.Handle
 		c.Set("AuthorizedUser", appUserInfo.AppUserID)
 		c.Set("OrganizationID", appUserInfo.OrganizationID)
 
-		logger.WarnContext(ctx, "authenticated", slog.Int("app_user_id", appUserInfo.AppUserID), slog.Int("organization_id", appUserInfo.OrganizationID))
+		// logger.WarnContext(ctx, "authenticated", slog.Int("app_user_id", appUserInfo.AppUserID), slog.Int("organization_id", appUserInfo.OrganizationID))
 	}
 }

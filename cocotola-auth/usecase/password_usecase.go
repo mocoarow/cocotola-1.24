@@ -6,6 +6,7 @@ import (
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
@@ -13,13 +14,15 @@ import (
 )
 
 type PasswordUsecae struct {
+	systemToken      libdomain.SystemToken
 	txManager        service.TransactionManager
 	nonTxManager     service.TransactionManager
 	authTokenManager service.AuthTokenManager
 }
 
-func NewPassword(txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) *PasswordUsecae {
+func NewPassword(systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) *PasswordUsecae {
 	return &PasswordUsecae{
+		systemToken:      systemToken,
 		txManager:        txManager,
 		nonTxManager:     nonTxManager,
 		authTokenManager: authTokenManager,
@@ -30,22 +33,22 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 	var tokenSet *domain.AuthTokenSet
 
 	targetOorganization, targetAppUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *appUser, error) {
-		action, err := NewOrganizationAction(ctx, rf,
-			WithOrganizationRepository(),
-			WithOrganization(organizationName),
-			WithAppUserRepository(),
+		action, err := service.NewOrganizationAction(ctx, u.systemToken, rf,
+			service.WithOrganizationRepository(),
+			service.WithOrganizationByName(organizationName),
+			service.WithAppUserRepository(),
 		)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("new organization action: %w", err)
 		}
-		if action.appUserRepo == nil {
+		if action.AppUserRepo == nil {
 			return nil, nil, mbliberrors.Errorf("app user repository is nil")
 		}
-		if action.organization == nil {
+		if action.Organization == nil {
 			return nil, nil, mbliberrors.Errorf("organization is nil")
 		}
 
-		verified, err := action.appUserRepo.VerifyPassword(ctx, action.systemAdmin, action.organization.OrganizationModel.OrganizationID, loginID, password)
+		verified, err := action.AppUserRepo.VerifyPassword(ctx, action.SystemAdmin, action.Organization.OrganizationModel.OrganizationID, loginID, password)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("action.appUserRepo.VerifyPassword: %w", err)
 		}
@@ -54,14 +57,14 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 			return nil, nil, domain.ErrUnauthenticated
 		}
 
-		tmpAppUser, err := action.appUserRepo.FindAppUserByLoginID(ctx, action.systemOwner, loginID)
+		tmpAppUser, err := action.AppUserRepo.FindAppUserByLoginID(ctx, action.SystemOwner, loginID)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("find app user by login id: %w", err)
 		}
 
 		targetOorganization := &organization{
-			organizationID: action.organization.OrganizationModel.OrganizationID,
-			name:           action.organization.OrganizationModel.Name,
+			organizationID: action.Organization.OrganizationModel.OrganizationID,
+			name:           action.Organization.OrganizationModel.Name,
 		}
 
 		targetAppUser := &appUser{

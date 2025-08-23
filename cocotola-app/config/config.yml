@@ -1,6 +1,14 @@
 ---
 app:
   auth:
+    coreApiClient:
+      endpoint: ${APP_CORE_ENDPOINT:-http://localhost:8000/core}
+      username: ${APP_CORE_USERNAME}
+      password: ${APP_CORE_PASSWORD}
+      timeoutSec: ${APP_CORE_TIMEOUT_SEC:-5}
+    authApiServer:
+      username: ${APP_AUTH_USERNAME}
+      password: ${APP_AUTH_PASSWORD}
     signingKey: ${APP_AUTH_SIGNING_KEY}
     accessTokenTtlMin: ${APP_AUTH_ACCESS_TOKEN_TTL_MIN:-5}
     refreshTokenTtlHour: ${APP_AUTH_REFRESH_TOKEN_TTL_HOUR:-720}
@@ -9,8 +17,6 @@ app:
     googleClientId: ${GOOGLE_CLIENT_ID}
     googleClientSecret: ${GOOGLE_CLIENT_SECRET}
     googleApiTimeoutSec: ${GOOGLE_API_TIMEOUT_SEC:-5}
-    username: ${APP_AUTH_USERNAME}
-    password: ${APP_AUTH_PASSWORD}
     ownerLoginId: ${OWNER_LOGIN_ID}
     ownerPassword: ${OWNER_PASSWORD}
   core:
@@ -19,6 +25,9 @@ app:
       username: ${APP_AUTH_USERNAME}
       password: ${APP_AUTH_PASSWORD}
       timeoutSec: ${APP_AUTH_TIMEOUT_SEC:-5}
+    coreApiServer:
+      username: ${APP_CORE_USERNAME}
+      password: ${APP_CORE_PASSWORD}
     ownerLoginId: ${OWNER_LOGIN_ID}
     ownerPassword: ${OWNER_PASSWORD}
 server:

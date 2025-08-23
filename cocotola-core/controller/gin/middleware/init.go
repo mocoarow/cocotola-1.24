@@ -5,5 +5,5 @@ import (
 )
 
 var (
-	tracer = otel.Tracer("github.com/mocoarow/cocotola-core/src/controller/gin/middleware")
+	tracer = otel.Tracer("github.com/mocoarow/cocotola-core/controller/gin/middleware")
 )

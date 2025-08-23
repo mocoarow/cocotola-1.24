@@ -7,6 +7,7 @@ import (
 	libdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	liblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	libservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
@@ -27,6 +28,7 @@ type SystemOwner struct {
 	// pairOfUserAndGroup PairOfUserAndGroupRepository
 	// rbacRepo             RBACRepository
 	authorizationManager AuthorizationManager
+	resourceEventHandler libservice.ResourceEventHandler
 	logger               *slog.Logger
 }
 

@@ -38,26 +38,31 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 		return err
 	}
 
-	authMiddleware, err := controller.InitAuthMiddleware(coreConfig.AuthAPIClient)
+	// init auth middleware
+	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(coreConfig.AuthAPIClient)
 	if err != nil {
 		return err
 	}
+
+	basicAuthMiddleware := gin.BasicAuth(gin.Accounts{
+		coreConfig.CoreAPIServer.Username: coreConfig.CoreAPIServer.Password,
+	})
 
 	// init public and private router group functions
 	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs()
-	privateRouterGroupFuncs, err := controller.GetPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager)
+
+	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager)
 	if err != nil {
 		return err
 	}
 
-	initAPIServer(ctx, parent, domain.AppName, logConfig, authMiddleware, publicRouterGroupFuncs, privateRouterGroupFuncs)
+	basicPrivateRouterGroupFuncs, err := controller.GetBasicPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager)
+	if err != nil {
+		return err
+	}
 
-	return nil
-}
-
-func initAPIServer(ctx context.Context, root gin.IRouter, appName string, logConfig *mblibconfig.LogConfig, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
 	// api
-	api := libcontroller.InitAPIRouterGroup(ctx, root, appName, logConfig)
+	api := libcontroller.InitAPIRouterGroup(ctx, parent, domain.AppName, logConfig)
 
 	// v1
 	v1 := api.Group("v1")
@@ -66,7 +71,11 @@ func initAPIServer(ctx context.Context, root gin.IRouter, appName string, logCon
 	libcontroller.InitPublicAPIRouterGroup(ctx, v1, publicRouterGroupFuncs)
 
 	// private router
-	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, authMiddleware, privateRouterGroupFuncs)
+	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, bearerTokenAuthMiddleware, bearerTokenPrivateRouterGroupFuncs)
+
+	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
+
+	return nil
 }
 
 // const readHeaderTimeout = time.Duration(30) * time.Second

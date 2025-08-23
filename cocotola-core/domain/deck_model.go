@@ -26,16 +26,18 @@ func (v *DeckID) IsDeckID() bool {
 type DeckModel struct {
 	*mblibdomain.BaseModel
 	OrganizationID *mbuserdomain.OrganizationID
+	OwnerID        *mbuserdomain.AppUserID
 	Name           string `validate:"required"`
 	TemplateID     int    `validate:"required,gte=1"`
 	Lang2          string `validate:"required"`
 	Description    string
 }
 
-func NewDeckModel(baseModel *mblibdomain.BaseModel, organizationID *mbuserdomain.OrganizationID, name string, templateID int, lang2 string, description string) (*DeckModel, error) {
+func NewDeckModel(baseModel *mblibdomain.BaseModel, organizationID *mbuserdomain.OrganizationID, owernID *mbuserdomain.AppUserID, name string, templateID int, lang2 string, description string) (*DeckModel, error) {
 	m := &DeckModel{
 		BaseModel:      baseModel,
 		OrganizationID: organizationID,
+		OwnerID:        owernID,
 		Name:           name,
 		TemplateID:     templateID,
 		Lang2:          lang2,
@@ -43,7 +45,7 @@ func NewDeckModel(baseModel *mblibdomain.BaseModel, organizationID *mbuserdomain
 	}
 
 	if err := mblibdomain.Validator.Struct(m); err != nil {
-		return nil, mbliberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
+		return nil, mbliberrors.Errorf("validate: %w", err)
 	}
 
 	return m, nil

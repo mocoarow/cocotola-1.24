@@ -70,6 +70,15 @@ func (m *SystemAdmin) FindSystemOwnerByOrganizationName(ctx context.Context, org
 	return sysOwner, nil
 }
 
+func (m *SystemAdmin) FindOrganizationByID(ctx context.Context, organizationID *domain.OrganizationID) (*Organization, error) {
+	org, err := m.orgRepo.FindOrganizationByID(ctx, m, organizationID)
+	if err != nil {
+		return nil, liberrors.Errorf("m.orgRepo.FindOrganizationByID: %w", err)
+	}
+
+	return org, nil
+}
+
 func (m *SystemAdmin) FindOrganizationByName(ctx context.Context, name string) (*Organization, error) {
 	org, err := m.orgRepo.FindOrganizationByName(ctx, m, name)
 	if err != nil {

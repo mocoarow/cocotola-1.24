@@ -19,6 +19,7 @@ go_library(
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",
         "//moonbeam/lib/log",
+        "//moonbeam/lib/service",
         "//moonbeam/user/domain",
         "//moonbeam/user/gateway",
         "//moonbeam/user/service",

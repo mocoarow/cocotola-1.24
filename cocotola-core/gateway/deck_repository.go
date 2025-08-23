@@ -18,30 +18,37 @@ type DeckEntity struct {
 	mbusergateway.BaseModelEntity
 	ID             int
 	OrganizationID int
-	Name           string
+	OwnerID        int
 	TemplateID     int
+	Name           string
 	Lang2          string
 	Description    string
 }
 
 func (e *DeckEntity) TableName() string {
-	return "deck"
+	return "core_deck"
 }
 
 func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
-		return nil, mbliberrors.Errorf("libdomain.NewBaseModel: %w", err)
+		return nil, mbliberrors.Errorf("to base model: %w", err)
 	}
 
 	organizationID, err := mbuserdomain.NewOrganizationID(e.OrganizationID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("domain.NewOrganizationID: %w", err)
+		return nil, mbliberrors.Errorf("new organization id(%d): %w", e.OrganizationID, err)
+	}
+
+	ownerID, err := mbuserdomain.NewAppUserID(e.OwnerID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
 	}
 
 	deckModel, err := domain.NewDeckModel(
 		baseModel,
 		organizationID,
+		ownerID,
 		e.Name,
 		e.TemplateID,
 		e.Lang2,
@@ -86,18 +93,19 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator service.OperatorI
 			UpdatedBy: operator.AppUserID().Int(),
 		},
 		OrganizationID: operator.OrganizationID().Int(),
+		OwnerID:        operator.AppUserID().Int(),
 		TemplateID:     param.TemplateID,
 		Name:           param.Name,
 		Lang2:          param.Lang2,
 		Description:    param.Description,
 	}
 	if result := r.db.Create(&deckE); result.Error != nil {
-		return nil, mbliberrors.Errorf("deckRepository.AddDeck: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrDeckAlreadyExists))
+		return nil, mbliberrors.Errorf("add deck entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrDeckAlreadyExists))
 	}
 
 	deckID, err := domain.NewDeckID(deckE.ID)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("new deck id(%d): %w", deckE.ID, err)
 	}
 
 	return deckID, nil

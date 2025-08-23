@@ -53,17 +53,5 @@ func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuse
 }
 
 func (u *RBACUsecase) Authorize(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error) {
-	return mblibservice.Do1(ctx, u.nonTxManager, func(rf service.RepositoryFactory) (bool, error) {
-		rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-		if err != nil {
-			return false, err
-		}
-
-		authorizationManager, err := rsrf.NewAuthorizationManager(ctx)
-		if err != nil {
-			return false, err
-		}
-
-		return authorizationManager.Authorize(ctx, operator, action, object)
-	})
+	return service.Authorize(ctx, operator, action, object, u.nonTxManager)
 }

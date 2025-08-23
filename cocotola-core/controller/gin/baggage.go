@@ -21,6 +21,5 @@ func newBaggage(ctx context.Context, values map[string]string) (*baggage.Baggage
 	if err != nil {
 		return nil, mbliberrors.Errorf("baggage.New: %w", err)
 	}
-
 	return &bag, nil
 }

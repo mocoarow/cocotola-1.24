@@ -32,6 +32,8 @@ func main() {
 	cfg, err := config.LoadConfig()
 	libdomain.CheckError(err)
 
+	systemToken := libdomain.NewSystemToken()
+
 	// init log
 	mblibconfig.InitLog(cfg.Log)
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "-main"))
@@ -51,7 +53,7 @@ func main() {
 	// init gin
 	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Log, cfg.Debug)
 
-	if err := initialize.Initialize(ctx, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App); err != nil {
+	if err := initialize.Initialize(ctx, systemToken, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App); err != nil {
 		libdomain.CheckError(err)
 	}
 

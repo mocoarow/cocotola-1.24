@@ -18,7 +18,7 @@ import (
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	"github.com/mocoarow/cocotola-1.24/moonbeam/sqls"
+	mbsqls "github.com/mocoarow/cocotola-1.24/moonbeam/sqls"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -27,6 +27,7 @@ import (
 	authinit "github.com/mocoarow/cocotola-1.24/cocotola-auth/initialize"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	coreinit "github.com/mocoarow/cocotola-1.24/cocotola-core/initialize"
+	coresqls "github.com/mocoarow/cocotola-1.24/cocotola-core/sqls"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-app/config"
 	web "github.com/mocoarow/cocotola-1.24/cocotola-app/web_dist"
@@ -43,6 +44,8 @@ func main() {
 
 	libdomain.CheckError(err)
 
+	systemToken := libdomain.NewSystemToken()
+
 	// init log
 	mblibconfig.InitLog(cfg.Log)
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "-main"))
@@ -58,7 +61,7 @@ func main() {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
 	// init db
-	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, domain.AppName, sqls.SQL)
+	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, domain.AppName, mbsqls.SQL, coresqls.SQL)
 	libdomain.CheckError(err)
 	defer sqlDB.Close()
 	defer tp.ForceFlush(ctx) // flushes any pending spans
@@ -74,7 +77,7 @@ func main() {
 	// auth
 	{
 		auth := router.Group("auth")
-		if err := authinit.Initialize(ctx, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth); err != nil {
+		if err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth); err != nil {
 			libdomain.CheckError(err)
 		}
 	}

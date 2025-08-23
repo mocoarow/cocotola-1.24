@@ -13,6 +13,7 @@ go_library(
         "//cocotola-auth/initialize",
         "//cocotola-core/domain",
         "//cocotola-core/initialize",
+        "//cocotola-core/sqls",
         "//lib/controller/gin",
         "//lib/domain",
         "//lib/gateway",

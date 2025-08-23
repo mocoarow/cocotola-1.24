@@ -1,15 +1,14 @@
 package usecase
 
 import (
-	// "context"
-	// "fmt"
-
 	"context"
 
 	"github.com/golang-jwt/jwt/v5"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
@@ -26,12 +25,13 @@ type AppUserClaims struct {
 }
 
 type Authentication struct {
+	systemToken                   libdomain.SystemToken
 	transactionManager            service.TransactionManager
 	authTokenManager              service.AuthTokenManager
 	systemOwnerByOrganizationName SystemOwnerByOrganizationName
 }
 
-func NewAuthentication(transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager, systemOwnerByOrganizationName SystemOwnerByOrganizationName) *Authentication {
+func NewAuthentication(systemToken libdomain.SystemToken, transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager, systemOwnerByOrganizationName SystemOwnerByOrganizationName) *Authentication {
 	return &Authentication{
 		transactionManager:            transactionManager,
 		authTokenManager:              authTokenManager,
@@ -48,33 +48,12 @@ func (u *Authentication) SignInWithIDToken(ctx context.Context, idToken string) 
 }
 
 func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.AppUserModel, error) {
-	// TODO: Check whether the token is registered in the Database
-
-	appUserInfo, err := u.authTokenManager.GetUserInfo(ctx, bearerToken)
+	appUserModel, err := service.GetUserInfo(ctx, u.systemToken, u.authTokenManager, u.transactionManager, bearerToken)
 	if err != nil {
 		return nil, err
 	}
 
-	var targetAppUserModel *mbuserdomain.AppUserModel
-
-	if err := u.transactionManager.Do(ctx, func(rf service.RepositoryFactory) error {
-		systemOwner, err := u.systemOwnerByOrganizationName.Get(ctx, rf, appUserInfo.OrganizationName)
-		if err != nil {
-			return err
-		}
-
-		appUser, err := systemOwner.FindAppUserByLoginID(ctx, appUserInfo.LoginID)
-		if err != nil {
-			return err
-		}
-
-		targetAppUserModel = appUser.AppUserModel
-		return nil
-	}); err != nil {
-		return nil, mbliberrors.Errorf("RegisterAppUser. err: %w", err)
-	}
-
-	return targetAppUserModel, nil
+	return appUserModel, nil
 }
 
 func (u *Authentication) RefreshToken(ctx context.Context, refreshToken string) (string, error) {

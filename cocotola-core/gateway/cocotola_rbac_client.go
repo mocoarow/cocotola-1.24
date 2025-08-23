@@ -63,3 +63,36 @@ func (c *cocotolaRBACClient) AddPolicyToUser(ctx context.Context, param *libapi.
 
 	return nil
 }
+
+func (c *cocotolaRBACClient) Authorize(ctx context.Context, param *libapi.AuthorizeRequest) error {
+	ctx, span := tracer.Start(ctx, "cocotolaRBACClient.Authorize")
+	defer span.End()
+
+	u := *c.authEndpoint
+	u.Path = path.Join(u.Path, "v1", "rbac", "authorize")
+
+	jsonParam, err := json.Marshal(param)
+	if err != nil {
+		return mbliberrors.Errorf("json.Marshal: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, u.String(), bytes.NewBuffer(jsonParam))
+	if err != nil {
+		return mbliberrors.Errorf("new http request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(c.authUsername, c.authPassword)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return mbliberrors.Errorf("authorize request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return mbliberrors.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return nil
+}

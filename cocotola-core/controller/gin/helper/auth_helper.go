@@ -4,9 +4,11 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
+	liblibcontroller "github.com/mocoarow/cocotola-1.24/lib/controller"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
@@ -54,12 +56,21 @@ func HandleSecuredFunction(c *gin.Context, fn func(ctx context.Context, operator
 		return
 	}
 
-	logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
+	// logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
 
 	operator := &operator{
 		appUserID:      operatorID,
 		organizationID: organizationID,
 	}
+
+	if newCtx, err := liblibcontroller.AddBaggageMembers(ctx, map[string]string{
+		"operator_id":     strconv.Itoa(operatorID.Int()),
+		"organization_id": strconv.Itoa(organizationID.Int()),
+	}); err == nil {
+		ctx = newCtx
+	}
+
+	logger.InfoContext(ctx, "xxxxxxxx")
 
 	if err := fn(ctx, operator); err != nil {
 		if handled := errorHandle(ctx, c, err); !handled {

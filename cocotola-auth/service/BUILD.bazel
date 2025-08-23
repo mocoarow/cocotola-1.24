@@ -3,8 +3,12 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "service",
     srcs = [
+        "app_user_repository.go",
         "auth_token_manager.go",
+        "authentication.go",
+        "authorization.go",
         "firebase_client.go",
+        "organization_action.go",
         "repository_factory.go",
         "state_repository.go",
     ],
@@ -12,6 +16,8 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cocotola-auth/domain",
+        "//lib/domain",
+        "//moonbeam/lib/errors",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
         "//moonbeam/user/service",

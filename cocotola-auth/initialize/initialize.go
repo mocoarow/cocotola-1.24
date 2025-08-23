@@ -15,9 +15,11 @@ import (
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/config"
 	controller "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin"
@@ -26,9 +28,14 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) error {
+func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) error {
+	appUserEventHandler := mblibservice.ResourceEventHandlerFuncs{
+		AddFunc: func(obj any) {
+
+		},
+	}
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
-		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC) // nolint:wrapcheck
+		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, appUserEventHandler) // nolint:wrapcheck
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
@@ -46,28 +53,33 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	if err != nil {
 		return err
 	}
-	authMiddleware, err := controller.InitAuthMiddleware(authConfig)
+
+	// init auth token manager
+	authTokenManager, err := controller.NewAuthTokenManager(ctx, authConfig)
 	if err != nil {
 		return err
 	}
+
+	// init auth middleware
+	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(systemToken, authTokenManager, nonTxManager)
+	if err != nil {
+		return err
+	}
+	basicAuthMiddleware := gin.BasicAuth(gin.Accounts{
+		authConfig.AuthAPIServer.Username: authConfig.AuthAPIServer.Password,
+	})
 
 	// init public and private router group functions
-	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, authConfig, txManager, nonTxManager)
+	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, systemToken, authConfig, txManager, nonTxManager, authTokenManager)
 	if err != nil {
 		return err
 	}
-	priavteRouterGroupFuncs := controller.GetPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
 
-	initAPIServer(ctx, parent, domain.AppName, logConfig, authMiddleware, publicRouterGroupFuncs, priavteRouterGroupFuncs)
+	bearerTokenPrivateRouterGroupFuncs := controller.GetBasicPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
+	basicPrivateRouterGroupFuncs := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
 
-	initApp1(ctx, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
-
-	return nil
-}
-
-func initAPIServer(ctx context.Context, root gin.IRouter, appName string, logConfig *mblibconfig.LogConfig, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
 	// api
-	api := libcontroller.InitAPIRouterGroup(ctx, root, appName, logConfig)
+	api := libcontroller.InitAPIRouterGroup(ctx, parent, domain.AppName, logConfig)
 
 	// v1
 	v1 := api.Group("v1")
@@ -76,8 +88,28 @@ func initAPIServer(ctx context.Context, root gin.IRouter, appName string, logCon
 	libcontroller.InitPublicAPIRouterGroup(ctx, v1, publicRouterGroupFuncs)
 
 	// private router
-	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, authMiddleware, privateRouterGroupFuncs)
+	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, bearerTokenAuthMiddleware, bearerTokenPrivateRouterGroupFuncs)
+
+	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
+
+	initApp1(ctx, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
+
+	return nil
 }
+
+// func initAPIServer(ctx context.Context, root gin.IRouter, appName string, logConfig *mblibconfig.LogConfig, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
+// 	// api
+// 	api := libcontroller.InitAPIRouterGroup(ctx, root, appName, logConfig)
+
+// 	// v1
+// 	v1 := api.Group("v1")
+
+// 	// public router
+// 	libcontroller.InitPublicAPIRouterGroup(ctx, v1, publicRouterGroupFuncs)
+
+// 	// private router
+// 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, authMiddleware, privateRouterGroupFuncs)
+// }
 
 func initApp1(ctx context.Context, txManager, nonTxManager service.TransactionManager, organizationName, loginID, password string) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))

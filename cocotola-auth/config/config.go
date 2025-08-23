@@ -21,19 +21,31 @@ type ServerConfig struct {
 	ReadHeaderTimeoutSec int `yaml:"readHeaderTimeoutSec" validate:"gte=1"`
 }
 
+type CoreAPIClientConfig struct {
+	Endpoint   string `yaml:"endpoint" validate:"required"`
+	Username   string `yaml:"username" validate:"required"`
+	Password   string `yaml:"password" validate:"required"`
+	TimeoutSec int    `yaml:"timeoutSec" validate:"gte=1"`
+}
+
+type AuthAPIServerConfig struct {
+	Username string `yaml:"username" validate:"required"`
+	Password string `yaml:"password" validate:"required"`
+}
+
 type AuthConfig struct {
-	SigningKey          string `yaml:"signingKey" validate:"required"`
-	AccessTokenTTLMin   int    `yaml:"accessTokenTtlMin" validate:"gte=1"`
-	RefreshTokenTTLHour int    `yaml:"refreshTokenTtlHour" validate:"gte=1"`
-	GoogleProjectID     string `yaml:"googleProjectId" validate:"required"`
-	GoogleCallbackURL   string `yaml:"googleCallbackUrl" validate:"required"`
-	GoogleClientID      string `yaml:"googleClientId" validate:"required"`
-	GoogleClientSecret  string `yaml:"googleClientSecret" validate:"required"`
-	GoogleAPITimeoutSec int    `yaml:"googleApiTimeoutSec" validate:"gte=1"`
-	Username            string `yaml:"username" validate:"required"`
-	Password            string `yaml:"password" validate:"required"`
-	OwnerLoginID        string `yaml:"ownerLoginId" validate:"required"`
-	OwnerPassword       string `yaml:"ownerPassword" validate:"required"`
+	CoreAPIClient       *CoreAPIClientConfig `yaml:"coreApiClient" validate:"required"`
+	AuthAPIServer       *AuthAPIServerConfig `yaml:"authApiServer" validate:"required"`
+	SigningKey          string               `yaml:"signingKey" validate:"required"`
+	AccessTokenTTLMin   int                  `yaml:"accessTokenTtlMin" validate:"gte=1"`
+	RefreshTokenTTLHour int                  `yaml:"refreshTokenTtlHour" validate:"gte=1"`
+	GoogleProjectID     string               `yaml:"googleProjectId" validate:"required"`
+	GoogleCallbackURL   string               `yaml:"googleCallbackUrl" validate:"required"`
+	GoogleClientID      string               `yaml:"googleClientId" validate:"required"`
+	GoogleClientSecret  string               `yaml:"googleClientSecret" validate:"required"`
+	GoogleAPITimeoutSec int                  `yaml:"googleApiTimeoutSec" validate:"gte=1"`
+	OwnerLoginID        string               `yaml:"ownerLoginId" validate:"required"`
+	OwnerPassword       string               `yaml:"ownerPassword" validate:"required"`
 }
 
 type Config struct {

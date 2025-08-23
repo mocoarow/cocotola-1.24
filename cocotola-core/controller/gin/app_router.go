@@ -42,7 +42,7 @@ func GetPublicRouterGroupFuncs() []libcontroller.InitRouterGroupFunc {
 	}
 }
 
-func GetPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager) ([]libcontroller.InitRouterGroupFunc, error) {
+func GetBearerTokenPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - rbacClient
 	httpClient := http.Client{
 		Timeout:   time.Duration(coreConfig.AuthAPIClient.TimeoutSec) * time.Second,
@@ -64,7 +64,12 @@ func GetPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConf
 	}, nil
 }
 
-func InitAuthMiddleware(authClientConfig *config.AuthAPIClientConfig) (gin.HandlerFunc, error) {
+func GetBasicPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager) ([]libcontroller.InitRouterGroupFunc, error) {
+	// private router
+	return []libcontroller.InitRouterGroupFunc{}, nil
+}
+
+func InitBearerTokenAuthMiddleware(authClientConfig *config.AuthAPIClientConfig) (gin.HandlerFunc, error) {
 	// middleware
 	httpClient := http.Client{
 		Timeout:   time.Duration(authClientConfig.TimeoutSec) * time.Second,

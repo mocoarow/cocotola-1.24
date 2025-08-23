@@ -97,10 +97,25 @@ type ActionObjectEffect struct {
 	Object string `json:"object"`
 	Effect string `json:"effect"`
 }
+type ActionObject struct {
+	Action string `json:"action"`
+	Object string `json:"object"`
+}
 type AddPolicyToUserParameter struct {
 	OrganizationID           int                  `json:"organizationId"`
 	AppUserID                int                  `json:"appUserId"`
 	ListOfActionObjectEffect []ActionObjectEffect `json:"listOfActionObjectEffect"`
+}
+
+type AuthorizeRequest struct {
+	OrganizationID int    `json:"organizationId"`
+	AppUserID      int    `json:"appUserId"`
+	Action         string `json:"action"`
+	Object         string `json:"object"`
+}
+
+type AuthorizeResponse struct {
+	Authorized bool `json:"authorized"`
 }
 
 // Find
@@ -139,4 +154,10 @@ type DeckAddParameter struct {
 type DeckUpdateParameter struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
+}
+
+type AppUserAddRequest struct {
+	LoginID  string `json:"loginId" binding:"required"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
