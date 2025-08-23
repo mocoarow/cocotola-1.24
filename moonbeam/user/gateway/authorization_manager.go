@@ -100,6 +100,16 @@ func (m *authorizationManager) AddPolicyToUserBySystemAdmin(ctx context.Context,
 
 	return nil
 }
+func (m *authorizationManager) AddPolicyToUserBySystemOwner(ctx context.Context, operator service.SystemOwnerInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
+	organizationID := operator.OrganizationID()
+	rbacDomain := service.NewRBACOrganization(organizationID)
+
+	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
+		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
+	}
+
+	return nil
+}
 
 func (m *authorizationManager) AddPolicyToGroup(ctx context.Context, operator service.AppUserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
 	rbacDomain := service.NewRBACOrganization(operator.OrganizationID())

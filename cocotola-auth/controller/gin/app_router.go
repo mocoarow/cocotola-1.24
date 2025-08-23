@@ -97,12 +97,15 @@ func GetBasicPrivateRouterGroupFuncs(ctx context.Context, txManager, nonTxManage
 		NewInitRBACRouterFunc(rbacUsecase),
 	}
 }
-func GetBearerTokenPrivateRouterGroupFuncs(ctx context.Context, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
+func GetBearerTokenPrivateRouterGroupFuncs(ctx context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) []libcontroller.InitRouterGroupFunc {
 	// - rbac
 	// rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
+	// - user
+	userUsecase := usecase.NewUserUsecase(systemToken, txManager, nonTxManager, authTokenManager)
 
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
+		NewInitUserRouterFunc(userUsecase),
 		// NewInitRBACRouterFunc(rbacUsecase),
 	}
 }

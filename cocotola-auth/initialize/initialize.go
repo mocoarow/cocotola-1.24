@@ -16,6 +16,7 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
@@ -74,9 +75,8 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 	if err != nil {
 		return err
 	}
-
-	bearerTokenPrivateRouterGroupFuncs := controller.GetBasicPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
-	basicPrivateRouterGroupFuncs := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
+	bearerTokenPrivateRouterGroupFuncs := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, systemToken, txManager, nonTxManager, authTokenManager)
+	basicPrivateRouterGroupFuncs := controller.GetBasicPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
 
 	// api
 	api := libcontroller.InitAPIRouterGroup(ctx, parent, domain.AppName, logConfig)
@@ -92,7 +92,7 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
 
-	initApp1(ctx, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
+	initApp1(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
 
 	return nil
 }
@@ -111,11 +111,16 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 // 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, authMiddleware, privateRouterGroupFuncs)
 // }
 
-func initApp1(ctx context.Context, txManager, nonTxManager service.TransactionManager, organizationName, loginID, password string) {
+func initApp1(ctx context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, organizationName, loginID, password string) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
 
-	addOrganizationFunc := func(ctx context.Context, systemAdmin *mbuserservice.SystemAdmin) error {
-		organization, err := systemAdmin.FindOrganizationByName(ctx, organizationName)
+	if err := nonTxManager.Do(ctx, func(rf service.RepositoryFactory) error {
+		systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
+		if err != nil {
+			return mbliberrors.Errorf("new organization action: %w", err)
+		}
+
+		organization, err := systemAdminAction.SystemAdmin.FindOrganizationByName(ctx, organizationName)
 		if err == nil {
 			logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID().Int()))
 			return nil
@@ -133,18 +138,73 @@ func initApp1(ctx context.Context, txManager, nonTxManager service.TransactionMa
 			return mbliberrors.Errorf("NewOrganizationAddParameter. err: %w", err)
 		}
 
-		organizationID, err := systemAdmin.AddOrganization(ctx, organizationAddParameter)
+		organizationID, err := systemAdminAction.SystemAdmin.AddOrganization(ctx, organizationAddParameter)
 		if err != nil {
 			return mbliberrors.Errorf("AddOrganization. err: %w", err)
+		}
+		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
+
+		systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
+			service.WithOrganizationByName(organizationName),
+			service.WithAuthorizationManager(),
+		)
+		if err != nil {
+			return mbliberrors.Errorf("new system owner action: %w", err)
+		}
+
+		firstOwner, err := systemOwnerAction.SystemOwner.FindAppUserByLoginID(ctx, loginID)
+		if err != nil {
+			return mbliberrors.Errorf("FindAppUserByLoginID: %w", err)
+		}
+		logger.InfoContext(ctx, fmt.Sprintf("firstOwner: %d", firstOwner.AppUserID().Int()))
+
+		// first owner can create app users
+		subject := mbuserservice.NewRBACAppUser(organizationID, firstOwner.AppUserID())
+		action := mbuserdomain.NewRBACAction("CreateAppUser")
+		object := mbuserdomain.NewRBACObject("*")
+		effect := mbuserservice.RBACAllowEffect
+
+		if err := systemOwnerAction.AuthorizationManager.AddPolicyToUserBySystemOwner(ctx, systemOwnerAction.SystemOwner, subject, action, object, effect); err != nil {
+			return mbliberrors.Errorf("AddPolicyToUserBySystemOwner: %w", err)
 		}
 
 		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
 		return nil
-	}
-
-	if err := systemAdminAction(ctx, txManager, addOrganizationFunc); err != nil {
+	}); err != nil {
 		panic(err)
 	}
+
+	// addOrganizationFunc := func(ctx context.Context, systemAdmin *mbuserservice.SystemAdmin) error {
+	// 	organization, err := systemAdmin.FindOrganizationByName(ctx, organizationName)
+	// 	if err == nil {
+	// 		logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID().Int()))
+	// 		return nil
+	// 	} else if !errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
+	// 		return mbliberrors.Errorf("failed to FindOrganizationByName. err: %w", err)
+	// 	}
+
+	// 	firstOwnerAddParam, err := mbuserservice.NewAppUserAddParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
+	// 	if err != nil {
+	// 		return mbliberrors.Errorf("NewFirstOwnerAddParameter. err: %w", err)
+	// 	}
+
+	// 	organizationAddParameter, err := mbuserservice.NewOrganizationAddParameter(organizationName, firstOwnerAddParam)
+	// 	if err != nil {
+	// 		return mbliberrors.Errorf("NewOrganizationAddParameter. err: %w", err)
+	// 	}
+
+	// 	organizationID, err := systemAdmin.AddOrganization(ctx, organizationAddParameter)
+	// 	if err != nil {
+	// 		return mbliberrors.Errorf("AddOrganization. err: %w", err)
+	// 	}
+
+	// 	logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
+	// 	return nil
+	// }
+
+	// if err := systemAdminAction(ctx, txManager, addOrganizationFunc); err != nil {
+	// 	panic(err)
+	// }
 }
 
 func systemAdminAction(ctx context.Context, transactionManager service.TransactionManager, fn func(context.Context, *mbuserservice.SystemAdmin) error) error {

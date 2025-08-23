@@ -173,19 +173,19 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 	var targetOorganization *organization
 	var targetAppUser *appUser
 	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
-		action, err := service.NewOrganizationAction(ctx, u.systemToken, rf,
-			service.WithOrganizationRepository(),
+		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
+			// service.WithOrganizationRepository(),
 			service.WithOrganizationByName(organizationName),
-			service.WithAppUserRepository(),
+			// service.WithAppUserRepository(),
 		)
 		if err != nil {
 			return err
 		}
 		organizationID := action.Organization.OrganizationID()
 
-		tmpOrganization, tmpAppUser, err := registerAppUser(ctx, u.systemToken, rf, organizationID, info.Email, createAppUserParameterFunc)
+		tmpOrganization, tmpAppUser, err := findOrRegisterAppUser(ctx, u.systemToken, rf, organizationID, info.Email, createAppUserParameterFunc)
 		if err != nil && !errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
-			return mbliberrors.Errorf("s.registerAppUser. err: %w", err)
+			return mbliberrors.Errorf("s.findOrRegisterAppUser. err: %w", err)
 		}
 
 		targetAppUser = &appUser{

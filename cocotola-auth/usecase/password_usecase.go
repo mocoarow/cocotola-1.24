@@ -33,22 +33,22 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 	var tokenSet *domain.AuthTokenSet
 
 	targetOorganization, targetAppUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *appUser, error) {
-		action, err := service.NewOrganizationAction(ctx, u.systemToken, rf,
-			service.WithOrganizationRepository(),
+		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
+			// service.WithOrganizationRepository(),
 			service.WithOrganizationByName(organizationName),
-			service.WithAppUserRepository(),
+			// service.WithAppUserRepository(),
 		)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("new organization action: %w", err)
 		}
-		if action.AppUserRepo == nil {
-			return nil, nil, mbliberrors.Errorf("app user repository is nil")
-		}
+		// if action.AppUserRepo == nil {
+		// 	return nil, nil, mbliberrors.Errorf("app user repository is nil")
+		// }
 		if action.Organization == nil {
 			return nil, nil, mbliberrors.Errorf("organization is nil")
 		}
 
-		verified, err := action.AppUserRepo.VerifyPassword(ctx, action.SystemAdmin, action.Organization.OrganizationModel.OrganizationID, loginID, password)
+		verified, err := action.SystemOwner.VerifyPassword(ctx, loginID, password)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("action.appUserRepo.VerifyPassword: %w", err)
 		}
@@ -57,7 +57,7 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 			return nil, nil, domain.ErrUnauthenticated
 		}
 
-		tmpAppUser, err := action.AppUserRepo.FindAppUserByLoginID(ctx, action.SystemOwner, loginID)
+		tmpAppUser, err := action.SystemOwner.FindAppUserByLoginID(ctx, loginID)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("find app user by login id: %w", err)
 		}

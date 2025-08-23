@@ -375,7 +375,8 @@ func (r *appUserRepository) AddSystemOwner(ctx context.Context, operator service
 	return appUserID, nil
 }
 
-func (r *appUserRepository) VerifyPassword(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, loginID, password string) (bool, error) {
+func (r *appUserRepository) VerifyPassword(ctx context.Context, operator service.SystemOwnerInterface, loginID, password string) (bool, error) {
+	organizationID := operator.OrganizationID()
 	appUserEntity, err := r.findAppUserEntityByLoginID(ctx, organizationID, loginID)
 	if err != nil {
 		return false, err

@@ -164,3 +164,11 @@ func (m *SystemOwner) AddAppUser(ctx context.Context, param AppUserAddParameterI
 
 	return appUserID, nil
 }
+
+func (m *SystemOwner) VerifyPassword(ctx context.Context, loginID, password string) (bool, error) {
+	ok, err := m.appUserRepo.VerifyPassword(ctx, m, loginID, password)
+	if err != nil {
+		return false, liberrors.Errorf("m.appUserRepo.VerifyPassword. err: %w", err)
+	}
+	return ok, nil
+}

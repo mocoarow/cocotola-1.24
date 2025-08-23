@@ -20,7 +20,7 @@ func GetUserInfo(ctx context.Context, systemToken libdomain.SystemToken, authTok
 	var targetAppUserModel *mbuserdomain.AppUserModel
 
 	if err := nonTxManager.Do(ctx, func(rf RepositoryFactory) error {
-		action, err := NewOrganizationAction(ctx, systemToken, rf,
+		action, err := NewSystemOwnerAction(ctx, systemToken, rf,
 			WithOrganizationByName(appUserInfo.OrganizationName),
 		)
 		if err != nil {

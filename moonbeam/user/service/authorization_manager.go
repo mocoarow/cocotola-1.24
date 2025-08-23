@@ -27,6 +27,8 @@ type AuthorizationManager interface {
 
 	AddPolicyToUserBySystemAdmin(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
 
+	AddPolicyToUserBySystemOwner(ctx context.Context, operator SystemOwnerInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
+
 	AddPolicyToGroup(ctx context.Context, operator AppUserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
 
 	AddPolicyToGroupBySystemAdmin(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error

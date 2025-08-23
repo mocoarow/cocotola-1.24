@@ -29,7 +29,7 @@ type SystemAdmin struct {
 
 func NewSystemAdmin(ctx context.Context, rf RepositoryFactory) (*SystemAdmin, error) {
 	if rf == nil {
-		return nil, fmt.Errorf("argument 'rf' is nil. err: %w", libdomain.ErrInvalidArgument)
+		return nil, fmt.Errorf("new system admin. argument 'rf' is nil: %w", libdomain.ErrInvalidArgument)
 	}
 	orgRepo := rf.NewOrganizationRepository(ctx)
 	appUserRepo := rf.NewAppUserRepository(ctx)

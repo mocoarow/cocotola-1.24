@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
@@ -59,6 +60,12 @@ func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator service.Oper
 		if err != nil && !errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
 			return mbliberrors.Errorf("s.registerAppUser: %w", err)
 		}
+		if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
+			return mbuserservice.ErrAppUserAlreadyExists
+		}
+
+		u.logger.InfoContext(ctx, fmt.Sprintf("tmpOrganization: %d", tmpOrganization.OrganizationID))
+		u.logger.InfoContext(ctx, fmt.Sprintf("tmpAppUser: %d", tmpAppUser.AppUserID))
 
 		targetAppUser = &appUser{
 			appUserID:      tmpAppUser.AppUserID,

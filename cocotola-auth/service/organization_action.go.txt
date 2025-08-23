@@ -16,7 +16,7 @@ type organizationAction struct {
 	OrganizationRepo mbuserservice.OrganizationRepository
 	AppUserRepo      mbuserservice.AppUserRepository
 	Organization     *mbuserservice.Organization
-	SystemAdmin      *mbuserservice.SystemAdmin
+	systemAdmin      *mbuserservice.SystemAdmin
 	SystemOwner      *mbuserservice.SystemOwner
 }
 
@@ -38,6 +38,9 @@ func (a *organizationAction) initRsrf(ctx context.Context) error {
 func (a *organizationAction) initSystemAdmin(ctx context.Context) error {
 	if a.SystemAdmin != nil {
 		return nil
+	}
+	if err := a.initRsrf(ctx); err != nil {
+		return err
 	}
 
 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, a.rsrf)
@@ -138,30 +141,6 @@ func WithAppUserRepository() OrganizationActionOption {
 			return err
 		}
 		action.AppUserRepo = action.rsrf.NewAppUserRepository(ctx)
-		return nil
-	}
-}
-
-func WithOrganizationByID(organizationID *mbuserdomain.OrganizationID) OrganizationActionOption {
-	return func(ctx context.Context, action *organizationAction) error {
-		if err := action.initSystemOwnerByOrganizationID(ctx, organizationID); err != nil {
-			return err
-		}
-		if err := action.initOrganizationByOrganizationID(ctx, organizationID); err != nil {
-			return err
-		}
-		return nil
-	}
-}
-
-func WithOrganizationByName(organizationName string) OrganizationActionOption {
-	return func(ctx context.Context, action *organizationAction) error {
-		if err := action.initSystemOwnerByOrganizationName(ctx, organizationName); err != nil {
-			return err
-		}
-		if err := action.initOrganizationByOrganizationName(ctx, organizationName); err != nil {
-			return err
-		}
 		return nil
 	}
 }
