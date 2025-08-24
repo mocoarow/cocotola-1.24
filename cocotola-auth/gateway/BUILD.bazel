@@ -67,8 +67,8 @@ go_test(
         "google_auth_client_s_test.go",
         "helper_test.go",
     ],
-    gotags = ["small"],
     embed = [":gateway"],
+    gotags = ["small"],
     deps = [
         "//cocotola-auth/domain",
         "//cocotola-auth/gateway/mocks",

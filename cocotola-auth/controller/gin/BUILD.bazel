@@ -24,6 +24,7 @@ go_library(
         "//lib/controller/gin",
         "//lib/domain",
         "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "//moonbeam/user/domain",
         "//moonbeam/user/service",

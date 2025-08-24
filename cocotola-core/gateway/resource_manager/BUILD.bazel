@@ -9,6 +9,7 @@ go_library(
         "//cocotola-core/domain",
         "//cocotola-core/gateway",
         "//cocotola-core/service",
+        "//moonbeam/lib/errors",
         "@io_gorm_gorm//:gorm",
     ],
 )

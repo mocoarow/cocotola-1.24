@@ -43,7 +43,6 @@ go_test(
     deps = [
         ":domain",
         "//moonbeam/lib/domain",
-        "@com_github_stretchr_testify//assert",
         "@com_github_stretchr_testify//require",
     ],
 )

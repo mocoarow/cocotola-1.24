@@ -13,6 +13,7 @@ go_library(
         "//cocotola-core/domain",
         "//cocotola-core/service",
         "//lib/controller",
+        "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "//moonbeam/user/domain",
         "@com_github_gin_gonic_gin//:gin",
