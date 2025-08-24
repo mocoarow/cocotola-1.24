@@ -71,6 +71,7 @@ tasks:
           - cocotola-auth
           - cocotola-core
           - cocotola-empty
+          - cocotola-test
         task: lint-project
         vars:
           PROJECT: "{{ .ITEM }}"
@@ -98,6 +99,7 @@ tasks:
           - cocotola-auth
           - cocotola-core
           - cocotola-empty
+          - cocotola-test
           # - cocotola-import
           # - cocotola-synthesizer
           # - cocotola-tatoeba
@@ -123,6 +125,7 @@ tasks:
           - cocotola-auth
           - cocotola-core
           - cocotola-empty
+          - cocotola-test
           # - cocotola-import
           # - cocotola-synthesizer
           # - cocotola-tatoeba

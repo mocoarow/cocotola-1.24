@@ -36,7 +36,7 @@ func (c *cocotolaRBACClient) AddPolicyToUser(ctx context.Context, param *libapi.
 	defer span.End()
 
 	u := *c.authEndpoint
-	u.Path = path.Join(u.Path, "v1", "rbac", "policy", "user")
+	u.Path = path.Join(u.Path, "api", "v1", "rbac", "policy", "user")
 
 	jsonParam, err := json.Marshal(param)
 	if err != nil {
@@ -69,7 +69,7 @@ func (c *cocotolaRBACClient) CheckAuthorization(ctx context.Context, param *liba
 	defer span.End()
 
 	u := *c.authEndpoint
-	u.Path = path.Join(u.Path, "v1", "rbac", "check-authorization")
+	u.Path = path.Join(u.Path, "api", "v1", "rbac", "check-authorization")
 
 	jsonParam, err := json.Marshal(param)
 	if err != nil {

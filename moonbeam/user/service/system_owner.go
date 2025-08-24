@@ -28,7 +28,7 @@ type SystemOwner struct {
 	// pairOfUserAndGroup PairOfUserAndGroupRepository
 	// rbacRepo             RBACRepository
 	authorizationManager AuthorizationManager
-	resourceEventHandler libservice.ResourceEventHandler
+	appUserEventHandler  libservice.ResourceEventHandler
 	logger               *slog.Logger
 }
 
@@ -42,6 +42,7 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 	if err != nil {
 		return nil, err
 	}
+	appUserEventHandler := rf.NewAppUserEventHandler(ctx)
 
 	m := &SystemOwner{
 		SystemOwnerModel: systemOwnerModel,
@@ -51,6 +52,7 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 		// pairOfUserAndGroup:   pairOfUserAndGroup,
 		// rbacRepo:             rbacRepo,
 		authorizationManager: authorizationManager,
+		appUserEventHandler:  appUserEventHandler,
 		logger:               slog.Default().With(slog.String(liblog.LoggerNameKey, "SystemOwner")),
 	}
 
@@ -160,6 +162,11 @@ func (m *SystemOwner) AddAppUser(ctx context.Context, param AppUserAddParameterI
 	if err != nil {
 		return nil, liberrors.Errorf("m.appUserRepo.AddAppUser. err: %w", err)
 	}
+
+	m.appUserEventHandler.OnAdd(ctx, map[string]int{
+		"organizationId": m.OrganizationID().Int(),
+		"appUserId":      appUserID.Int(),
+	})
 
 	return appUserID, nil
 }

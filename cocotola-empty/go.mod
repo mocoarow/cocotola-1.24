@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/gin-gonic/gin v1.10.1
+	github.com/mocoarow/cocotola-1.24/cocotola-auth v0.0.0-20250818145557-21b0dc3200cf
 	github.com/mocoarow/cocotola-1.24/lib v0.0.0-20250818145557-21b0dc3200cf
 	github.com/mocoarow/cocotola-1.24/moonbeam v0.0.0-20250818145557-21b0dc3200cf
 	go.opentelemetry.io/otel v1.37.0
@@ -67,7 +68,7 @@ require (
 	github.com/prometheus/common v0.65.0 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/samber/slog-gin v1.15.1 // indirect
+	github.com/samber/slog-gin v1.16.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect

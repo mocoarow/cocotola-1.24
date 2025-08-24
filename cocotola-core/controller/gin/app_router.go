@@ -16,6 +16,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/middleware"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/usecase"
 
 	resourcemanagergateway "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/resource_manager"
 	resourcemanager "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/resource_manager"
@@ -42,31 +43,28 @@ func GetPublicRouterGroupFuncs() []libcontroller.InitRouterGroupFunc {
 	}
 }
 
-func GetBearerTokenPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager) ([]libcontroller.InitRouterGroupFunc, error) {
-	// - rbacClient
-	httpClient := http.Client{
-		Timeout:   time.Duration(coreConfig.AuthAPIClient.TimeoutSec) * time.Second,
-		Transport: otelhttp.NewTransport(http.DefaultTransport),
-	}
-	authEndpoint, err := url.Parse(coreConfig.AuthAPIClient.Endpoint)
-	if err != nil {
-		return nil, err
-	}
-	rbacClient := gateway.NewCocotolaRBACClient(&httpClient, authEndpoint, coreConfig.AuthAPIClient.Username, coreConfig.AuthAPIClient.Password)
+func GetBearerTokenPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - workbookQueryUsecase
 	deckQueryUsecase := resourcemanagergateway.NewDeckQueryUsecase(db)
 	// - workbookCommandUsecase
 	deckCommandUsecase := resourcemanager.NewDeckCommandUsecase(txManager, nonTxManager, rbacClient)
 
+	// - profileUsecase
+	profileUsecase := usecase.NewProfileUsecase(nonTxManager)
+
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
 		NewInitDeckRouterFunc(deckQueryUsecase, deckCommandUsecase),
+		NewInitProfileRouterFunc(profileUsecase),
 	}, nil
 }
 
-func GetBasicPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager) ([]libcontroller.InitRouterGroupFunc, error) {
+func GetBasicPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
+	callbackUsecase := usecase.NewCallback(txManager, nonTxManager, rbacClient)
 	// private router
-	return []libcontroller.InitRouterGroupFunc{}, nil
+	return []libcontroller.InitRouterGroupFunc{
+		NewInitCallbackRouterFunc(callbackUsecase),
+	}, nil
 }
 
 func InitBearerTokenAuthMiddleware(authClientConfig *config.AuthAPIClientConfig) (gin.HandlerFunc, error) {

@@ -39,7 +39,7 @@ type PostgresConfig struct {
 	Database string `yaml:"database" validate:"required"`
 }
 
-func OpenPostgres(cfg *PostgresConfig, appName string) (*gorm.DB, error) {
+func OpenPostgres(cfg *PostgresConfig, logLevel slog.Level, appName string) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s", cfg.Host, cfg.Username, cfg.Password, cfg.Database, cfg.Port, "disable", time.UTC.String())
 
 	gormDialector := gorm_postgres.Open(dsn)
@@ -68,8 +68,8 @@ func MigratePostgresDB(db *gorm.DB, sqlFS fs.FS) error {
 	})
 }
 
-func InitPostgres(ctx context.Context, cfg *PostgresConfig, migration bool, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	db, err := OpenPostgres(cfg, appName)
+func InitPostgres(ctx context.Context, cfg *PostgresConfig, migration bool, logLevel slog.Level, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
+	db, err := OpenPostgres(cfg, logLevel, appName)
 	if err != nil {
 		return nil, nil, nil, err
 	}

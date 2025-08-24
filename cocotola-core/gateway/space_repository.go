@@ -19,12 +19,9 @@ type SpaceEntity struct {
 	mbusergateway.BaseModelEntity
 	ID             int
 	OrganizationID int
-	SpaceID        int
 	OwnerID        int
-	TemplateID     int
+	Key            string
 	Name           string
-	Lang2          string
-	Description    string
 }
 
 func (e *SpaceEntity) TableName() string {
@@ -57,6 +54,7 @@ func (e *SpaceEntity) ToModel() (*domain.SpaceModel, error) {
 		spaceID,
 		organizationID,
 		ownerID,
+		e.Key,
 		e.Name,
 	)
 	if err != nil {
@@ -96,8 +94,8 @@ func (r *spaceRepository) AddSpace(ctx context.Context, operator mbuserservice.O
 			UpdatedBy: operator.AppUserID().Int(),
 		},
 		OrganizationID: operator.OrganizationID().Int(),
-		SpaceID:        param.SpaceID.Int(),
 		OwnerID:        operator.AppUserID().Int(),
+		Key:            param.Key,
 		Name:           param.Name,
 	}
 	if result := r.db.Create(&spaceE); result.Error != nil {
@@ -137,6 +135,7 @@ func (r *spaceRepository) FindSpaces(ctx context.Context, operator service.Opera
 	var spacesE []SpaceEntity
 	if result := r.db.Model(&SpaceEntity{}).
 		Where("organization_id = ?", uint(operator.OrganizationID().Value)).
+		Where("owner_id = ?", uint(operator.AppUserID().Value)).
 		Find(&spacesE); result.Error != nil {
 		return nil, mbliberrors.Errorf("spaceRepository.FindSpaces: %w", result.Error)
 	}
@@ -158,7 +157,10 @@ func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.Ope
 	defer span.End()
 
 	var spaceE SpaceEntity
-	if result := r.db.Model(&SpaceEntity{}).Where("organization_id = ?", uint(operator.OrganizationID().Int())).Where("id = ?", spaceID.Int()).First(&spaceE); result.Error != nil {
+	if result := r.db.Model(&SpaceEntity{}).
+		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
+		Where("owner_id = ?", uint(operator.AppUserID().Int())).
+		Where("id = ?", spaceID.Int()).First(&spaceE); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, service.ErrSpaceNotFound
 		}

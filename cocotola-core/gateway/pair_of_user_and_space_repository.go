@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"fmt"
 
 	"gorm.io/gorm"
 
@@ -83,12 +84,17 @@ func (r *pairOfUserAndSpaceRepository) FindSpacesByUserID(ctx context.Context, o
 	spacesE := []SpaceEntity{}
 	if result := r.db.Table(SpaceTableName).Select(SpaceTableName+".*").
 		Where(SpaceTableName+".organization_id = ?", operator.OrganizationID().Int()).
-		Where(SpaceTableName+".removed = ?", r.dialect.BoolDefaultValue()).
-		Joins("inner join " + PairOfUserAndSpaceTableName + " on " + SpaceTableName + ".id = " + PairOfUserAndSpaceTableName + ".space_id").
+		// Where(SpaceTableName+".removed = ?", r.dialect.BoolDefaultValue()).
+		Joins("inner join "+PairOfUserAndSpaceTableName+" on "+SpaceTableName+".id = "+PairOfUserAndSpaceTableName+".space_id").
+		Where(PairOfUserAndSpaceTableName+".app_user_id = ?", appUserID.Int()).
 		// Order(UserGroupTableName + ".key_name").
 		Find(&spacesE); result.Error != nil {
 		return nil, result.Error
 	}
+
+	fmt.Printf("length:%d\n", len(spacesE))
+	fmt.Printf("organization_id:%d\n", operator.OrganizationID().Int())
+	fmt.Printf("app_user_id:%d\n", appUserID.Int())
 
 	spaces := make([]*service.Space, len(spacesE))
 	for i, e := range spacesE {

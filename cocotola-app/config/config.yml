@@ -64,6 +64,8 @@ shutdown:
   timeSec2: ${APP_SHUTDOWN_TIME_SEC2:-1}
 log:
   level: ${APP_LOG_LEVEL:-info}
+  levels:
+    db: ${APP_DB_LOG_LEVEL:-info}
   enabled:
     traceLog: ${APP_LOG_ENABLED_TRACE_LOG:-false}
     accessLog: ${APP_LOG_ENABLED_ACCESS_LOG:-false}

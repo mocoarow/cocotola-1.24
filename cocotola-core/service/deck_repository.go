@@ -14,8 +14,9 @@ var ErrDeckNotFound = errors.New("deck not found")
 
 type DeckAddParameter struct {
 	SpaceID     *domain.SpaceID
-	Name        string
+	FolderID    *domain.FolderID
 	TemplateID  *domain.TemplateID
+	Name        string
 	Lang2       string
 	Description string
 }

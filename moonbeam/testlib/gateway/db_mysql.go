@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"embed"
+	"log/slog"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/gorm"
@@ -15,7 +16,7 @@ var testDBPort int
 
 func openMySQLForTest() (*gorm.DB, error) {
 	if testDSN != "" {
-		return libgateway.OpenMySQLWithDSN(testDSN, "test")
+		return libgateway.OpenMySQLWithDSN(testDSN, slog.LevelInfo, "test")
 	}
 
 	return libgateway.OpenMySQL(&libgateway.MySQLConfig{
@@ -24,7 +25,7 @@ func openMySQLForTest() (*gorm.DB, error) {
 		Database: "testdb",
 		Host:     testDBHost,
 		Port:     testDBPort,
-	}, "test")
+	}, slog.LevelInfo, "test")
 }
 
 // func setupMySQL(sqlFS embed.FS, db *gorm.DB) error {

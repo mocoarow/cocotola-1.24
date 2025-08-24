@@ -32,7 +32,7 @@ func NewDeckCommandUsecase(txManager, nonTxManager service.TransactionManager, r
 func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.OperatorInterface, param *service.DeckAddParameter) (*domain.DeckID, error) {
 	// check RBAC
 	action := mbuserdomain.NewRBACAction("CreateDeck")
-	object := mbuserdomain.NewRBACObject("*")
+	object := param.SpaceID.GetRBACObject()
 	ok, err := u.rbacClient.CheckAuthorization(ctx, &libapi.AuthorizeRequest{
 		OrganizationID: operator.OrganizationID().Int(),
 		AppUserID:      operator.AppUserID().Int(),
@@ -42,7 +42,7 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 	if err != nil {
 		return nil, mbliberrors.Errorf("authorize: %w", err)
 	} else if !ok {
-		return nil, mblibdomain.ErrPermissionDenied
+		return nil, mbliberrors.Errorf("permission denied. space(%d): %w", param.SpaceID.Int(), mblibdomain.ErrPermissionDenied)
 	}
 
 	//

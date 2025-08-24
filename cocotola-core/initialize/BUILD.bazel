@@ -16,5 +16,6 @@ go_library(
         "//moonbeam/lib/gateway",
         "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//:gorm",
+        "@io_opentelemetry_go_contrib_instrumentation_net_http_otelhttp//:otelhttp",
     ],
 )

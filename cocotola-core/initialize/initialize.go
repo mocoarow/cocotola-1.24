@@ -2,9 +2,12 @@ package initialize
 
 import (
 	"context"
+	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"gorm.io/gorm"
 
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
@@ -38,6 +41,17 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 		return err
 	}
 
+	// - rbacClient
+	httpClient := http.Client{
+		Timeout:   time.Duration(coreConfig.AuthAPIClient.TimeoutSec) * time.Second,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+	}
+	authEndpoint, err := url.Parse(coreConfig.AuthAPIClient.Endpoint)
+	if err != nil {
+		return err
+	}
+	rbacClient := gateway.NewCocotolaRBACClient(&httpClient, authEndpoint, coreConfig.AuthAPIClient.Username, coreConfig.AuthAPIClient.Password)
+
 	// init auth middleware
 	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(coreConfig.AuthAPIClient)
 	if err != nil {
@@ -51,12 +65,12 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	// init public and private router group functions
 	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs()
 
-	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager)
+	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager, rbacClient)
 	if err != nil {
 		return err
 	}
 
-	basicPrivateRouterGroupFuncs, err := controller.GetBasicPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager)
+	basicPrivateRouterGroupFuncs, err := controller.GetBasicPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager, rbacClient)
 	if err != nil {
 		return err
 	}

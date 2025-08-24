@@ -4,6 +4,7 @@ go_library(
     name = "gateway",
     srcs = [
         "auth_token_manager.go",
+        "cocotola_core_callback_client.go",
         "firebase_client.go",
         "google_auth_client.go",
         "init.go",
@@ -15,6 +16,7 @@ go_library(
     deps = [
         "//cocotola-auth/domain",
         "//cocotola-auth/service",
+        "//lib/api",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",

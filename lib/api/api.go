@@ -138,8 +138,8 @@ type DeckFindResult struct {
 type DeckRetrieveResult struct {
 	ID          int    `json:"id"`
 	Version     int    `json:"version"`
-	Name        string `json:"name"`
-	TemplateID  int    `json:"temlateId"`
+	Name        string `json:"name" binding:"required"`
+	TemplateID  int    `json:"templateId" binding:"required"`
 	Lang2       string `json:"lang2" binding:"required"`
 	Description string `json:"description"`
 }
@@ -147,7 +147,7 @@ type DeckRetrieveResult struct {
 type DeckAddParameter struct {
 	SpaceID     int    `json:"spaceId" binding:"required"`
 	Name        string `json:"name" binding:"required"`
-	TemplateID  int    `json:"temlateId"`
+	TemplateID  int    `json:"templateId" binding:"required"`
 	Lang2       string `json:"lang2" binding:"required"`
 	Description string `json:"description"`
 }
@@ -161,4 +161,12 @@ type AppUserAddRequest struct {
 	LoginID  string `json:"loginId" binding:"required"`
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
+}
+
+type CallbackOnAddAppUserRequest struct {
+	OrganizationID int `json:"organizationID" binding:"required,gte=1"`
+	AppUserID      int `json:"appUserId" binding:"required,gte=1"`
+}
+type ProfileResponse struct {
+	PrivateSpaceID int `json:"privateSpaceId"`
 }

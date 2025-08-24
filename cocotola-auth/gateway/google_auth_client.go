@@ -15,10 +15,6 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 )
 
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
 type googleAuthResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`

@@ -21,6 +21,7 @@ type DeckEntity struct {
 	OrganizationID int
 	SpaceID        int
 	OwnerID        int
+	FolderID       int
 	TemplateID     int
 	Name           string
 	Lang2          string
@@ -56,6 +57,10 @@ func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 	if err != nil {
 		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
 	}
+	folderID, err := domain.NewFolderID(e.FolderID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new folder id(%d): %w", e.FolderID, err)
+	}
 
 	deckModel, err := domain.NewDeckModel(
 		baseModel,
@@ -63,6 +68,7 @@ func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 		organizationID,
 		spaceID,
 		ownerID,
+		folderID,
 		e.Name,
 		e.TemplateID,
 		e.Lang2,
@@ -98,6 +104,11 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 	_, span := tracer.Start(ctx, "deckRepository.AddDeck")
 	defer span.End()
 
+	folderID := 0
+	if param.FolderID != nil {
+		folderID = param.FolderID.Int()
+	}
+
 	deckE := DeckEntity{
 		BaseModelEntity: mbusergateway.BaseModelEntity{
 			Version:   1,
@@ -107,6 +118,7 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 		OrganizationID: operator.OrganizationID().Int(),
 		SpaceID:        param.SpaceID.Int(),
 		OwnerID:        operator.AppUserID().Int(),
+		FolderID:       folderID,
 		TemplateID:     param.TemplateID.Int(),
 		Name:           param.Name,
 		Lang2:          param.Lang2,

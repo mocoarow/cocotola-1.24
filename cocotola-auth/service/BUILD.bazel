@@ -6,6 +6,7 @@ go_library(
         "auth_token_manager.go",
         "authentication.go",
         "authorization.go",
+        "cocotola_core_callback_client.go",
         "firebase_client.go",
         "repository_factory.go",
         "state_repository.go",

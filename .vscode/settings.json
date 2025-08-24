@@ -1,7 +1,7 @@
 {
   "editor.formatOnSave": true,
   "go.toolsEnvVars": {
-    "GOFLAGS": "-tags=small,medium"
+    "GOFLAGS": "-tags=small,medium,scenario"
   },
   "[typescript]": {
     "editor.formatOnSave": true

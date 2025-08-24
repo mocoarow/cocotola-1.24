@@ -61,7 +61,7 @@ func main() {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
 	// init db
-	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, domain.AppName, mbsqls.SQL, coresqls.SQL)
+	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, cfg.Log, domain.AppName, mbsqls.SQL, coresqls.SQL)
 	libdomain.CheckError(err)
 	defer sqlDB.Close()
 	defer tp.ForceFlush(ctx) // flushes any pending spans

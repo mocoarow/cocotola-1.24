@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"io/fs"
+	"log/slog"
 
 	"gorm.io/gorm"
 
@@ -57,7 +58,7 @@ func (f *mergedFS) Open(name string) (fs.File, error) {
 func (f *mergedFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	return f.entries, nil
 }
-func InitDB(ctx context.Context, cfg *DBConfig, appName string, sqlFSs ...fs.FS) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error) {
+func InitDB(ctx context.Context, cfg *DBConfig, logConfig *LogConfig, appName string, sqlFSs ...fs.FS) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error) {
 	mergedFS, err := MergeFS(cfg.DriverName, sqlFSs...)
 	if err != nil {
 		return nil, nil, nil, liberrors.Errorf("merge sql files in %q directory: %w", cfg.DriverName, err)
@@ -67,7 +68,11 @@ func InitDB(ctx context.Context, cfg *DBConfig, appName string, sqlFSs ...fs.FS)
 	if !ok {
 		return nil, nil, nil, libdomain.ErrInvalidArgument
 	}
-	return initDBFunc(ctx, cfg, mergedFS, appName)
+	dbLogLevel := slog.LevelWarn
+	if level, ok := logConfig.Levels["db"]; ok {
+		dbLogLevel = stringToLogLevel(level)
+	}
+	return initDBFunc(ctx, cfg, dbLogLevel, mergedFS, appName)
 	// switch cfg.DriverName {
 	// case "sqlite3":
 	//

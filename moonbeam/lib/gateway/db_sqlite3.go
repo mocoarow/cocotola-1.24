@@ -33,7 +33,7 @@ type SQLite3Config struct {
 	File string `yaml:"file" validate:"required"`
 }
 
-func OpenSQLite3(cfg *SQLite3Config, appName string) (*gorm.DB, error) {
+func OpenSQLite3(cfg *SQLite3Config, logLevel slog.Level, appName string) (*gorm.DB, error) {
 	gormDialector := gorm_sqlite.Open(cfg.File)
 
 	gormConfig := gorm.Config{
@@ -53,7 +53,7 @@ func MigrateSQLite3DB(db *gorm.DB, sqlFS fs.FS) error {
 	driverName := "sqlite3"
 	sourceDriver, err := iofs.New(sqlFS, driverName)
 	if err != nil {
-		return liberrors.Errorf("iofs.New err: %w", err)
+		return liberrors.Errorf("iofs.New: %w", err)
 	}
 
 	var _ = sourceDriver
@@ -63,19 +63,19 @@ func MigrateSQLite3DB(db *gorm.DB, sqlFS fs.FS) error {
 	})
 }
 
-func InitSqlite3(ctx context.Context, cfg *SQLite3Config, migration bool, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	db, err := OpenSQLite3(cfg, appName)
+func InitSqlite3(ctx context.Context, cfg *SQLite3Config, migration bool, logLevel slog.Level, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
+	db, err := OpenSQLite3(cfg, logLevel, appName)
 	if err != nil {
-		return nil, nil, nil, liberrors.Errorf("OpenSQLite file: %s err: %w", cfg.File, err)
+		return nil, nil, nil, liberrors.Errorf("OpenSQLite file(%s): %w", cfg.File, err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, nil, nil, liberrors.Errorf("DB. file: %s err: %w", cfg.File, err)
+		return nil, nil, nil, liberrors.Errorf("DB. file(%s): %w", cfg.File, err)
 	}
 
 	if err := sqlDB.PingContext(ctx); err != nil {
-		return nil, nil, nil, liberrors.Errorf("Ping. file: %s err: %w", cfg.File, err)
+		return nil, nil, nil, liberrors.Errorf("Ping. file(%s): %w", cfg.File, err)
 	}
 
 	if migration {

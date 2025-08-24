@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,11 +31,59 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) error {
-	appUserEventHandler := mblibservice.ResourceEventHandlerFuncs{
-		AddFunc: func(obj any) {
+func newCallbackOnAddAppUser(cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient, logger *slog.Logger) func(ctx context.Context, obj any) {
+	return func(ctx context.Context, obj any) {
+		param, ok := obj.(map[string]int)
+		if !ok {
+			logger.ErrorContext(ctx, fmt.Sprintf("invalid object type: %T", obj))
+			return
+		}
 
-		},
+		organizationIDInt, ok := param["organizationId"]
+		if !ok {
+			logger.ErrorContext(ctx, fmt.Sprintf("invalid organizationId type: %T", param["organizationId"]))
+			return
+		}
+		organizationID, err := mbuserdomain.NewOrganizationID(organizationIDInt)
+		if err != nil {
+			logger.ErrorContext(ctx, fmt.Sprintf("invalid organizationId: %v", err))
+			return
+		}
+
+		appUserIDInt, ok := param["appUserId"]
+		if !ok {
+			logger.ErrorContext(ctx, fmt.Sprintf("invalid appuserId type: %T", param["appuserId"]))
+			return
+		}
+
+		appUserID, err := mbuserdomain.NewAppUserID(appUserIDInt)
+		if err != nil {
+			logger.ErrorContext(ctx, fmt.Sprintf("invalid appuserId: %v", err))
+			return
+		}
+
+		go func(ctx context.Context) {
+			logger.InfoContext(ctx, fmt.Sprintf("OnAddAppUser: organizationID=%d, appUserID=%d", organizationID.Int(), appUserID.Int()))
+			if err := cocotolaCoreCallbackClient.OnAddAppUser(ctx, organizationID, appUserID); err != nil {
+				logger.ErrorContext(ctx, fmt.Sprintf("OnAddAppUser: %v", err))
+			}
+		}(context.Background())
+	}
+
+}
+
+func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) error {
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-Initialize"))
+	httpClient := &http.Client{
+		Timeout: time.Duration(authConfig.CoreAPIClient.TimeoutSec) * time.Second,
+	}
+	coreAPIEndpoint, err := url.Parse(authConfig.CoreAPIClient.Endpoint)
+	if err != nil {
+		return mbliberrors.Errorf("invalid core api endpoint: %w", err)
+	}
+	cocotolaCoreCallbackClient := gateway.NewCocotolaCoreCallbackClient(httpClient, coreAPIEndpoint, authConfig.CoreAPIClient.Username, authConfig.CoreAPIClient.Password)
+	appUserEventHandler := mblibservice.ResourceEventHandlerFuncs{
+		AddFunc: newCallbackOnAddAppUser(cocotolaCoreCallbackClient, logger),
 	}
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, appUserEventHandler) // nolint:wrapcheck

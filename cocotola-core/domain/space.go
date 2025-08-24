@@ -37,12 +37,13 @@ type SpaceModel struct {
 	Name           string                       `validate:"required"`
 }
 
-func NewSpaceModel(baseModel *mblibdomain.BaseModel, spaceID *SpaceID, organizationID *mbuserdomain.OrganizationID, owernID *mbuserdomain.AppUserID, name string) (*SpaceModel, error) {
+func NewSpaceModel(baseModel *mblibdomain.BaseModel, spaceID *SpaceID, organizationID *mbuserdomain.OrganizationID, owernID *mbuserdomain.AppUserID, key, name string) (*SpaceModel, error) {
 	m := &SpaceModel{
 		BaseModel:      baseModel,
 		SpaceID:        spaceID,
 		OrganizationID: organizationID,
 		OwnerID:        owernID,
+		Key:            key,
 		Name:           name,
 	}
 

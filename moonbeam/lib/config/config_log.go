@@ -10,9 +10,10 @@ import (
 )
 
 type LogConfig struct {
-	Level    string          `yaml:"level"`
-	Platform string          `yaml:"platform"`
-	Enabled  map[string]bool `yaml:"enabled"`
+	Level    string            `yaml:"level"`
+	Platform string            `yaml:"platform"`
+	Levels   map[string]string `yaml:"levels"`
+	Enabled  map[string]bool   `yaml:"enabled"`
 }
 
 func newReplaceAttr(platform string) func([]string, slog.Attr) slog.Attr {

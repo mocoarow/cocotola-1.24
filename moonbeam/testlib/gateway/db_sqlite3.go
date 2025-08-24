@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"embed"
+	"log/slog"
 	"os"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -16,7 +17,7 @@ var testDBFile string
 func openSQLiteForTest() (*gorm.DB, error) {
 	return libgateway.OpenSQLite3(&libgateway.SQLite3Config{
 		File: testDBFile,
-	}, "test")
+	}, slog.LevelInfo, "test")
 }
 
 // func OpenSQLiteInMemory(sqlFS embed.FS) (*gorm.DB, error) {

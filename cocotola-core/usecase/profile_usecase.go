@@ -34,6 +34,11 @@ func (u *ProfileUsecase) GetMyProfile(ctx context.Context, operator service.Oper
 		if err != nil {
 			return nil, err
 		}
+
+		for _, space := range spaces {
+			u.logger.InfoContext(ctx, "GetMyProfile: space", slog.Int("space_id", space.SpaceID.Int()), slog.String("space_key", space.Key))
+		}
+
 		for _, space := range spaces {
 			if space.IsPrivate() {
 				return space.SpaceID, nil

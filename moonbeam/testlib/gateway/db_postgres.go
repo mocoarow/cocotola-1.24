@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"embed"
+	"log/slog"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/gorm"
@@ -19,7 +20,7 @@ func openPostgresForTest() (*gorm.DB, error) {
 		Host:     testPostgresHost,
 		Port:     testPostgresPort,
 		Database: "postgres",
-	}, "test")
+	}, slog.LevelInfo, "test")
 }
 
 // func setupPostgres(sqlFS embed.FS, db *gorm.DB) error {
