@@ -9,12 +9,12 @@ import (
 
 func Authorize(ctx context.Context, operator OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject, nonTxManager TransactionManager) (bool, error) {
 	return mblibservice.Do1(ctx, nonTxManager, func(rf RepositoryFactory) (bool, error) {
-		rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
+		mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 		if err != nil {
 			return false, err
 		}
 
-		authorizationManager, err := rsrf.NewAuthorizationManager(ctx)
+		authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
 		if err != nil {
 			return false, err
 		}

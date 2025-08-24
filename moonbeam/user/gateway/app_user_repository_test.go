@@ -202,12 +202,14 @@ func Test_appUserRepository_VerifyPassword_shouldReturnTrue_whenCorrectPasswordI
 		sysAdModel := domain.NewSystemAdminModel()
 		sysAd := testNewSystemAdmin(sysAdModel)
 		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		testSysOwner, err := appUserRepo.FindSystemOwnerByOrganizationID(ctx, sysAd, orgID)
+		require.NoError(t, err)
 
 		// given
 		_ = testAddAppUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
 
 		// when
-		verified, err := appUserRepo.VerifyPassword(ctx, sysAd, orgID, "LOGIN_ID", "PASSWORD")
+		verified, err := appUserRepo.VerifyPassword(ctx, testSysOwner, "LOGIN_ID", "PASSWORD")
 
 		// then
 		assert.True(t, verified)
@@ -223,12 +225,14 @@ func Test_appUserRepository_VerifyPassword_shouldReturnFalse_whenWrongPasswordIs
 		sysAdModel := domain.NewSystemAdminModel()
 		sysAd := testNewSystemAdmin(sysAdModel)
 		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		testSysOwner, err := appUserRepo.FindSystemOwnerByOrganizationID(ctx, sysAd, orgID)
+		require.NoError(t, err)
 
 		// given
 		_ = testAddAppUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
 
 		// when
-		verified, err := appUserRepo.VerifyPassword(ctx, sysAd, orgID, "LOGIN_ID", "WRONG_PASSWORD")
+		verified, err := appUserRepo.VerifyPassword(ctx, testSysOwner, "LOGIN_ID", "WRONG_PASSWORD")
 
 		// then
 		assert.False(t, verified)

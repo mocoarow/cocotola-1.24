@@ -14,10 +14,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+
 	controller "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin"
 	controllermock "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/mocks"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
-	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 )
 
 func initGoogleRouter(t *testing.T, ctx context.Context, googleUser controller.GoogleUserUsecase) *gin.Engine {

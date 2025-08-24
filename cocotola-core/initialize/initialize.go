@@ -84,11 +84,11 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 // }
 
 // func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
-// 	rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
+// 	mbrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
 // 	if err != nil {
 // 		return nil, err
 // 	}
-// 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
+// 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
 // 	if err != nil {
 // 		return nil, err
 // 	}
@@ -173,12 +173,12 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 
 // func systemOwnerAction(ctx context.Context, organizationName string, txManager service.TransactionManager, fn func(context.Context, *mbuserservice.SystemOwner) error) error {
 // 	return txManager.Do(ctx, func(rf service.RepositoryFactory) error {
-// 		rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
+// 		mbrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
 // 		if err != nil {
 // 			return mbliberrors.Errorf(". err: %w", err)
 // 		}
 
-// 		systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
+// 		systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
 // 		if err != nil {
 // 			return mbliberrors.Errorf(". err: %w", err)
 // 		}

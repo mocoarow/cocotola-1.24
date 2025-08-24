@@ -108,7 +108,7 @@ func (m *SystemOwner) FindAppUserByLoginID(ctx context.Context, loginID string) 
 
 func (m *SystemOwner) AddFirstOwner(ctx context.Context, param AppUserAddParameterInterface) (*domain.AppUserID, error) {
 	// rbacAppUser := NewRBACAppUser(m.GetOrganizationID(), m.GetAppUserID())
-	rbacAllUserRolesObject := NewRBACAllUserRolesObject(m.OrganizationID())
+	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(m.OrganizationID())
 
 	// Can "the operator" "set" "all-user-roles" ?
 	ok, err := m.authorizationManager.Authorize(ctx, m, RBACSetAction, rbacAllUserRolesObject)

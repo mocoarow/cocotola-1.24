@@ -12,7 +12,7 @@ import (
 
 type SystemOwnerAction struct {
 	rf                   RepositoryFactory
-	rsrf                 mbuserservice.RepositoryFactory
+	mbrf                 mbuserservice.RepositoryFactory
 	systemAdmin          *mbuserservice.SystemAdmin
 	SystemOwner          *mbuserservice.SystemOwner
 	Organization         *mbuserservice.Organization
@@ -20,15 +20,6 @@ type SystemOwnerAction struct {
 }
 
 type SystemOwnerActionOption func(context.Context, *SystemOwnerAction) error
-
-// func WithSystemAdmin() SystemAdminActionOption {
-// 	return func(ctx context.Context, action *systemAdminAction) error {
-// 		if err := action.initSystemAdmin(ctx); err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	}
-// }
 
 func (a *SystemOwnerAction) initSystemOwnerByOrganizationID(ctx context.Context, organizationID *mbuserdomain.OrganizationID) error {
 	if a.SystemOwner != nil {
@@ -80,6 +71,7 @@ func (a *SystemOwnerAction) initOrganizationByOrganizationName(ctx context.Conte
 	a.Organization = organization
 	return nil
 }
+
 func WithOrganizationByID(organizationID *mbuserdomain.OrganizationID) SystemOwnerActionOption {
 	return func(ctx context.Context, action *SystemOwnerAction) error {
 		if err := action.initSystemOwnerByOrganizationID(ctx, organizationID); err != nil {
@@ -106,9 +98,9 @@ func WithOrganizationByName(organizationName string) SystemOwnerActionOption {
 
 func WithAuthorizationManager() SystemOwnerActionOption {
 	return func(ctx context.Context, action *SystemOwnerAction) error {
-		authorizationManager, err := action.rsrf.NewAuthorizationManager(ctx)
+		authorizationManager, err := action.mbrf.NewAuthorizationManager(ctx)
 		if err != nil {
-			return mbliberrors.Errorf("failed to NewAuthorizationManager. err: %w", err)
+			return mbliberrors.Errorf("new authorization manager: %w", err)
 		}
 		action.AuthorizationManager = authorizationManager
 		return nil
@@ -121,7 +113,7 @@ func NewSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken
 	}
 	action := SystemOwnerAction{}
 	action.rf = rf
-	action.rsrf = systemAdminAction.rsrf
+	action.mbrf = systemAdminAction.mbrf
 	action.systemAdmin = systemAdminAction.SystemAdmin
 	for _, option := range options {
 		if err := option(ctx, &action); err != nil {

@@ -62,18 +62,6 @@ func (h *DeckHandler) FindDecks(c *gin.Context) {
 	}, h.errorHandle)
 }
 
-// func (h *DeckHandler) toDeckFindResultEntity(model *studentusecase.DeckFindResult) *DeckFindResult {
-// 	results := make([]*DeckFindModel, len(model.Results))
-// 	for i, r := range model.Results {
-// 		results[i] = &DeckFindModel{ID: r.ID, Name: r.Name}
-// 	}
-
-// 	return &DeckFindResult{
-// 		TotalCount: model.TotalCount,
-// 		Results:    results,
-// 	}
-// }
-
 func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
 		deckIDInt, err := helper.GetIntFromPath(c, "deckID")
@@ -117,7 +105,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 		}
 		deckID, err := h.deckCommandUsecase.AddDeck(ctx, operator, &param)
 		if err != nil {
-			h.logger.ErrorContext(ctx, fmt.Sprintf("deckCommandUsecase.AddDeck: %+v", err))
+			h.logger.ErrorContext(ctx, fmt.Sprintf("add deck: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}
@@ -154,28 +142,13 @@ func (h *DeckHandler) UpdateDeck(c *gin.Context) {
 		}
 
 		if err := h.deckCommandUsecase.UpdateDeck(ctx, operator, deckID, version, &param); err != nil {
-			return mbliberrors.Errorf("deckCommandUsecase.UpdateDeck: %w", err)
+			return mbliberrors.Errorf("update deck: %w", err)
 		}
 
 		c.Status(http.StatusOK)
 		return nil
 	}, h.errorHandle)
 }
-
-// func (h *DeckHandler) toDeckRetrieveResultEntity(model *deckretrievedomain.DeckModel) *DeckWithProblem {
-// 	problems := make([]*Problem, len(model.Problems))
-// 	for i, r := range model.Problems {
-// 		problems[i] = &Problem{
-// 			Type:       r.Type,
-// 			Properties: r.Properties,
-// 		}
-// 	}
-
-// 	return &DeckWithProblem{
-// 		ID:       model.ID,
-// 		Problems: problems,
-// 	}
-// }
 
 func (h *DeckHandler) errorHandle(ctx context.Context, c *gin.Context, err error) bool {
 	if errors.Is(err, mblibdomain.ErrInvalidArgument) {

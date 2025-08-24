@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
 type operator struct {
@@ -68,11 +68,13 @@ func (h *RBACHandler) AddPolicyToUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 		return
 	}
+	appUserID, err := mbuserdomain.NewAppUserID(apiParam.AppUserID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+		return
+	}
 
-	subject := mbuserdomain.NewRBACUser(strconv.Itoa(apiParam.AppUserID))
-	// action := mbuserdomain.NewRBACAction(apiParam.Action)
-	// object := mbuserdomain.NewRBACObject(apiParam.Object)
-	// effect := mbuserdomain.NewRBACEffect(apiParam.Effect)
+	subject := mbuserdomain.NewRBACAppUser(appUserID)
 
 	listofActionObjectEffect := make([]mbuserdomain.RBACActionObjectEffect, 0)
 	for _, aoe := range apiParam.ListOfActionObjectEffect {

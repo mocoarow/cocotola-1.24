@@ -8,10 +8,6 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 )
 
-// type TransactionManagerT[T any] interface {
-// 	Do(ctx context.Context, fn func(rf T) error) error
-// }
-
 type transactionManagerT[RF any] struct {
 	db  *gorm.DB
 	rff func(ctx context.Context, db *gorm.DB) (RF, error)

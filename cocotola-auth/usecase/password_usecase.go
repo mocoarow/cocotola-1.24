@@ -34,26 +34,18 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 
 	targetOorganization, targetAppUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *appUser, error) {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
-			// service.WithOrganizationRepository(),
 			service.WithOrganizationByName(organizationName),
-			// service.WithAppUserRepository(),
 		)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("new organization action: %w", err)
-		}
-		// if action.AppUserRepo == nil {
-		// 	return nil, nil, mbliberrors.Errorf("app user repository is nil")
-		// }
-		if action.Organization == nil {
+		} else if action.Organization == nil {
 			return nil, nil, mbliberrors.Errorf("organization is nil")
 		}
 
 		verified, err := action.SystemOwner.VerifyPassword(ctx, loginID, password)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("action.appUserRepo.VerifyPassword: %w", err)
-		}
-
-		if !verified {
+		} else if !verified {
 			return nil, nil, domain.ErrUnauthenticated
 		}
 

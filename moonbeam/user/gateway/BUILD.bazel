@@ -51,6 +51,7 @@ go_test(
     deps = [
         "//moonbeam/lib/domain",
         "//moonbeam/lib/gateway",
+        "//moonbeam/lib/service",
         "//moonbeam/sqls",
         "//moonbeam/testlib/gateway",
         "//moonbeam/user/domain",

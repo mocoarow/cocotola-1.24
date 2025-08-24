@@ -89,7 +89,7 @@ func (m *SystemAdmin) FindOrganizationByName(ctx context.Context, name string) (
 }
 
 func (m *SystemAdmin) addSystemOwnerToOrganization(ctx context.Context, authorizationManager AuthorizationManager, organizationID *domain.OrganizationID, organizationName string) (*SystemOwner, error) {
-	systemOwnerID, err := m.appUserRepo.AddSystemOwner(ctx, m, organizationID)
+	_, err := m.appUserRepo.AddSystemOwner(ctx, m, organizationID)
 	if err != nil {
 		return nil, liberrors.Errorf("failed to AddSystemOwner. error: %w", err)
 	}
@@ -100,8 +100,8 @@ func (m *SystemAdmin) addSystemOwnerToOrganization(ctx context.Context, authoriz
 	}
 
 	// 3. add policy to "system-owner" user
-	rbacSystemOwner := NewRBACAppUser(organizationID, systemOwnerID)
-	rbacAllUserRolesObject := NewRBACAllUserRolesObject(organizationID)
+	rbacSystemOwner := systemOwner.AppUserID().GetRBACSubject()
+	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(organizationID)
 	// - "system-owner" user "can" "set" "all-user-roles"
 	if err := authorizationManager.AddPolicyToUserBySystemAdmin(ctx, m, organizationID, rbacSystemOwner, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 
 	// // 3. add policy to "system-owner" user
 	// rbacSystemOwner := NewRBACAppUser(organizationID, systemOwnerID)
-	rbacAllUserRolesObject := NewRBACAllUserRolesObject(organizationID)
+	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(organizationID)
 	// // - "system-owner" user "can" "set" "all-user-roles"
 	// if err := authorizationManager.AddPolicyToUserBySystemAdmin(ctx, m, organizationID, rbacSystemOwner, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
 	// 	return nil, err
@@ -189,7 +189,7 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 		return nil, err
 	}
 
-	rbacOwnerGroup := NewRBACUserRole(organizationID, ownerGroup.UserGroupID())
+	rbacOwnerGroup := domain.NewRBACUserRole(organizationID, ownerGroup.UserGroupID())
 	// - "owner" group "can" "set" "all-user-roles"
 	if err := authorizationManager.AddPolicyToGroupBySystemAdmin(ctx, m, organizationID, rbacOwnerGroup, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
 		return nil, err
@@ -211,28 +211,9 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 	return organizationID, nil
 }
 
-func NewRBACOrganization(organizationID *domain.OrganizationID) domain.RBACDomain {
-	return domain.NewRBACDomain(fmt.Sprintf("domain:%d", organizationID.Int()))
-}
-
-func NewRBACAppUser(organizationID *domain.OrganizationID, appUserID *domain.AppUserID) domain.RBACUser {
-	return domain.NewRBACUser(fmt.Sprintf("user:%d", appUserID.Int()))
-}
-
 //	func NewRBACUserRole(userRoleID domain.UserGroupID) domain.RBACRole {
 //		return domain.NewRBACRole(fmt.Sprintf("role_%d", userRoleID.Int()))
 //	}
-func NewRBACUserRole(organizationID *domain.OrganizationID, userGroupID *domain.UserGroupID) domain.RBACRole {
-	return domain.NewRBACRole(fmt.Sprintf("domain:%d,role:%d", organizationID.Int(), userGroupID.Int()))
-}
-
-func NewRBACUserRoleObject(organizationID *domain.OrganizationID, userRoleID *domain.UserGroupID) domain.RBACObject {
-	return domain.NewRBACObject(fmt.Sprintf("domain:%d,role:%d", organizationID.Int(), userRoleID.Int()))
-}
-
-func NewRBACAllUserRolesObject(organizationID *domain.OrganizationID) domain.RBACObject {
-	return domain.NewRBACObject(fmt.Sprintf("domain:%d,role:*", organizationID.Int()))
-}
 
 var RBACSetAction = domain.NewRBACAction("Set")
 var RBACUnsetAction = domain.NewRBACAction("Unset")

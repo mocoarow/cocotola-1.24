@@ -2,7 +2,6 @@ package resourcemanager
 
 import (
 	"context"
-	"fmt"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
@@ -43,7 +42,7 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 	}
 
 	// RBAC
-	deckObject := fmt.Sprintf("deck:%d", deckID)
+	deckObject := deckID.GetRBACObject()
 	// - "operator "can" "ListObject" "deck"
 	u.rbacClient.AddPolicyToUser(ctx, &libapi.AddPolicyToUserParameter{
 		OrganizationID: operator.OrganizationID().Int(),
@@ -51,22 +50,22 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 		ListOfActionObjectEffect: []libapi.ActionObjectEffect{
 			{
 				Action: mbuserdomain.NewRBACAction("ListCards").Action(),
-				Object: deckObject,
+				Object: deckObject.Object(),
 				Effect: mbuserservice.RBACAllowEffect.Effect(),
 			},
 			{
 				Action: mbuserdomain.NewRBACAction("GetDeck").Action(),
-				Object: deckObject,
+				Object: deckObject.Object(),
 				Effect: mbuserservice.RBACAllowEffect.Effect(),
 			},
 			{
 				Action: mbuserdomain.NewRBACAction("DeleteDeck").Action(),
-				Object: deckObject,
+				Object: deckObject.Object(),
 				Effect: mbuserservice.RBACAllowEffect.Effect(),
 			},
 			{
 				Action: mbuserdomain.NewRBACAction("UpdateDeck").Action(),
-				Object: deckObject,
+				Object: deckObject.Object(),
 				Effect: mbuserservice.RBACAllowEffect.Effect(),
 			},
 		},

@@ -19,4 +19,5 @@ type RepositoryFactory interface {
 
 	NewStateRepository(ctx context.Context) (StateRepository, error)
 }
+
 type TransactionManager mblibservice.TransactionManagerT[RepositoryFactory]

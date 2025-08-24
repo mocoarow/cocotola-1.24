@@ -16,7 +16,9 @@ import (
 
 	libdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	libgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
+	libservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	testlibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/testlib/gateway"
+
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
@@ -87,6 +89,7 @@ func RandString(n int) string {
 func testDB(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testService)) {
 	t.Helper()
 	ctx := context.Background()
+	resourceEventHandlerFuncs := libservice.ResourceEventHandlerFuncs{}
 	for dialect, db := range testlibgateway.ListDB() {
 		dialect := dialect
 		db := db
@@ -96,7 +99,7 @@ func testDB(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testServ
 			require.NoError(t, err)
 			defer sqlDB.Close()
 
-			rf, err := gateway.NewRepositoryFactory(ctx, dialect, dialect.Name(), db, loc)
+			rf, err := gateway.NewRepositoryFactory(ctx, dialect, dialect.Name(), db, loc, resourceEventHandlerFuncs)
 			require.NoError(t, err)
 			testService := testService{dialect: dialect, db: db, rf: rf}
 
@@ -152,8 +155,8 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 
 	// 3. add policy to "system-owner" user
 	t.Log(`add policy to "system-owner" user`)
-	rbacSysOwner := service.NewRBACAppUser(orgID, sysOwnerID)
-	rbacAllUserRolesObject := service.NewRBACAllUserRolesObject(orgID)
+	rbacSysOwner := domain.NewRBACAppUser(sysOwnerID)
+	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(orgID)
 	// - "system-owner" "can" "set" "all-user-roles"
 	err = authorizationManager.AddPolicyToUserBySystemAdmin(ctx, sysAd, orgID, rbacSysOwner, service.RBACSetAction, rbacAllUserRolesObject, service.RBACAllowEffect)
 	require.NoError(t, err)
@@ -168,7 +171,7 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 	require.NoError(t, err)
 
 	// 5. add policty to "owner" group
-	rbacOwnerGroup := service.NewRBACUserRole(orgID, ownerGroupID)
+	rbacOwnerGroup := domain.NewRBACUserRole(orgID, ownerGroupID)
 	// - "owner" group "can" "set" "all-user-roles"
 	err = authorizationManager.AddPolicyToGroupBySystemAdmin(ctx, sysAd, orgID, rbacOwnerGroup, service.RBACSetAction, rbacAllUserRolesObject, service.RBACAllowEffect)
 	require.NoError(t, err)

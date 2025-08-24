@@ -24,17 +24,17 @@ func NewRBACUsecase(txManager, nonTxManager service.TransactionManager) *RBACUse
 
 func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, listOfActionObjectEffect []mbuserdomain.RBACActionObjectEffect) error {
 	return mblibservice.Do0(ctx, u.txManager, func(rf service.RepositoryFactory) error {
-		rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
+		mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 		if err != nil {
 			return err
 		}
 
-		sysAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
+		sysAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
 		if err != nil {
 			return err
 		}
 
-		authorizationManager, err := rsrf.NewAuthorizationManager(ctx)
+		authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
 		if err != nil {
 			return err
 		}

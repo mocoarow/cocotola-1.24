@@ -4,8 +4,6 @@ import (
 	"embed"
 	"os"
 
-	// _ "embed"
-
 	"go.yaml.in/yaml/v4"
 
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"

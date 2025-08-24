@@ -3,8 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 )
 
 type AppUserInfo struct {

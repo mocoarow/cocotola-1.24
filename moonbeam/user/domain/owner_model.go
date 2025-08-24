@@ -1,10 +1,5 @@
 package domain
 
-// type OwnerModel interface {
-// 	AppUserModel
-// 	IsOwnerModel() bool
-// }
-
 type OwnerModel struct {
 	*AppUserModel
 }

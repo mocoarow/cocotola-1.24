@@ -8,9 +8,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	liblibcontroller "github.com/mocoarow/cocotola-1.24/lib/controller"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+
+	liblibcontroller "github.com/mocoarow/cocotola-1.24/lib/controller"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"

@@ -25,11 +25,11 @@ type systemOwnerByOrganizationName struct {
 }
 
 func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
-	rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
+	mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 	if err != nil {
 		return nil, err
 	}
-	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
+	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
 	if err != nil {
 		return nil, err
 	}

@@ -1,5 +1,9 @@
 package domain
 
+import (
+	"fmt"
+)
+
 // type RBACUser string
 // type RBACRole string
 // type RBACObject string
@@ -22,7 +26,7 @@ func NewRBACUser(value string) RBACUser {
 }
 
 func (r *rbacUser) Subject() string {
-	return "user:" + r.value
+	return r.value
 }
 
 type RBACRole interface {
@@ -113,4 +117,24 @@ type RBACActionObjectEffect struct {
 	Action RBACAction
 	Object RBACObject
 	Effect RBACEffect
+}
+
+func NewRBACOrganization(organizationID *OrganizationID) RBACDomain {
+	return NewRBACDomain(fmt.Sprintf("domain:%d", organizationID.Int()))
+}
+
+func NewRBACAppUser(appUserID *AppUserID) RBACUser {
+	return NewRBACUser(fmt.Sprintf("user:%d", appUserID.Int()))
+}
+
+func NewRBACUserRole(organizationID *OrganizationID, userGroupID *UserGroupID) RBACRole {
+	return NewRBACRole(fmt.Sprintf("domain:%d,role:%d", organizationID.Int(), userGroupID.Int()))
+}
+
+func NewRBACUserRoleObject(organizationID *OrganizationID, userRoleID *UserGroupID) RBACObject {
+	return NewRBACObject(fmt.Sprintf("domain:%d,role:%d", organizationID.Int(), userRoleID.Int()))
+}
+
+func NewRBACAllUserRolesObject(organizationID *OrganizationID) RBACObject {
+	return NewRBACObject(fmt.Sprintf("domain:%d,role:*", organizationID.Int()))
 }

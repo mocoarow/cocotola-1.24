@@ -23,7 +23,7 @@ func NewSystemOwnerModel(appUser *OwnerModel) (*SystemOwnerModel, error) {
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
+		return nil, liberrors.Errorf("validate system owner model: %w", err)
 	}
 
 	return m, nil

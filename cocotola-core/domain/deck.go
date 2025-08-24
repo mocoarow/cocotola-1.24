@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"fmt"
+
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
@@ -21,6 +23,9 @@ func (v *DeckID) Int() int {
 }
 func (v *DeckID) IsDeckID() bool {
 	return true
+}
+func (v *DeckID) GetRBACObject() mbuserdomain.RBACObject {
+	return mbuserdomain.NewRBACObject("deck:" + fmt.Sprint(v.Value))
 }
 
 type DeckModel struct {
@@ -45,7 +50,7 @@ func NewDeckModel(baseModel *mblibdomain.BaseModel, organizationID *mbuserdomain
 	}
 
 	if err := mblibdomain.Validator.Struct(m); err != nil {
-		return nil, mbliberrors.Errorf("validate: %w", err)
+		return nil, mbliberrors.Errorf("validate deck model: %w", err)
 	}
 
 	return m, nil

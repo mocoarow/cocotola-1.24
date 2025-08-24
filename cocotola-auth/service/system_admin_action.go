@@ -8,36 +8,34 @@ import (
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 )
 
-type systemAdminAction struct {
+type SystemAdminAction struct {
 	rf          RepositoryFactory
-	rsrf        mbuserservice.RepositoryFactory
+	mbrf        mbuserservice.RepositoryFactory
 	SystemAdmin *mbuserservice.SystemAdmin
 }
 
-type SystemAdminActionOption func(context.Context, *systemAdminAction) error
-
-func (a *systemAdminAction) initRsrf(ctx context.Context) error {
-	if a.rsrf != nil {
+func (a *SystemAdminAction) initMbrf(ctx context.Context) error {
+	if a.mbrf != nil {
 		return nil
 	}
 
-	rsrf, err := a.rf.NewMoonBeamRepositoryFactory(ctx)
+	mbrf, err := a.rf.NewMoonBeamRepositoryFactory(ctx)
 	if err != nil {
 		return err
 	}
-	a.rsrf = rsrf
+	a.mbrf = mbrf
 	return nil
 }
 
-func (a *systemAdminAction) initSystemAdmin(ctx context.Context) error {
+func (a *SystemAdminAction) initSystemAdmin(ctx context.Context) error {
 	if a.SystemAdmin != nil {
 		return nil
 	}
-	if err := a.initRsrf(ctx); err != nil {
+	if err := a.initMbrf(ctx); err != nil {
 		return err
 	}
 
-	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, a.rsrf)
+	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, a.mbrf)
 	if err != nil {
 		return err
 	}
@@ -45,25 +43,11 @@ func (a *systemAdminAction) initSystemAdmin(ctx context.Context) error {
 	return nil
 }
 
-// func WithSystemAdmin() SystemAdminActionOption {
-// 	return func(ctx context.Context, action *systemAdminAction) error {
-// 		if err := action.initSystemAdmin(ctx); err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	}
-// }
-
-func NewSystemAdminAction(ctx context.Context, systemToken libdomain.SystemToken, rf RepositoryFactory, options ...SystemAdminActionOption) (*systemAdminAction, error) {
-	action := systemAdminAction{}
+func NewSystemAdminAction(ctx context.Context, systemToken libdomain.SystemToken, rf RepositoryFactory) (*SystemAdminAction, error) {
+	action := SystemAdminAction{}
 	action.rf = rf
 	if err := action.initSystemAdmin(ctx); err != nil {
 		return nil, err
 	}
-	// for _, option := range options {
-	// 	if err := option(ctx, &action); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
 	return &action, nil
 }

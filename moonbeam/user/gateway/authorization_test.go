@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
@@ -31,7 +32,7 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 			ownerGroup, err := userGroupRepo.FindUserGroupByKey(ctx, owner, service.OwnerGroupKey)
 			require.NoError(t, err)
 
-			rbacRoleObject := service.NewRBACUserRoleObject(orgID, ownerGroup.UserGroupID())
+			rbacRoleObject := domain.NewRBACUserRoleObject(orgID, ownerGroup.UserGroupID())
 
 			// when
 			ok, err := authorizationManager.Authorize(ctx, owner, service.RBACSetAction, rbacRoleObject)

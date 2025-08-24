@@ -8,7 +8,6 @@ import (
 )
 
 var ErrDeckAlreadyExists = errors.New("deck already exists")
-
 var ErrDeckNotFound = errors.New("deck not found")
 
 type DeckAddParameter struct {

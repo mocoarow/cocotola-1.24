@@ -36,31 +36,27 @@ func NewUserUsecase(systemToken libdomain.SystemToken, txManager, nonTxManager s
 }
 
 func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator service.OperatorInterface, param *mbuserservice.AppUserAddParameter) (*domain.AuthTokenSet, error) {
-	var tokenSet *domain.AuthTokenSet
-	var targetOorganization *organization
-	var targetAppUser *appUser
-
 	action := mbuserdomain.NewRBACAction("CreateAppUser")
 	object := mbuserdomain.NewRBACObject("*")
 	ok, err := service.Authorize(ctx, operator, action, object, u.nonTxManager)
 	if err != nil {
 		return nil, mbliberrors.Errorf("authorize: %w", err)
-	}
-	if !ok {
+	} else if !ok {
 		u.logger.InfoContext(ctx, "operator is not authorized to create app user")
 		return nil, domain.ErrUnauthenticated
 	}
 
-	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
-		createAppUserParameterFunc := func() (*mbuserservice.AppUserAddParameter, error) {
-			return param, nil
-		}
+	createAppUserParameterFunc := func() (*mbuserservice.AppUserAddParameter, error) {
+		return param, nil
+	}
 
+	var targetOorganization *organization
+	var targetAppUser *appUser
+	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
 		tmpOrganization, tmpAppUser, err := registerAppUser(ctx, u.systemToken, rf, operator.OrganizationID(), param.LoginID(), createAppUserParameterFunc)
 		if err != nil && !errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
-			return mbliberrors.Errorf("s.registerAppUser: %w", err)
-		}
-		if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
+			return mbliberrors.Errorf("register app user: %w", err)
+		} else if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
 			return mbuserservice.ErrAppUserAlreadyExists
 		}
 
@@ -79,13 +75,12 @@ func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator service.Oper
 		}
 		return nil
 	}); err != nil {
-		return nil, mbliberrors.Errorf("RegisterAppUser: %w", err)
+		return nil, err
 	}
 
-	tokenSetTmp, err := u.authTokenManager.CreateTokenSet(ctx, targetAppUser, targetOorganization)
+	tokenSet, err := u.authTokenManager.CreateTokenSet(ctx, targetAppUser, targetOorganization)
 	if err != nil {
-		return nil, mbliberrors.Errorf("s.authTokenManager.CreateTokenSet: %w", err)
+		return nil, mbliberrors.Errorf("create token set: %w", err)
 	}
-	tokenSet = tokenSetTmp
 	return tokenSet, nil
 }

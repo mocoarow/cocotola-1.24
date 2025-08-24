@@ -16,20 +16,20 @@ import (
 )
 
 func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, transactionManager service.TransactionManager) gin.HandlerFunc {
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AuthMiddleware"))
+
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		ctx, span := tracer.Start(ctx, "AuthMiddleware")
 		defer span.End()
-
-		logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AuthMiddleware"))
 
 		authorization := c.GetHeader("Authorization")
 		if !strings.HasPrefix(authorization, "Bearer ") {
 			logger.InfoContext(ctx, "invalid header. Bearer not found")
 			return
 		}
-		bearerToken := authorization[len("Bearer "):]
 
+		bearerToken := authorization[len("Bearer "):]
 		appUserModel, err := service.GetUserInfo(ctx, systemToken, authTokenManager, transactionManager, bearerToken)
 		if err != nil {
 			logger.WarnContext(ctx, fmt.Sprintf("getUserInfo: %v", err))

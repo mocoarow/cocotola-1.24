@@ -92,7 +92,9 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
 
-	initApp1(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
+	if err := initApp1(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword); err != nil {
+		return mbliberrors.Errorf("initApp1: %w", err)
+	}
 
 	return nil
 }
@@ -111,10 +113,11 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 // 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, authMiddleware, privateRouterGroupFuncs)
 // }
 
-func initApp1(ctx context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, organizationName, loginID, password string) {
+func initApp1(ctx context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, organizationName, loginID, password string) error {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
 
 	if err := nonTxManager.Do(ctx, func(rf service.RepositoryFactory) error {
+		// 1. check whether the organization already exists
 		systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
 		if err != nil {
 			return mbliberrors.Errorf("new organization action: %w", err)
@@ -125,25 +128,27 @@ func initApp1(ctx context.Context, systemToken libdomain.SystemToken, txManager,
 			logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID().Int()))
 			return nil
 		} else if !errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
-			return mbliberrors.Errorf("failed to FindOrganizationByName. err: %w", err)
+			return mbliberrors.Errorf("find organization by name(%s): %w", organizationName, err)
 		}
 
+		// 2. add organization
 		firstOwnerAddParam, err := mbuserservice.NewAppUserAddParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
 		if err != nil {
-			return mbliberrors.Errorf("NewFirstOwnerAddParameter. err: %w", err)
+			return mbliberrors.Errorf("new AppUserAddParameter: %w", err)
 		}
 
 		organizationAddParameter, err := mbuserservice.NewOrganizationAddParameter(organizationName, firstOwnerAddParam)
 		if err != nil {
-			return mbliberrors.Errorf("NewOrganizationAddParameter. err: %w", err)
+			return mbliberrors.Errorf("new OrganizationAddParameter: %w", err)
 		}
 
 		organizationID, err := systemAdminAction.SystemAdmin.AddOrganization(ctx, organizationAddParameter)
 		if err != nil {
-			return mbliberrors.Errorf("AddOrganization. err: %w", err)
+			return mbliberrors.Errorf("add organization: %w", err)
 		}
 		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
 
+		// 3. add policy to "first-owner" user
 		systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
 			service.WithOrganizationByName(organizationName),
 			service.WithAuthorizationManager(),
@@ -159,7 +164,7 @@ func initApp1(ctx context.Context, systemToken libdomain.SystemToken, txManager,
 		logger.InfoContext(ctx, fmt.Sprintf("firstOwner: %d", firstOwner.AppUserID().Int()))
 
 		// first owner can create app users
-		subject := mbuserservice.NewRBACAppUser(organizationID, firstOwner.AppUserID())
+		subject := firstOwner.AppUserID().GetRBACSubject()
 		action := mbuserdomain.NewRBACAction("CreateAppUser")
 		object := mbuserdomain.NewRBACObject("*")
 		effect := mbuserservice.RBACAllowEffect
@@ -171,64 +176,7 @@ func initApp1(ctx context.Context, systemToken libdomain.SystemToken, txManager,
 		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
 		return nil
 	}); err != nil {
-		panic(err)
+		return err
 	}
-
-	// addOrganizationFunc := func(ctx context.Context, systemAdmin *mbuserservice.SystemAdmin) error {
-	// 	organization, err := systemAdmin.FindOrganizationByName(ctx, organizationName)
-	// 	if err == nil {
-	// 		logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID().Int()))
-	// 		return nil
-	// 	} else if !errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
-	// 		return mbliberrors.Errorf("failed to FindOrganizationByName. err: %w", err)
-	// 	}
-
-	// 	firstOwnerAddParam, err := mbuserservice.NewAppUserAddParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
-	// 	if err != nil {
-	// 		return mbliberrors.Errorf("NewFirstOwnerAddParameter. err: %w", err)
-	// 	}
-
-	// 	organizationAddParameter, err := mbuserservice.NewOrganizationAddParameter(organizationName, firstOwnerAddParam)
-	// 	if err != nil {
-	// 		return mbliberrors.Errorf("NewOrganizationAddParameter. err: %w", err)
-	// 	}
-
-	// 	organizationID, err := systemAdmin.AddOrganization(ctx, organizationAddParameter)
-	// 	if err != nil {
-	// 		return mbliberrors.Errorf("AddOrganization. err: %w", err)
-	// 	}
-
-	// 	logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
-	// 	return nil
-	// }
-
-	// if err := systemAdminAction(ctx, txManager, addOrganizationFunc); err != nil {
-	// 	panic(err)
-	// }
+	return nil
 }
-
-func systemAdminAction(ctx context.Context, transactionManager service.TransactionManager, fn func(context.Context, *mbuserservice.SystemAdmin) error) error {
-	return transactionManager.Do(ctx, func(rf service.RepositoryFactory) error {
-		rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-		if err != nil {
-			return mbliberrors.Errorf(". err: %w", err)
-		}
-
-		systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
-		if err != nil {
-			return mbliberrors.Errorf(". err: %w", err)
-		}
-
-		return fn(ctx, systemAdmin)
-	})
-}
-
-// func InitAppServer(ctx context.Context, rootRouterGroup gin.IRouter, corsConfig *mblibconfig.CORSConfig, debugConfig *libconfig.DebugConfig, appName string, publicRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
-// 	// cors
-// 	ginCorsConfig := mblibconfig.InitCORS(corsConfig)
-
-// 	// root
-// 	libcontroller.InitRootRouterGroup(ctx, rootRouterGroup, ginCorsConfig, debugConfig)
-
-// 	InitApiServer(ctx, rootRouterGroup, appName, publicRouterGroupFuncs)
-// }

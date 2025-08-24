@@ -18,8 +18,6 @@ import (
 	liblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 )
 
-// migrate_sqlite3 "github.com/golang-migrate/migrate/v4/database/sqlite"
-
 type DialectSQLite3 struct {
 }
 
