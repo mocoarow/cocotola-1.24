@@ -115,8 +115,8 @@ func NewInitAuthRouterFunc(authenticationUsecase AuthenticationUsecase) libcontr
 		}
 
 		authHandler := NewAuthHandler(authenticationUsecase)
-		parentRouterGroup.POST("refresh_token", authHandler.RefreshToken)
+		parentRouterGroup.POST("refresh-token", authHandler.RefreshToken)
 		parentRouterGroup.GET("userinfo", authHandler.GetUserInfo)
-		parentRouterGroup.POST("sign_in_with_id_token", authHandler.SignInWithIDToken)
+		parentRouterGroup.POST("sign-in-with-id-token", authHandler.SignInWithIDToken)
 	}
 }

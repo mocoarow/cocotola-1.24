@@ -8,4 +8,5 @@ import (
 
 type CocotolaRBACClient interface {
 	AddPolicyToUser(ctx context.Context, param *libapi.AddPolicyToUserParameter) error
+	CheckAuthorization(ctx context.Context, param *libapi.AuthorizeRequest) (bool, error)
 }

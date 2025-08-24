@@ -38,7 +38,7 @@ func NewUserUsecase(systemToken libdomain.SystemToken, txManager, nonTxManager s
 func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator service.OperatorInterface, param *mbuserservice.AppUserAddParameter) (*domain.AuthTokenSet, error) {
 	action := mbuserdomain.NewRBACAction("CreateAppUser")
 	object := mbuserdomain.NewRBACObject("*")
-	ok, err := service.Authorize(ctx, operator, action, object, u.nonTxManager)
+	ok, err := service.CheckAuthorization(ctx, operator, action, object, u.nonTxManager)
 	if err != nil {
 		return nil, mbliberrors.Errorf("authorize: %w", err)
 	} else if !ok {

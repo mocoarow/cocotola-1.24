@@ -35,7 +35,7 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 			rbacRoleObject := domain.NewRBACUserRoleObject(orgID, ownerGroup.UserGroupID())
 
 			// when
-			ok, err := authorizationManager.Authorize(ctx, owner, service.RBACSetAction, rbacRoleObject)
+			ok, err := authorizationManager.CheckAuthorization(ctx, owner, service.RBACSetAction, rbacRoleObject)
 			assert.NoError(t, err)
 			// then
 			assert.True(t, ok, "owner should be able to make anyone belong to owner-group")
@@ -44,7 +44,7 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 			}
 
 			// when
-			ok, err = authorizationManager.Authorize(ctx, user2, service.RBACSetAction, rbacRoleObject)
+			ok, err = authorizationManager.CheckAuthorization(ctx, user2, service.RBACSetAction, rbacRoleObject)
 			assert.NoError(t, err)
 			// then
 			assert.False(t, ok, "standard-user should not be able to make other users belong to owner-group")
@@ -54,7 +54,7 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 			err = authorizationManager.AddUserToGroup(ctx, owner, user1.AppUserID(), ownerGroup.UserGroupID())
 			require.NoError(t, err)
 			// when
-			ok, err = authorizationManager.Authorize(ctx, user1, service.RBACSetAction, rbacRoleObject)
+			ok, err = authorizationManager.CheckAuthorization(ctx, user1, service.RBACSetAction, rbacRoleObject)
 			assert.NoError(t, err)
 			// then
 			// - user1 can make sure user3 belong to group1 because user1 belongs to owner-group

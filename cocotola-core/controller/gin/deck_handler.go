@@ -96,10 +96,23 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}
+		templateID, err := domain.NewTemplateID(apiParam.TemplateID)
+		if err != nil {
+			h.logger.WarnContext(ctx, fmt.Sprintf("NewTemplateID: %+v", err))
+			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+			return nil
+		}
+		spaceID, err := domain.NewSpaceID(apiParam.SpaceID)
+		if err != nil {
+			h.logger.WarnContext(ctx, fmt.Sprintf("NewSpaceID: %+v", err))
+			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+			return nil
+		}
 
 		param := service.DeckAddParameter{
+			SpaceID:     spaceID,
 			Name:        apiParam.Name,
-			TemplateID:  apiParam.TemplateID,
+			TemplateID:  templateID,
 			Lang2:       apiParam.Lang2,
 			Description: apiParam.Description,
 		}

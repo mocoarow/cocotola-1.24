@@ -9,6 +9,7 @@ import (
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -18,6 +19,7 @@ type DeckEntity struct {
 	mbusergateway.BaseModelEntity
 	ID             int
 	OrganizationID int
+	SpaceID        int
 	OwnerID        int
 	TemplateID     int
 	Name           string
@@ -40,6 +42,16 @@ func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 		return nil, mbliberrors.Errorf("new organization id(%d): %w", e.OrganizationID, err)
 	}
 
+	deckID, err := domain.NewDeckID(e.ID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new deck id(%d): %w", e.ID, err)
+	}
+
+	spaceID, err := domain.NewSpaceID(e.ID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new space id(%d): %w", e.ID, err)
+	}
+
 	ownerID, err := mbuserdomain.NewAppUserID(e.OwnerID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
@@ -47,7 +59,9 @@ func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 
 	deckModel, err := domain.NewDeckModel(
 		baseModel,
+		deckID,
 		organizationID,
+		spaceID,
 		ownerID,
 		e.Name,
 		e.TemplateID,
@@ -66,9 +80,7 @@ func (e *DeckEntity) toDeck() (*service.Deck, error) {
 	if err != nil {
 		return nil, mbliberrors.Errorf("to deck model: %w", err)
 	}
-	deck := &service.Deck{
-		DeckModel: deckModel,
-	}
+	deck := &service.Deck{DeckModel: deckModel}
 	return deck, nil
 }
 
@@ -82,7 +94,7 @@ func NewDeckRepository(db *gorm.DB) service.DeckRepository {
 	}
 }
 
-func (r *deckRepository) AddDeck(ctx context.Context, operator service.OperatorInterface, param *service.DeckAddParameter) (*domain.DeckID, error) {
+func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.DeckAddParameter) (*domain.DeckID, error) {
 	_, span := tracer.Start(ctx, "deckRepository.AddDeck")
 	defer span.End()
 
@@ -93,8 +105,9 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator service.OperatorI
 			UpdatedBy: operator.AppUserID().Int(),
 		},
 		OrganizationID: operator.OrganizationID().Int(),
+		SpaceID:        param.SpaceID.Int(),
 		OwnerID:        operator.AppUserID().Int(),
-		TemplateID:     param.TemplateID,
+		TemplateID:     param.TemplateID.Int(),
 		Name:           param.Name,
 		Lang2:          param.Lang2,
 		Description:    param.Description,

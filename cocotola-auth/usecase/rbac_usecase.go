@@ -52,6 +52,6 @@ func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuse
 	})
 }
 
-func (u *RBACUsecase) Authorize(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error) {
-	return service.Authorize(ctx, operator, action, object, u.nonTxManager)
+func (u *RBACUsecase) CheckAuthorization(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error) {
+	return service.CheckAuthorization(ctx, operator, action, object, u.nonTxManager)
 }

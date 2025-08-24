@@ -64,21 +64,21 @@ func (c *cocotolaRBACClient) AddPolicyToUser(ctx context.Context, param *libapi.
 	return nil
 }
 
-func (c *cocotolaRBACClient) Authorize(ctx context.Context, param *libapi.AuthorizeRequest) error {
-	ctx, span := tracer.Start(ctx, "cocotolaRBACClient.Authorize")
+func (c *cocotolaRBACClient) CheckAuthorization(ctx context.Context, param *libapi.AuthorizeRequest) (bool, error) {
+	ctx, span := tracer.Start(ctx, "cocotolaRBACClient.CheckAuthorization")
 	defer span.End()
 
 	u := *c.authEndpoint
-	u.Path = path.Join(u.Path, "v1", "rbac", "authorize")
+	u.Path = path.Join(u.Path, "v1", "rbac", "check-authorization")
 
 	jsonParam, err := json.Marshal(param)
 	if err != nil {
-		return mbliberrors.Errorf("json.Marshal: %w", err)
+		return false, mbliberrors.Errorf("json.Marshal: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, u.String(), bytes.NewBuffer(jsonParam))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewBuffer(jsonParam))
 	if err != nil {
-		return mbliberrors.Errorf("new http request: %w", err)
+		return false, mbliberrors.Errorf("new http request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -86,13 +86,17 @@ func (c *cocotolaRBACClient) Authorize(ctx context.Context, param *libapi.Author
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return mbliberrors.Errorf("authorize request: %w", err)
+		return false, mbliberrors.Errorf("check-authorization request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return mbliberrors.Errorf("unexpected status code: %d", resp.StatusCode)
+		return false, mbliberrors.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	return nil
+	apiResp := libapi.AuthorizeResponse{}
+	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
+		return false, mbliberrors.Errorf("decode response body: %w", err)
+	}
+	return apiResp.Authorized, nil
 }

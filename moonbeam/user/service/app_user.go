@@ -8,6 +8,11 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
+type OperatorInterface interface {
+	AppUserID() *domain.AppUserID
+	OrganizationID() *domain.OrganizationID
+}
+
 type AppUserInterface interface {
 	AppUserID() *domain.AppUserID
 	OrganizationID() *domain.OrganizationID

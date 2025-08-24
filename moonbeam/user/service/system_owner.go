@@ -111,11 +111,10 @@ func (m *SystemOwner) AddFirstOwner(ctx context.Context, param AppUserAddParamet
 	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(m.OrganizationID())
 
 	// Can "the operator" "set" "all-user-roles" ?
-	ok, err := m.authorizationManager.Authorize(ctx, m, RBACSetAction, rbacAllUserRolesObject)
+	ok, err := m.authorizationManager.CheckAuthorization(ctx, m, RBACSetAction, rbacAllUserRolesObject)
 	if err != nil {
 		return nil, err
-	}
-	if !ok {
+	} else if !ok {
 		return nil, libdomain.ErrPermissionDenied
 	}
 

@@ -131,7 +131,7 @@ func (m *authorizationManager) AddPolicyToGroupBySystemAdmin(ctx context.Context
 	return nil
 }
 
-func (m *authorizationManager) Authorize(ctx context.Context, operator service.AppUserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error) {
+func (m *authorizationManager) CheckAuthorization(ctx context.Context, operator service.AppUserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error) {
 	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
 
 	userGroupRepo := m.rf.NewUserGroupRepository(ctx)

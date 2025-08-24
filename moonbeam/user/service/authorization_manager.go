@@ -37,5 +37,5 @@ type AuthorizationManager interface {
 
 	// RemovePolicyToGroup()
 
-	Authorize(ctx context.Context, operator AppUserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error)
+	CheckAuthorization(ctx context.Context, operator AppUserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error)
 }

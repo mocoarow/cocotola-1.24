@@ -39,8 +39,9 @@ type SystemAdminInterface interface {
 type RBACUsecase interface {
 	// Who can do what actions on which resources
 	AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, listOfActionObjectEffect []mbuserdomain.RBACActionObjectEffect) error
+	// Authorize(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error)
 	// Check whether the operator can do the action on the object
-	Authorize(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error)
+	CheckAuthorization(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error)
 }
 
 type RBACHandler struct {
@@ -96,7 +97,7 @@ func (h *RBACHandler) AddPolicyToGroup(c *gin.Context) {
 
 }
 
-func (h *RBACHandler) Authorize(c *gin.Context) {
+func (h *RBACHandler) CheckAuthorization(c *gin.Context) {
 	ctx := c.Request.Context()
 	apiParam := libapi.AuthorizeRequest{}
 	if err := c.ShouldBindJSON(&apiParam); err != nil {
@@ -122,7 +123,7 @@ func (h *RBACHandler) Authorize(c *gin.Context) {
 		organizationID: organizationID,
 	}
 
-	ok, err := h.rbacUsecase.Authorize(ctx, operator, mbuserdomain.NewRBACAction(apiParam.Action), mbuserdomain.NewRBACObject(apiParam.Object))
+	ok, err := h.rbacUsecase.CheckAuthorization(ctx, operator, mbuserdomain.NewRBACAction(apiParam.Action), mbuserdomain.NewRBACObject(apiParam.Object))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
 		return
@@ -143,6 +144,7 @@ func NewInitRBACRouterFunc(rbacUsecase RBACUsecase) libcontroller.InitRouterGrou
 		rbacHandler := NewRBACHandler(rbacUsecase)
 		rbac.PUT("policy/user", rbacHandler.AddPolicyToUser)
 		rbac.PUT("policy/group", rbacHandler.AddPolicyToGroup)
-		rbac.POST("authorize", rbacHandler.Authorize)
+		// rbac.POST("authorize", rbacHandler.Authorize)
+		rbac.POST("check-authorization", rbacHandler.CheckAuthorization) // TODO: implement
 	}
 }

@@ -145,6 +145,7 @@ type DeckRetrieveResult struct {
 }
 
 type DeckAddParameter struct {
+	SpaceID     int    `json:"spaceId" binding:"required"`
 	Name        string `json:"name" binding:"required"`
 	TemplateID  int    `json:"temlateId"`
 	Lang2       string `json:"lang2" binding:"required"`

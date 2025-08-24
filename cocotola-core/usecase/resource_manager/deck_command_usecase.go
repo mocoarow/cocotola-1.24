@@ -3,6 +3,7 @@ package resourcemanager
 import (
 	"context"
 
+	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
@@ -29,6 +30,21 @@ func NewDeckCommandUsecase(txManager, nonTxManager service.TransactionManager, r
 }
 
 func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.OperatorInterface, param *service.DeckAddParameter) (*domain.DeckID, error) {
+	// check RBAC
+	action := mbuserdomain.NewRBACAction("CreateDeck")
+	object := mbuserdomain.NewRBACObject("*")
+	ok, err := u.rbacClient.CheckAuthorization(ctx, &libapi.AuthorizeRequest{
+		OrganizationID: operator.OrganizationID().Int(),
+		AppUserID:      operator.AppUserID().Int(),
+		Action:         action.Action(),
+		Object:         object.Object(),
+	})
+	if err != nil {
+		return nil, mbliberrors.Errorf("authorize: %w", err)
+	} else if !ok {
+		return nil, mblibdomain.ErrPermissionDenied
+	}
+
 	//
 	deckID, err := mblibservice.Do1(ctx, u.txManager, func(rf service.RepositoryFactory) (*domain.DeckID, error) {
 		deckRepo, err := rf.NewDeckRepository(ctx)

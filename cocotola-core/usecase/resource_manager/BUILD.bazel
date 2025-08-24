@@ -9,6 +9,7 @@ go_library(
         "//cocotola-core/domain",
         "//cocotola-core/service",
         "//lib/api",
+        "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
