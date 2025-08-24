@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
@@ -161,7 +162,7 @@ func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.Ope
 		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
 		Where("owner_id = ?", uint(operator.AppUserID().Int())).
 		Where("id = ?", spaceID.Int()).First(&spaceE); result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrSpaceNotFound
 		}
 		return nil, mbliberrors.Errorf("spaceRepository.GetSpaceByID: %w", result.Error)

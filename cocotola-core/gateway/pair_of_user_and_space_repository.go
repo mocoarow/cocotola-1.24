@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"context"
-	"fmt"
 
 	"gorm.io/gorm"
 
@@ -91,10 +90,6 @@ func (r *pairOfUserAndSpaceRepository) FindSpacesByUserID(ctx context.Context, o
 		Find(&spacesE); result.Error != nil {
 		return nil, result.Error
 	}
-
-	fmt.Printf("length:%d\n", len(spacesE))
-	fmt.Printf("organization_id:%d\n", operator.OrganizationID().Int())
-	fmt.Printf("app_user_id:%d\n", appUserID.Int())
 
 	spaces := make([]*service.Space, len(spacesE))
 	for i, e := range spacesE {

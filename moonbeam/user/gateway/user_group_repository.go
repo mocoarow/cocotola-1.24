@@ -68,7 +68,7 @@ type userGroupRepository struct {
 	db      *gorm.DB
 }
 
-func NewUserGroupRepository(ctx context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB) service.UserGroupRepository {
+func NewUserGroupRepository(_ context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB) service.UserGroupRepository {
 	return &userGroupRepository{
 		dialect: dialect,
 		db:      db,
@@ -98,7 +98,7 @@ func (r *userGroupRepository) FindAllUserGroups(ctx context.Context, operator se
 	return userGroupModels, nil
 }
 
-func (r *userGroupRepository) FindSystemOwnerGroup(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID) (*service.UserGroup, error) {
+func (r *userGroupRepository) FindSystemOwnerGroup(ctx context.Context, _ service.SystemAdminInterface, organizationID *domain.OrganizationID) (*service.UserGroup, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.FindSystemOwnerGroup")
 	defer span.End()
 
@@ -109,6 +109,7 @@ func (r *userGroupRepository) FindSystemOwnerGroup(ctx context.Context, operator
 	}).First(&userGroup); result.Error != nil {
 		return nil, result.Error
 	}
+
 	return userGroup.toUserGroup()
 }
 
@@ -122,6 +123,7 @@ func (r *userGroupRepository) FindUserGroupByID(ctx context.Context, operator se
 		First(&userGroup); result.Error != nil {
 		return nil, result.Error
 	}
+
 	return userGroup.toUserGroup()
 }
 
@@ -135,6 +137,7 @@ func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator s
 		First(&userGroup); result.Error != nil {
 		return nil, result.Error
 	}
+
 	return userGroup.toUserGroup()
 }
 

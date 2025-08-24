@@ -16,8 +16,8 @@ import (
 )
 
 type googleAuthResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"access_token"`  //nolint:tagliatelle
+	RefreshToken string `json:"refresh_token"` //nolint:tagliatelle
 }
 
 type googleUserInfo struct {
@@ -83,6 +83,8 @@ func (c *GoogleAuthClient) RetrieveAccessToken(ctx context.Context, code string)
 
 		if 400 <= resp.StatusCode && resp.StatusCode < 500 {
 			c.logger.InfoContext(ctx, fmt.Sprintf("retrieve access token. status: %d, param: %s, body:%s", resp.StatusCode, string(paramBytes), string(respBytes)))
+
+			return nil, mbliberrors.Errorf("retrieve access token. err: %w", domain.ErrUnauthenticated)
 		}
 
 		return nil, fmt.Errorf("retrieve access token. status: %d, body:%s", resp.StatusCode, string(respBytes))

@@ -51,8 +51,10 @@ func MetricsServerProcess(ctx context.Context, port int, gracefulShutdownTimeSec
 		defer shutdownCancel()
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
 			logger.InfoContext(ctx, fmt.Sprintf("Server forced to shutdown. err: %v", err))
+
 			return err
 		}
+
 		return nil
 	case err := <-errCh:
 		return err

@@ -7,7 +7,7 @@ import (
 )
 
 func NewWaitMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
+	return func(_ *gin.Context) {
 		time.Sleep(time.Second)
 	}
 }

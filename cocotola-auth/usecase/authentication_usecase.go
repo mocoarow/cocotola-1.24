@@ -31,7 +31,7 @@ type Authentication struct {
 	systemOwnerByOrganizationName SystemOwnerByOrganizationName
 }
 
-func NewAuthentication(systemToken libdomain.SystemToken, transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager, systemOwnerByOrganizationName SystemOwnerByOrganizationName) *Authentication {
+func NewAuthentication(_ libdomain.SystemToken, transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager, systemOwnerByOrganizationName SystemOwnerByOrganizationName) *Authentication {
 	return &Authentication{
 		transactionManager:            transactionManager,
 		authTokenManager:              authTokenManager,
@@ -44,6 +44,7 @@ func (u *Authentication) SignInWithIDToken(ctx context.Context, idToken string) 
 	if err != nil {
 		return nil, mbliberrors.Errorf("SignInWithIDToken. err: %w", err)
 	}
+
 	return tokenSet, nil
 }
 

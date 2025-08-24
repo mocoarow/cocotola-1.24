@@ -19,6 +19,7 @@ func NewSystemToken() SystemToken {
 		panic("system token can be created only once")
 	}
 	systemTokenCounter.Add(1)
+
 	return &systemToken{}
 }
 

@@ -21,11 +21,12 @@ func NewTransactionManager(db *gorm.DB, rff RepositoryFactoryFunc) (service.Tran
 }
 
 func (t *transactionManager) Do(ctx context.Context, fn func(rf service.RepositoryFactory) error) error {
-	return t.db.Transaction(func(tx *gorm.DB) error { // nolint:wrapcheck
+	return t.db.Transaction(func(tx *gorm.DB) error { //nolint:wrapcheck
 		rf, err := t.rff(ctx, tx)
 		if err != nil {
-			return err // nolint:wrapcheck
+			return err //nolint:wrapcheck
 		}
+
 		return fn(rf)
 	})
 }
@@ -40,6 +41,6 @@ func NewNoneTransactionManager(rf service.RepositoryFactory) (service.Transactio
 	}, nil
 }
 
-func (t *noneTransactionManager) Do(ctx context.Context, fn func(rf service.RepositoryFactory) error) error {
+func (t *noneTransactionManager) Do(_ context.Context, fn func(rf service.RepositoryFactory) error) error {
 	return fn(t.rf)
 }

@@ -5,16 +5,8 @@ import (
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 )
 
-// const SystemOwnerID = 2
-
-// type SystemOwnerModel interface {
-// 	OwnerModel
-// 	IsSystemOwnerModel() bool
-// }
-
 type SystemOwnerModel struct {
 	*OwnerModel
-	// AppUserID AppUserID
 }
 
 func NewSystemOwnerModel(appUser *OwnerModel) (*SystemOwnerModel, error) {
@@ -28,7 +20,3 @@ func NewSystemOwnerModel(appUser *OwnerModel) (*SystemOwnerModel, error) {
 
 	return m, nil
 }
-
-// func (m *systemOwnerModel) IsSystemOwnerModel() bool {
-// 	return true
-// }

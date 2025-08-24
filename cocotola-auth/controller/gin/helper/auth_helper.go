@@ -36,24 +36,28 @@ func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator
 	organizationIDInt := c.GetInt("OrganizationID")
 	if organizationIDInt == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 		return
 	}
 
 	organizationID, err := mbuserdomain.NewOrganizationID(organizationIDInt)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 		return
 	}
 
 	appUserID := c.GetInt("AuthorizedUser")
 	if appUserID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 		return
 	}
 
 	operatorID, err := mbuserdomain.NewAppUserID(appUserID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 		return
 	}
 

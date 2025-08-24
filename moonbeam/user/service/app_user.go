@@ -25,7 +25,7 @@ type AppUser struct {
 	*domain.AppUserModel
 }
 
-func NewAppUser(ctx context.Context, rf RepositoryFactory, appUserModel *domain.AppUserModel) (*AppUser, error) {
+func NewAppUser(_ context.Context, rf RepositoryFactory, appUserModel *domain.AppUserModel) (*AppUser, error) {
 	if rf == nil {
 		return nil, liberrors.Errorf("rf is nil. err: %w", libdomain.ErrInvalidArgument)
 	}

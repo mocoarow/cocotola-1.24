@@ -13,7 +13,6 @@ go_library(
     deps = [
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",
-        "@com_github_golang_migrate_migrate_v4//source/file",
         "@io_gorm_gorm//:gorm",
     ],
 )

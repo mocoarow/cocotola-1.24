@@ -134,7 +134,7 @@ func (e *appUserEntity) toAppUser(ctx context.Context, rf service.RepositoryFact
 	return appUser, nil
 }
 
-func NewAppUserRepository(ctx context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB, rf service.RepositoryFactory) service.AppUserRepository {
+func NewAppUserRepository(_ context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB, rf service.RepositoryFactory) service.AppUserRepository {
 	return &appUserRepository{
 		dialect: dialect,
 		db:      db,
@@ -142,7 +142,7 @@ func NewAppUserRepository(ctx context.Context, dialect libgateway.DialectRDBMS, 
 	}
 }
 
-func (r *appUserRepository) FindSystemOwnerByOrganizationID(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID) (*service.SystemOwner, error) {
+func (r *appUserRepository) FindSystemOwnerByOrganizationID(ctx context.Context, _ service.SystemAdminInterface, organizationID *domain.OrganizationID) (*service.SystemOwner, error) {
 	_, span := tracer.Start(ctx, "appUserRepository.FindSystemOwnerByOrganizationID")
 	defer span.End()
 
@@ -153,13 +153,14 @@ func (r *appUserRepository) FindSystemOwnerByOrganizationID(ctx context.Context,
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, liberrors.Errorf("system owner not found. organization ID: %d, err: %w", organizationID, service.ErrSystemOwnerNotFound)
 		}
+
 		return nil, result.Error
 	}
 
 	return appUser.toSystemOwner(ctx, r.rf, nil)
 }
 
-func (r *appUserRepository) FindSystemOwnerByOrganizationName(ctx context.Context, operator service.SystemAdminInterface, organizationName string, options ...service.Option) (*service.SystemOwner, error) {
+func (r *appUserRepository) FindSystemOwnerByOrganizationName(ctx context.Context, _ service.SystemAdminInterface, organizationName string, options ...service.Option) (*service.SystemOwner, error) {
 	_, span := tracer.Start(ctx, "appUserRepository.FindSystemOwnerByOrganizationName")
 	defer span.End()
 
@@ -305,7 +306,7 @@ func (r *appUserRepository) FindOwnerByLoginID(ctx context.Context, operator ser
 	return appUser.toOwner(r.rf, nil)
 }
 
-func (r *appUserRepository) addAppUser(ctx context.Context, appUserEntity *appUserEntity) (*domain.AppUserID, error) {
+func (r *appUserRepository) addAppUser(_ context.Context, appUserEntity *appUserEntity) (*domain.AppUserID, error) {
 	if result := r.db.Create(appUserEntity); result.Error != nil {
 		return nil, liberrors.Errorf("db.Create. err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrAppUserAlreadyExists))
 	}
@@ -381,6 +382,7 @@ func (r *appUserRepository) VerifyPassword(ctx context.Context, operator service
 	if err != nil {
 		return false, err
 	}
+
 	return ComparePasswords(appUserEntity.HashedPassword, password), nil
 }
 

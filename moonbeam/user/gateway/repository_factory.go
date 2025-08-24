@@ -23,7 +23,7 @@ type repositoryFactory struct {
 	apppUserEventHandler mblibservice.ResourceEventHandler
 }
 
-func NewRepositoryFactory(ctx context.Context, dialect libgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location, apppUserEventHandler mblibservice.ResourceEventHandler) (service.RepositoryFactory, error) {
+func NewRepositoryFactory(_ context.Context, dialect libgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location, apppUserEventHandler mblibservice.ResourceEventHandler) (service.RepositoryFactory, error) {
 	if db == nil {
 		return nil, liberrors.Errorf("db is nil. err: %w", libdomain.ErrInvalidArgument)
 	}
@@ -61,7 +61,7 @@ func (f *repositoryFactory) NewAuthorizationManager(ctx context.Context) (servic
 	return NewAuthorizationManager(ctx, f.dialect, f.db, f)
 }
 
-func (f *repositoryFactory) NewAppUserEventHandler(ctx context.Context) mblibservice.ResourceEventHandler {
+func (f *repositoryFactory) NewAppUserEventHandler(_ context.Context) mblibservice.ResourceEventHandler {
 	return f.apppUserEventHandler
 }
 

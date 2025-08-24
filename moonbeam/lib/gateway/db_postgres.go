@@ -10,7 +10,8 @@ import (
 
 	"github.com/golang-migrate/migrate/v4/database"
 	migrate_postgres "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	slog_gorm "github.com/orandin/slog-gorm"
 	gorm_postgres "gorm.io/driver/postgres"
@@ -47,9 +48,10 @@ func OpenPostgres(cfg *PostgresConfig, logLevel slog.Level, appName string) (*go
 	gormConfig := gorm.Config{
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
-			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(ctx context.Context) (slog.Value, bool) {
+			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
 				return slog.StringValue(appName + "-gorm"), true
 			}),
+			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, logLevel),
 		),
 	}
 
@@ -85,10 +87,11 @@ func InitPostgres(ctx context.Context, cfg *PostgresConfig, migration bool, logL
 
 	if migration {
 		if err := MigratePostgresDB(db, fs); err != nil {
-			return nil, nil, nil, liberrors.Errorf("failed to MigrateMySQLDB. err: %w", err)
+			return nil, nil, nil, liberrors.Errorf("migrage MySQL DB: %w", err)
 		}
 	}
 
 	dialect := DialectPostgres{}
+
 	return &dialect, db, sqlDB, nil
 }

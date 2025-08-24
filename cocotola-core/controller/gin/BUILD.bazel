@@ -4,7 +4,6 @@ go_library(
     name = "gin",
     srcs = [
         "app_router.go",
-        "baggage.go",
         "callback_handler.go",
         "deck_handler.go",
         "profile_handler.go",
@@ -31,7 +30,6 @@ go_library(
         "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_contrib_instrumentation_net_http_otelhttp//:otelhttp",
-        "@io_opentelemetry_go_otel//baggage",
     ],
 )
 

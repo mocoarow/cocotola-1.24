@@ -69,7 +69,6 @@ func newCallbackOnAddAppUser(cocotolaCoreCallbackClient service.CocotolaCoreCall
 			}
 		}(context.Background())
 	}
-
 }
 
 func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) error {
@@ -86,7 +85,7 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 		AddFunc: newCallbackOnAddAppUser(cocotolaCoreCallbackClient, logger),
 	}
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
-		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, appUserEventHandler) // nolint:wrapcheck
+		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, appUserEventHandler) //nolint:wrapcheck
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
@@ -149,21 +148,25 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 	return nil
 }
 
-// func initAPIServer(ctx context.Context, root gin.IRouter, appName string, logConfig *mblibconfig.LogConfig, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
-// 	// api
-// 	api := libcontroller.InitAPIRouterGroup(ctx, root, appName, logConfig)
+func addOrganization(ctx context.Context, systemAdminAction *service.SystemAdminAction, organizationName, loginID, password string) (*mbuserdomain.OrganizationID, error) {
+	firstOwnerAddParam, err := mbuserservice.NewAppUserAddParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
+	if err != nil {
+		return nil, mbliberrors.Errorf("new AppUserAddParameter: %w", err)
+	}
 
-// 	// v1
-// 	v1 := api.Group("v1")
+	organizationAddParameter, err := mbuserservice.NewOrganizationAddParameter(organizationName, firstOwnerAddParam)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new OrganizationAddParameter: %w", err)
+	}
 
-// 	// public router
-// 	libcontroller.InitPublicAPIRouterGroup(ctx, v1, publicRouterGroupFuncs)
+	organizationID, err := systemAdminAction.SystemAdmin.AddOrganization(ctx, organizationAddParameter)
+	if err != nil {
+		return nil, mbliberrors.Errorf("add organization: %w", err)
+	}
+	return organizationID, nil
+}
 
-// 	// private router
-// 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, authMiddleware, privateRouterGroupFuncs)
-// }
-
-func initApp1(ctx context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, organizationName, loginID, password string) error {
+func initApp1(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxManager service.TransactionManager, organizationName, loginID, password string) error {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
 
 	if err := nonTxManager.Do(ctx, func(rf service.RepositoryFactory) error {
@@ -182,17 +185,7 @@ func initApp1(ctx context.Context, systemToken libdomain.SystemToken, txManager,
 		}
 
 		// 2. add organization
-		firstOwnerAddParam, err := mbuserservice.NewAppUserAddParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
-		if err != nil {
-			return mbliberrors.Errorf("new AppUserAddParameter: %w", err)
-		}
-
-		organizationAddParameter, err := mbuserservice.NewOrganizationAddParameter(organizationName, firstOwnerAddParam)
-		if err != nil {
-			return mbliberrors.Errorf("new OrganizationAddParameter: %w", err)
-		}
-
-		organizationID, err := systemAdminAction.SystemAdmin.AddOrganization(ctx, organizationAddParameter)
+		organizationID, err := addOrganization(ctx, systemAdminAction, organizationName, loginID, password)
 		if err != nil {
 			return mbliberrors.Errorf("add organization: %w", err)
 		}

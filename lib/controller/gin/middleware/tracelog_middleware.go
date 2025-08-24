@@ -14,6 +14,7 @@ func NewTraceLogMiddleware(appName string, logEnabled bool) gin.HandlerFunc {
 		sc := trace.SpanFromContext(c.Request.Context()).SpanContext()
 		if !sc.TraceID().IsValid() || !sc.SpanID().IsValid() {
 			c.Next()
+
 			return
 		}
 		otTraceID := sc.TraceID().String()

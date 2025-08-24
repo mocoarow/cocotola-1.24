@@ -20,6 +20,7 @@ import (
 )
 
 func Test_authTokenManager_CreateTokenSet(t *testing.T) {
+	t.Parallel()
 	firebaseAuthClient := new(servicemock.MockFirebaseClient)
 	organizationID := organizationID(t, 123)
 	appUserID := appUserID(t, 456)
@@ -85,6 +86,7 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 		m := gateway.NewAuthTokenManager(ctx, firebaseAuthClient, tt.fields.SigningKey, tt.fields.SigningMethod, tt.fields.TokenTimeout, tt.fields.RefreshTimeout)
 
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := m.CreateTokenSet(ctx, tt.args.appUser, tt.args.organization)
 			if err != nil {
 				if !tt.wantErr {

@@ -24,6 +24,7 @@ func NewAuthorizationManager(ctx context.Context, dialect libgateway.DialectRDBM
 	if err != nil {
 		return nil, err
 	}
+
 	return &authorizationManager{
 		dialect:  dialect,
 		db:       db,
@@ -91,7 +92,7 @@ func (m *authorizationManager) AddPolicyToUser(ctx context.Context, operator ser
 	return nil
 }
 
-func (m *authorizationManager) AddPolicyToUserBySystemAdmin(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
+func (m *authorizationManager) AddPolicyToUserBySystemAdmin(ctx context.Context, _ service.SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
 	rbacDomain := domain.NewRBACOrganization(organizationID)
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
@@ -121,7 +122,7 @@ func (m *authorizationManager) AddPolicyToGroup(ctx context.Context, operator se
 	return nil
 }
 
-func (m *authorizationManager) AddPolicyToGroupBySystemAdmin(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
+func (m *authorizationManager) AddPolicyToGroupBySystemAdmin(ctx context.Context, _ service.SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
 	rbacDomain := domain.NewRBACOrganization(organizationID)
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {

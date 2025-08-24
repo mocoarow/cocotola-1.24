@@ -8,7 +8,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
-func initTracerExporterStdout(ctx context.Context, traceConfig *TraceConfig) (sdktrace.SpanExporter, error) {
+func initTracerExporterStdout(_ context.Context, _ *TraceConfig) (sdktrace.SpanExporter, error) {
 	return stdouttrace.New(
 		stdouttrace.WithPrettyPrint(),
 		stdouttrace.WithWriter(os.Stderr),

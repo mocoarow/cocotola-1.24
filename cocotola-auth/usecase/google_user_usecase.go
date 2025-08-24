@@ -57,10 +57,10 @@ type GoogleAuthClient interface {
 	RetrieveUserInfo(ctx context.Context, accessToken string) (*domain.UserInfo, error)
 }
 
-type GoogleAuthResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
+// type GoogleAuthResponse struct {
+// 	AccessToken  string `json:"access_token"`  // nolint:tagliatelle
+// 	RefreshToken string `json:"refresh_token"` // nolint:tagliatelle
+// }
 
 type GoogleUserInfo struct {
 	Email string `json:"email"`
@@ -101,6 +101,7 @@ func (u *GoogleUserUsecase) GenerateState(ctx context.Context) (string, error) {
 		}
 
 		state = tmpState
+
 		return nil
 	}); err != nil {
 		return "", err
@@ -122,6 +123,7 @@ func (u *GoogleUserUsecase) doesStateExist(ctx context.Context, state string) er
 		}
 
 		matched = tmpMatched
+
 		return nil
 	}); err != nil {
 		return err
@@ -144,6 +146,7 @@ func (u *GoogleUserUsecase) getTokensAndUserInfo(ctx context.Context, code strin
 	if err != nil {
 		return "", "", nil, mbliberrors.Errorf(". err: %w", err)
 	}
+
 	return resp.AccessToken, resp.RefreshToken, info, nil
 }
 

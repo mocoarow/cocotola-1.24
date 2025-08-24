@@ -19,7 +19,7 @@ type LogConfig struct {
 func newReplaceAttr(platform string) func([]string, slog.Attr) slog.Attr {
 	switch platform {
 	case "gcp":
-		return func(groups []string, a slog.Attr) slog.Attr {
+		return func(_ []string, a slog.Attr) slog.Attr {
 			switch a.Key {
 			case slog.LevelKey:
 				return slog.Attr{Key: "severity", Value: a.Value}
@@ -30,6 +30,7 @@ func newReplaceAttr(platform string) func([]string, slog.Attr) slog.Attr {
 			return a
 		}
 	}
+
 	return nil
 }
 
@@ -56,6 +57,7 @@ func stringToLogLevel(value string) slog.Level {
 		return slog.LevelError
 	default:
 		slog.Info(fmt.Sprintf("Unsupported log level: %s", value))
+
 		return slog.LevelWarn
 	}
 }

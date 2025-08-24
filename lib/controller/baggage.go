@@ -22,5 +22,6 @@ func AddBaggageMembers(ctx context.Context, values map[string]string) (context.C
 		}
 	}
 	ctx = baggage.ContextWithBaggage(ctx, bag)
+
 	return ctx, nil
 }

@@ -93,7 +93,7 @@ func (h *RBACHandler) AddPolicyToUser(c *gin.Context) {
 	}
 }
 
-func (h *RBACHandler) AddPolicyToGroup(c *gin.Context) {
+func (h *RBACHandler) AddPolicyToGroup(_ *gin.Context) {
 
 }
 

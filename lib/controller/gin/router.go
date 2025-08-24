@@ -17,7 +17,7 @@ import (
 
 type InitRouterGroupFunc func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc)
 
-func InitRootRouterGroup(ctx context.Context, corsConfig *mblibconfig.CORSConfig, logConfig *mblibconfig.LogConfig, debugConfig *config.DebugConfig) *gin.Engine {
+func InitRootRouterGroup(_ context.Context, corsConfig *mblibconfig.CORSConfig, logConfig *mblibconfig.LogConfig, debugConfig *config.DebugConfig) *gin.Engine {
 	if !debugConfig.Gin {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -40,7 +40,7 @@ func InitRootRouterGroup(ctx context.Context, corsConfig *mblibconfig.CORSConfig
 	return router
 }
 
-func InitAPIRouterGroup(ctx context.Context, parentRouterGroup gin.IRouter, appName string, logConfig *mblibconfig.LogConfig) *gin.RouterGroup {
+func InitAPIRouterGroup(_ context.Context, parentRouterGroup gin.IRouter, appName string, logConfig *mblibconfig.LogConfig) *gin.RouterGroup {
 	api := parentRouterGroup.Group("api")
 	api.Use(otelgin.Middleware(appName))
 	if value, ok := logConfig.Enabled["traceLog"]; ok && value {
@@ -48,16 +48,17 @@ func InitAPIRouterGroup(ctx context.Context, parentRouterGroup gin.IRouter, appN
 	} else {
 		api.Use(middleware.NewTraceLogMiddleware(appName, false))
 	}
+
 	return api
 }
 
-func InitPublicAPIRouterGroup(ctx context.Context, parentRouterGroup gin.IRouter, initPublicRouterFunc []InitRouterGroupFunc) {
+func InitPublicAPIRouterGroup(_ context.Context, parentRouterGroup gin.IRouter, initPublicRouterFunc []InitRouterGroupFunc) {
 	for _, fn := range initPublicRouterFunc {
 		fn(parentRouterGroup)
 	}
 }
 
-func InitPrivateAPIRouterGroup(ctx context.Context, parentRouterGroup gin.IRouter, authMiddleware gin.HandlerFunc, initPrivateRouterFunc []InitRouterGroupFunc) {
+func InitPrivateAPIRouterGroup(_ context.Context, parentRouterGroup gin.IRouter, authMiddleware gin.HandlerFunc, initPrivateRouterFunc []InitRouterGroupFunc) {
 	for _, fn := range initPrivateRouterFunc {
 		fn(parentRouterGroup, authMiddleware)
 	}

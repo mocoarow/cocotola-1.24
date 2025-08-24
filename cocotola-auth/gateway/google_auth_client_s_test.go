@@ -21,13 +21,15 @@ import (
 
 func newGoogleAuthClient(t *testing.T, httpClient gateway.HTTPClient) *gateway.GoogleAuthClient {
 	t.Helper()
-	return &gateway.GoogleAuthClient{
+	c := &gateway.GoogleAuthClient{
 		HTTPClient:   httpClient,
 		ClientID:     "CLIENT_ID",
 		ClientSecret: "CLIENT_SECRET",
 		RedirectURI:  "REDIRECT_URI",
 		GrantType:    "authorization_code",
 	}
+	c.SetLogger()
+	return c
 }
 
 func Test_GoogleAuthClient_NewGoogleAuthClient(t *testing.T) {
@@ -124,6 +126,7 @@ func Test_GoogleAuthClient_RetrieveAccessToken_shouldReturnOtherError_whenErrorO
 
 func Test_GoogleAuthClient_RetrieveUserInfo(t *testing.T) {
 	t.Skip()
+	t.Parallel()
 	ctx := context.Background()
 	accessToken := ""
 	c := newGoogleAuthClient(t, http.DefaultClient)

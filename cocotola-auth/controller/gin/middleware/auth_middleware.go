@@ -26,6 +26,7 @@ func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager servi
 		authorization := c.GetHeader("Authorization")
 		if !strings.HasPrefix(authorization, "Bearer ") {
 			logger.InfoContext(ctx, "invalid header. Bearer not found")
+
 			return
 		}
 
@@ -33,6 +34,7 @@ func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager servi
 		appUserModel, err := service.GetUserInfo(ctx, systemToken, authTokenManager, transactionManager, bearerToken)
 		if err != nil {
 			logger.WarnContext(ctx, fmt.Sprintf("getUserInfo: %v", err))
+
 			return
 		}
 

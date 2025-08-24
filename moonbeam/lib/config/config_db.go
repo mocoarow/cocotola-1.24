@@ -21,12 +21,12 @@ type DBConfig struct {
 	Migration  bool                       `yaml:"migration"`
 }
 
-type mergedFS struct {
+type MergedFS struct {
 	fss     []fs.FS
 	entries []fs.DirEntry
 }
 
-func MergeFS(driverName string, fss ...fs.FS) (*mergedFS, error) {
+func MergeFS(driverName string, fss ...fs.FS) (*MergedFS, error) {
 	entries := make([]fs.DirEntry, 0)
 	for i := range fss {
 		e, err := fs.ReadDir(fss[i], driverName)
@@ -36,13 +36,13 @@ func MergeFS(driverName string, fss ...fs.FS) (*mergedFS, error) {
 		entries = append(entries, e...)
 	}
 
-	return &mergedFS{
+	return &MergedFS{
 		fss:     fss,
 		entries: entries,
 	}, nil
 }
 
-func (f *mergedFS) Open(name string) (fs.File, error) {
+func (f *MergedFS) Open(name string) (fs.File, error) {
 	var file fs.File
 	var err error
 	for i := range f.fss {
@@ -55,9 +55,10 @@ func (f *mergedFS) Open(name string) (fs.File, error) {
 	return nil, err
 }
 
-func (f *mergedFS) ReadDir(name string) ([]fs.DirEntry, error) {
+func (f *MergedFS) ReadDir(_ string) ([]fs.DirEntry, error) {
 	return f.entries, nil
 }
+
 func InitDB(ctx context.Context, cfg *DBConfig, logConfig *LogConfig, appName string, sqlFSs ...fs.FS) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error) {
 	mergedFS, err := MergeFS(cfg.DriverName, sqlFSs...)
 	if err != nil {
@@ -72,22 +73,6 @@ func InitDB(ctx context.Context, cfg *DBConfig, logConfig *LogConfig, appName st
 	if level, ok := logConfig.Levels["db"]; ok {
 		dbLogLevel = stringToLogLevel(level)
 	}
+
 	return initDBFunc(ctx, cfg, dbLogLevel, mergedFS, appName)
-	// switch cfg.DriverName {
-	// case "sqlite3":
-	//
-	//	return initSqlite3(ctx, cfg, mergedFS)
-	//
-	// case "mysql":
-	//
-	//	return initMySQL(ctx, cfg, mergedFS)
-	//
-	// case "postgres":
-	//
-	//	return initPostgres(ctx, cfg, mergedFS)
-	//
-	// default:
-	//
-	//		return nil, nil, nil, libdomain.ErrInvalidArgument
-	//	}
 }

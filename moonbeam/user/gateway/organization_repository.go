@@ -50,7 +50,7 @@ func (e *organizationEntity) toModel() (*service.Organization, error) {
 	return org, nil
 }
 
-func NewOrganizationRepository(ctx context.Context, db *gorm.DB) service.OrganizationRepository {
+func NewOrganizationRepository(_ context.Context, db *gorm.DB) service.OrganizationRepository {
 	return &organizationRepository{
 		db: db,
 	}
@@ -68,13 +68,14 @@ func (r *organizationRepository) GetOrganization(ctx context.Context, operator s
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrOrganizationNotFound
 		}
+
 		return nil, result.Error
 	}
 
 	return organization.toModel()
 }
 
-func (r *organizationRepository) FindOrganizationByName(ctx context.Context, operator service.SystemAdminInterface, name string) (*service.Organization, error) {
+func (r *organizationRepository) FindOrganizationByName(ctx context.Context, _ service.SystemAdminInterface, name string) (*service.Organization, error) {
 	_, span := tracer.Start(ctx, "organizationRepository.FindOrganizationByName")
 	defer span.End()
 
@@ -86,13 +87,14 @@ func (r *organizationRepository) FindOrganizationByName(ctx context.Context, ope
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrOrganizationNotFound
 		}
+
 		return nil, result.Error
 	}
 
 	return organization.toModel()
 }
 
-func (r *organizationRepository) FindOrganizationByID(ctx context.Context, operator service.SystemAdminInterface, id *domain.OrganizationID) (*service.Organization, error) {
+func (r *organizationRepository) FindOrganizationByID(ctx context.Context, _ service.SystemAdminInterface, id *domain.OrganizationID) (*service.Organization, error) {
 	_, span := tracer.Start(ctx, "organizationRepository.FindOrganizationByID")
 	defer span.End()
 
@@ -104,6 +106,7 @@ func (r *organizationRepository) FindOrganizationByID(ctx context.Context, opera
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrOrganizationNotFound
 		}
+
 		return nil, result.Error
 	}
 

@@ -11,7 +11,8 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4/database"
 	migrate_mysql "github.com/golang-migrate/migrate/v4/database/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	slog_gorm "github.com/orandin/slog-gorm"
 	gorm_mysql "gorm.io/driver/mysql"
@@ -46,7 +47,7 @@ func OpenMySQLWithDSN(dsn string, logLevel slog.Level, appName string) (*gorm.DB
 	gormConfig := gorm.Config{
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
-			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(ctx context.Context) (slog.Value, bool) {
+			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
 				return slog.StringValue(appName + "-gorm"), true
 			}),
 			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, logLevel),
@@ -100,15 +101,16 @@ func InitMySQL(ctx context.Context, cfg *MySQLConfig, migration bool, logLevel s
 	}
 
 	if err := sqlDB.PingContext(ctx); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("ping: %w", err)
 	}
 
 	if migration {
 		if err := MigrateMySQLDB(db, fs); err != nil {
-			return nil, nil, nil, liberrors.Errorf("failed to MigrateMySQLDB. err: %w", err)
+			return nil, nil, nil, liberrors.Errorf("failed to MigrateMySQLDB: %w", err)
 		}
 	}
 
 	dialect := DialectMySQL{}
+
 	return &dialect, db, sqlDB, nil
 }

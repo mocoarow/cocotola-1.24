@@ -4,7 +4,7 @@ import (
 	"embed"
 	"log/slog"
 
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/gorm"
 
 	libgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"

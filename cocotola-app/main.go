@@ -104,7 +104,7 @@ func main() {
 	os.Exit(result)
 }
 
-func initGinWeb(ctx context.Context, router *gin.Engine, viteStaticFS fs.FS, webType string) {
+func initGinWeb(_ context.Context, router *gin.Engine, viteStaticFS fs.FS, webType string) {
 	router.NoRoute(func(c *gin.Context) {
 		logger := slog.Default()
 		logger.InfoContext(c.Request.Context(), c.Request.URL.Path)
@@ -120,6 +120,7 @@ func initGinWeb(ctx context.Context, router *gin.Engine, viteStaticFS fs.FS, web
 		for _, prefix := range getReactResourcesFunc() {
 			if strings.HasPrefix(c.Request.RequestURI, prefix) {
 				c.FileFromFS(c.Request.URL.Path, http.FS(viteStaticFS))
+
 				return
 			}
 		}
@@ -129,6 +130,7 @@ func initGinWeb(ctx context.Context, router *gin.Engine, viteStaticFS fs.FS, web
 			!strings.HasPrefix(c.Request.URL.Path, "/synthesizer") &&
 			!strings.HasPrefix(c.Request.URL.Path, "/tatoeba") {
 			c.FileFromFS("", http.FS(viteStaticFS))
+
 			return
 		}
 	})

@@ -24,7 +24,7 @@ type RepositoryFactory struct {
 	appUserEventHandler mblibservice.ResourceEventHandler
 }
 
-func NewRepositoryFactory(ctx context.Context, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location, appUserEventHandler mblibservice.ResourceEventHandler) (*RepositoryFactory, error) {
+func NewRepositoryFactory(_ context.Context, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location, appUserEventHandler mblibservice.ResourceEventHandler) (*RepositoryFactory, error) {
 	if db == nil {
 		return nil, mbliberrors.Errorf("db is nil. err: %w", mblibdomain.ErrInvalidArgument)
 	}

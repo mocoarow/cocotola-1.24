@@ -164,7 +164,7 @@ type AppUserAddRequest struct {
 }
 
 type CallbackOnAddAppUserRequest struct {
-	OrganizationID int `json:"organizationID" binding:"required,gte=1"`
+	OrganizationID int `json:"organizationId" binding:"required,gte=1"`
 	AppUserID      int `json:"appUserId" binding:"required,gte=1"`
 }
 type ProfileResponse struct {

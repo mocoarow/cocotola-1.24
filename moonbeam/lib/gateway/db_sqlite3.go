@@ -8,7 +8,8 @@ import (
 
 	gorm_sqlite "github.com/glebarez/sqlite"
 	"github.com/golang-migrate/migrate/v4/database"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	slog_gorm "github.com/orandin/slog-gorm"
 	"gorm.io/gorm"
@@ -39,10 +40,10 @@ func OpenSQLite3(cfg *SQLite3Config, logLevel slog.Level, appName string) (*gorm
 	gormConfig := gorm.Config{
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
-			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(ctx context.Context) (slog.Value, bool) {
+			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
 				return slog.StringValue(appName + "-gorm"), true
 			}),
-			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, slog.LevelDebug),
+			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, logLevel),
 		),
 	}
 
@@ -85,5 +86,6 @@ func InitSqlite3(ctx context.Context, cfg *SQLite3Config, migration bool, logLev
 	}
 
 	dialect := DialectSQLite3{}
+
 	return &dialect, db, sqlDB, nil
 }

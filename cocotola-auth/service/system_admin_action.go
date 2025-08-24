@@ -24,6 +24,7 @@ func (a *SystemAdminAction) initMbrf(ctx context.Context) error {
 		return err
 	}
 	a.mbrf = mbrf
+
 	return nil
 }
 
@@ -40,14 +41,16 @@ func (a *SystemAdminAction) initSystemAdmin(ctx context.Context) error {
 		return err
 	}
 	a.SystemAdmin = systemAdmin
+
 	return nil
 }
 
-func NewSystemAdminAction(ctx context.Context, systemToken libdomain.SystemToken, rf RepositoryFactory) (*SystemAdminAction, error) {
+func NewSystemAdminAction(ctx context.Context, _ libdomain.SystemToken, rf RepositoryFactory) (*SystemAdminAction, error) {
 	action := SystemAdminAction{}
 	action.rf = rf
 	if err := action.initSystemAdmin(ctx); err != nil {
 		return nil, err
 	}
+
 	return &action, nil
 }

@@ -16,6 +16,7 @@ func ExpandEnvWithDefaults(varName string) string {
 		if value := os.Getenv(name); value != "" {
 			return value
 		}
+
 		return defaultValue
 	}
 

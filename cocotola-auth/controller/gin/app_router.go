@@ -65,7 +65,7 @@ func NewAuthTokenManager(ctx context.Context, authConfig *config.AuthConfig) (se
 	return authTokenManager, nil
 }
 
-func GetPublicRouterGroupFuncs(ctx context.Context, systemToken libdomain.SystemToken, authConfig *config.AuthConfig, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) ([]libcontroller.InitRouterGroupFunc, error) {
+func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, authConfig *config.AuthConfig, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - google
 	httpClient := http.Client{
 		Timeout:   time.Duration(authConfig.GoogleAPITimeoutSec) * time.Second,
@@ -88,7 +88,7 @@ func GetPublicRouterGroupFuncs(ctx context.Context, systemToken libdomain.System
 	}, nil
 }
 
-func GetBasicPrivateRouterGroupFuncs(ctx context.Context, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
+func GetBasicPrivateRouterGroupFuncs(_ context.Context, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
 	// - rbac
 	rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
 
@@ -97,7 +97,7 @@ func GetBasicPrivateRouterGroupFuncs(ctx context.Context, txManager, nonTxManage
 		NewInitRBACRouterFunc(rbacUsecase),
 	}
 }
-func GetBearerTokenPrivateRouterGroupFuncs(ctx context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) []libcontroller.InitRouterGroupFunc {
+func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) []libcontroller.InitRouterGroupFunc {
 	// - rbac
 	// rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
 	// - user

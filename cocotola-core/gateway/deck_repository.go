@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
@@ -184,7 +185,7 @@ func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator service.
 
 	var deckE DeckEntity
 	if result := r.db.Model(&DeckEntity{}).Where("organization_id = ?", uint(operator.OrganizationID().Int())).Where("id = ?", deckID.Int()).First(&deckE); result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrDeckNotFound
 		}
 		return nil, mbliberrors.Errorf("deckRepository.RetrieveDeckByID: %w", result.Error)

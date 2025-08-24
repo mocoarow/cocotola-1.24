@@ -36,6 +36,7 @@ func (c *FirebaseClient) VerifyIDToken(ctx context.Context, idToken string) (*se
 	if err != nil {
 		return nil, err
 	}
+
 	return &service.Token{
 		UID:            token.UID,
 		SignInProvider: token.Firebase.SignInProvider,

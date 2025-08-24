@@ -18,8 +18,10 @@ func Do1[RF any, T1 any](ctx context.Context, txManager TransactionManagerT[RF],
 		var t1tmp T1
 		t1tmp, err := fn(rf)
 		t1 = t1tmp
+
 		return err
 	})
+
 	return t1, err
 }
 
@@ -32,7 +34,9 @@ func Do2[RF any, T1, T2 any](ctx context.Context, txManager TransactionManagerT[
 		t1tmp, t2tmp, err := fn(rf)
 		t1 = t1tmp
 		t2 = t2tmp
+
 		return err
 	})
+
 	return t1, t2, err
 }

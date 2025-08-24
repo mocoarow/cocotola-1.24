@@ -176,5 +176,6 @@ func (m *SystemOwner) VerifyPassword(ctx context.Context, loginID, password stri
 	if err != nil {
 		return false, liberrors.Errorf("m.appUserRepo.VerifyPassword. err: %w", err)
 	}
+
 	return ok, nil
 }

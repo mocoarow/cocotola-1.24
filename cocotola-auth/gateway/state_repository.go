@@ -10,7 +10,7 @@ type StateRepository struct {
 	// cache *lru.Cache[string, bool]
 }
 
-func NewStateRepository(ctx context.Context) (*StateRepository, error) {
+func NewStateRepository(_ context.Context) (*StateRepository, error) {
 	// cache, err := lru.New[string, bool](100)
 	// if err != nil {
 	// 	return nil, fmt.Errorf("failed to create cache: %w", err)
@@ -20,7 +20,7 @@ func NewStateRepository(ctx context.Context) (*StateRepository, error) {
 	}, nil
 }
 
-func (r *StateRepository) GenerateState(ctx context.Context) (string, error) {
+func (r *StateRepository) GenerateState(_ context.Context) (string, error) {
 	state, err := uuid.NewV7()
 	if err != nil {
 		return "", err
@@ -30,7 +30,7 @@ func (r *StateRepository) GenerateState(ctx context.Context) (string, error) {
 	return state.String(), nil
 }
 
-func (r *StateRepository) DoesStateExists(ctx context.Context, state string) (bool, error) {
+func (r *StateRepository) DoesStateExists(_ context.Context, _ string) (bool, error) {
 	// fmt.Println(state)
 	// if _, ok := r.cache.Get(state); !ok {
 	// 	return false, nil

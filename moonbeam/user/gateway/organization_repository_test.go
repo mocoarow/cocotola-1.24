@@ -36,7 +36,7 @@ func Test_organizationRepository_GetOrganization(t *testing.T) {
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			assert.NoError(t, err)
-			assert.Equal(t, orgNameLength, len(org.Name()))
+			assert.Len(t, org.Name(), orgNameLength)
 		}
 
 		// get organization unregistered

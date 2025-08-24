@@ -295,6 +295,7 @@ func testNewUserGroups(userGroupModels []*domain.UserGroupModel) []*testUserGrou
 	for i, groupModel := range userGroupModels {
 		groups[i] = testNewUserGroup(groupModel)
 	}
+
 	return groups
 }
 
@@ -302,6 +303,7 @@ func testNewAppUserAddParameter(t *testing.T, loginID, username, password string
 	t.Helper()
 	p, err := service.NewAppUserAddParameter(loginID, username, password, "", "", "", "")
 	require.NoError(t, err)
+
 	return p
 }
 

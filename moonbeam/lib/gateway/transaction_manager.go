@@ -21,11 +21,12 @@ func NewTransactionManagerT[RF any](db *gorm.DB, rff func(ctx context.Context, d
 }
 
 func (t *transactionManagerT[RF]) Do(ctx context.Context, fn func(rf RF) error) error {
-	return t.db.Transaction(func(tx *gorm.DB) error { // nolint:wrapcheck
+	return t.db.Transaction(func(tx *gorm.DB) error { //nolint:wrapcheck
 		rf, err := t.rff(ctx, tx)
 		if err != nil {
-			return err // nolint:wrapcheck
+			return err //nolint:wrapcheck
 		}
+
 		return fn(rf)
 	})
 }
@@ -40,6 +41,6 @@ func NewNonTransactionManagerT[RF any](rf RF) (service.TransactionManagerT[RF], 
 	}, nil
 }
 
-func (t *nonTransactionManagerT[RF]) Do(ctx context.Context, fn func(rf RF) error) error {
+func (t *nonTransactionManagerT[RF]) Do(_ context.Context, fn func(rf RF) error) error {
 	return fn(t.rf)
 }

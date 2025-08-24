@@ -1,64 +1,4 @@
 load("@rules_go//go:def.bzl", "go_binary", "go_library")
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load", "oci_push")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
-
-go_library(
-    name = "cocotola-app_lib",
-    srcs = ["main.go"],
-    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-app",
-    visibility = ["//visibility:private"],
-    deps = [
-        "//cocotola-app/config",
-        "//cocotola-app/web_dist",
-        "//cocotola-auth/initialize",
-        "//cocotola-core/domain",
-        "//cocotola-core/initialize",
-        "//cocotola-core/sqls",
-        "//lib/controller/gin",
-        "//lib/domain",
-        "//lib/gateway",
-        "//moonbeam/lib/config",
-        "//moonbeam/lib/errors",
-        "//moonbeam/lib/log",
-        "//moonbeam/sqls",
-        "@com_github_gin_gonic_gin//:gin",
-        "@io_opentelemetry_go_otel//:otel",
-        "@io_opentelemetry_go_otel//propagation",
-    ],
-)
-
-go_binary(
-    name = "cocotola-app",
-    embed = [":cocotola-test_lib"],
-    pure = "on",
-    visibility = ["//visibility:public"],
-)
-
-pkg_tar(
-    name = "pkg",
-    srcs = [":cocotola-app"],
-)
-
-oci_image(
-    name = "image",
-    # base = "@distroless_static_debian12_linux_amd64",
-    base = "@distroless_static_debian12_debug",
-    entrypoint = ["/cocotola-app"],
-    tars = [":pkg"],
-)
-
-oci_load(
-    name = "load",
-    image = ":image",
-    repo_tags = ["cocotola-app:latest"],
-)
-
-oci_push(
-    name = "push",
-    image = ":image",
-    remote_tags = ["latest"],
-    repository = "us-west1-docker.pkg.dev/mocoarow-25-08/cocotola-app/cocotola-app",
-)
 
 go_library(
     name = "cocotola-test_lib",
@@ -66,4 +6,10 @@ go_library(
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-test",
     visibility = ["//visibility:private"],
     deps = ["//cocotola-test/scenario"],
+)
+
+go_binary(
+    name = "cocotola-test",
+    embed = [":cocotola-test_lib"],
+    visibility = ["//visibility:public"],
 )

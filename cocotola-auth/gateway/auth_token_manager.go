@@ -69,7 +69,7 @@ type AuthTokenManager struct {
 	logger             *slog.Logger
 }
 
-func NewAuthTokenManager(ctx context.Context, firebaseAuthClient service.FirebaseClient, signingKey []byte, signingMethod jwt.SigningMethod, tokenTimeout, refreshTimeout time.Duration) service.AuthTokenManager {
+func NewAuthTokenManager(_ context.Context, firebaseAuthClient service.FirebaseClient, signingKey []byte, signingMethod jwt.SigningMethod, tokenTimeout, refreshTimeout time.Duration) service.AuthTokenManager {
 	return &AuthTokenManager{
 		firebaseAuthClient: firebaseAuthClient,
 		SigningKey:         signingKey,
@@ -117,6 +117,7 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 	if err != nil {
 		return nil, mbliberrors.Errorf("m.CreateTokenSet. err: %w", err)
 	}
+
 	return tokenSet, nil
 }
 
@@ -186,7 +187,7 @@ func (m *AuthTokenManager) GetUserInfo(ctx context.Context, tokenString string) 
 }
 
 func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (*AppUserClaims, error) {
-	keyFunc := func(token *jwt.Token) (interface{}, error) {
+	keyFunc := func(_ *jwt.Token) (interface{}, error) {
 		return m.SigningKey, nil
 	}
 

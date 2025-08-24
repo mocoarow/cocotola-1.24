@@ -31,6 +31,7 @@ func (a *SystemOwnerAction) initSystemOwnerByOrganizationID(ctx context.Context,
 		return mbliberrors.Errorf("find system owner by organization id(%d): %w", organizationID.Int(), err)
 	}
 	a.SystemOwner = systemOwner
+
 	return nil
 }
 func (a *SystemOwnerAction) initSystemOwnerByOrganizationName(ctx context.Context, organizationName string) error {
@@ -43,6 +44,7 @@ func (a *SystemOwnerAction) initSystemOwnerByOrganizationName(ctx context.Contex
 		return mbliberrors.Errorf("find system owner by organization name %s: %w", organizationName, err)
 	}
 	a.SystemOwner = systemOwner
+
 	return nil
 }
 
@@ -56,6 +58,7 @@ func (a *SystemOwnerAction) initOrganizationByOrganizationID(ctx context.Context
 		return mbliberrors.Errorf("find organization by id(%d): %w", organizationID.Int(), err)
 	}
 	a.Organization = organization
+
 	return nil
 }
 
@@ -69,6 +72,7 @@ func (a *SystemOwnerAction) initOrganizationByOrganizationName(ctx context.Conte
 		return mbliberrors.Errorf("find organization by name %s: %w", organizationName, err)
 	}
 	a.Organization = organization
+
 	return nil
 }
 
@@ -80,6 +84,7 @@ func WithOrganizationByID(organizationID *mbuserdomain.OrganizationID) SystemOwn
 		if err := action.initOrganizationByOrganizationID(ctx, organizationID); err != nil {
 			return err
 		}
+
 		return nil
 	}
 }
@@ -92,6 +97,7 @@ func WithOrganizationByName(organizationName string) SystemOwnerActionOption {
 		if err := action.initOrganizationByOrganizationName(ctx, organizationName); err != nil {
 			return err
 		}
+
 		return nil
 	}
 }
@@ -103,6 +109,7 @@ func WithAuthorizationManager() SystemOwnerActionOption {
 			return mbliberrors.Errorf("new authorization manager: %w", err)
 		}
 		action.AuthorizationManager = authorizationManager
+
 		return nil
 	}
 }
@@ -111,6 +118,7 @@ func NewSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken
 	if err != nil {
 		return nil, err
 	}
+
 	action := SystemOwnerAction{}
 	action.rf = rf
 	action.mbrf = systemAdminAction.mbrf
@@ -126,5 +134,6 @@ func NewSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken
 	if action.Organization == nil {
 		return nil, mbliberrors.Errorf("organization is not initialized: %w", err)
 	}
+
 	return &action, nil
 }

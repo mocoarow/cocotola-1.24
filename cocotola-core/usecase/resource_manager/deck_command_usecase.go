@@ -60,7 +60,7 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 	// RBAC
 	deckObject := deckID.GetRBACObject()
 	// - "operator "can" "ListObject" "deck"
-	u.rbacClient.AddPolicyToUser(ctx, &libapi.AddPolicyToUserParameter{
+	if err := u.rbacClient.AddPolicyToUser(ctx, &libapi.AddPolicyToUserParameter{
 		OrganizationID: operator.OrganizationID().Int(),
 		AppUserID:      operator.AppUserID().Int(),
 		ListOfActionObjectEffect: []libapi.ActionObjectEffect{
@@ -85,7 +85,9 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 				Effect: mbuserservice.RBACAllowEffect.Effect(),
 			},
 		},
-	})
+	}); err != nil {
+		return nil, mbliberrors.Errorf("add policy to user: %w", err)
+	}
 
 	return deckID, nil
 }
