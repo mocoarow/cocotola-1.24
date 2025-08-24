@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -21,7 +22,7 @@ func (a *SystemAdminAction) initMbrf(ctx context.Context) error {
 
 	mbrf, err := a.rf.NewMoonBeamRepositoryFactory(ctx)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
 	}
 	a.mbrf = mbrf
 
@@ -33,12 +34,12 @@ func (a *SystemAdminAction) initSystemAdmin(ctx context.Context) error {
 		return nil
 	}
 	if err := a.initMbrf(ctx); err != nil {
-		return err
+		return mbliberrors.Errorf("initMbrf: %w", err)
 	}
 
 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, a.mbrf)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("NewSystemAdmin: %w", err)
 	}
 	a.SystemAdmin = systemAdmin
 
@@ -49,7 +50,7 @@ func NewSystemAdminAction(ctx context.Context, _ libdomain.SystemToken, rf Repos
 	action := SystemAdminAction{}
 	action.rf = rf
 	if err := action.initSystemAdmin(ctx); err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("initSystemAdmin: %w", err)
 	}
 
 	return &action, nil

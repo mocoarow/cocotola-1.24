@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/config"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/middleware"
@@ -43,7 +44,7 @@ func GetPublicRouterGroupFuncs() []libcontroller.InitRouterGroupFunc {
 	}
 }
 
-func GetBearerTokenPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
+func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - workbookQueryUsecase
 	deckQueryUsecase := resourcemanagergateway.NewDeckQueryUsecase(db)
 	// - workbookCommandUsecase
@@ -59,7 +60,7 @@ func GetBearerTokenPrivateRouterGroupFuncs(ctx context.Context, coreConfig *conf
 	}, nil
 }
 
-func GetBasicPrivateRouterGroupFuncs(ctx context.Context, coreConfig *config.CoreConfig, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
+func GetBasicPrivateRouterGroupFuncs(_ context.Context, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
 	callbackUsecase := usecase.NewCallback(txManager, nonTxManager, rbacClient)
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
@@ -75,8 +76,9 @@ func InitBearerTokenAuthMiddleware(authClientConfig *config.AuthAPIClientConfig)
 	}
 	authEndpoint, err := url.Parse(authClientConfig.Endpoint)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("Parse: %w", err)
 	}
 	cocotolaAuthClient := gateway.NewCocotolaAuthClient(&httpClient, authEndpoint)
+
 	return middleware.NewAuthMiddleware(cocotolaAuthClient), nil
 }

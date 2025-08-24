@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
@@ -24,21 +25,21 @@ import (
 
 func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
-		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC) // nolint:wrapcheck
+		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC)
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("rff: %w", err)
 	}
 	// init transaction manager
 	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("NewTransactionManagerT: %w", err)
 	}
 	// init non transaction manager
 	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
 	}
 
 	// - rbacClient
@@ -48,14 +49,14 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	}
 	authEndpoint, err := url.Parse(coreConfig.AuthAPIClient.Endpoint)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("Parse: %w", err)
 	}
 	rbacClient := gateway.NewCocotolaRBACClient(&httpClient, authEndpoint, coreConfig.AuthAPIClient.Username, coreConfig.AuthAPIClient.Password)
 
 	// init auth middleware
 	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(coreConfig.AuthAPIClient)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
 	}
 
 	basicAuthMiddleware := gin.BasicAuth(gin.Accounts{
@@ -65,14 +66,14 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	// init public and private router group functions
 	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs()
 
-	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager, rbacClient)
+	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, db, txManager, nonTxManager, rbacClient)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("GetBearerTokenPrivateRouterGroupFuncs: %w", err)
 	}
 
-	basicPrivateRouterGroupFuncs, err := controller.GetBasicPrivateRouterGroupFuncs(ctx, coreConfig, db, txManager, nonTxManager, rbacClient)
+	basicPrivateRouterGroupFuncs, err := controller.GetBasicPrivateRouterGroupFuncs(ctx, txManager, nonTxManager, rbacClient)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("GetBasicPrivateRouterGroupFuncs: %w", err)
 	}
 
 	// api

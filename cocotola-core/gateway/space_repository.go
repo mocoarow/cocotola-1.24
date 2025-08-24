@@ -71,6 +71,7 @@ func (e *SpaceEntity) toSpace() (*service.Space, error) {
 		return nil, mbliberrors.Errorf("to space model: %w", err)
 	}
 	space := &service.Space{SpaceModel: spaceModel}
+
 	return space, nil
 }
 
@@ -165,6 +166,7 @@ func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.Ope
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrSpaceNotFound
 		}
+
 		return nil, mbliberrors.Errorf("spaceRepository.GetSpaceByID: %w", result.Error)
 	}
 
@@ -172,5 +174,6 @@ func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.Ope
 	if err != nil {
 		return nil, mbliberrors.Errorf("spaceE.toSpace: %w", err)
 	}
+
 	return space, nil
 }

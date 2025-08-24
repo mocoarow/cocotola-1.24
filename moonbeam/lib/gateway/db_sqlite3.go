@@ -47,7 +47,7 @@ func OpenSQLite3(cfg *SQLite3Config, logLevel slog.Level, appName string) (*gorm
 		),
 	}
 
-	return gorm.Open(gormDialector, &gormConfig)
+	return gorm.Open(gormDialector, &gormConfig) //nolint:wrapcheck
 }
 
 func MigrateSQLite3DB(db *gorm.DB, sqlFS fs.FS) error {

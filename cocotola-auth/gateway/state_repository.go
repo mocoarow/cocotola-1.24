@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 )
 
 type StateRepository struct {
@@ -23,7 +24,7 @@ func NewStateRepository(_ context.Context) (*StateRepository, error) {
 func (r *StateRepository) GenerateState(_ context.Context) (string, error) {
 	state, err := uuid.NewV7()
 	if err != nil {
-		return "", err
+		return "", mbliberrors.Errorf("NewV7: %w", err)
 	}
 
 	// r.cache.Add(state.String(), true)

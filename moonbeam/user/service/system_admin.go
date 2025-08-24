@@ -91,12 +91,12 @@ func (m *SystemAdmin) FindOrganizationByName(ctx context.Context, name string) (
 func (m *SystemAdmin) addSystemOwnerToOrganization(ctx context.Context, authorizationManager AuthorizationManager, organizationID *domain.OrganizationID, organizationName string) (*SystemOwner, error) {
 	_, err := m.appUserRepo.AddSystemOwner(ctx, m, organizationID)
 	if err != nil {
-		return nil, liberrors.Errorf("failed to AddSystemOwner. error: %w", err)
+		return nil, liberrors.Errorf("AddSystemOwner: %w", err)
 	}
 
 	systemOwner, err := m.appUserRepo.FindSystemOwnerByOrganizationName(ctx, m, organizationName)
 	if err != nil {
-		return nil, liberrors.Errorf("failed to FindSystemOwnerByOrganizationName. error: %w", err)
+		return nil, liberrors.Errorf("FindSystemOwnerByOrganizationName: %w", err)
 	}
 
 	// 3. add policy to "system-owner" user
@@ -104,12 +104,12 @@ func (m *SystemAdmin) addSystemOwnerToOrganization(ctx context.Context, authoriz
 	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(organizationID)
 	// - "system-owner" user "can" "set" "all-user-roles"
 	if err := authorizationManager.AddPolicyToUserBySystemAdmin(ctx, m, organizationID, rbacSystemOwner, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("AddPolicyToUserBySystemAdmin: %w", err)
 	}
 
 	// - "system-owner" user "can" "unset" "all-user-roles"
 	if err := authorizationManager.AddPolicyToUserBySystemAdmin(ctx, m, organizationID, rbacSystemOwner, RBACUnsetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("AddPolicyToUserBySystemAdmin: %w", err)
 	}
 
 	return systemOwner, nil
@@ -180,24 +180,24 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 
 	// 4. add owner-group
 	if _, err := userGroupRepo.AddOwnerGroup(ctx, systemOwner, organizationID); err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("AddOwnerGroup: %w", err)
 	}
 
 	// 5. add policty to "owner" group
 	ownerGroup, err := userGroupRepo.FindUserGroupByKey(ctx, systemOwner, OwnerGroupKey)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("FindUserGroupByKey: %w", err)
 	}
 
 	rbacOwnerGroup := domain.NewRBACUserRole(organizationID, ownerGroup.UserGroupID())
 	// - "owner" group "can" "set" "all-user-roles"
 	if err := authorizationManager.AddPolicyToGroupBySystemAdmin(ctx, m, organizationID, rbacOwnerGroup, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("AddPolicyToGroupBySystemAdmin: %w", err)
 	}
 
 	// - "owner" group "can" "unset" "all-user-roles"
 	if err := authorizationManager.AddPolicyToGroupBySystemAdmin(ctx, m, organizationID, rbacOwnerGroup, RBACUnsetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("AddPolicyToGroupBySystemAdmin: %w", err)
 	}
 
 	// 6. add first owner

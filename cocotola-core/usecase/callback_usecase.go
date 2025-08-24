@@ -35,11 +35,11 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 	if err := mblibservice.Do0(ctx, u.nonTxManager, func(rf service.RepositoryFactory) error {
 		spaceRepo, err := rf.NewSpaceRepository(ctx)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("NewSpaceRepository: %w", err)
 		}
 		pairOfUserAndSpaceRep, err := rf.NewPairOfUserAndSpaceRepository(ctx)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("NewPairOfUserAndSpaceRepository: %w", err)
 		}
 
 		operator := Operator{
@@ -54,7 +54,7 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 
 		spaceID, err := spaceRepo.AddSpace(ctx, &operator, &param)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("AddSpace: %w", err)
 		}
 
 		object := spaceID.GetRBACObject()
@@ -74,14 +74,15 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 		}
 
 		if err := pairOfUserAndSpaceRep.AddPairOfUserAndSpace(ctx, &operator, appUserID, spaceID); err != nil {
-			return err
+			return mbliberrors.Errorf("AddPairOfUserAndSpace: %w", err)
 		}
 
 		u.logger.InfoContext(ctx, "OnAddAppUser: AddSpace", slog.Int("space_id", spaceID.Int()))
 
 		return nil
 	}); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
+
 	return nil
 }

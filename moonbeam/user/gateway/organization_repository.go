@@ -136,7 +136,7 @@ func (r *organizationRepository) AddOrganization(ctx context.Context, operator s
 
 	organizationID, err := domain.NewOrganizationID(organization.ID)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("NewOrganizationID: %w", err)
 	}
 
 	return organizationID, nil

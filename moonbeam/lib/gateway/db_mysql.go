@@ -54,7 +54,7 @@ func OpenMySQLWithDSN(dsn string, logLevel slog.Level, appName string) (*gorm.DB
 		),
 	}
 
-	return gorm.Open(gormDialector, &gormConfig)
+	return gorm.Open(gormDialector, &gormConfig) //nolint:wrapcheck
 }
 
 func OpenMySQL(cfg *MySQLConfig, logLevel slog.Level, appName string) (*gorm.DB, error) {
@@ -81,7 +81,7 @@ func MigrateMySQLDB(db *gorm.DB, sqlFS fs.FS) error {
 	driverName := "mysql"
 	sourceDriver, err := iofs.New(sqlFS, driverName)
 	if err != nil {
-		return err
+		return liberrors.Errorf("iofs New: %w", err)
 	}
 
 	return MigrateDB(db, driverName, sourceDriver, func(sqlDB *sql.DB) (database.Driver, error) {
@@ -92,12 +92,12 @@ func MigrateMySQLDB(db *gorm.DB, sqlFS fs.FS) error {
 func InitMySQL(ctx context.Context, cfg *MySQLConfig, migration bool, logLevel slog.Level, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
 	db, err := OpenMySQL(cfg, logLevel, appName)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("OpenMySQL: %w", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("DB: %w", err)
 	}
 
 	if err := sqlDB.PingContext(ctx); err != nil {

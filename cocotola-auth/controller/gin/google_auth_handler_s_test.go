@@ -166,7 +166,7 @@ func TestGoogleAuthHandler_Authorize_shouldReturn401_whenCodeIsValid(t *testing.
 
 	messageExpr := parseExpr(t, "$.message")
 	message := messageExpr.Get(jsonObj)
-	assert.Len(t, message, 0, "message should be null")
+	assert.Empty(t, message, "message should be null")
 
 	accessTokenExpr := parseExpr(t, "$.accessToken")
 	accessToken := accessTokenExpr.Get(jsonObj)

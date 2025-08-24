@@ -24,6 +24,7 @@ func NewAuthMiddleware(cocotolaAuthClient service.CocotolaAuthClient) gin.Handle
 		authorization := c.GetHeader("Authorization")
 		if !strings.HasPrefix(authorization, "Bearer ") {
 			logger.InfoContext(ctx, "invalid header. Bearer not found")
+
 			return
 		}
 
@@ -31,6 +32,7 @@ func NewAuthMiddleware(cocotolaAuthClient service.CocotolaAuthClient) gin.Handle
 		appUserInfo, err := cocotolaAuthClient.RetrieveUserInfo(ctx, bearerToken)
 		if err != nil {
 			logger.WarnContext(ctx, fmt.Sprintf("getUserInfo: %v", err))
+
 			return
 		}
 

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	domain "github.com/mocoarow/cocotola-1.24/lib/domain"
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
@@ -47,9 +48,9 @@ func TestNewLang2(t *testing.T) {
 			t.Parallel()
 			got, err := domain.NewLang2(tt.args)
 			if !tt.wantErr {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			} else {
-				assert.Error(t, err)
+				require.Error(t, err)
 				if tt.wantErrDetail != nil && !errors.Is(err, tt.wantErrDetail) {
 					t.Errorf("NewLang2() err = %v, wantErrDetail %v", err, tt.wantErrDetail)
 				}

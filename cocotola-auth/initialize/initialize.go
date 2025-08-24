@@ -36,29 +36,34 @@ func newCallbackOnAddAppUser(cocotolaCoreCallbackClient service.CocotolaCoreCall
 		param, ok := obj.(map[string]int)
 		if !ok {
 			logger.ErrorContext(ctx, fmt.Sprintf("invalid object type: %T", obj))
+
 			return
 		}
 
 		organizationIDInt, ok := param["organizationId"]
 		if !ok {
 			logger.ErrorContext(ctx, fmt.Sprintf("invalid organizationId type: %T", param["organizationId"]))
+
 			return
 		}
 		organizationID, err := mbuserdomain.NewOrganizationID(organizationIDInt)
 		if err != nil {
 			logger.ErrorContext(ctx, fmt.Sprintf("invalid organizationId: %v", err))
+
 			return
 		}
 
 		appUserIDInt, ok := param["appUserId"]
 		if !ok {
 			logger.ErrorContext(ctx, fmt.Sprintf("invalid appuserId type: %T", param["appuserId"]))
+
 			return
 		}
 
 		appUserID, err := mbuserdomain.NewAppUserID(appUserIDInt)
 		if err != nil {
 			logger.ErrorContext(ctx, fmt.Sprintf("invalid appuserId: %v", err))
+
 			return
 		}
 
@@ -85,35 +90,35 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 		AddFunc: newCallbackOnAddAppUser(cocotolaCoreCallbackClient, logger),
 	}
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
-		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, appUserEventHandler) //nolint:wrapcheck
+		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, appUserEventHandler)
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("rff: %w", err)
 	}
 
 	// init transaction manager
 	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("NewTransactionManagerT: %w", err)
 	}
 
 	// init non transaction manager
 	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
 	}
 
 	// init auth token manager
 	authTokenManager, err := controller.NewAuthTokenManager(ctx, authConfig)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("NewAuthTokenManager: %w", err)
 	}
 
 	// init auth middleware
 	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(systemToken, authTokenManager, nonTxManager)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
 	}
 	basicAuthMiddleware := gin.BasicAuth(gin.Accounts{
 		authConfig.AuthAPIServer.Username: authConfig.AuthAPIServer.Password,
@@ -122,7 +127,7 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 	// init public and private router group functions
 	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, systemToken, authConfig, txManager, nonTxManager, authTokenManager)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("GetPublicRouterGroupFuncs: %w", err)
 	}
 	bearerTokenPrivateRouterGroupFuncs := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, systemToken, txManager, nonTxManager, authTokenManager)
 	basicPrivateRouterGroupFuncs := controller.GetBasicPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
@@ -163,6 +168,7 @@ func addOrganization(ctx context.Context, systemAdminAction *service.SystemAdmin
 	if err != nil {
 		return nil, mbliberrors.Errorf("add organization: %w", err)
 	}
+
 	return organizationID, nil
 }
 
@@ -179,6 +185,7 @@ func initApp1(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 		organization, err := systemAdminAction.SystemAdmin.FindOrganizationByName(ctx, organizationName)
 		if err == nil {
 			logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID().Int()))
+
 			return nil
 		} else if !errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
 			return mbliberrors.Errorf("find organization by name(%s): %w", organizationName, err)
@@ -217,9 +224,11 @@ func initApp1(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 		}
 
 		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
+
 		return nil
 	}); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
+
 	return nil
 }

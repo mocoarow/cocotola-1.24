@@ -88,6 +88,7 @@ func (e *DeckEntity) toDeck() (*service.Deck, error) {
 		return nil, mbliberrors.Errorf("to deck model: %w", err)
 	}
 	deck := &service.Deck{DeckModel: deckModel}
+
 	return deck, nil
 }
 
@@ -188,6 +189,7 @@ func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator service.
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrDeckNotFound
 		}
+
 		return nil, mbliberrors.Errorf("deckRepository.RetrieveDeckByID: %w", result.Error)
 	}
 
@@ -195,5 +197,6 @@ func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator service.
 	if err != nil {
 		return nil, mbliberrors.Errorf("deckE.toDeck: %w", err)
 	}
+
 	return deck, nil
 }

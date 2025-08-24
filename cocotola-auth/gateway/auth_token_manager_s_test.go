@@ -166,9 +166,9 @@ func TestAuthTokenManager_GetUserInfo(t *testing.T) {
 			require.NoError(t, err)
 			got, err := m.GetUserInfo(ctx, tokenSet.AccessToken)
 			if tt.wantErr == nil {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			} else {
-				assert.ErrorIs(t, err, tt.wantErr)
+				require.ErrorIs(t, err, tt.wantErr)
 			}
 
 			if !reflect.DeepEqual(got, tt.want) {

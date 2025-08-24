@@ -51,7 +51,7 @@ func (u *Authentication) SignInWithIDToken(ctx context.Context, idToken string) 
 func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.AppUserModel, error) {
 	appUserModel, err := service.GetUserInfo(ctx, u.systemToken, u.authTokenManager, u.transactionManager, bearerToken)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("GetUserInfo: %w", err)
 	}
 
 	return appUserModel, nil
@@ -60,7 +60,7 @@ func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*
 func (u *Authentication) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
 	accessToken, err := u.authTokenManager.RefreshToken(ctx, refreshToken)
 	if err != nil {
-		return "", err
+		return "", mbliberrors.Errorf("RefreshToken: %w", err)
 	}
 
 	// TODO: Save the token to the database

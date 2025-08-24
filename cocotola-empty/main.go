@@ -109,6 +109,7 @@ func main() {
 				if err := c.BindJSON(&params); err != nil {
 					logger.InfoContext(ctx, fmt.Sprintf("err: %+v", err))
 					c.Status(http.StatusBadRequest)
+
 					return
 				}
 

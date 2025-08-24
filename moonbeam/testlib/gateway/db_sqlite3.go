@@ -15,7 +15,7 @@ import (
 var testDBFile string
 
 func openSQLiteForTest() (*gorm.DB, error) {
-	return libgateway.OpenSQLite3(&libgateway.SQLite3Config{
+	return libgateway.OpenSQLite3(&libgateway.SQLite3Config{ //nolint:wrapcheck
 		File: testDBFile,
 	}, slog.LevelInfo, "test")
 }

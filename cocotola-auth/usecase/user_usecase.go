@@ -43,6 +43,7 @@ func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator service.Oper
 		return nil, mbliberrors.Errorf("authorize: %w", err)
 	} else if !ok {
 		u.logger.InfoContext(ctx, "operator is not authorized to create app user")
+
 		return nil, domain.ErrUnauthenticated
 	}
 
@@ -73,14 +74,16 @@ func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator service.Oper
 			organizationID: tmpOrganization.OrganizationID,
 			name:           tmpOrganization.Name,
 		}
+
 		return nil
 	}); err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	tokenSet, err := u.authTokenManager.CreateTokenSet(ctx, targetAppUser, targetOorganization)
 	if err != nil {
 		return nil, mbliberrors.Errorf("create token set: %w", err)
 	}
+
 	return tokenSet, nil
 }

@@ -92,19 +92,19 @@ func (u *GoogleUserUsecase) GenerateState(ctx context.Context) (string, error) {
 	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
 		stateRepo, err := rf.NewStateRepository(ctx)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("NewStateRepository: %w", err)
 		}
 
 		tmpState, err := stateRepo.GenerateState(ctx)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("GenerateState: %w", err)
 		}
 
 		state = tmpState
 
 		return nil
 	}); err != nil {
-		return "", err
+		return "", err //nolint:wrapcheck
 	}
 
 	return state, nil
@@ -115,18 +115,18 @@ func (u *GoogleUserUsecase) doesStateExist(ctx context.Context, state string) er
 	if err := u.nonTxManager.Do(ctx, func(rf service.RepositoryFactory) error {
 		stateRepo, err := rf.NewStateRepository(ctx)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("DoesStateExists: %w", err)
 		}
 		tmpMatched, err := stateRepo.DoesStateExists(ctx, state)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("DoesStateExists: %w", err)
 		}
 
 		matched = tmpMatched
 
 		return nil
 	}); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 
 	if !matched {
@@ -182,7 +182,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 			// service.WithAppUserRepository(),
 		)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
 		}
 		organizationID := action.Organization.OrganizationID()
 
@@ -212,6 +212,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 		return nil, mbliberrors.Errorf("s.authTokenManager.CreateTokenSet. err: %w", err)
 	}
 	tokenSet = tokenSetTmp
+
 	return tokenSet, nil
 }
 

@@ -46,7 +46,7 @@ func (m *authorizationManager) AddUserToGroupBySystemAdmin(ctx context.Context, 
 	pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, m.dialect, m.db, m.rf)
 
 	if err := pairOfUserAndGroupRepo.AddPairOfUserAndGroupBySystemAdmin(ctx, operator, organizationID, appUserID, userGroupID); err != nil {
-		return err
+		return liberrors.Errorf("AddPairOfUserAndGroupBySystemAdmin: %w", err)
 	}
 
 	rbacAppUser := domain.NewRBACAppUser(appUserID)
@@ -65,7 +65,7 @@ func (m *authorizationManager) AddUserToGroup(ctx context.Context, operator serv
 	pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, m.dialect, m.db, m.rf)
 
 	if err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, operator, appUserID, userGroupID); err != nil {
-		return err
+		return liberrors.Errorf("AddPairOfUserAndGroup: %w", err)
 	}
 
 	organizationID := operator.OrganizationID()
@@ -138,7 +138,7 @@ func (m *authorizationManager) CheckAuthorization(ctx context.Context, operator 
 	userGroupRepo := m.rf.NewUserGroupRepository(ctx)
 	userGroups, err := userGroupRepo.FindAllUserGroups(ctx, operator)
 	if err != nil {
-		return false, err
+		return false, liberrors.Errorf("FindAllUserGroups: %w", err)
 	}
 
 	rbacRoles := make([]domain.RBACRole, 0)
@@ -149,12 +149,12 @@ func (m *authorizationManager) CheckAuthorization(ctx context.Context, operator 
 	rbacOperator := domain.NewRBACAppUser(operator.AppUserID())
 	e, err := m.rbacRepo.NewEnforcerWithGroupsAndUsers(ctx, rbacRoles, []domain.RBACUser{rbacOperator})
 	if err != nil {
-		return false, err
+		return false, liberrors.Errorf("NewEnforcerWithGroupsAndUsers: %w", err)
 	}
 
 	ok, err := e.Enforce(rbacOperator.Subject(), rbacObject.Object(), rbacAction.Action(), rbacDomain.Domain())
 	if err != nil {
-		return false, err
+		return false, liberrors.Errorf("Enforce: %w", err)
 	}
 
 	return ok, nil

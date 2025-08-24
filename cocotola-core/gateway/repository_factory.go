@@ -20,7 +20,7 @@ type RepositoryFactory struct {
 	location   *time.Location
 }
 
-func NewRepositoryFactory(ctx context.Context, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location) (*RepositoryFactory, error) {
+func NewRepositoryFactory(_ context.Context, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location) (*RepositoryFactory, error) {
 	if db == nil {
 		return nil, mbliberrors.Errorf("new repository factory. db is nil: %w", mblibdomain.ErrInvalidArgument)
 	}
@@ -33,10 +33,10 @@ func NewRepositoryFactory(ctx context.Context, dialect mblibgateway.DialectRDBMS
 	}, nil
 }
 
-func (f *RepositoryFactory) NewDeckRepository(ctx context.Context) (service.DeckRepository, error) {
+func (f *RepositoryFactory) NewDeckRepository(_ context.Context) (service.DeckRepository, error) {
 	return NewDeckRepository(f.db), nil
 }
-func (f *RepositoryFactory) NewSpaceRepository(ctx context.Context) (service.SpaceRepository, error) {
+func (f *RepositoryFactory) NewSpaceRepository(_ context.Context) (service.SpaceRepository, error) {
 	return NewSpaceRepository(f.db), nil
 }
 func (f *RepositoryFactory) NewPairOfUserAndSpaceRepository(ctx context.Context) (service.PairOfUserAndSpaceRepository, error) {

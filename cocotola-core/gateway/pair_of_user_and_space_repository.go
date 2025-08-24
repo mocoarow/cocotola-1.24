@@ -32,7 +32,7 @@ func (u *pairOfUserAndSpaceEntity) TableName() string {
 	return "core_user_n_space"
 }
 
-func NewPairOfUserAndSpaceRepository(ctx context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB, rf service.RepositoryFactory) service.PairOfUserAndSpaceRepository {
+func NewPairOfUserAndSpaceRepository(_ context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB, rf service.RepositoryFactory) service.PairOfUserAndSpaceRepository {
 	return &pairOfUserAndSpaceRepository{
 		dialect: dialect,
 		db:      db,
@@ -79,7 +79,7 @@ func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context
 // 	return nil
 // }
 
-func (r *pairOfUserAndSpaceRepository) FindSpacesByUserID(ctx context.Context, operator service.OperatorInterface, appUserID *mbuserdomain.AppUserID) ([]*service.Space, error) {
+func (r *pairOfUserAndSpaceRepository) FindSpacesByUserID(_ context.Context, operator service.OperatorInterface, appUserID *mbuserdomain.AppUserID) ([]*service.Space, error) {
 	spacesE := []SpaceEntity{}
 	if result := r.db.Table(SpaceTableName).Select(SpaceTableName+".*").
 		Where(SpaceTableName+".organization_id = ?", operator.OrganizationID().Int()).

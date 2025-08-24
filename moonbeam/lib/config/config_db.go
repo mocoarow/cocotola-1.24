@@ -52,7 +52,7 @@ func (f *MergedFS) Open(name string) (fs.File, error) {
 		}
 	}
 
-	return nil, err
+	return nil, liberrors.Errorf("Open: %w", err)
 }
 
 func (f *MergedFS) ReadDir(_ string) ([]fs.DirEntry, error) {

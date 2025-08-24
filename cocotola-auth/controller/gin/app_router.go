@@ -9,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
@@ -27,16 +28,16 @@ type systemOwnerByOrganizationName struct {
 func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
 	mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
 	}
 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("NewSystemAdmin: %w", err)
 	}
 
 	systemOwner, err := systemAdmin.FindSystemOwnerByOrganizationName(ctx, organizationName)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("GetFindSystemOwnerByOrganizationNameUser: %w", err)
 	}
 
 	return systemOwner, nil
@@ -59,9 +60,10 @@ func NewAuthTokenManager(ctx context.Context, authConfig *config.AuthConfig) (se
 	signingMethod := jwt.SigningMethodHS256
 	fireabseAuthClient, err := gateway.NewFirebaseClient(ctx, authConfig.GoogleProjectID)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("NewFirebaseClient: %w", err)
 	}
 	authTokenManager := gateway.NewAuthTokenManager(ctx, fireabseAuthClient, signingKey, signingMethod, time.Duration(authConfig.AccessTokenTTLMin)*time.Minute, time.Duration(authConfig.RefreshTokenTTLHour)*time.Hour)
+
 	return authTokenManager, nil
 }
 

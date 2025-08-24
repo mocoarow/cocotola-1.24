@@ -142,12 +142,12 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 		outputOrganization(t, ts.db)
 	}
 	require.NoError(t, err)
-	assert.Greater(t, orgID.Int(), 0)
+	assert.Positive(t, orgID.Int())
 
 	// 2. add "system-owner" user
 	sysOwnerID, err := appUserRepo.AddSystemOwner(ctx, sysAd, orgID)
 	require.NoError(t, err)
-	require.Greater(t, sysOwnerID.Int(), 0)
+	require.Positive(t, sysOwnerID.Int())
 
 	// TODO
 	sysOwner, err := appUserRepo.FindSystemOwnerByOrganizationName(ctx, sysAd, orgName, service.IncludeGroups)
@@ -182,7 +182,7 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 	// 6. add first owner
 	ownerID, err := appUserRepo.AddAppUser(ctx, sysOwner, firstOwnerAddParam)
 	require.NoError(t, err)
-	require.Greater(t, ownerID.Int(), 0)
+	require.Positive(t, ownerID.Int())
 
 	// - owner belongs to owner-group
 	err = authorizationManager.AddUserToGroup(ctx, sysOwner, ownerID, ownerGroupID)
@@ -328,7 +328,7 @@ func getOrganization(t *testing.T, ctx context.Context, ts testService, orgID *d
 
 	org, err := orgRepo.GetOrganization(ctx, appUser)
 	require.NoError(t, err)
-	require.Equal(t, orgNameLength, len(org.Name()))
+	require.Len(t, org.Name(), orgNameLength)
 
 	return org
 }

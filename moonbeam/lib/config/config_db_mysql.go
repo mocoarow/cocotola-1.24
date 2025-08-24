@@ -12,5 +12,5 @@ import (
 )
 
 func initDBMySQL(ctx context.Context, cfg *DBConfig, level slog.Level, fs fs.FS, appName string) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	return libgateway.InitMySQL(ctx, cfg.MySQL, cfg.Migration, level, fs, appName)
+	return libgateway.InitMySQL(ctx, cfg.MySQL, cfg.Migration, level, fs, appName) //nolint:wrapcheck
 }

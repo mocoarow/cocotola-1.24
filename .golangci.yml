@@ -57,6 +57,18 @@ linters:
     staticcheck:
       checks:
         - all
+    wrapcheck:
+      extra-ignore-sigs:
+        - errors.Errorf(
+        - .Errorf(
+        - .Errorf
+        - liberrors.Errorf(
+      ignore-sigs:
+        - errors.Errorf(
+        - .Errorf(
+        - .Errorf
+        - errors.New(
+        - liberrors.Errorf(
   exclusions:
     generated: lax
     presets:

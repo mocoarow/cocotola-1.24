@@ -98,5 +98,6 @@ func (c *cocotolaRBACClient) CheckAuthorization(ctx context.Context, param *liba
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
 		return false, mbliberrors.Errorf("decode response body: %w", err)
 	}
+
 	return apiResp.Authorized, nil
 }

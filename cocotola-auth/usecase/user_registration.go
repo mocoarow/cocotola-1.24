@@ -18,7 +18,7 @@ func registerAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf 
 		service.WithOrganizationByID(organizationID),
 	)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
 	}
 
 	if _, err = action.SystemOwner.FindAppUserByLoginID(ctx, loginID); err == nil {
@@ -40,7 +40,7 @@ func findOrRegisterAppUser(ctx context.Context, systemToken libdomain.SystemToke
 		service.WithOrganizationByID(organizationID),
 	)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
 	}
 
 	appUser1, err := action.SystemOwner.FindAppUserByLoginID(ctx, loginID)

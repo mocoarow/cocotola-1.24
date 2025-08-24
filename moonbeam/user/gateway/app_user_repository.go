@@ -188,7 +188,7 @@ func (r *appUserRepository) FindSystemOwnerByOrganizationName(ctx context.Contex
 			pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, r.dialect, r.db, r.rf)
 			userGroupsTmp, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, appUser, appUser.AppUserID())
 			if err != nil {
-				return nil, err
+				return nil, liberrors.Errorf("FindUserGroupsByUserID: %w", err)
 			}
 
 			userGroups = userGroupsTmp
@@ -222,7 +222,7 @@ func (r *appUserRepository) findAppUserByID(ctx context.Context, organizationID 
 
 	appUser, err := appUserE.toAppUser(ctx, r.rf, nil)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("toAppUser: %w", err)
 	}
 
 	userGroups := []*domain.UserGroupModel{}
@@ -232,7 +232,7 @@ func (r *appUserRepository) findAppUserByID(ctx context.Context, organizationID 
 			pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, r.dialect, r.db, r.rf)
 			userGroupsTmp, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, appUser, appUser.AppUserID())
 			if err != nil {
-				return nil, err
+				return nil, liberrors.Errorf("FindUserGroupsByUserID: %w", err)
 			}
 
 			userGroups = userGroupsTmp
@@ -313,7 +313,7 @@ func (r *appUserRepository) addAppUser(_ context.Context, appUserEntity *appUser
 
 	appUserID, err := domain.NewAppUserID(appUserEntity.ID)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("NewAppUserID: %w", err)
 	}
 
 	return appUserID, nil

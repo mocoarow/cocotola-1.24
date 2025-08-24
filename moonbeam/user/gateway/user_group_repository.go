@@ -90,7 +90,7 @@ func (r *userGroupRepository) FindAllUserGroups(ctx context.Context, operator se
 	for i, e := range userGroups {
 		m, err := e.toUserGroupModel()
 		if err != nil {
-			return nil, err
+			return nil, liberrors.Errorf("toUserGroupModel: %w", err)
 		}
 		userGroupModels[i] = m
 	}
@@ -141,15 +141,12 @@ func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator s
 	return userGroup.toUserGroup()
 }
 
-func (r *userGroupRepository) AddSystemOwnerGroup(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
-	_, span := tracer.Start(ctx, "userGroupRepository.AddSystemOwnerGroup")
-	defer span.End()
-
+func (r *userGroupRepository) addUserGroup(appUserID *domain.AppUserID, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
 	userGroup := userGroupEntity{
 		BaseModelEntity: BaseModelEntity{
 			Version:   1,
-			CreatedBy: operator.AppUserID().Int(),
-			UpdatedBy: operator.AppUserID().Int(),
+			CreatedBy: appUserID.Int(),
+			UpdatedBy: appUserID.Int(),
 		},
 		OrganizationID: organizationID.Int(),
 		KeyName:        service.SystemOwnerGroupKey,
@@ -161,36 +158,24 @@ func (r *userGroupRepository) AddSystemOwnerGroup(ctx context.Context, operator 
 
 	userGroupID, err := domain.NewUserGroupID(userGroup.ID)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("NewUserGroupID: %w", err)
 	}
 
 	return userGroupID, nil
+}
+
+func (r *userGroupRepository) AddSystemOwnerGroup(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
+	_, span := tracer.Start(ctx, "userGroupRepository.AddSystemOwnerGroup")
+	defer span.End()
+
+	return r.addUserGroup(operator.AppUserID(), organizationID)
 }
 
 func (r *userGroupRepository) AddOwnerGroup(ctx context.Context, operator service.SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.AddOwnerGroup")
 	defer span.End()
 
-	userGroup := userGroupEntity{
-		BaseModelEntity: BaseModelEntity{
-			Version:   1,
-			CreatedBy: operator.AppUserID().Int(),
-			UpdatedBy: operator.AppUserID().Int(),
-		},
-		OrganizationID: organizationID.Int(),
-		KeyName:        service.OwnerGroupKey,
-		Name:           service.OwnerGroupName,
-	}
-	if result := r.db.Create(&userGroup); result.Error != nil {
-		return nil, liberrors.Errorf(". err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrAppUserAlreadyExists))
-	}
-
-	userGroupID, err := domain.NewUserGroupID(userGroup.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	return userGroupID, nil
+	return r.addUserGroup(operator.AppUserID(), organizationID)
 }
 
 func (r *userGroupRepository) AddUserGroup(ctx context.Context, operator service.OwnerModelInterface, parameter service.UserGroupAddParameterInterface) (*domain.UserGroupID, error) {
@@ -214,7 +199,7 @@ func (r *userGroupRepository) AddUserGroup(ctx context.Context, operator service
 
 	userGroupID, err := domain.NewUserGroupID(userGroup.ID)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("NewUserGroupID: %w", err)
 	}
 
 	return userGroupID, nil

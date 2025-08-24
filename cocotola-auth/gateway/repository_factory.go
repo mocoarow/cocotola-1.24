@@ -39,7 +39,12 @@ func NewRepositoryFactory(_ context.Context, dialect mblibgateway.DialectRDBMS, 
 }
 
 func (f *RepositoryFactory) NewMoonBeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error) {
-	return mbusergateway.NewRepositoryFactory(ctx, f.dialect, f.driverName, f.db, f.location, f.appUserEventHandler)
+	rf, err := mbusergateway.NewRepositoryFactory(ctx, f.dialect, f.driverName, f.db, f.location, f.appUserEventHandler)
+	if err != nil {
+		return nil, mbliberrors.Errorf("NewRepositoryFactory: %w", err)
+	}
+
+	return rf, nil
 }
 
 func (f *RepositoryFactory) NewStateRepository(ctx context.Context) (service.StateRepository, error) {

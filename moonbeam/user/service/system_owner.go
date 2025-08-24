@@ -40,7 +40,7 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 	// rbacRepo := rf.NewRBACRepository(ctx)
 	authorizationManager, err := rf.NewAuthorizationManager(ctx)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("NewAuthorizationManager: %w", err)
 	}
 	appUserEventHandler := rf.NewAppUserEventHandler(ctx)
 
@@ -115,7 +115,7 @@ func (m *SystemOwner) AddFirstOwner(ctx context.Context, param AppUserAddParamet
 	// Can "the operator" "set" "all-user-roles" ?
 	ok, err := m.authorizationManager.CheckAuthorization(ctx, m, RBACSetAction, rbacAllUserRolesObject)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("CheckAuthorization: %w", err)
 	} else if !ok {
 		return nil, libdomain.ErrPermissionDenied
 	}
@@ -123,17 +123,17 @@ func (m *SystemOwner) AddFirstOwner(ctx context.Context, param AppUserAddParamet
 	// add owner
 	firstOwnerID, err := m.appUserRepo.AddAppUser(ctx, m, param)
 	if err != nil {
-		return nil, liberrors.Errorf("failed to AddFirstOwner. error: %w", err)
+		return nil, liberrors.Errorf("AddAppUser: %w", err)
 	}
 
 	ownerGroup, err := m.userGroupRepo.FindUserGroupByKey(ctx, m, OwnerGroupKey)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("FindUserGroupByKey: %w", err)
 	}
 
 	// add owner to owner-group
 	if err := m.authorizationManager.AddUserToGroup(ctx, m, firstOwnerID, ownerGroup.UserGroupID()); err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("AddUserToGroup: %w", err)
 	}
 
 	// add owner to owner-group

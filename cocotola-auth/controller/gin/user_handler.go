@@ -43,6 +43,7 @@ func (h *UserHandler) RegisterAppUser(c *gin.Context) {
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 			return nil
 		}
 
@@ -50,6 +51,7 @@ func (h *UserHandler) RegisterAppUser(c *gin.Context) {
 		if err != nil {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 			return nil
 		}
 
@@ -58,16 +60,19 @@ func (h *UserHandler) RegisterAppUser(c *gin.Context) {
 			if errors.Is(err, domain.ErrUnauthenticated) {
 				h.logger.InfoContext(ctx, fmt.Sprintf("unauthenticated: %v", err))
 				c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 				return nil
 			}
 			if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
 				h.logger.InfoContext(ctx, fmt.Sprintf("app user already exists: %v", err))
 				c.JSON(http.StatusConflict, gin.H{"message": http.StatusText(http.StatusConflict)})
+
 				return nil
 			}
 
 			h.logger.ErrorContext(ctx, fmt.Sprintf("register app user: %+v", err))
 			c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
+
 			return nil
 		}
 
@@ -77,6 +82,7 @@ func (h *UserHandler) RegisterAppUser(c *gin.Context) {
 			AccessToken:  &authResult.AccessToken,
 			RefreshToken: &authResult.RefreshToken,
 		})
+
 		return nil
 	}, h.errorHandle)
 }
@@ -85,19 +91,23 @@ func (h *UserHandler) errorHandle(ctx context.Context, c *gin.Context, err error
 	if errors.Is(err, mblibdomain.ErrInvalidArgument) {
 		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler err: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return true
 	}
 	if errors.Is(err, mbuserservice.ErrAppUserNotFound) {
 		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler err: %+v", err))
 		c.JSON(http.StatusNotFound, gin.H{"message": http.StatusText(http.StatusNotFound)})
+
 		return true
 	}
 	if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
 		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler err: %+v", err))
 		c.JSON(http.StatusConflict, gin.H{"message": http.StatusText(http.StatusConflict)})
+
 		return true
 	}
 	h.logger.ErrorContext(ctx, fmt.Sprintf("DeckHandler. error: %+v", err))
+
 	return false
 }
 

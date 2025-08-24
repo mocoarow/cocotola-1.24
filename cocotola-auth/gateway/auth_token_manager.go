@@ -195,7 +195,7 @@ func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (
 	if err != nil {
 		m.logger.InfoContext(ctx, fmt.Sprintf("%v", err))
 		// return nil, fmt.Errorf("jwt.ParseWithClaims. err: %w", domain.ErrUnauthenticated)
-		return nil, err
+		return nil, mbliberrors.Errorf("ParseWithClaims: %w", err)
 	}
 	if !currentToken.Valid {
 		return nil, fmt.Errorf("invalid token")
@@ -208,7 +208,7 @@ func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (
 
 	v := jwt.NewValidator()
 	if err := v.Validate(currentClaims); err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("Validate: %w", err)
 	}
 
 	return currentClaims, nil
@@ -237,7 +237,7 @@ func (m *AuthTokenManager) RefreshToken(ctx context.Context, tokenString string)
 
 	organizationID, err := mbuserdomain.NewOrganizationID(currentClaims.OrganizationID)
 	if err != nil {
-		return "", err
+		return "", mbliberrors.Errorf("NewOrganizationID: %w", err)
 	}
 
 	organization := &organization{

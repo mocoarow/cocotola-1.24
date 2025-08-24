@@ -12,5 +12,5 @@ import (
 )
 
 func initDBPostgres(ctx context.Context, cfg *DBConfig, logLevel slog.Level, fs fs.FS, appName string) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	return libgateway.InitPostgres(ctx, cfg.Postgres, cfg.Migration, logLevel, fs, appName)
+	return libgateway.InitPostgres(ctx, cfg.Postgres, cfg.Migration, logLevel, fs, appName) //nolint:wrapcheck
 }

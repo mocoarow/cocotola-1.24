@@ -49,8 +49,9 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 	deckID, err := mblibservice.Do1(ctx, u.txManager, func(rf service.RepositoryFactory) (*domain.DeckID, error) {
 		deckRepo, err := rf.NewDeckRepository(ctx)
 		if err != nil {
-			return nil, err
+			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
 		}
+
 		return deckRepo.AddDeck(ctx, operator, param)
 	})
 	if err != nil {
@@ -97,8 +98,9 @@ func (u *DeckCommandUseCase) UpdateDeck(ctx context.Context, operator service.Op
 	err := mblibservice.Do0(ctx, u.txManager, func(rf service.RepositoryFactory) error {
 		deckRepo, err := rf.NewDeckRepository(ctx)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("NewDeckRepository: %w", err)
 		}
+
 		return deckRepo.UpdateDeck(ctx, operator, deckID, version, param)
 	})
 	if err != nil {

@@ -37,6 +37,7 @@ func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
@@ -44,6 +45,7 @@ func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 	if err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
@@ -51,6 +53,7 @@ func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 	if err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
@@ -58,6 +61,7 @@ func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 	if err := h.callbackUsecase.OnAddAppUser(ctx, organizationID, appUserID); err != nil {
 		h.logger.ErrorContext(ctx, fmt.Sprintf("on add app user: %+v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 }

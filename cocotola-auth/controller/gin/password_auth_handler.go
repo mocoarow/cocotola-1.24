@@ -41,6 +41,7 @@ func (h *PasswordAuthHandler) Authorize(c *gin.Context) {
 	if err := c.ShouldBindJSON(&passwordAuthParameter); err != nil {
 		h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
@@ -49,16 +50,19 @@ func (h *PasswordAuthHandler) Authorize(c *gin.Context) {
 		if errors.Is(err, mbuserservice.ErrSystemOwnerNotFound) {
 			h.logger.InfoContext(ctx, fmt.Sprintf("system owner not found: %+v", err))
 			c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 			return
 		}
 		if errors.Is(err, domain.ErrUnauthenticated) {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 			c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 			return
 		}
 
 		h.logger.ErrorContext(ctx, fmt.Sprintf("passwordUsecase.Authenticate: %+v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
+
 		return
 	}
 

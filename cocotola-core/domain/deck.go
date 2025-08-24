@@ -64,6 +64,7 @@ type DeckModel struct {
 func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *SpaceID, owernID *mbuserdomain.AppUserID, folderID *FolderID, name string, templateID int, lang2 string, description string) (*DeckModel, error) {
 	m := &DeckModel{
 		BaseModel:      baseModel,
+		DeckID:         deckID,
 		OrganizationID: organizationID,
 		SpaceID:        spaceID,
 		OwnerID:        owernID,

@@ -55,14 +55,14 @@ func OpenPostgres(cfg *PostgresConfig, logLevel slog.Level, appName string) (*go
 		),
 	}
 
-	return gorm.Open(gormDialector, &gormConfig)
+	return gorm.Open(gormDialector, &gormConfig) //nolint:wrapcheck
 }
 
 func MigratePostgresDB(db *gorm.DB, sqlFS fs.FS) error {
 	driverName := "postgres"
 	sourceDriver, err := iofs.New(sqlFS, driverName)
 	if err != nil {
-		return err
+		return liberrors.Errorf("iofs New: %w", err)
 	}
 
 	return MigrateDB(db, driverName, sourceDriver, func(sqlDB *sql.DB) (database.Driver, error) {
@@ -73,16 +73,16 @@ func MigratePostgresDB(db *gorm.DB, sqlFS fs.FS) error {
 func InitPostgres(ctx context.Context, cfg *PostgresConfig, migration bool, logLevel slog.Level, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
 	db, err := OpenPostgres(cfg, logLevel, appName)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("OpenPostgres: %w", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("DB: %w", err)
 	}
 
 	if err := sqlDB.PingContext(ctx); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("PingContext: %w", err)
 	}
 
 	if migration {

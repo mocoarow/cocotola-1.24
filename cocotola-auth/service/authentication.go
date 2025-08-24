@@ -15,7 +15,7 @@ func GetUserInfo(ctx context.Context, systemToken libdomain.SystemToken, authTok
 
 	appUserInfo, err := authTokenManager.GetUserInfo(ctx, bearerToken)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("GetUserInfo: %w", err)
 	}
 
 	appUserModel, err := mblibservice.Do1(ctx, nonTxManager, func(rf RepositoryFactory) (*mbuserdomain.AppUserModel, error) {
@@ -34,7 +34,7 @@ func GetUserInfo(ctx context.Context, systemToken libdomain.SystemToken, authTok
 		return appUser.AppUserModel, nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	return appUserModel, nil

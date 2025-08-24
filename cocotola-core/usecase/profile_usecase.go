@@ -28,11 +28,11 @@ func (u *ProfileUsecase) GetMyProfile(ctx context.Context, operator service.Oper
 	privateSpaceID, err := mblibservice.Do1(ctx, u.nonTxManager, func(rf service.RepositoryFactory) (*domain.SpaceID, error) {
 		pairofUserAndSpaceRepo, err := rf.NewPairOfUserAndSpaceRepository(ctx)
 		if err != nil {
-			return nil, err
+			return nil, mbliberrors.Errorf("NewPairOfUserAndSpaceRepository: %w", err)
 		}
 		spaces, err := pairofUserAndSpaceRepo.FindSpacesByUserID(ctx, operator, operator.AppUserID())
 		if err != nil {
-			return nil, err
+			return nil, mbliberrors.Errorf("FindSpacesByUserID: %w", err)
 		}
 
 		for _, space := range spaces {
@@ -44,11 +44,13 @@ func (u *ProfileUsecase) GetMyProfile(ctx context.Context, operator service.Oper
 				return space.SpaceID, nil
 			}
 		}
+
 		return nil, service.ErrSpaceNotFound
 	})
 	if err != nil {
 		return nil, mbliberrors.Errorf("add deck: %w", err)
 	}
+
 	return &domain.ProfileModel{
 		PrivateSpaceID: privateSpaceID,
 	}, nil

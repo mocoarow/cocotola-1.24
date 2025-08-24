@@ -24,7 +24,7 @@ func (t *transactionManagerT[RF]) Do(ctx context.Context, fn func(rf RF) error) 
 	return t.db.Transaction(func(tx *gorm.DB) error { //nolint:wrapcheck
 		rf, err := t.rff(ctx, tx)
 		if err != nil {
-			return err //nolint:wrapcheck
+			return err
 		}
 
 		return fn(rf)

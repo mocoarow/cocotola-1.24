@@ -1,13 +1,14 @@
 package gateway
 
 import (
+	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return "", liberrors.Errorf("GenerateFromPassword: %w", err)
 	}
 
 	return string(hash), nil

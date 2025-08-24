@@ -129,7 +129,7 @@ func TestWorkbookHandler_FindWorkbook_shouldReturn200(t *testing.T) {
 	resultsExpr := parseExpr(t, "$.results")
 	results := resultsExpr.Get(jsonObj)
 	assert.Len(t, results, 1, "response should have one results")
-	assert.Equal(t, 1, len(results), "results should have one element")
+	assert.Len(t, results, 1, "results should have one element")
 
 	resultID0Expr := parseExpr(t, "$.results[0].id")
 	resultID0 := resultID0Expr.Get(jsonObj)

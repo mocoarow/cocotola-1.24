@@ -61,17 +61,20 @@ func (h *RBACHandler) AddPolicyToUser(c *gin.Context) {
 	apiParam := libapi.AddPolicyToUserParameter{}
 	if err := c.ShouldBindJSON(&apiParam); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
 	organizationID, err := mbuserdomain.NewOrganizationID(apiParam.OrganizationID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 	appUserID, err := mbuserdomain.NewAppUserID(apiParam.AppUserID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
@@ -89,6 +92,7 @@ func (h *RBACHandler) AddPolicyToUser(c *gin.Context) {
 
 	if err := h.rbacUsecase.AddPolicyToUser(ctx, organizationID, subject, listofActionObjectEffect); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
+
 		return
 	}
 }
@@ -103,18 +107,21 @@ func (h *RBACHandler) CheckAuthorization(c *gin.Context) {
 	if err := c.ShouldBindJSON(&apiParam); err != nil {
 		h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
 	organizationID, err := mbuserdomain.NewOrganizationID(apiParam.OrganizationID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
 	operatorID, err := mbuserdomain.NewAppUserID(apiParam.AppUserID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
@@ -126,6 +133,7 @@ func (h *RBACHandler) CheckAuthorization(c *gin.Context) {
 	ok, err := h.rbacUsecase.CheckAuthorization(ctx, operator, mbuserdomain.NewRBACAction(apiParam.Action), mbuserdomain.NewRBACObject(apiParam.Object))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
+
 		return
 	}
 

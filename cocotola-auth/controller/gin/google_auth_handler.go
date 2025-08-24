@@ -49,6 +49,7 @@ func (h *GoogleUserHandler) GenerateState(c *gin.Context) {
 	state, err := h.googleUserUsecase.GenerateState(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
+
 		return
 	}
 
@@ -64,6 +65,7 @@ func (h *GoogleUserHandler) Authorize(c *gin.Context) {
 	if err := c.ShouldBindJSON(&googleAuthParameter); err != nil {
 		h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter. err: %v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
@@ -98,22 +100,27 @@ func (h *GoogleUserHandler) Authorize(c *gin.Context) {
 	// }
 	if googleAuthParameter.SessionState == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "sessionState is empty"})
+
 		return
 	}
 	if googleAuthParameter.ParamState == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "paramState is empty"})
+
 		return
 	}
 	if googleAuthParameter.Code == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "code is empty"})
+
 		return
 	}
 	if googleAuthParameter.OrganizationName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "organizationName is empty"})
+
 		return
 	}
 	if googleAuthParameter.SessionState != googleAuthParameter.ParamState {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "sessionState and paramState are not equal"})
+
 		return
 	}
 
@@ -122,11 +129,13 @@ func (h *GoogleUserHandler) Authorize(c *gin.Context) {
 		if errors.Is(err, domain.ErrUnauthenticated) {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter. err: %v", err))
 			c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 			return
 		}
 
 		h.logger.ErrorContext(ctx, fmt.Sprintf("failed to RegisterStudent. err: %+v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
+
 		return
 	}
 
