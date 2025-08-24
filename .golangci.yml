@@ -40,7 +40,7 @@ linters:
     - staticcheck
     - wrapcheck
     - forcetypeassert
-    - canonicalheader 
+    - canonicalheader
     - decorder
 
   settings:

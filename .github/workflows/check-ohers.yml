@@ -25,6 +25,7 @@ jobs:
           fail_on_error: true
           exclude: |
             ./cocotola-app/web_dist/*
+            ./.golangi.yml
 
       - name: yamllint
         uses: reviewdog/action-yamllint@v1
