@@ -21,6 +21,9 @@ func (v *OrganizationID) Int() int {
 func (v *OrganizationID) IsOrganizationID() bool {
 	return true
 }
+func (v *OrganizationID) GetRBACDomain() RBACDomain {
+	return NewRBACOrganization(v)
+}
 
 type OrganizationModel struct {
 	*libdomain.BaseModel
@@ -35,7 +38,7 @@ func NewOrganizationModel(basemodel *libdomain.BaseModel, organizationID *Organi
 		Name:           name,
 	}
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
+		return nil, liberrors.Errorf("validate organization model: %w", err)
 	}
 
 	return m, nil

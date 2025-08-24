@@ -9,11 +9,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/config"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/middleware"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/usecase"
@@ -23,18 +26,18 @@ type systemOwnerByOrganizationName struct {
 }
 
 func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
-	rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
+	mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
 	}
-	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
+	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("NewSystemAdmin: %w", err)
 	}
 
 	systemOwner, err := systemAdmin.FindSystemOwnerByOrganizationName(ctx, organizationName)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("GetFindSystemOwnerByOrganizationNameUser: %w", err)
 	}
 
 	return systemOwner, nil
@@ -51,26 +54,32 @@ func NewInitTestRouterFunc() libcontroller.InitRouterGroupFunc {
 		})
 	}
 }
-func GetPublicRouterGroupFuncs(ctx context.Context, authConfig *config.AuthConfig, txManager, nonTxManager service.TransactionManager) ([]libcontroller.InitRouterGroupFunc, error) {
-	// - google
-	httpClient := http.Client{
-		Timeout:   time.Duration(authConfig.APITimeoutSec) * time.Second,
-		Transport: otelhttp.NewTransport(http.DefaultTransport),
-	}
+
+func NewAuthTokenManager(ctx context.Context, authConfig *config.AuthConfig) (service.AuthTokenManager, error) {
 	signingKey := []byte(authConfig.SigningKey)
 	signingMethod := jwt.SigningMethodHS256
 	fireabseAuthClient, err := gateway.NewFirebaseClient(ctx, authConfig.GoogleProjectID)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("NewFirebaseClient: %w", err)
 	}
 	authTokenManager := gateway.NewAuthTokenManager(ctx, fireabseAuthClient, signingKey, signingMethod, time.Duration(authConfig.AccessTokenTTLMin)*time.Minute, time.Duration(authConfig.RefreshTokenTTLHour)*time.Hour)
 
+	return authTokenManager, nil
+}
+
+func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, authConfig *config.AuthConfig, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) ([]libcontroller.InitRouterGroupFunc, error) {
+	// - google
+	httpClient := http.Client{
+		Timeout:   time.Duration(authConfig.GoogleAPITimeoutSec) * time.Second,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+	}
+
 	googleAuthClient := gateway.NewGoogleAuthClient(&httpClient, authConfig.GoogleClientID, authConfig.GoogleClientSecret, authConfig.GoogleCallbackURL)
-	googleUserUsecase := usecase.NewGoogleUser(txManager, nonTxManager, authTokenManager, googleAuthClient)
+	googleUserUsecase := usecase.NewGoogleUser(systemToken, txManager, nonTxManager, authTokenManager, googleAuthClient)
 	// - authentication
-	authenticationUsecase := usecase.NewAuthentication(txManager, authTokenManager, &systemOwnerByOrganizationName{})
+	authenticationUsecase := usecase.NewAuthentication(systemToken, txManager, authTokenManager, &systemOwnerByOrganizationName{})
 	// - password
-	passwordUsecase := usecase.NewPassword(txManager, nonTxManager, authTokenManager)
+	passwordUsecase := usecase.NewPassword(systemToken, txManager, nonTxManager, authTokenManager)
 
 	// public router
 	return []libcontroller.InitRouterGroupFunc{
@@ -81,7 +90,7 @@ func GetPublicRouterGroupFuncs(ctx context.Context, authConfig *config.AuthConfi
 	}, nil
 }
 
-func GetPrivateRouterGroupFuncs(ctx context.Context, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
+func GetBasicPrivateRouterGroupFuncs(_ context.Context, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
 	// - rbac
 	rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
 
@@ -90,13 +99,29 @@ func GetPrivateRouterGroupFuncs(ctx context.Context, txManager, nonTxManager ser
 		NewInitRBACRouterFunc(rbacUsecase),
 	}
 }
+func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) []libcontroller.InitRouterGroupFunc {
+	// - rbac
+	// rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
+	// - user
+	userUsecase := usecase.NewUserUsecase(systemToken, txManager, nonTxManager, authTokenManager)
 
-func InitAuthMiddleware(authConfig *config.AuthConfig) (gin.HandlerFunc, error) {
-	authMiddleware := gin.BasicAuth(gin.Accounts{
-		authConfig.Username: authConfig.Password,
-	})
-	return authMiddleware, nil
+	// private router
+	return []libcontroller.InitRouterGroupFunc{
+		NewInitUserRouterFunc(userUsecase),
+		// NewInitRBACRouterFunc(rbacUsecase),
+	}
 }
+
+func InitBearerTokenAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, nonTxManager service.TransactionManager) (gin.HandlerFunc, error) {
+	return middleware.NewAuthMiddleware(systemToken, authTokenManager, nonTxManager), nil
+}
+
+// func InitAuthMiddleware(authConfig *config.AuthConfig) (gin.HandlerFunc, error) {
+// 	authMiddleware := gin.BasicAuth(gin.Accounts{
+// 		authConfig.AuthAPIServer.Username: authConfig.AuthAPIServer.Password,
+// 	})
+// 	return authMiddleware, nil
+// }
 
 // func InitRootRouterGroup(ctx context.Context, rootRouterGroup gin.IRouter, corsConfig cors.Config, debugConfig *libconfig.DebugConfig) {
 // 	rootRouterGroup.Use(cors.New(corsConfig))

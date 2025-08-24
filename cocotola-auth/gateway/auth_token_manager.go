@@ -69,14 +69,14 @@ type AuthTokenManager struct {
 	logger             *slog.Logger
 }
 
-func NewAuthTokenManager(ctx context.Context, firebaseAuthClient service.FirebaseClient, signingKey []byte, signingMethod jwt.SigningMethod, tokenTimeout, refreshTimeout time.Duration) service.AuthTokenManager {
+func NewAuthTokenManager(_ context.Context, firebaseAuthClient service.FirebaseClient, signingKey []byte, signingMethod jwt.SigningMethod, tokenTimeout, refreshTimeout time.Duration) service.AuthTokenManager {
 	return &AuthTokenManager{
 		firebaseAuthClient: firebaseAuthClient,
 		SigningKey:         signingKey,
 		SigningMethod:      signingMethod,
 		TokenTimeout:       tokenTimeout,
 		RefreshTimeout:     refreshTimeout,
-		logger:             slog.Default().With(slog.String(mbliblog.LoggerNameKey, "AuthTokenManager")),
+		logger:             slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"AuthTokenManager")),
 	}
 }
 
@@ -117,6 +117,7 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 	if err != nil {
 		return nil, mbliberrors.Errorf("m.CreateTokenSet. err: %w", err)
 	}
+
 	return tokenSet, nil
 }
 
@@ -186,7 +187,7 @@ func (m *AuthTokenManager) GetUserInfo(ctx context.Context, tokenString string) 
 }
 
 func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (*AppUserClaims, error) {
-	keyFunc := func(token *jwt.Token) (interface{}, error) {
+	keyFunc := func(_ *jwt.Token) (interface{}, error) {
 		return m.SigningKey, nil
 	}
 
@@ -194,7 +195,7 @@ func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (
 	if err != nil {
 		m.logger.InfoContext(ctx, fmt.Sprintf("%v", err))
 		// return nil, fmt.Errorf("jwt.ParseWithClaims. err: %w", domain.ErrUnauthenticated)
-		return nil, err
+		return nil, mbliberrors.Errorf("ParseWithClaims: %w", err)
 	}
 	if !currentToken.Valid {
 		return nil, fmt.Errorf("invalid token")
@@ -207,7 +208,7 @@ func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (
 
 	v := jwt.NewValidator()
 	if err := v.Validate(currentClaims); err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("Validate: %w", err)
 	}
 
 	return currentClaims, nil
@@ -236,7 +237,7 @@ func (m *AuthTokenManager) RefreshToken(ctx context.Context, tokenString string)
 
 	organizationID, err := mbuserdomain.NewOrganizationID(currentClaims.OrganizationID)
 	if err != nil {
-		return "", err
+		return "", mbliberrors.Errorf("NewOrganizationID: %w", err)
 	}
 
 	organization := &organization{

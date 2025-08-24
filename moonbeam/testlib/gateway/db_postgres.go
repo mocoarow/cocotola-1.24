@@ -2,10 +2,12 @@ package gateway
 
 import (
 	"embed"
+	"log/slog"
 
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/gorm"
 
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	libgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 )
 
@@ -13,13 +15,13 @@ var testPostgresHost string
 var testPostgresPort int
 
 func openPostgresForTest() (*gorm.DB, error) {
-	return libgateway.OpenPostgres(&libgateway.PostgresConfig{
+	return libgateway.OpenPostgres(&libgateway.PostgresConfig{ //nolint:wrapcheck
 		Username: "user",
 		Password: "password",
 		Host:     testPostgresHost,
 		Port:     testPostgresPort,
 		Database: "postgres",
-	})
+	}, slog.LevelInfo, "test")
 }
 
 // func setupPostgres(sqlFS embed.FS, db *gorm.DB) error {
@@ -39,11 +41,11 @@ func InitPostgres(fs embed.FS, dbHost string, dbPort int) (*gorm.DB, error) {
 	testPostgresPort = dbPort
 	db, err := openPostgresForTest()
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("openPostgresForTest: %w", err)
 	}
 
 	if err := libgateway.MigratePostgresDB(db, fs); err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("MigratePostgresDB: %w", err)
 	}
 
 	return db, nil

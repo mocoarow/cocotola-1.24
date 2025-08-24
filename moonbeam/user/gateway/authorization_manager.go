@@ -24,6 +24,7 @@ func NewAuthorizationManager(ctx context.Context, dialect libgateway.DialectRDBM
 	if err != nil {
 		return nil, err
 	}
+
 	return &authorizationManager{
 		dialect:  dialect,
 		db:       db,
@@ -45,12 +46,12 @@ func (m *authorizationManager) AddUserToGroupBySystemAdmin(ctx context.Context, 
 	pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, m.dialect, m.db, m.rf)
 
 	if err := pairOfUserAndGroupRepo.AddPairOfUserAndGroupBySystemAdmin(ctx, operator, organizationID, appUserID, userGroupID); err != nil {
-		return err
+		return liberrors.Errorf("AddPairOfUserAndGroupBySystemAdmin: %w", err)
 	}
 
-	rbacAppUser := service.NewRBACAppUser(organizationID, appUserID)
-	rbacUserRole := service.NewRBACUserRole(organizationID, userGroupID)
-	rbacDomain := service.NewRBACOrganization(organizationID)
+	rbacAppUser := domain.NewRBACAppUser(appUserID)
+	rbacUserRole := domain.NewRBACUserRole(organizationID, userGroupID)
+	rbacDomain := domain.NewRBACOrganization(organizationID)
 
 	// app-user belongs to user-role
 	if err := m.rbacRepo.AddSubjectGroupingPolicy(ctx, rbacDomain, rbacAppUser, rbacUserRole); err != nil {
@@ -64,14 +65,14 @@ func (m *authorizationManager) AddUserToGroup(ctx context.Context, operator serv
 	pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, m.dialect, m.db, m.rf)
 
 	if err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, operator, appUserID, userGroupID); err != nil {
-		return err
+		return liberrors.Errorf("AddPairOfUserAndGroup: %w", err)
 	}
 
 	organizationID := operator.OrganizationID()
 
-	rbacAppUser := service.NewRBACAppUser(organizationID, appUserID)
-	rbacUserRole := service.NewRBACUserRole(organizationID, userGroupID)
-	rbacDomain := service.NewRBACOrganization(organizationID)
+	rbacAppUser := domain.NewRBACAppUser(appUserID)
+	rbacUserRole := domain.NewRBACUserRole(organizationID, userGroupID)
+	rbacDomain := domain.NewRBACOrganization(organizationID)
 
 	// app-user belongs to user-role
 	if err := m.rbacRepo.AddSubjectGroupingPolicy(ctx, rbacDomain, rbacAppUser, rbacUserRole); err != nil {
@@ -82,7 +83,7 @@ func (m *authorizationManager) AddUserToGroup(ctx context.Context, operator serv
 }
 
 func (m *authorizationManager) AddPolicyToUser(ctx context.Context, operator service.AppUserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
-	rbacDomain := service.NewRBACOrganization(operator.OrganizationID())
+	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
 		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
@@ -91,8 +92,18 @@ func (m *authorizationManager) AddPolicyToUser(ctx context.Context, operator ser
 	return nil
 }
 
-func (m *authorizationManager) AddPolicyToUserBySystemAdmin(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
-	rbacDomain := service.NewRBACOrganization(organizationID)
+func (m *authorizationManager) AddPolicyToUserBySystemAdmin(ctx context.Context, _ service.SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
+	rbacDomain := domain.NewRBACOrganization(organizationID)
+
+	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
+		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
+	}
+
+	return nil
+}
+func (m *authorizationManager) AddPolicyToUserBySystemOwner(ctx context.Context, operator service.SystemOwnerInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
+	organizationID := operator.OrganizationID()
+	rbacDomain := domain.NewRBACOrganization(organizationID)
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
 		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
@@ -102,7 +113,7 @@ func (m *authorizationManager) AddPolicyToUserBySystemAdmin(ctx context.Context,
 }
 
 func (m *authorizationManager) AddPolicyToGroup(ctx context.Context, operator service.AppUserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
-	rbacDomain := service.NewRBACOrganization(operator.OrganizationID())
+	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
 		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
@@ -111,8 +122,8 @@ func (m *authorizationManager) AddPolicyToGroup(ctx context.Context, operator se
 	return nil
 }
 
-func (m *authorizationManager) AddPolicyToGroupBySystemAdmin(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
-	rbacDomain := service.NewRBACOrganization(organizationID)
+func (m *authorizationManager) AddPolicyToGroupBySystemAdmin(ctx context.Context, _ service.SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
+	rbacDomain := domain.NewRBACOrganization(organizationID)
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
 		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
@@ -121,29 +132,29 @@ func (m *authorizationManager) AddPolicyToGroupBySystemAdmin(ctx context.Context
 	return nil
 }
 
-func (m *authorizationManager) Authorize(ctx context.Context, operator service.AppUserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error) {
-	rbacDomain := service.NewRBACOrganization(operator.OrganizationID())
+func (m *authorizationManager) CheckAuthorization(ctx context.Context, operator service.AppUserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error) {
+	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
 
 	userGroupRepo := m.rf.NewUserGroupRepository(ctx)
 	userGroups, err := userGroupRepo.FindAllUserGroups(ctx, operator)
 	if err != nil {
-		return false, err
+		return false, liberrors.Errorf("FindAllUserGroups: %w", err)
 	}
 
 	rbacRoles := make([]domain.RBACRole, 0)
 	for _, userGroup := range userGroups {
-		rbacRoles = append(rbacRoles, service.NewRBACUserRole(operator.OrganizationID(), userGroup.UserGroupID))
+		rbacRoles = append(rbacRoles, domain.NewRBACUserRole(operator.OrganizationID(), userGroup.UserGroupID))
 	}
 
-	rbacOperator := service.NewRBACAppUser(operator.OrganizationID(), operator.AppUserID())
+	rbacOperator := domain.NewRBACAppUser(operator.AppUserID())
 	e, err := m.rbacRepo.NewEnforcerWithGroupsAndUsers(ctx, rbacRoles, []domain.RBACUser{rbacOperator})
 	if err != nil {
-		return false, err
+		return false, liberrors.Errorf("NewEnforcerWithGroupsAndUsers: %w", err)
 	}
 
 	ok, err := e.Enforce(rbacOperator.Subject(), rbacObject.Object(), rbacAction.Action(), rbacDomain.Domain())
 	if err != nil {
-		return false, err
+		return false, liberrors.Errorf("Enforce: %w", err)
 	}
 
 	return ok, nil

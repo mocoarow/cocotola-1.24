@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"flag"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -18,14 +18,16 @@ import (
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	"github.com/mocoarow/cocotola-1.24/moonbeam/sqls"
+	mbsqls "github.com/mocoarow/cocotola-1.24/moonbeam/sqls"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
 
 	authinit "github.com/mocoarow/cocotola-1.24/cocotola-auth/initialize"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	coreinit "github.com/mocoarow/cocotola-1.24/cocotola-core/initialize"
+	coresqls "github.com/mocoarow/cocotola-1.24/cocotola-core/sqls"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-app/config"
 	web "github.com/mocoarow/cocotola-1.24/cocotola-app/web_dist"
@@ -35,20 +37,22 @@ const AppName = "cocotola-app"
 
 func main() {
 	ctx := context.Background()
-	env := flag.String("env", "", "environment")
-	flag.Parse()
-	appEnv := libdomain.GetNonEmptyValue(*env, os.Getenv("APP_ENV"), "local")
-	slog.InfoContext(ctx, fmt.Sprintf("env: %s", appEnv))
 
 	mbliberrors.UseXerrorsErrorf()
 
-	cfg, err := config.LoadConfig(appEnv)
+	cfg, err := config.LoadConfig()
+
 	libdomain.CheckError(err)
+
+	systemToken := libdomain.NewSystemToken()
 
 	// init log
 	mblibconfig.InitLog(cfg.Log)
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "main"))
-	logger.InfoContext(ctx, fmt.Sprintf("env: %s", appEnv))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "-main"))
+
+	confBytes, err := json.Marshal(cfg)
+	libdomain.CheckError(err)
+	slog.Default().InfoContext(ctx, fmt.Sprintf("conf: %s", string(confBytes)))
 
 	// init tracer
 	tp, err := mblibconfig.InitTracerProvider(ctx, AppName, cfg.Trace)
@@ -57,12 +61,12 @@ func main() {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
 	// init db
-	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, sqls.SQL)
+	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, cfg.Log, domain.AppName, mbsqls.SQL, coresqls.SQL)
 	libdomain.CheckError(err)
 	defer sqlDB.Close()
 	defer tp.ForceFlush(ctx) // flushes any pending spans
 
-	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
+	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Log, cfg.Debug)
 
 	// web
 	{
@@ -73,14 +77,14 @@ func main() {
 	// auth
 	{
 		auth := router.Group("auth")
-		if err := authinit.Initialize(ctx, auth, dialect, cfg.DB.DriverName, db, cfg.Auth); err != nil {
+		if err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth); err != nil {
 			libdomain.CheckError(err)
 		}
 	}
 	// core
 	{
 		core := router.Group("core")
-		if err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Core); err != nil {
+		if err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Core); err != nil {
 			libdomain.CheckError(err)
 		}
 	}
@@ -100,7 +104,7 @@ func main() {
 	os.Exit(result)
 }
 
-func initGinWeb(ctx context.Context, router *gin.Engine, viteStaticFS fs.FS, webType string) {
+func initGinWeb(_ context.Context, router *gin.Engine, viteStaticFS fs.FS, webType string) {
 	router.NoRoute(func(c *gin.Context) {
 		logger := slog.Default()
 		logger.InfoContext(c.Request.Context(), c.Request.URL.Path)
@@ -116,6 +120,7 @@ func initGinWeb(ctx context.Context, router *gin.Engine, viteStaticFS fs.FS, web
 		for _, prefix := range getReactResourcesFunc() {
 			if strings.HasPrefix(c.Request.RequestURI, prefix) {
 				c.FileFromFS(c.Request.URL.Path, http.FS(viteStaticFS))
+
 				return
 			}
 		}
@@ -125,6 +130,7 @@ func initGinWeb(ctx context.Context, router *gin.Engine, viteStaticFS fs.FS, web
 			!strings.HasPrefix(c.Request.URL.Path, "/synthesizer") &&
 			!strings.HasPrefix(c.Request.URL.Path, "/tatoeba") {
 			c.FileFromFS("", http.FS(viteStaticFS))
+
 			return
 		}
 	})

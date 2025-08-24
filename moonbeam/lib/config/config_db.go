@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"io/fs"
+	"log/slog"
 
 	"gorm.io/gorm"
 
@@ -20,12 +21,12 @@ type DBConfig struct {
 	Migration  bool                       `yaml:"migration"`
 }
 
-type mergedFS struct {
+type MergedFS struct {
 	fss     []fs.FS
 	entries []fs.DirEntry
 }
 
-func MergeFS(driverName string, fss ...fs.FS) (*mergedFS, error) {
+func MergeFS(driverName string, fss ...fs.FS) (*MergedFS, error) {
 	entries := make([]fs.DirEntry, 0)
 	for i := range fss {
 		e, err := fs.ReadDir(fss[i], driverName)
@@ -35,13 +36,13 @@ func MergeFS(driverName string, fss ...fs.FS) (*mergedFS, error) {
 		entries = append(entries, e...)
 	}
 
-	return &mergedFS{
+	return &MergedFS{
 		fss:     fss,
 		entries: entries,
 	}, nil
 }
 
-func (f *mergedFS) Open(name string) (fs.File, error) {
+func (f *MergedFS) Open(name string) (fs.File, error) {
 	var file fs.File
 	var err error
 	for i := range f.fss {
@@ -51,13 +52,14 @@ func (f *mergedFS) Open(name string) (fs.File, error) {
 		}
 	}
 
-	return nil, err
+	return nil, liberrors.Errorf("Open: %w", err)
 }
 
-func (f *mergedFS) ReadDir(name string) ([]fs.DirEntry, error) {
+func (f *MergedFS) ReadDir(_ string) ([]fs.DirEntry, error) {
 	return f.entries, nil
 }
-func InitDB(ctx context.Context, cfg *DBConfig, sqlFSs ...fs.FS) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error) {
+
+func InitDB(ctx context.Context, cfg *DBConfig, logConfig *LogConfig, appName string, sqlFSs ...fs.FS) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error) {
 	mergedFS, err := MergeFS(cfg.DriverName, sqlFSs...)
 	if err != nil {
 		return nil, nil, nil, liberrors.Errorf("merge sql files in %q directory: %w", cfg.DriverName, err)
@@ -67,22 +69,10 @@ func InitDB(ctx context.Context, cfg *DBConfig, sqlFSs ...fs.FS) (libgateway.Dia
 	if !ok {
 		return nil, nil, nil, libdomain.ErrInvalidArgument
 	}
-	return initDBFunc(ctx, cfg, mergedFS)
-	// switch cfg.DriverName {
-	// case "sqlite3":
-	//
-	//	return initSqlite3(ctx, cfg, mergedFS)
-	//
-	// case "mysql":
-	//
-	//	return initMySQL(ctx, cfg, mergedFS)
-	//
-	// case "postgres":
-	//
-	//	return initPostgres(ctx, cfg, mergedFS)
-	//
-	// default:
-	//
-	//		return nil, nil, nil, libdomain.ErrInvalidArgument
-	//	}
+	dbLogLevel := slog.LevelWarn
+	if level, ok := logConfig.Levels["db"]; ok {
+		dbLogLevel = stringToLogLevel(level)
+	}
+
+	return initDBFunc(ctx, cfg, dbLogLevel, mergedFS, appName)
 }

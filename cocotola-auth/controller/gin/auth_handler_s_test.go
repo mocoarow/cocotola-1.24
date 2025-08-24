@@ -30,6 +30,7 @@ var (
 	anyOfCtx = mock.MatchedBy(func(_ context.Context) bool { return true })
 	// corsConfig   cors.Config
 	corsConfig   *mblibconfig.CORSConfig
+	logConfig    *mblibconfig.LogConfig
 	serverConfig *config.ServerConfig
 	authConfig   *config.AuthConfig
 	debugConfig  *libconfig.DebugConfig
@@ -39,6 +40,12 @@ var (
 func init() {
 	corsConfig = &mblibconfig.CORSConfig{
 		AllowOrigins: []string{"*"},
+	}
+	logConfig = &mblibconfig.LogConfig{
+		Enabled: map[string]bool{
+			"accessLog": false,
+			"traceLog":  false,
+		},
 	}
 	serverConfig = &config.ServerConfig{
 		HTTPPort:    8080,
@@ -62,7 +69,7 @@ func initAuthRouter(t *testing.T, ctx context.Context, authentication controller
 	initPublicRouterFuncs := []libcontroller.InitRouterGroupFunc{fn}
 	// initPrivateRouterFuncs := []libcontroller.InitRouterGroupFunc{}
 
-	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, debugConfig)
+	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, logConfig, debugConfig)
 	api := router.Group("api")
 	v1 := api.Group("v1")
 
@@ -188,7 +195,7 @@ func TestAuthHandler_RefreshToken_shouldReturn400_whenRequestBodyIsEmpty(t *test
 	w := httptest.NewRecorder()
 
 	// when
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/auth/refresh_token", bytes.NewBuffer([]byte("")))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/auth/refresh-token", bytes.NewBuffer([]byte("")))
 	require.NoError(t, err)
 	r.ServeHTTP(w, req)
 	respBytes := readBytes(t, w.Body)
@@ -216,7 +223,7 @@ func TestAuthHandler_RefreshToken_shouldReturn401_whenTokenIsInvalid(t *testing.
 	w := httptest.NewRecorder()
 
 	// when
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/auth/refresh_token", bytes.NewBuffer([]byte(`{"refreshToken": "INVALID_TOKEN"}`)))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/auth/refresh-token", bytes.NewBuffer([]byte(`{"refreshToken": "INVALID_TOKEN"}`)))
 	require.NoError(t, err)
 	r.ServeHTTP(w, req)
 	respBytes := readBytes(t, w.Body)
@@ -244,7 +251,7 @@ func TestAuthHandler_RefreshToken_shouldReturn200_whenTokenIsValid(t *testing.T)
 	w := httptest.NewRecorder()
 
 	// when
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/auth/refresh_token", bytes.NewBuffer([]byte(`{"refreshToken": "VALID_TOKEN"}`)))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/auth/refresh-token", bytes.NewBuffer([]byte(`{"refreshToken": "VALID_TOKEN"}`)))
 	require.NoError(t, err)
 	r.ServeHTTP(w, req)
 	respBytes := readBytes(t, w.Body)

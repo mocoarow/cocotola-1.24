@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
@@ -23,20 +24,20 @@ func NewRBACUsecase(txManager, nonTxManager service.TransactionManager) *RBACUse
 }
 
 func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, listOfActionObjectEffect []mbuserdomain.RBACActionObjectEffect) error {
-	return mblibservice.Do0(ctx, u.txManager, func(rf service.RepositoryFactory) error {
-		rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
+	return mblibservice.Do0(ctx, u.txManager, func(rf service.RepositoryFactory) error { //nolint:wrapcheck
+		mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
 		}
 
-		sysAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
+		sysAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("NewSystemAdmin: %w", err)
 		}
 
-		authorizationManager, err := rsrf.NewAuthorizationManager(ctx)
+		authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
 		if err != nil {
-			return err
+			return mbliberrors.Errorf("NewAuthorizationManager: %w", err)
 		}
 
 		for _, aoe := range listOfActionObjectEffect {
@@ -44,7 +45,7 @@ func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuse
 			object := aoe.Object
 			effect := aoe.Effect
 			if err := authorizationManager.AddPolicyToUserBySystemAdmin(ctx, sysAdmin, organizationID, subject, action, object, effect); err != nil {
-				return err
+				return mbliberrors.Errorf("AddPolicyToUserBySystemAdmin: %w", err)
 			}
 		}
 
@@ -52,18 +53,11 @@ func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuse
 	})
 }
 
-func (u *RBACUsecase) Authorize(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error) {
-	return mblibservice.Do1(ctx, u.nonTxManager, func(rf service.RepositoryFactory) (bool, error) {
-		rsrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-		if err != nil {
-			return false, err
-		}
+func (u *RBACUsecase) CheckAuthorization(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error) {
+	ok, err := service.CheckAuthorization(ctx, operator, action, object, u.nonTxManager)
+	if err != nil {
+		return false, mbliberrors.Errorf("CheckAuthorization: %w", err)
+	}
 
-		authorizationManager, err := rsrf.NewAuthorizationManager(ctx)
-		if err != nil {
-			return false, err
-		}
-
-		return authorizationManager.Authorize(ctx, operator, action, object)
-	})
+	return ok, nil
 }

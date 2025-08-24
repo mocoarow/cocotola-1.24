@@ -8,9 +8,9 @@ type AppUserInfoResponse struct {
 }
 
 type PasswordAuthParameter struct {
-	LoginID          string `json:"loginId"`
-	Password         string `json:"password"`
-	OrganizationName string `json:"organizationName"`
+	LoginID          string `json:"loginId" binding:"required"`
+	Password         string `json:"password" binding:"required"`
+	OrganizationName string `json:"organizationName" binding:"required"`
 }
 
 type AuthResponse struct {
@@ -97,8 +97,76 @@ type ActionObjectEffect struct {
 	Object string `json:"object"`
 	Effect string `json:"effect"`
 }
+type ActionObject struct {
+	Action string `json:"action"`
+	Object string `json:"object"`
+}
 type AddPolicyToUserParameter struct {
 	OrganizationID           int                  `json:"organizationId"`
 	AppUserID                int                  `json:"appUserId"`
 	ListOfActionObjectEffect []ActionObjectEffect `json:"listOfActionObjectEffect"`
+}
+
+type AuthorizeRequest struct {
+	OrganizationID int    `json:"organizationId"`
+	AppUserID      int    `json:"appUserId"`
+	Action         string `json:"action"`
+	Object         string `json:"object"`
+}
+
+type AuthorizeResponse struct {
+	Authorized bool `json:"authorized"`
+}
+
+// Find
+type DeckFindParameter struct {
+	PageNo   int
+	PageSize int
+}
+
+type DeckFindDeckModel struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type DeckFindResult struct {
+	TotalCount int                          `json:"totalCount"`
+	Results    []*WorkbookFindWorkbookModel `json:"results"`
+}
+
+// Retrieve
+type DeckRetrieveResult struct {
+	ID          int    `json:"id"`
+	Version     int    `json:"version"`
+	Name        string `json:"name" binding:"required"`
+	TemplateID  int    `json:"templateId" binding:"required"`
+	Lang2       string `json:"lang2" binding:"required"`
+	Description string `json:"description"`
+}
+
+type DeckAddParameter struct {
+	SpaceID     int    `json:"spaceId" binding:"required"`
+	Name        string `json:"name" binding:"required"`
+	TemplateID  int    `json:"templateId" binding:"required"`
+	Lang2       string `json:"lang2" binding:"required"`
+	Description string `json:"description"`
+}
+
+type DeckUpdateParameter struct {
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description"`
+}
+
+type AppUserAddRequest struct {
+	LoginID  string `json:"loginId" binding:"required"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type CallbackOnAddAppUserRequest struct {
+	OrganizationID int `json:"organizationId" binding:"required,gte=1"`
+	AppUserID      int `json:"appUserId" binding:"required,gte=1"`
+}
+type ProfileResponse struct {
+	PrivateSpaceID int `json:"privateSpaceId"`
 }

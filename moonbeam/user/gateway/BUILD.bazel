@@ -21,6 +21,7 @@ go_library(
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",
+        "//moonbeam/lib/service",
         "//moonbeam/user/domain",
         "//moonbeam/user/service",
         "@com_github_casbin_casbin_v2//:casbin",
@@ -50,6 +51,7 @@ go_test(
     deps = [
         "//moonbeam/lib/domain",
         "//moonbeam/lib/gateway",
+        "//moonbeam/lib/service",
         "//moonbeam/sqls",
         "//moonbeam/testlib/gateway",
         "//moonbeam/user/domain",

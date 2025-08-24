@@ -8,7 +8,8 @@ import (
 
 	gorm_sqlite "github.com/glebarez/sqlite"
 	"github.com/golang-migrate/migrate/v4/database"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	slog_gorm "github.com/orandin/slog-gorm"
 	"gorm.io/gorm"
@@ -17,8 +18,6 @@ import (
 	migrate_sqlite3 "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway/sqlite"
 	liblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 )
-
-// migrate_sqlite3 "github.com/golang-migrate/migrate/v4/database/sqlite"
 
 type DialectSQLite3 struct {
 }
@@ -35,27 +34,27 @@ type SQLite3Config struct {
 	File string `yaml:"file" validate:"required"`
 }
 
-func OpenSQLite3(cfg *SQLite3Config) (*gorm.DB, error) {
+func OpenSQLite3(cfg *SQLite3Config, logLevel slog.Level, appName string) (*gorm.DB, error) {
 	gormDialector := gorm_sqlite.Open(cfg.File)
 
 	gormConfig := gorm.Config{
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
-			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(ctx context.Context) (slog.Value, bool) {
-				return slog.StringValue("gorm"), true
+			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
+				return slog.StringValue(appName + "-gorm"), true
 			}),
-			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, slog.LevelDebug),
+			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, logLevel),
 		),
 	}
 
-	return gorm.Open(gormDialector, &gormConfig)
+	return gorm.Open(gormDialector, &gormConfig) //nolint:wrapcheck
 }
 
 func MigrateSQLite3DB(db *gorm.DB, sqlFS fs.FS) error {
 	driverName := "sqlite3"
 	sourceDriver, err := iofs.New(sqlFS, driverName)
 	if err != nil {
-		return liberrors.Errorf("iofs.New err: %w", err)
+		return liberrors.Errorf("iofs.New: %w", err)
 	}
 
 	var _ = sourceDriver
@@ -65,19 +64,19 @@ func MigrateSQLite3DB(db *gorm.DB, sqlFS fs.FS) error {
 	})
 }
 
-func InitSqlite3(ctx context.Context, cfg *SQLite3Config, migration bool, fs fs.FS) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	db, err := OpenSQLite3(cfg)
+func InitSqlite3(ctx context.Context, cfg *SQLite3Config, migration bool, logLevel slog.Level, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
+	db, err := OpenSQLite3(cfg, logLevel, appName)
 	if err != nil {
-		return nil, nil, nil, liberrors.Errorf("OpenSQLite file: %s err: %w", cfg.File, err)
+		return nil, nil, nil, liberrors.Errorf("OpenSQLite file(%s): %w", cfg.File, err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, nil, nil, liberrors.Errorf("DB. file: %s err: %w", cfg.File, err)
+		return nil, nil, nil, liberrors.Errorf("DB. file(%s): %w", cfg.File, err)
 	}
 
 	if err := sqlDB.PingContext(ctx); err != nil {
-		return nil, nil, nil, liberrors.Errorf("Ping. file: %s err: %w", cfg.File, err)
+		return nil, nil, nil, liberrors.Errorf("Ping. file(%s): %w", cfg.File, err)
 	}
 
 	if migration {
@@ -87,5 +86,6 @@ func InitSqlite3(ctx context.Context, cfg *SQLite3Config, migration bool, fs fs.
 	}
 
 	dialect := DialectSQLite3{}
+
 	return &dialect, db, sqlDB, nil
 }

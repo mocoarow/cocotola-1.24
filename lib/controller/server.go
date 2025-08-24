@@ -28,7 +28,7 @@ func AppServerProcess(ctx context.Context, router http.Handler, port int, readHe
 	go func() {
 		defer close(errCh)
 		if err := httpServer.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-			logger.InfoContext(ctx, fmt.Sprintf("failed to ListenAndServe. err: %v", err))
+			logger.InfoContext(ctx, fmt.Sprintf("failed to ListenAndServe: %v", err))
 			errCh <- err
 		}
 	}()
@@ -38,11 +38,13 @@ func AppServerProcess(ctx context.Context, router http.Handler, port int, readHe
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTime)
 		defer shutdownCancel()
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
-			logger.InfoContext(ctx, fmt.Sprintf("Server forced to shutdown. err: %v", err))
-			return mbliberrors.Errorf("httpServer.Shutdown. err: %w", err)
+			logger.InfoContext(ctx, fmt.Sprintf("Server forced to shutdown: %v", err))
+
+			return mbliberrors.Errorf("httpServer.Shutdown: %w", err)
 		}
+
 		return nil
 	case err := <-errCh:
-		return mbliberrors.Errorf("httpServer.ListenAndServe. err: %w", err)
+		return mbliberrors.Errorf("httpServer.ListenAndServe: %w", err)
 	}
 }

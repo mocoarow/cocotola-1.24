@@ -1,0 +1,19 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "middleware",
+    srcs = [
+        "auth_middleware.go",
+        "init.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/middleware",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cocotola-auth/domain",
+        "//cocotola-auth/service",
+        "//lib/domain",
+        "//moonbeam/lib/log",
+        "@com_github_gin_gonic_gin//:gin",
+        "@io_opentelemetry_go_otel//:otel",
+    ],
+)

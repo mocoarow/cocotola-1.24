@@ -9,13 +9,16 @@ import (
 )
 
 func TestA(t *testing.T) {
+	t.Parallel()
 	service.A()
 }
 
 func TestB(t *testing.T) {
+	t.Parallel()
 	service.B()
 }
 
 func TestC(t *testing.T) {
+	t.Parallel()
 	service.C()
 }

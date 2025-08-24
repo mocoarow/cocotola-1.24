@@ -21,6 +21,9 @@ func (v *AppUserID) Int() int {
 func (v *AppUserID) IsAppUserID() bool {
 	return true
 }
+func (v *AppUserID) GetRBACSubject() RBACSubject {
+	return NewRBACAppUser(v)
+}
 
 type AppUserModel struct {
 	*libdomain.BaseModel
@@ -42,7 +45,7 @@ func NewAppUserModel(baseModel *libdomain.BaseModel, appUserID *AppUserID, organ
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
+		return nil, liberrors.Errorf("validate app user model: %w", err)
 	}
 
 	return m, nil

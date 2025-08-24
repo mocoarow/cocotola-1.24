@@ -21,13 +21,15 @@ import (
 
 func newGoogleAuthClient(t *testing.T, httpClient gateway.HTTPClient) *gateway.GoogleAuthClient {
 	t.Helper()
-	return &gateway.GoogleAuthClient{
+	c := &gateway.GoogleAuthClient{
 		HTTPClient:   httpClient,
 		ClientID:     "CLIENT_ID",
 		ClientSecret: "CLIENT_SECRET",
 		RedirectURI:  "REDIRECT_URI",
 		GrantType:    "authorization_code",
 	}
+	c.SetLogger()
+	return c
 }
 
 func Test_GoogleAuthClient_NewGoogleAuthClient(t *testing.T) {
@@ -59,7 +61,7 @@ func Test_GoogleAuthClient_RetrieveAccessToken_shouldReturnTokenSet_whenReturned
 	tokenSet, err := c.RetrieveAccessToken(ctx, "CODE")
 
 	// then
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "ACCESS_TOKEN", tokenSet.AccessToken)
 	assert.Equal(t, "REFRESH_TOKEN", tokenSet.RefreshToken)
 }
@@ -80,7 +82,7 @@ func Test_GoogleAuthClient_RetrieveAccessToken_shouldReturnAuthenticationError_w
 	tokenSet, err := c.RetrieveAccessToken(ctx, "CODE")
 
 	// then
-	assert.ErrorIs(t, err, domain.ErrUnauthenticated)
+	require.ErrorIs(t, err, domain.ErrUnauthenticated)
 	assert.Nil(t, tokenSet)
 }
 
@@ -100,7 +102,7 @@ func Test_GoogleAuthClient_RetrieveAccessToken_shouldReturnAuthenticationError_w
 	tokenSet, err := c.RetrieveAccessToken(ctx, "CODE")
 
 	// then
-	assert.ErrorIs(t, err, domain.ErrUnauthenticated)
+	require.ErrorIs(t, err, domain.ErrUnauthenticated)
 	assert.Nil(t, tokenSet)
 }
 
@@ -118,16 +120,17 @@ func Test_GoogleAuthClient_RetrieveAccessToken_shouldReturnOtherError_whenErrorO
 	tokenSet, err := c.RetrieveAccessToken(ctx, "CODE")
 
 	// then
-	assert.ErrorIs(t, err, otherError)
+	require.ErrorIs(t, err, otherError)
 	assert.Nil(t, tokenSet)
 }
 
 func Test_GoogleAuthClient_RetrieveUserInfo(t *testing.T) {
 	t.Skip()
+	t.Parallel()
 	ctx := context.Background()
 	accessToken := ""
 	c := newGoogleAuthClient(t, http.DefaultClient)
 	userInfo, err := c.RetrieveUserInfo(ctx, accessToken)
 	require.NoError(t, err)
-	assert.Equal(t, userInfo.Email, "")
+	assert.Empty(t, userInfo.Email)
 }

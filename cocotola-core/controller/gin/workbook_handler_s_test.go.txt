@@ -32,6 +32,7 @@ var (
 	anyOfCtx = mock.MatchedBy(func(_ context.Context) bool { return true })
 	// corsConfig   cors.Config
 	corsConfig   *mblibconfig.CORSConfig
+	logConfig    *mblibconfig.LogConfig
 	serverConfig *config.ServerConfig
 	debugConfig  *libconfig.DebugConfig
 	// authTokenManager  auth.AuthTokenManager
@@ -40,6 +41,12 @@ var (
 func init() {
 	corsConfig = &mblibconfig.CORSConfig{
 		AllowOrigins: []string{"*"},
+	}
+	logConfig = &mblibconfig.LogConfig{
+		Enabled: map[string]bool{
+			"accessLog": false,
+			"traceLog":  false,
+		},
 	}
 	serverConfig = &config.ServerConfig{
 		HTTPPort:    8080,
@@ -59,7 +66,7 @@ func initWorkbookRouter(t *testing.T, ctx context.Context, cocotolaAuthClient se
 	initPublicRouterFuncs := []libcontroller.InitRouterGroupFunc{}
 	initPrivateRouterFuncs := []libcontroller.InitRouterGroupFunc{fn}
 
-	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, debugConfig)
+	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, logConfig, debugConfig)
 	api := router.Group("api")
 	v1 := api.Group("v1")
 
@@ -122,7 +129,7 @@ func TestWorkbookHandler_FindWorkbook_shouldReturn200(t *testing.T) {
 	resultsExpr := parseExpr(t, "$.results")
 	results := resultsExpr.Get(jsonObj)
 	assert.Len(t, results, 1, "response should have one results")
-	assert.Equal(t, 1, len(results), "results should have one element")
+	assert.Len(t, results, 1, "results should have one element")
 
 	resultID0Expr := parseExpr(t, "$.results[0].id")
 	resultID0 := resultID0Expr.Get(jsonObj)

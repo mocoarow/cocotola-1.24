@@ -8,8 +8,8 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
-func initTracerExporterNone(ctx context.Context, traceConfig *TraceConfig) (sdktrace.SpanExporter, error) {
-	return stdouttrace.New(
+func initTracerExporterNone(_ context.Context, _ *TraceConfig) (sdktrace.SpanExporter, error) {
+	return stdouttrace.New( //nolint:wrapcheck
 		stdouttrace.WithPrettyPrint(),
 		stdouttrace.WithWriter(io.Discard),
 	)

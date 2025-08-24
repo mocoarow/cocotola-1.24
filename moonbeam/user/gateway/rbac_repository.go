@@ -38,7 +38,7 @@ type rbacRepository struct {
 	enforcer casbin.IEnforcer
 }
 
-func newRBACRepository(ctx context.Context, db *gorm.DB) (service.RBACRepository, error) {
+func newRBACRepository(_ context.Context, db *gorm.DB) (service.RBACRepository, error) {
 	if db == nil {
 		panic(errors.New("db is nil"))
 	}
@@ -57,6 +57,7 @@ func newRBACRepository(ctx context.Context, db *gorm.DB) (service.RBACRepository
 	if err != nil {
 		return nil, liberrors.Errorf("casbin.NewEnforcer. err: %w", err)
 	}
+
 	return &rbacRepository{
 		DB:       db,
 		Conf:     conf,
@@ -82,7 +83,7 @@ func newRBACRepository(ctx context.Context, db *gorm.DB) (service.RBACRepository
 // 	return nil
 // }
 
-func (r *rbacRepository) initEnforcer(ctx context.Context) (casbin.IEnforcer, error) {
+func (r *rbacRepository) initEnforcer(_ context.Context) (casbin.IEnforcer, error) {
 	return r.enforcer, nil
 	// logger := log.GetLoggerFromContext(ctx, UserGatewayContextKey)
 	// a, err := gormadapter.NewAdapterByDB(r.DB)
@@ -140,7 +141,7 @@ func (r *rbacRepository) RemovePolicy(ctx context.Context, domain domain.RBACDom
 	return nil
 }
 
-func (r *rbacRepository) RemoveSubjectPolicy(ctx context.Context, domain domain.RBACDomain, subject domain.RBACSubject) error {
+func (r *rbacRepository) RemoveSubjectPolicy(ctx context.Context, _ domain.RBACDomain, subject domain.RBACSubject) error {
 	e, err := r.initEnforcer(ctx)
 	if err != nil {
 		return liberrors.Errorf("r.initEnforcer. err: %w", err)
@@ -206,7 +207,7 @@ func (r *rbacRepository) RemoveObjectGroupingPolicy(ctx context.Context, domain 
 	return nil
 }
 
-func (r *rbacRepository) NewEnforcerWithGroupsAndUsers(ctx context.Context, groups []domain.RBACRole, users []domain.RBACUser) (casbin.IEnforcer, error) {
+func (r *rbacRepository) NewEnforcerWithGroupsAndUsers(_ context.Context, groups []domain.RBACRole, users []domain.RBACUser) (casbin.IEnforcer, error) {
 	subjects := make([]string, 0)
 	for _, s := range groups {
 		subjects = append(subjects, s.Role())
@@ -217,6 +218,7 @@ func (r *rbacRepository) NewEnforcerWithGroupsAndUsers(ctx context.Context, grou
 	if err := r.enforcer.LoadFilteredPolicy(gormadapter.Filter{V0: subjects}); err != nil {
 		return nil, liberrors.Errorf("e.LoadFilteredPolicy. err: %w", err)
 	}
+
 	return r.enforcer, nil
 	// e, err := r.initEnforcer(ctx)
 	// if err != nil {

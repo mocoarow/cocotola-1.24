@@ -11,7 +11,8 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4/database"
 	migrate_mysql "github.com/golang-migrate/migrate/v4/database/mysql"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	slog_gorm "github.com/orandin/slog-gorm"
 	gorm_mysql "gorm.io/driver/mysql"
@@ -40,22 +41,23 @@ type MySQLConfig struct {
 	Database string `yaml:"database" validate:"required"`
 }
 
-func OpenMySQLWithDSN(dsn string) (*gorm.DB, error) {
+func OpenMySQLWithDSN(dsn string, logLevel slog.Level, appName string) (*gorm.DB, error) {
 	gormDialector := gorm_mysql.Open(dsn)
 
 	gormConfig := gorm.Config{
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
-			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(ctx context.Context) (slog.Value, bool) {
-				return slog.StringValue("gorm"), true
+			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
+				return slog.StringValue(appName + "-gorm"), true
 			}),
+			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, logLevel),
 		),
 	}
 
-	return gorm.Open(gormDialector, &gormConfig)
+	return gorm.Open(gormDialector, &gormConfig) //nolint:wrapcheck
 }
 
-func OpenMySQL(cfg *MySQLConfig) (*gorm.DB, error) {
+func OpenMySQL(cfg *MySQLConfig, logLevel slog.Level, appName string) (*gorm.DB, error) {
 	c := mysql.Config{
 		DBName:               cfg.Database,
 		User:                 cfg.Username,
@@ -72,14 +74,14 @@ func OpenMySQL(cfg *MySQLConfig) (*gorm.DB, error) {
 		Loc:                  time.UTC,
 	}
 
-	return OpenMySQLWithDSN(c.FormatDSN())
+	return OpenMySQLWithDSN(c.FormatDSN(), logLevel, appName)
 }
 
 func MigrateMySQLDB(db *gorm.DB, sqlFS fs.FS) error {
 	driverName := "mysql"
 	sourceDriver, err := iofs.New(sqlFS, driverName)
 	if err != nil {
-		return err
+		return liberrors.Errorf("iofs New: %w", err)
 	}
 
 	return MigrateDB(db, driverName, sourceDriver, func(sqlDB *sql.DB) (database.Driver, error) {
@@ -87,27 +89,28 @@ func MigrateMySQLDB(db *gorm.DB, sqlFS fs.FS) error {
 	})
 }
 
-func InitMySQL(ctx context.Context, cfg *MySQLConfig, migration bool, fs fs.FS) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	db, err := OpenMySQL(cfg)
+func InitMySQL(ctx context.Context, cfg *MySQLConfig, migration bool, logLevel slog.Level, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
+	db, err := OpenMySQL(cfg, logLevel, appName)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("OpenMySQL: %w", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("DB: %w", err)
 	}
 
 	if err := sqlDB.PingContext(ctx); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("ping: %w", err)
 	}
 
 	if migration {
 		if err := MigrateMySQLDB(db, fs); err != nil {
-			return nil, nil, nil, liberrors.Errorf("failed to MigrateMySQLDB. err: %w", err)
+			return nil, nil, nil, liberrors.Errorf("failed to MigrateMySQLDB: %w", err)
 		}
 	}
 
 	dialect := DialectMySQL{}
+
 	return &dialect, db, sqlDB, nil
 }

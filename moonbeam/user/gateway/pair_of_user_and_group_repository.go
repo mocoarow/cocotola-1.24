@@ -30,7 +30,7 @@ func (u *pairOfUserAndGroupEntity) TableName() string {
 	return PairOfUserAndGroupTableName
 }
 
-func NewPairOfUserAndGroupRepository(ctx context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB, rf service.RepositoryFactory) service.PairOfUserAndGroupRepository {
+func NewPairOfUserAndGroupRepository(_ context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB, rf service.RepositoryFactory) service.PairOfUserAndGroupRepository {
 	return &pairOfUserAndGroupRepository{
 		dialect: dialect,
 		db:      db,
@@ -237,7 +237,7 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 // 	return false, nil
 // }
 
-func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator service.AppUserInterface, appUserID *domain.AppUserID) ([]*domain.UserGroupModel, error) {
+func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(_ context.Context, operator service.AppUserInterface, appUserID *domain.AppUserID) ([]*domain.UserGroupModel, error) {
 	userGroups := []userGroupEntity{}
 	if result := r.db.Table(UserGroupTableName).Select(UserGroupTableName+".*").
 		Where(UserGroupTableName+".organization_id = ?", operator.OrganizationID().Int()).

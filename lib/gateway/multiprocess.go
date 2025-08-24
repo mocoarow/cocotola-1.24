@@ -48,11 +48,13 @@ func Run(ctx context.Context, processFuncs ...ProcessFunc) int {
 	}
 	eg.Go(func() error {
 		<-ctx.Done()
-		return ctx.Err() // nolint:wrapcheck
+
+		return ctx.Err()
 	})
 
 	if err := eg.Wait(); err != nil {
 		return 1
 	}
+
 	return 0
 }

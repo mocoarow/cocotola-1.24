@@ -71,6 +71,7 @@ tasks:
           - cocotola-auth
           - cocotola-core
           - cocotola-empty
+          - cocotola-test
         task: lint-project
         vars:
           PROJECT: "{{ .ITEM }}"
@@ -98,6 +99,7 @@ tasks:
           - cocotola-auth
           - cocotola-core
           - cocotola-empty
+          - cocotola-test
           # - cocotola-import
           # - cocotola-synthesizer
           # - cocotola-tatoeba
@@ -123,6 +125,7 @@ tasks:
           - cocotola-auth
           - cocotola-core
           - cocotola-empty
+          - cocotola-test
           # - cocotola-import
           # - cocotola-synthesizer
           # - cocotola-tatoeba
@@ -144,10 +147,7 @@ tasks:
 
   run-app:
     cmds:
-      - |
-        export GOOGLE_CLIENT_SECRET=aaa
-        export GOOGLE_TEXT_TO_SPEECH_API_KEY=bbb
-        bazelisk run //cocotola-app:cocotola-app
+      - bazelisk run //cocotola-app:cocotola-app
 
   run-auth:
     cmds:

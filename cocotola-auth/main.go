@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -21,42 +19,41 @@ import (
 	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/config"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/initialize"
 )
 
 func main() {
 	ctx := context.Background()
-	env := flag.String("env", "", "environment")
-	flag.Parse()
-	appEnv := libdomain.GetNonEmptyValue(*env, os.Getenv("APP_ENV"), "local")
 
 	mbliberrors.UseXerrorsErrorf()
 
 	// load config
-	cfg, err := config.LoadConfig(appEnv)
+	cfg, err := config.LoadConfig()
 	libdomain.CheckError(err)
+
+	systemToken := libdomain.NewSystemToken()
 
 	// init log
 	mblibconfig.InitLog(cfg.Log)
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "main"))
-	logger.InfoContext(ctx, fmt.Sprintf("env: %s", appEnv))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "-main"))
 
 	// init tracer
-	tp, err := mblibconfig.InitTracerProvider(ctx, initialize.AppName, cfg.Trace)
+	tp, err := mblibconfig.InitTracerProvider(ctx, domain.AppName, cfg.Trace)
 	libdomain.CheckError(err)
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
 	// init db
-	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, mbsql.SQL)
+	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, cfg.Log, domain.AppName, mbsql.SQL)
 	libdomain.CheckError(err)
 	defer sqlDB.Close()
 	defer tp.ForceFlush(ctx) // flushes any pending spans
 
 	// init gin
-	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
+	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Log, cfg.Debug)
 
-	if err := initialize.Initialize(ctx, router, dialect, cfg.DB.DriverName, db, cfg.App); err != nil {
+	if err := initialize.Initialize(ctx, systemToken, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App); err != nil {
 		libdomain.CheckError(err)
 	}
 

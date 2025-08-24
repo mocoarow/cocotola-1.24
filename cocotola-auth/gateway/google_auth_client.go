@@ -15,13 +15,9 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 )
 
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
 type googleAuthResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"access_token"`  //nolint:tagliatelle
+	RefreshToken string `json:"refresh_token"` //nolint:tagliatelle
 }
 
 type googleUserInfo struct {
@@ -45,7 +41,7 @@ func NewGoogleAuthClient(httpClient HTTPClient, clientID, clientSecret, redirect
 		ClientSecret: clientSecret,
 		RedirectURI:  redirectURI,
 		GrantType:    "authorization_code",
-		logger:       slog.Default().With(slog.String(mbliblog.LoggerNameKey, "GoogleAuthClient")),
+		logger:       slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-GoogleAuthClient")),
 	}
 }
 
@@ -87,6 +83,8 @@ func (c *GoogleAuthClient) RetrieveAccessToken(ctx context.Context, code string)
 
 		if 400 <= resp.StatusCode && resp.StatusCode < 500 {
 			c.logger.InfoContext(ctx, fmt.Sprintf("retrieve access token. status: %d, param: %s, body:%s", resp.StatusCode, string(paramBytes), string(respBytes)))
+
+			return nil, mbliberrors.Errorf("retrieve access token. err: %w", domain.ErrUnauthenticated)
 		}
 
 		return nil, fmt.Errorf("retrieve access token. status: %d, body:%s", resp.StatusCode, string(respBytes))

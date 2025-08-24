@@ -31,7 +31,7 @@ type AuthHandler struct {
 func NewAuthHandler(authenticationUsecase AuthenticationUsecase) *AuthHandler {
 	return &AuthHandler{
 		authenticationUsecase: authenticationUsecase,
-		logger:                slog.Default().With(slog.String(mbliblog.LoggerNameKey, "AuthHandler")),
+		logger:                slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AuthHandler")),
 	}
 }
 
@@ -41,6 +41,7 @@ func (h *AuthHandler) SignInWithIDToken(c *gin.Context) {
 	if !strings.HasPrefix(authorization, "Bearer ") {
 		h.logger.InfoContext(ctx, "invalid header. Bearer not found")
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 		return
 	}
 
@@ -49,6 +50,7 @@ func (h *AuthHandler) SignInWithIDToken(c *gin.Context) {
 	if err != nil {
 		h.logger.InfoContext(ctx, "SignInWithIDToken", slog.Any("err", (err)))
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 		return
 	}
 
@@ -67,6 +69,7 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	if !strings.HasPrefix(authorization, "Bearer ") {
 		h.logger.InfoContext(ctx, "invalid header. Bearer not found")
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 		return
 	}
 
@@ -75,6 +78,7 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	if err != nil {
 		h.logger.InfoContext(ctx, "GetUserInfo", slog.Any("err", (err)))
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 		return
 	}
 
@@ -94,12 +98,14 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	refreshTokenParameter := libapi.RefreshTokenParameter{}
 	if err := c.ShouldBindJSON(&refreshTokenParameter); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
 		return
 	}
 
 	accessToken, err := h.authenticationUsecase.RefreshToken(ctx, refreshTokenParameter.RefreshToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+
 		return
 	}
 
@@ -115,8 +121,8 @@ func NewInitAuthRouterFunc(authenticationUsecase AuthenticationUsecase) libcontr
 		}
 
 		authHandler := NewAuthHandler(authenticationUsecase)
-		parentRouterGroup.POST("refresh_token", authHandler.RefreshToken)
+		parentRouterGroup.POST("refresh-token", authHandler.RefreshToken)
 		parentRouterGroup.GET("userinfo", authHandler.GetUserInfo)
-		parentRouterGroup.POST("sign_in_with_id_token", authHandler.SignInWithIDToken)
+		parentRouterGroup.POST("sign-in-with-id-token", authHandler.SignInWithIDToken)
 	}
 }

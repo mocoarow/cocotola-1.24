@@ -8,5 +8,8 @@ go_library(
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/lib/controller/gin/helper",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_gin_gonic_gin//:gin"],
+    deps = [
+        "//moonbeam/lib/errors",
+        "@com_github_gin_gonic_gin//:gin",
+    ],
 )

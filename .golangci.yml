@@ -21,6 +21,28 @@ linters:
     - thelper
     - unconvert
     - whitespace
+    - asasalint
+    - dupword
+    - dupl
+    - exptostd
+    - nestif
+    - goconst
+    - tagliatelle
+    - nlreturn
+    - predeclared
+    - importas
+    - revive
+    - goheader
+    - nolintlint
+    - paralleltest
+    - testifylint
+    - spancheck
+    - staticcheck
+    - wrapcheck
+    - forcetypeassert
+    - canonicalheader
+    - decorder
+
   settings:
     forbidigo:
       forbid:
@@ -35,6 +57,18 @@ linters:
     staticcheck:
       checks:
         - all
+    wrapcheck:
+      extra-ignore-sigs:
+        - errors.Errorf(
+        - .Errorf(
+        - .Errorf
+        - liberrors.Errorf(
+      ignore-sigs:
+        - errors.Errorf(
+        - .Errorf(
+        - .Errorf
+        - errors.New(
+        - liberrors.Errorf(
   exclusions:
     generated: lax
     presets:
@@ -47,6 +81,13 @@ linters:
       - third_party$
       - builtin$
       - examples$
+    rules:
+      # Exclude some linters from running on tests files.
+      - path: _test\.go
+        linters:
+          - dupl
+          - nlreturn
+          - revive
 formatters:
   enable:
     - gofmt

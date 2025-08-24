@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"io/fs"
+	"log/slog"
 
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"gorm.io/gorm"
@@ -15,7 +16,7 @@ type InitTracerExporterFunc func(ctx context.Context, traceConfig *TraceConfig) 
 
 var initTracerExporters map[string]InitTracerExporterFunc
 
-type InitDBFunc func(context.Context, *DBConfig, fs.FS) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error)
+type InitDBFunc func(context.Context, *DBConfig, slog.Level, fs.FS, string) (libgateway.DialectRDBMS, *gorm.DB, *sql.DB, error)
 
 var initDBs map[string]InitDBFunc
 

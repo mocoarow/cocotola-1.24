@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
@@ -31,11 +32,11 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 			ownerGroup, err := userGroupRepo.FindUserGroupByKey(ctx, owner, service.OwnerGroupKey)
 			require.NoError(t, err)
 
-			rbacRoleObject := service.NewRBACUserRoleObject(orgID, ownerGroup.UserGroupID())
+			rbacRoleObject := domain.NewRBACUserRoleObject(orgID, ownerGroup.UserGroupID())
 
 			// when
-			ok, err := authorizationManager.Authorize(ctx, owner, service.RBACSetAction, rbacRoleObject)
-			assert.NoError(t, err)
+			ok, err := authorizationManager.CheckAuthorization(ctx, owner, service.RBACSetAction, rbacRoleObject)
+			require.NoError(t, err)
 			// then
 			assert.True(t, ok, "owner should be able to make anyone belong to owner-group")
 			if !ok {
@@ -43,8 +44,8 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 			}
 
 			// when
-			ok, err = authorizationManager.Authorize(ctx, user2, service.RBACSetAction, rbacRoleObject)
-			assert.NoError(t, err)
+			ok, err = authorizationManager.CheckAuthorization(ctx, user2, service.RBACSetAction, rbacRoleObject)
+			require.NoError(t, err)
 			// then
 			assert.False(t, ok, "standard-user should not be able to make other users belong to owner-group")
 
@@ -53,8 +54,8 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 			err = authorizationManager.AddUserToGroup(ctx, owner, user1.AppUserID(), ownerGroup.UserGroupID())
 			require.NoError(t, err)
 			// when
-			ok, err = authorizationManager.Authorize(ctx, user1, service.RBACSetAction, rbacRoleObject)
-			assert.NoError(t, err)
+			ok, err = authorizationManager.CheckAuthorization(ctx, user1, service.RBACSetAction, rbacRoleObject)
+			require.NoError(t, err)
 			// then
 			// - user1 can make sure user3 belong to group1 because user1 belongs to owner-group
 			assert.True(t, ok)

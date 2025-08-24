@@ -6,5 +6,6 @@ func GetNonEmptyValue(values ...string) string {
 			return v
 		}
 	}
+
 	return ""
 }

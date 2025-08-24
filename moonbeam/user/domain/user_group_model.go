@@ -43,7 +43,7 @@ func NewUserGroupModel(baseModel *libdomain.BaseModel, userGroupID *UserGroupID,
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
+		return nil, liberrors.Errorf("validate user group model: %w", err)
 	}
 
 	return m, nil

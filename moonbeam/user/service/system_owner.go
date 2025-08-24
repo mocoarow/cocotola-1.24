@@ -7,6 +7,7 @@ import (
 	libdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	liblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	libservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
@@ -27,6 +28,7 @@ type SystemOwner struct {
 	// pairOfUserAndGroup PairOfUserAndGroupRepository
 	// rbacRepo             RBACRepository
 	authorizationManager AuthorizationManager
+	appUserEventHandler  libservice.ResourceEventHandler
 	logger               *slog.Logger
 }
 
@@ -38,8 +40,9 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 	// rbacRepo := rf.NewRBACRepository(ctx)
 	authorizationManager, err := rf.NewAuthorizationManager(ctx)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("NewAuthorizationManager: %w", err)
 	}
+	appUserEventHandler := rf.NewAppUserEventHandler(ctx)
 
 	m := &SystemOwner{
 		SystemOwnerModel: systemOwnerModel,
@@ -49,6 +52,7 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 		// pairOfUserAndGroup:   pairOfUserAndGroup,
 		// rbacRepo:             rbacRepo,
 		authorizationManager: authorizationManager,
+		appUserEventHandler:  appUserEventHandler,
 		logger:               slog.Default().With(slog.String(liblog.LoggerNameKey, "SystemOwner")),
 	}
 
@@ -106,31 +110,30 @@ func (m *SystemOwner) FindAppUserByLoginID(ctx context.Context, loginID string) 
 
 func (m *SystemOwner) AddFirstOwner(ctx context.Context, param AppUserAddParameterInterface) (*domain.AppUserID, error) {
 	// rbacAppUser := NewRBACAppUser(m.GetOrganizationID(), m.GetAppUserID())
-	rbacAllUserRolesObject := NewRBACAllUserRolesObject(m.OrganizationID())
+	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(m.OrganizationID())
 
 	// Can "the operator" "set" "all-user-roles" ?
-	ok, err := m.authorizationManager.Authorize(ctx, m, RBACSetAction, rbacAllUserRolesObject)
+	ok, err := m.authorizationManager.CheckAuthorization(ctx, m, RBACSetAction, rbacAllUserRolesObject)
 	if err != nil {
-		return nil, err
-	}
-	if !ok {
+		return nil, liberrors.Errorf("CheckAuthorization: %w", err)
+	} else if !ok {
 		return nil, libdomain.ErrPermissionDenied
 	}
 
 	// add owner
 	firstOwnerID, err := m.appUserRepo.AddAppUser(ctx, m, param)
 	if err != nil {
-		return nil, liberrors.Errorf("failed to AddFirstOwner. error: %w", err)
+		return nil, liberrors.Errorf("AddAppUser: %w", err)
 	}
 
 	ownerGroup, err := m.userGroupRepo.FindUserGroupByKey(ctx, m, OwnerGroupKey)
 	if err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("FindUserGroupByKey: %w", err)
 	}
 
 	// add owner to owner-group
 	if err := m.authorizationManager.AddUserToGroup(ctx, m, firstOwnerID, ownerGroup.UserGroupID()); err != nil {
-		return nil, err
+		return nil, liberrors.Errorf("AddUserToGroup: %w", err)
 	}
 
 	// add owner to owner-group
@@ -160,5 +163,19 @@ func (m *SystemOwner) AddAppUser(ctx context.Context, param AppUserAddParameterI
 		return nil, liberrors.Errorf("m.appUserRepo.AddAppUser. err: %w", err)
 	}
 
+	m.appUserEventHandler.OnAdd(ctx, map[string]int{
+		"organizationId": m.OrganizationID().Int(),
+		"appUserId":      appUserID.Int(),
+	})
+
 	return appUserID, nil
+}
+
+func (m *SystemOwner) VerifyPassword(ctx context.Context, loginID, password string) (bool, error) {
+	ok, err := m.appUserRepo.VerifyPassword(ctx, m, loginID, password)
+	if err != nil {
+		return false, liberrors.Errorf("m.appUserRepo.VerifyPassword. err: %w", err)
+	}
+
+	return ok, nil
 }

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"time"
@@ -10,14 +11,17 @@ import (
 	"gorm.io/gorm"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/config"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/middleware"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
-)
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/usecase"
 
-const authClientTimeout = time.Duration(5) * time.Second
+	resourcemanagergateway "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/resource_manager"
+	resourcemanager "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/resource_manager"
+)
 
 // type NewIteratorFunc func(ctx context.Context, workbookID appD.WorkbookID, problemType appD.ProblemTypeName, reader io.Reader) (appS.ProblemAddParameterIterator, error)
 
@@ -40,29 +44,41 @@ func GetPublicRouterGroupFuncs() []libcontroller.InitRouterGroupFunc {
 	}
 }
 
-func GetPrivateRouterGroupFuncs(db *gorm.DB, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
-	// // - workbookQueryUsecase
-	// workbookQuerySerivce := studentusecasegateway.NewWorkbookQueryService(db)
-	// workbookQueryUsecase := studentusecase.NewWorkbookQueryUsecase(txManager, nonTxManager, workbookQuerySerivce)
-	// // - workbookCommandUsecase
-	// workbookCommandUsecase := studentusecase.NewWorkbookCommandUsecase(txManager, nonTxManager)
+func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
+	// - workbookQueryUsecase
+	deckQueryUsecase := resourcemanagergateway.NewDeckQueryUsecase(db)
+	// - workbookCommandUsecase
+	deckCommandUsecase := resourcemanager.NewDeckCommandUsecase(txManager, nonTxManager, rbacClient)
+
+	// - profileUsecase
+	profileUsecase := usecase.NewProfileUsecase(nonTxManager)
 
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
-		// NewInitWorkbookRouterFunc(workbookQueryUsecase, workbookCommandUsecase),
-	}
+		NewInitDeckRouterFunc(deckQueryUsecase, deckCommandUsecase),
+		NewInitProfileRouterFunc(profileUsecase),
+	}, nil
 }
 
-func InitAuthMiddleware(authAPIConfig *config.AuthAPIonfig) (gin.HandlerFunc, error) {
+func GetBasicPrivateRouterGroupFuncs(_ context.Context, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
+	callbackUsecase := usecase.NewCallback(txManager, nonTxManager, rbacClient)
+	// private router
+	return []libcontroller.InitRouterGroupFunc{
+		NewInitCallbackRouterFunc(callbackUsecase),
+	}, nil
+}
+
+func InitBearerTokenAuthMiddleware(authClientConfig *config.AuthAPIClientConfig) (gin.HandlerFunc, error) {
 	// middleware
 	httpClient := http.Client{
-		Timeout:   authClientTimeout,
+		Timeout:   time.Duration(authClientConfig.TimeoutSec) * time.Second,
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
-	authEndpoint, err := url.Parse(authAPIConfig.Endpoint)
+	authEndpoint, err := url.Parse(authClientConfig.Endpoint)
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("Parse: %w", err)
 	}
-	cocotolaAuthClient := gateway.NewCocotolaAuthClient(&httpClient, authEndpoint, authAPIConfig.Username, authAPIConfig.Password)
+	cocotolaAuthClient := gateway.NewCocotolaAuthClient(&httpClient, authEndpoint)
+
 	return middleware.NewAuthMiddleware(cocotolaAuthClient), nil
 }

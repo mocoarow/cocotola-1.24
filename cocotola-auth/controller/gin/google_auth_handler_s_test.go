@@ -14,10 +14,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+
 	controller "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin"
 	controllermock "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/mocks"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
-	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 )
 
 func initGoogleRouter(t *testing.T, ctx context.Context, googleUser controller.GoogleUserUsecase) *gin.Engine {
@@ -27,7 +28,7 @@ func initGoogleRouter(t *testing.T, ctx context.Context, googleUser controller.G
 	initPublicRouterFuncs := []libcontroller.InitRouterGroupFunc{fn}
 	// initPrivateRouterFuncs := []libcontroller.InitRouterGroupFunc{}
 
-	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, debugConfig)
+	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, logConfig, debugConfig)
 	api := router.Group("api")
 	v1 := api.Group("v1")
 
@@ -165,7 +166,7 @@ func TestGoogleAuthHandler_Authorize_shouldReturn401_whenCodeIsValid(t *testing.
 
 	messageExpr := parseExpr(t, "$.message")
 	message := messageExpr.Get(jsonObj)
-	assert.Len(t, message, 0, "message should be null")
+	assert.Empty(t, message, "message should be null")
 
 	accessTokenExpr := parseExpr(t, "$.accessToken")
 	accessToken := accessTokenExpr.Get(jsonObj)

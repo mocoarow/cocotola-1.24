@@ -13,5 +13,6 @@ func initTracerExporterOTLP(ctx context.Context, traceConfig *TraceConfig) (sdkt
 	if traceConfig.OTLP.Insecure {
 		options = append(options, otlptracehttp.WithInsecure())
 	}
-	return otlptracehttp.New(ctx, options...)
+
+	return otlptracehttp.New(ctx, options...) //nolint:wrapcheck
 }

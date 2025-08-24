@@ -1,0 +1,15 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "resource_manager",
+    srcs = ["deck_query_usecase.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/resource_manager",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cocotola-core/domain",
+        "//cocotola-core/gateway",
+        "//cocotola-core/service",
+        "//moonbeam/lib/errors",
+        "@io_gorm_gorm//:gorm",
+    ],
+)

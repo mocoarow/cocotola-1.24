@@ -1,6 +1,14 @@
 ---
 app:
   auth:
+    coreApiClient:
+      endpoint: ${APP_CORE_ENDPOINT:-http://localhost:8000/core}
+      username: ${APP_CORE_USERNAME}
+      password: ${APP_CORE_PASSWORD}
+      timeoutSec: ${APP_CORE_TIMEOUT_SEC:-5}
+    authApiServer:
+      username: ${APP_AUTH_USERNAME}
+      password: ${APP_AUTH_PASSWORD}
     signingKey: ${APP_AUTH_SIGNING_KEY}
     accessTokenTtlMin: ${APP_AUTH_ACCESS_TOKEN_TTL_MIN:-5}
     refreshTokenTtlHour: ${APP_AUTH_REFRESH_TOKEN_TTL_HOUR:-720}
@@ -8,19 +16,27 @@ app:
     googleCallbackUrl: ${APP_AUTH_GOOGLE_CALLBACK_URL:-http://localhost:5173/app/auth/callback}
     googleClientId: ${GOOGLE_CLIENT_ID}
     googleClientSecret: ${GOOGLE_CLIENT_SECRET}
-    apiTimeoutSec: ${APP_AUTH_API_TIMEOUT_SEC:-5}
+    googleApiTimeoutSec: ${GOOGLE_API_TIMEOUT_SEC:-5}
+    ownerLoginId: ${OWNER_LOGIN_ID}
+    ownerPassword: ${OWNER_PASSWORD}
   core:
-    authApi:
-      endpoint: ${APP_AUTH_ENDPOINT:-http://localhost:8080/api/auth}
-  ownerLoginId: ${OWNER_LOGIN_ID}
-  ownerPassword: ${OWNER_PASSWORD}
+    authApiClient:
+      endpoint: ${APP_AUTH_ENDPOINT:-http://localhost:8000/auth}
+      username: ${APP_AUTH_USERNAME}
+      password: ${APP_AUTH_PASSWORD}
+      timeoutSec: ${APP_AUTH_TIMEOUT_SEC:-5}
+    coreApiServer:
+      username: ${APP_CORE_USERNAME}
+      password: ${APP_CORE_PASSWORD}
+    ownerLoginId: ${OWNER_LOGIN_ID}
+    ownerPassword: ${OWNER_PASSWORD}
 server:
   httpPort: ${APP_HTTP_PORT:-8000}
   metricsPort: ${APP_METRICS_PORT:-8001}
   readHeaderTimeoutSec: ${APP_READ_HEADER_TIMEOUT_SEC:-30}
 db:
   driverName: ${APP_DB_DRIVER_NAME:-sqlite3}
-  migration: ${APP_DB_MIGRATION:}
+  migration: ${APP_DB_MIGRATION:-false}
   sqlite3:
     file: ${APP_SQLITE3_FILE:-app.db}
   mysql:
@@ -28,11 +44,11 @@ db:
     password: ${APP_MYSQL_PASSWORD}
     host: ${APP_MYSQL_HOST:-127.0.0.1}
     port: ${APP_MYSQL_PORT:-3306}
-    database: ${APP_MYSQL_DATABASE:}
+    database: ${APP_MYSQL_DATABASE}
   postgres:
     username: ${APP_POSTGRES_USERNAME}
     password: ${APP_POSTGRES_PASSWORD}
-    host: ${APP_POSTGRES_HOST}
+    host: ${APP_POSTGRES_HOST:-127.0.0.1}
     port: ${APP_POSTGRES_PORT:-5432}
     database: ${APP_POSTGRES_DATABASE:-postgres}
 trace:
@@ -48,6 +64,11 @@ shutdown:
   timeSec2: ${APP_SHUTDOWN_TIME_SEC2:-1}
 log:
   level: ${APP_LOG_LEVEL:-info}
+  levels:
+    db: ${APP_DB_LOG_LEVEL:-info}
+  enabled:
+    traceLog: ${APP_LOG_ENABLED_TRACE_LOG:-false}
+    accessLog: ${APP_LOG_ENABLED_ACCESS_LOG:-false}
 swagger:
   enabled: ${SWAGGER_ENABLED:-true}
   host: ${SWAGGER_HOST:-localhost:8010}

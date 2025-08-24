@@ -2,9 +2,10 @@ package gateway
 
 import (
 	"embed"
+	"log/slog"
 	"os"
 
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/gorm"
 
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
@@ -14,9 +15,9 @@ import (
 var testDBFile string
 
 func openSQLiteForTest() (*gorm.DB, error) {
-	return libgateway.OpenSQLite3(&libgateway.SQLite3Config{
+	return libgateway.OpenSQLite3(&libgateway.SQLite3Config{ //nolint:wrapcheck
 		File: testDBFile,
-	})
+	}, slog.LevelInfo, "test")
 }
 
 // func OpenSQLiteInMemory(sqlFS embed.FS) (*gorm.DB, error) {

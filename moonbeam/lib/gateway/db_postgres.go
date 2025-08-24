@@ -10,7 +10,8 @@ import (
 
 	"github.com/golang-migrate/migrate/v4/database"
 	migrate_postgres "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	slog_gorm "github.com/orandin/slog-gorm"
 	gorm_postgres "gorm.io/driver/postgres"
@@ -39,7 +40,7 @@ type PostgresConfig struct {
 	Database string `yaml:"database" validate:"required"`
 }
 
-func OpenPostgres(cfg *PostgresConfig) (*gorm.DB, error) {
+func OpenPostgres(cfg *PostgresConfig, logLevel slog.Level, appName string) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s", cfg.Host, cfg.Username, cfg.Password, cfg.Database, cfg.Port, "disable", time.UTC.String())
 
 	gormDialector := gorm_postgres.Open(dsn)
@@ -47,20 +48,21 @@ func OpenPostgres(cfg *PostgresConfig) (*gorm.DB, error) {
 	gormConfig := gorm.Config{
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
-			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(ctx context.Context) (slog.Value, bool) {
-				return slog.StringValue("gorm"), true
+			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
+				return slog.StringValue(appName + "-gorm"), true
 			}),
+			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, logLevel),
 		),
 	}
 
-	return gorm.Open(gormDialector, &gormConfig)
+	return gorm.Open(gormDialector, &gormConfig) //nolint:wrapcheck
 }
 
 func MigratePostgresDB(db *gorm.DB, sqlFS fs.FS) error {
 	driverName := "postgres"
 	sourceDriver, err := iofs.New(sqlFS, driverName)
 	if err != nil {
-		return err
+		return liberrors.Errorf("iofs New: %w", err)
 	}
 
 	return MigrateDB(db, driverName, sourceDriver, func(sqlDB *sql.DB) (database.Driver, error) {
@@ -68,27 +70,28 @@ func MigratePostgresDB(db *gorm.DB, sqlFS fs.FS) error {
 	})
 }
 
-func InitPostgres(ctx context.Context, cfg *PostgresConfig, migration bool, fs fs.FS) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
-	db, err := OpenPostgres(cfg)
+func InitPostgres(ctx context.Context, cfg *PostgresConfig, migration bool, logLevel slog.Level, fs fs.FS, appName string) (DialectRDBMS, *gorm.DB, *sql.DB, error) {
+	db, err := OpenPostgres(cfg, logLevel, appName)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("OpenPostgres: %w", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("DB: %w", err)
 	}
 
 	if err := sqlDB.PingContext(ctx); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, liberrors.Errorf("PingContext: %w", err)
 	}
 
 	if migration {
 		if err := MigratePostgresDB(db, fs); err != nil {
-			return nil, nil, nil, liberrors.Errorf("failed to MigrateMySQLDB. err: %w", err)
+			return nil, nil, nil, liberrors.Errorf("migrage MySQL DB: %w", err)
 		}
 	}
 
 	dialect := DialectPostgres{}
+
 	return &dialect, db, sqlDB, nil
 }

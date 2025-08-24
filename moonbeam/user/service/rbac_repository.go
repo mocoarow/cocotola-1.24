@@ -8,6 +8,8 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
+// var ErrPermissionDenied = errors.New("permission denied")
+
 type RBACRepository interface {
 	// Init() error
 	GetEnforcer() casbin.IEnforcer

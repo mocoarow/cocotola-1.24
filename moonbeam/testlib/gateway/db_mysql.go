@@ -2,10 +2,12 @@ package gateway
 
 import (
 	"embed"
+	"log/slog"
 
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	// _ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/gorm"
 
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	libgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 )
 
@@ -15,16 +17,16 @@ var testDBPort int
 
 func openMySQLForTest() (*gorm.DB, error) {
 	if testDSN != "" {
-		return libgateway.OpenMySQLWithDSN(testDSN)
+		return libgateway.OpenMySQLWithDSN(testDSN, slog.LevelInfo, "test") //nolint:wrapcheck
 	}
 
-	return libgateway.OpenMySQL(&libgateway.MySQLConfig{
+	return libgateway.OpenMySQL(&libgateway.MySQLConfig{ //nolint:wrapcheck
 		Username: "user",
 		Password: "password",
 		Database: "testdb",
 		Host:     testDBHost,
 		Port:     testDBPort,
-	})
+	}, slog.LevelInfo, "test")
 }
 
 // func setupMySQL(sqlFS embed.FS, db *gorm.DB) error {
@@ -44,20 +46,20 @@ func InitMySQL(fs embed.FS, dbHost string, dbPort int) (*gorm.DB, error) {
 	testDBPort = dbPort
 	db, err := openMySQLForTest()
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("openMySQLForTest: %w", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("DB: %w", err)
 	}
 
 	if err := sqlDB.Ping(); err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("Ping: %w", err)
 	}
 
 	if err := libgateway.MigrateMySQLDB(db, fs); err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("MigrateMySQLDB: %w", err)
 	}
 
 	return db, nil
@@ -67,20 +69,20 @@ func InitMySQLWithDSN(fs embed.FS, dsn string) (*gorm.DB, error) {
 	testDSN = dsn
 	db, err := openMySQLForTest()
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("openMySQLForTest: %w", err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("DB: %w", err)
 	}
 
 	if err := sqlDB.Ping(); err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("Ping: %w", err)
 	}
 
 	if err := libgateway.MigrateMySQLDB(db, fs); err != nil {
-		return nil, err
+		return nil, mbliberrors.Errorf("MigrateMySQLDB: %w", err)
 	}
 
 	return db, nil

@@ -1,0 +1,15 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "cocotola-test_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-test",
+    visibility = ["//visibility:private"],
+    deps = ["//cocotola-test/scenario"],
+)
+
+go_binary(
+    name = "cocotola-test",
+    embed = [":cocotola-test_lib"],
+    visibility = ["//visibility:public"],
+)

@@ -16,7 +16,7 @@ type OTLPConfig struct {
 	Insecure bool   `yaml:"insecure"`
 }
 type GoogleTraceConfig struct {
-	ProjectID string `yaml:"projectID" validate:"required"`
+	ProjectID string `yaml:"projectId" validate:"required"`
 }
 
 type TraceConfig struct {

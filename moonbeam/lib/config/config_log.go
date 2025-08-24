@@ -5,17 +5,21 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+
+	slogotel "github.com/remychantenay/slog-otel"
 )
 
 type LogConfig struct {
-	Level    string `yaml:"level"`
-	Platform string `yaml:"platform"`
+	Level    string            `yaml:"level"`
+	Platform string            `yaml:"platform"`
+	Levels   map[string]string `yaml:"levels"`
+	Enabled  map[string]bool   `yaml:"enabled"`
 }
 
 func newReplaceAttr(platform string) func([]string, slog.Attr) slog.Attr {
 	switch platform {
 	case "gcp":
-		return func(groups []string, a slog.Attr) slog.Attr {
+		return func(_ []string, a slog.Attr) slog.Attr {
 			switch a.Key {
 			case slog.LevelKey:
 				return slog.Attr{Key: "severity", Value: a.Value}
@@ -26,16 +30,19 @@ func newReplaceAttr(platform string) func([]string, slog.Attr) slog.Attr {
 			return a
 		}
 	}
+
 	return nil
 }
 
 func InitLog(cfg *LogConfig) {
 	defaultLogLevel := stringToLogLevel(cfg.Level)
 
-	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:       defaultLogLevel,
-		ReplaceAttr: newReplaceAttr(cfg.Platform),
-	})))
+	slog.SetDefault(slog.New(slogotel.OtelHandler{
+		Next: slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level:       defaultLogLevel,
+			ReplaceAttr: newReplaceAttr(cfg.Platform),
+		}),
+	}))
 }
 
 func stringToLogLevel(value string) slog.Level {
@@ -50,6 +57,7 @@ func stringToLogLevel(value string) slog.Level {
 		return slog.LevelError
 	default:
 		slog.Info(fmt.Sprintf("Unsupported log level: %s", value))
+
 		return slog.LevelWarn
 	}
 }

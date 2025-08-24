@@ -35,13 +35,13 @@ func Test_organizationRepository_GetOrganization(t *testing.T) {
 		user := testNewAppUser(userModel)
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
-			assert.NoError(t, err)
-			assert.Equal(t, orgNameLength, len(org.Name()))
+			require.NoError(t, err)
+			assert.Len(t, org.Name(), orgNameLength)
 		}
 
 		// get organization unregistered
 		otherAppUserModel, err := domain.NewAppUserModel(baseModel, appUserID, invalidOrgID, "login_id", "username", nil)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		otherAppUser := testNewAppUser(otherAppUserModel)
 		{
 			_, err := orgRepo.GetOrganization(ctx, otherAppUser)
@@ -66,24 +66,24 @@ func Test_organizationRepository_FindOrganizationByName(t *testing.T) {
 
 		// get organization registered
 		baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		appUserID, err := domain.NewAppUserID(1)
 		require.NoError(t, err)
 
 		userModel, err := domain.NewAppUserModel(baseModel, appUserID, orgID, "login_id", "username", nil)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		user := testNewAppUser(userModel)
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
-			assert.NoError(t, err)
-			assert.Equal(t, orgNameLength, len(org.Name()))
+			require.NoError(t, err)
+			assert.Len(t, org.Name(), orgNameLength)
 			orgName = org.Name()
 		}
 
 		// find organization registered by name
 		{
 			org, err := orgRepo.FindOrganizationByName(ctx, sysAd, orgName)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, orgName, org.Name())
 		}
 
@@ -109,23 +109,23 @@ func Test_organizationRepository_FindOrganizationByID(t *testing.T) {
 
 		// get organization registered
 		baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		appUserID, err := domain.NewAppUserID(1)
 		require.NoError(t, err)
 
 		userModel, err := domain.NewAppUserModel(baseModel, appUserID, orgID, "login_id", "username", nil)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		user := testNewAppUser(userModel)
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
-			assert.NoError(t, err)
-			assert.Equal(t, orgNameLength, len(org.Name()))
+			require.NoError(t, err)
+			assert.Len(t, org.Name(), orgNameLength)
 		}
 
 		// find organization registered by ID
 		{
 			org, err := orgRepo.FindOrganizationByID(ctx, sysAd, orgID)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, orgID.Int(), org.OrganizationID().Int())
 		}
 

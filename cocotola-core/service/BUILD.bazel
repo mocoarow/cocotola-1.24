@@ -4,10 +4,14 @@ go_library(
     name = "service",
     srcs = [
         "cocotola_auth_client.go",
+        "cocotola_rbac_client.go",
         "deck.go",
         "deck_repository.go",
+        "pair_of_user_and_space_repository.go",
         "repository_factory.go",
         "service.go",
+        "space.go",
+        "space_repository.go",
         "workbook_repository.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/service",
@@ -17,6 +21,7 @@ go_library(
         "//lib/api",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
+        "//moonbeam/user/service",
     ],
 )
 

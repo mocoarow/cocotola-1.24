@@ -7,6 +7,6 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
-func initTracerExporterGCP(ctx context.Context, traceConfig *TraceConfig) (sdktrace.SpanExporter, error) {
-	return gcpexporter.New(gcpexporter.WithProjectID(traceConfig.Google.ProjectID))
+func initTracerExporterGCP(_ context.Context, traceConfig *TraceConfig) (sdktrace.SpanExporter, error) {
+	return gcpexporter.New(gcpexporter.WithProjectID(traceConfig.Google.ProjectID)) //nolint:wrapcheck
 }

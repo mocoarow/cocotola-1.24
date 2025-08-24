@@ -19,14 +19,14 @@ type OrganizationAddParameterInterface interface {
 }
 
 type OrganizationAddParameter struct {
-	Name_       string `validate:"required"`
-	FirstOwner_ AppUserAddParameterInterface
+	NameInternal       string `validate:"required"`
+	FirstOwnerInternal AppUserAddParameterInterface
 }
 
 func NewOrganizationAddParameter(name string, firstOwner AppUserAddParameterInterface) (*OrganizationAddParameter, error) {
 	m := &OrganizationAddParameter{
-		Name_:       name,
-		FirstOwner_: firstOwner,
+		NameInternal:       name,
+		FirstOwnerInternal: firstOwner,
 	}
 	if err := libdomain.Validator.Struct(m); err != nil {
 		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
@@ -36,10 +36,10 @@ func NewOrganizationAddParameter(name string, firstOwner AppUserAddParameterInte
 }
 
 func (p *OrganizationAddParameter) Name() string {
-	return p.Name_
+	return p.NameInternal
 }
 func (p *OrganizationAddParameter) FirstOwner() AppUserAddParameterInterface {
-	return p.FirstOwner_
+	return p.FirstOwnerInternal
 }
 
 type OrganizationRepository interface {

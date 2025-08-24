@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	liblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 )
 
@@ -51,8 +52,10 @@ func MetricsServerProcess(ctx context.Context, port int, gracefulShutdownTimeSec
 		defer shutdownCancel()
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
 			logger.InfoContext(ctx, fmt.Sprintf("Server forced to shutdown. err: %v", err))
-			return err
+
+			return liberrors.Errorf("Shutdown: %w", err)
 		}
+
 		return nil
 	case err := <-errCh:
 		return err

@@ -4,7 +4,9 @@ go_library(
     name = "gin",
     srcs = [
         "app_router.go",
-        "workbook_handler.go",
+        "callback_handler.go",
+        "deck_handler.go",
+        "profile_handler.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin",
     visibility = ["//visibility:public"],
@@ -14,12 +16,16 @@ go_library(
         "//cocotola-core/controller/gin/middleware",
         "//cocotola-core/domain",
         "//cocotola-core/gateway",
+        "//cocotola-core/gateway/resource_manager",
         "//cocotola-core/service",
+        "//cocotola-core/usecase",
+        "//cocotola-core/usecase/resource_manager",
         "//lib/api",
         "//lib/controller/gin",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
+        "//moonbeam/user/domain",
         "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_contrib_instrumentation_net_http_otelhttp//:otelhttp",
@@ -28,28 +34,7 @@ go_library(
 
 go_test(
     name = "gin_test",
-    srcs = [
-        "helper_test.go",
-        "workbook_handler_s_test.go",
-    ],
-    deps = [
-        ":gin",
-        "//cocotola-core/config",
-        "//cocotola-core/controller/gin/middleware",
-        "//cocotola-core/controller/gin/mocks",
-        "//cocotola-core/service",
-        "//cocotola-core/service/mocks",
-        "//lib/api",
-        "//lib/config",
-        "//lib/controller/gin",
-        "//moonbeam/lib/config",
-        "@com_github_gin_gonic_gin//:gin",
-        "@com_github_ohler55_ojg//jp",
-        "@com_github_ohler55_ojg//oj",
-        "@com_github_stretchr_testify//assert",
-        "@com_github_stretchr_testify//mock",
-        "@com_github_stretchr_testify//require",
-    ],
+    srcs = ["helper_test.go"],
 )
 
 # keep
@@ -58,7 +43,6 @@ go_test(
     size = "small",
     srcs = [
         "helper_test.go",
-        "workbook_handler_s_test.go",
     ],
     gotags = ["small"],
     deps = [

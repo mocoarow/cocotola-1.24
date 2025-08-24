@@ -6,14 +6,6 @@ import (
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 )
 
-// type BaseModel interface {
-// 	Version() int
-// 	CreatedAt() time.Time
-// 	UpdatedAt() time.Time
-// 	CreatedBy() int
-// 	UpdatedBy() int
-// }
-
 type BaseModel struct {
 	Version   int `validate:"required,gte=1"`
 	CreatedAt time.Time
@@ -32,7 +24,7 @@ func NewBaseModel(version int, createdAt, updatedAt time.Time, createdBy, update
 	}
 
 	if err := Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
+		return nil, liberrors.Errorf("validate base model: %w", err)
 	}
 
 	return m, nil

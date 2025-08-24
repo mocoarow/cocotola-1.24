@@ -48,7 +48,7 @@ func ConvertDuplicatedError(err error, newErr error) error {
 	return err
 }
 
-func ConvertRelationError(err error, newErr error) error {
+func ConvertRelationError(err error, _ error) error {
 	// var mysqlErr *mysql.MySQLError
 	// if ok := errors.As(err, &mysqlErr); ok && mysqlErr.Number == MYSQL_ER_NO_REFERENCED_ROW_2 {
 	// 	return newErr

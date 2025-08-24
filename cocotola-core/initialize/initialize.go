@@ -2,59 +2,82 @@ package initialize
 
 import (
 	"context"
+	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"gorm.io/gorm"
 
+	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/config"
 	controller "github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-const AppName = "cocotola-core"
-
-func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, cfg *config.AppConfig) error {
+func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
-		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC) // nolint:wrapcheck
+		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC)
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("rff: %w", err)
 	}
 	// init transaction manager
 	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("NewTransactionManagerT: %w", err)
 	}
 	// init non transaction manager
 	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
 	}
 
-	authMiddleware, err := controller.InitAuthMiddleware(cfg.AuthAPI)
-	if err != nil {
-		return err
+	// - rbacClient
+	httpClient := http.Client{
+		Timeout:   time.Duration(coreConfig.AuthAPIClient.TimeoutSec) * time.Second,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
+	authEndpoint, err := url.Parse(coreConfig.AuthAPIClient.Endpoint)
+	if err != nil {
+		return mbliberrors.Errorf("Parse: %w", err)
+	}
+	rbacClient := gateway.NewCocotolaRBACClient(&httpClient, authEndpoint, coreConfig.AuthAPIClient.Username, coreConfig.AuthAPIClient.Password)
+
+	// init auth middleware
+	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(coreConfig.AuthAPIClient)
+	if err != nil {
+		return mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
+	}
+
+	basicAuthMiddleware := gin.BasicAuth(gin.Accounts{
+		coreConfig.CoreAPIServer.Username: coreConfig.CoreAPIServer.Password,
+	})
 
 	// init public and private router group functions
 	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs()
-	privateRouterGroupFuncs := controller.GetPrivateRouterGroupFuncs(db, txManager, nonTxManager)
 
-	initAPIServer(ctx, parent, AppName, authMiddleware, publicRouterGroupFuncs, privateRouterGroupFuncs)
+	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, db, txManager, nonTxManager, rbacClient)
+	if err != nil {
+		return mbliberrors.Errorf("GetBearerTokenPrivateRouterGroupFuncs: %w", err)
+	}
 
-	return nil
-}
+	basicPrivateRouterGroupFuncs, err := controller.GetBasicPrivateRouterGroupFuncs(ctx, txManager, nonTxManager, rbacClient)
+	if err != nil {
+		return mbliberrors.Errorf("GetBasicPrivateRouterGroupFuncs: %w", err)
+	}
 
-func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMiddleware gin.HandlerFunc, publicRouterGroupFuncs, privateRouterGroupFuncs []libcontroller.InitRouterGroupFunc) {
 	// api
-	api := libcontroller.InitAPIRouterGroup(ctx, root, appName)
+	api := libcontroller.InitAPIRouterGroup(ctx, parent, domain.AppName, logConfig)
 
 	// v1
 	v1 := api.Group("v1")
@@ -63,7 +86,11 @@ func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMi
 	libcontroller.InitPublicAPIRouterGroup(ctx, v1, publicRouterGroupFuncs)
 
 	// private router
-	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, authMiddleware, privateRouterGroupFuncs)
+	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, bearerTokenAuthMiddleware, bearerTokenPrivateRouterGroupFuncs)
+
+	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
+
+	return nil
 }
 
 // const readHeaderTimeout = time.Duration(30) * time.Second
@@ -72,11 +99,11 @@ func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMi
 // }
 
 // func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
-// 	rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
+// 	mbrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
 // 	if err != nil {
 // 		return nil, err
 // 	}
-// 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
+// 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
 // 	if err != nil {
 // 		return nil, err
 // 	}
@@ -161,12 +188,12 @@ func initAPIServer(ctx context.Context, root gin.IRouter, appName string, authMi
 
 // func systemOwnerAction(ctx context.Context, organizationName string, txManager service.TransactionManager, fn func(context.Context, *mbuserservice.SystemOwner) error) error {
 // 	return txManager.Do(ctx, func(rf service.RepositoryFactory) error {
-// 		rsrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
+// 		mbrf, err := rf.NewmoonbeamRepositoryFactory(ctx)
 // 		if err != nil {
 // 			return mbliberrors.Errorf(". err: %w", err)
 // 		}
 
-// 		systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, rsrf)
+// 		systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
 // 		if err != nil {
 // 			return mbliberrors.Errorf(". err: %w", err)
 // 		}
