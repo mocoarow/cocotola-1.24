@@ -41,9 +41,7 @@ go_test(
 go_test(
     name = "gin_s_test",
     size = "small",
-    srcs = [
-        "helper_test.go",
-    ],
+    srcs = ["helper_test.go"],
     gotags = ["small"],
     deps = [
         ":gin",
