@@ -45,7 +45,7 @@ func OpenPostgres(cfg *PostgresConfig, logLevel slog.Level, appName string) (*go
 
 	gormDialector := gorm_postgres.Open(dsn)
 
-	gormConfig := gorm.Config{
+	gormConfig := gorm.Config{ //nolint:exhaustruct
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
 			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
@@ -66,7 +66,7 @@ func MigratePostgresDB(db *gorm.DB, sqlFS fs.FS) error {
 	}
 
 	return MigrateDB(db, driverName, sourceDriver, func(sqlDB *sql.DB) (database.Driver, error) {
-		return migrate_postgres.WithInstance(sqlDB, &migrate_postgres.Config{})
+		return migrate_postgres.WithInstance(sqlDB, &migrate_postgres.Config{}) //nolint:exhaustruct
 	})
 }
 

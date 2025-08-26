@@ -45,7 +45,7 @@ func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context
 	defer span.End()
 
 	pairOfUserAndGroup := pairOfUserAndSpaceEntity{
-		JunctionModelEntity: mbusergateway.JunctionModelEntity{
+		JunctionModelEntity: mbusergateway.JunctionModelEntity{ //nolint:exhaustruct
 			CreatedBy: operator.AppUserID().Int(),
 		},
 		OrganizationID: operator.OrganizationID().Int(),

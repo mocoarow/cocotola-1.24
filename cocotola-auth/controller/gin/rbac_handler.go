@@ -58,7 +58,7 @@ func NewRBACHandler(rbacUsecase RBACUsecase) *RBACHandler {
 
 func (h *RBACHandler) AddPolicyToUser(c *gin.Context) {
 	ctx := c.Request.Context()
-	apiParam := libapi.AddPolicyToUserParameter{}
+	var apiParam libapi.AddPolicyToUserParameter
 	if err := c.ShouldBindJSON(&apiParam); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
@@ -103,7 +103,7 @@ func (h *RBACHandler) AddPolicyToGroup(_ *gin.Context) {
 
 func (h *RBACHandler) CheckAuthorization(c *gin.Context) {
 	ctx := c.Request.Context()
-	apiParam := libapi.AuthorizeRequest{}
+	var apiParam libapi.AuthorizeRequest
 	if err := c.ShouldBindJSON(&apiParam); err != nil {
 		h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})

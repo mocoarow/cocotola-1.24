@@ -111,8 +111,8 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 		folderID = param.FolderID.Int()
 	}
 
-	deckE := DeckEntity{
-		BaseModelEntity: mbusergateway.BaseModelEntity{
+	deckE := DeckEntity{ //nolint:exhaustruct
+		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
 			CreatedBy: operator.AppUserID().Int(),
 			UpdatedBy: operator.AppUserID().Int(),
@@ -142,7 +142,9 @@ func (r *deckRepository) UpdateDeck(ctx context.Context, operator service.Operat
 	_, span := tracer.Start(ctx, "deckRepository.UpdateDeck")
 	defer span.End()
 
-	if result := r.db.Model(&DeckEntity{}).
+	if result := r.db.Model(
+		&DeckEntity{}, //nolint:exhaustruct
+	).
 		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
 		Where("id = ?", deckID.Int()).
 		Where("version = ?", version).
@@ -162,19 +164,19 @@ func (r *deckRepository) FindDecks(ctx context.Context, operator service.Operato
 	defer span.End()
 
 	var decksE []DeckEntity
-	if result := r.db.Model(&DeckEntity{}).
-		Where("organization_id = ?", uint(operator.OrganizationID().Value)).
-		Find(&decksE); result.Error != nil {
+	if result := r.db.Model(&DeckEntity{}). //nolint:exhaustruct
+						Where("organization_id = ?", uint(operator.OrganizationID().Value)).
+						Find(&decksE); result.Error != nil {
 		return nil, mbliberrors.Errorf("deckRepository.FindDecks: %w", result.Error)
 	}
 
-	var decks []*service.Deck
-	for _, deckE := range decksE {
+	decks := make([]*service.Deck, 0, len(decksE))
+	for i, deckE := range decksE {
 		deck, err := deckE.toDeck()
 		if err != nil {
 			return nil, err
 		}
-		decks = append(decks, deck)
+		decks[i] = deck
 	}
 
 	return decks, nil
@@ -185,7 +187,9 @@ func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator service.
 	defer span.End()
 
 	var deckE DeckEntity
-	if result := r.db.Model(&DeckEntity{}).Where("organization_id = ?", uint(operator.OrganizationID().Int())).Where("id = ?", deckID.Int()).First(&deckE); result.Error != nil {
+	if result := r.db.Model(&DeckEntity{}). //nolint:exhaustruct
+						Where("organization_id = ?", uint(operator.OrganizationID().Int())).Where("id = ?", deckID.Int()).
+						First(&deckE); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrDeckNotFound
 		}

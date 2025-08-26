@@ -43,7 +43,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroupBySystemAdmin(ctx co
 	defer span.End()
 
 	pairOfUserAndGroup := pairOfUserAndGroupEntity{
-		JunctionModelEntity: JunctionModelEntity{
+		JunctionModelEntity: JunctionModelEntity{ //nolint:exhaustruct
 			CreatedBy: operator.AppUserID().Int(),
 		},
 		OrganizationID: organizationID.Int(),
@@ -68,7 +68,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context
 	defer span.End()
 
 	pairOfUserAndGroup := pairOfUserAndGroupEntity{
-		JunctionModelEntity: JunctionModelEntity{
+		JunctionModelEntity: JunctionModelEntity{ //nolint:exhaustruct
 			CreatedBy: operator.AppUserID().Int(),
 		},
 		OrganizationID: operator.OrganizationID().Int(),
@@ -142,7 +142,7 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 		Where("app_user_id = ?", appUserID.Int()).
 		Where("user_group_id = ?", userGroupID.Int()).
 		db
-	result := db.Delete(&pairOfUserAndGroupEntity{})
+	result := db.Delete(&pairOfUserAndGroupEntity{}) //nolint:exhaustruct
 	if result.Error != nil {
 		return liberrors.Errorf(". err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrAppUserAlreadyExists))
 	}

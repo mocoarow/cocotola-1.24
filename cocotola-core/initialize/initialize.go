@@ -43,7 +43,7 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	}
 
 	// - rbacClient
-	httpClient := http.Client{
+	httpClient := http.Client{ //nolint:exhaustruct
 		Timeout:   time.Duration(coreConfig.AuthAPIClient.TimeoutSec) * time.Second,
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}

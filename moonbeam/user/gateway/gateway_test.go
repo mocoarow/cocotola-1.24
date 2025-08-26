@@ -89,7 +89,7 @@ func RandString(n int) string {
 func testDB(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testService)) {
 	t.Helper()
 	ctx := context.Background()
-	resourceEventHandlerFuncs := libservice.ResourceEventHandlerFuncs{}
+	var resourceEventHandlerFuncs libservice.ResourceEventHandlerFuncs
 	for dialect, db := range testlibgateway.ListDB() {
 		dialect := dialect
 		db := db

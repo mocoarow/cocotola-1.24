@@ -60,9 +60,8 @@ func (r *organizationRepository) GetOrganization(ctx context.Context, operator s
 	_, span := tracer.Start(ctx, "organizationRepository.GetOrganization")
 	defer span.End()
 
-	organization := organizationEntity{}
-
-	if result := r.db.Where(organizationEntity{
+	var organization organizationEntity
+	if result := r.db.Where(organizationEntity{ //nolint:exhaustruct
 		ID: operator.OrganizationID().Int(),
 	}).First(&organization); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -79,9 +78,8 @@ func (r *organizationRepository) FindOrganizationByName(ctx context.Context, _ s
 	_, span := tracer.Start(ctx, "organizationRepository.FindOrganizationByName")
 	defer span.End()
 
-	organization := organizationEntity{}
-
-	if result := r.db.Where(organizationEntity{
+	var organization organizationEntity
+	if result := r.db.Where(organizationEntity{ //nolint:exhaustruct
 		Name: name,
 	}).First(&organization); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -98,9 +96,8 @@ func (r *organizationRepository) FindOrganizationByID(ctx context.Context, _ ser
 	_, span := tracer.Start(ctx, "organizationRepository.FindOrganizationByID")
 	defer span.End()
 
-	organization := organizationEntity{}
-
-	if result := r.db.Where(organizationEntity{
+	var organization organizationEntity
+	if result := r.db.Where(organizationEntity{ //nolint:exhaustruct
 		ID: id.Int(),
 	}).First(&organization); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -117,8 +114,8 @@ func (r *organizationRepository) AddOrganization(ctx context.Context, operator s
 	_, span := tracer.Start(ctx, "organizationRepository.AddOrganization")
 	defer span.End()
 
-	organization := organizationEntity{
-		BaseModelEntity: BaseModelEntity{
+	organization := organizationEntity{ //nolint:exhaustruct
+		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
 			CreatedBy: operator.AppUserID().Int(),
 			UpdatedBy: operator.AppUserID().Int(),

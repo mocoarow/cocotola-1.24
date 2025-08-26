@@ -47,7 +47,7 @@ func TestGoogleAuthHandler_Authorize_shouldReturn400_whenRequestBodyIsEmpty(t *t
 	w := httptest.NewRecorder()
 
 	// when
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/google/authorize", bytes.NewBuffer([]byte("")))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/google/authorize", bytes.NewBufferString(""))
 	require.NoError(t, err)
 	r.ServeHTTP(w, req)
 	respBytes := readBytes(t, w.Body)
@@ -72,7 +72,7 @@ func TestGoogleAuthHandler_Authorize_shouldReturn400_whenRequestBodyIsInvalid(t 
 	w := httptest.NewRecorder()
 
 	// when
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/google/authorize", bytes.NewBuffer([]byte("[]")))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/google/authorize", bytes.NewBufferString("[]"))
 	require.NoError(t, err)
 	r.ServeHTTP(w, req)
 	respBytes := readBytes(t, w.Body)
@@ -98,7 +98,7 @@ func TestGoogleAuthHandler_Authorize_shouldReturn500_whenErrorOccur(t *testing.T
 	w := httptest.NewRecorder()
 
 	// when
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/v1/google/authorize", bytes.NewBuffer([]byte(`{"organizationName": "ORG_NAME", "sessionState": "VALID_STATE", "paramState": "VALID_STATE", "code": "ERROR_CODE"}`)))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/v1/google/authorize", bytes.NewBufferString(`{"organizationName": "ORG_NAME", "sessionState": "VALID_STATE", "paramState": "VALID_STATE", "code": "ERROR_CODE"}`))
 	require.NoError(t, err)
 	r.ServeHTTP(w, req)
 	respBytes := readBytes(t, w.Body)
@@ -124,7 +124,7 @@ func TestGoogleAuthHandler_Authorize_shouldReturn401_whenCodeIsInvalid(t *testin
 	w := httptest.NewRecorder()
 
 	// when
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/google/authorize", bytes.NewBuffer([]byte(`{"organizationName": "ORG_NAME", "sessionState": "VALID_STATE", "paramState": "VALID_STATE", "code": "INVALID_CODE"}`)))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/google/authorize", bytes.NewBufferString(`{"organizationName": "ORG_NAME", "sessionState": "VALID_STATE", "paramState": "VALID_STATE", "code": "INVALID_CODE"}`))
 	require.NoError(t, err)
 	r.ServeHTTP(w, req)
 	respBytes := readBytes(t, w.Body)
@@ -154,7 +154,7 @@ func TestGoogleAuthHandler_Authorize_shouldReturn401_whenCodeIsValid(t *testing.
 	w := httptest.NewRecorder()
 
 	// when
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/google/authorize", bytes.NewBuffer([]byte(`{"organizationName": "ORG_NAME", "sessionState": "VALID_STATE", "paramState": "VALID_STATE", "code": "VALID_CODE"}`)))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/google/authorize", bytes.NewBufferString(`{"organizationName": "ORG_NAME", "sessionState": "VALID_STATE", "paramState": "VALID_STATE", "code": "VALID_CODE"}`))
 	require.NoError(t, err)
 	r.ServeHTTP(w, req)
 	respBytes := readBytes(t, w.Body)

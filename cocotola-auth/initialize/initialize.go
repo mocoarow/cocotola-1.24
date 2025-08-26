@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"gorm.io/gorm"
 
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
@@ -78,15 +79,16 @@ func newCallbackOnAddAppUser(cocotolaCoreCallbackClient service.CocotolaCoreCall
 
 func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) error {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-Initialize"))
-	httpClient := &http.Client{
-		Timeout: time.Duration(authConfig.CoreAPIClient.TimeoutSec) * time.Second,
+	httpClient := http.Client{ //nolint:exhaustruct
+		Timeout:   time.Duration(authConfig.CoreAPIClient.TimeoutSec) * time.Second,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
 	coreAPIEndpoint, err := url.Parse(authConfig.CoreAPIClient.Endpoint)
 	if err != nil {
 		return mbliberrors.Errorf("invalid core api endpoint: %w", err)
 	}
-	cocotolaCoreCallbackClient := gateway.NewCocotolaCoreCallbackClient(httpClient, coreAPIEndpoint, authConfig.CoreAPIClient.Username, authConfig.CoreAPIClient.Password)
-	appUserEventHandler := mblibservice.ResourceEventHandlerFuncs{
+	cocotolaCoreCallbackClient := gateway.NewCocotolaCoreCallbackClient(&httpClient, coreAPIEndpoint, authConfig.CoreAPIClient.Username, authConfig.CoreAPIClient.Password)
+	appUserEventHandler := mblibservice.ResourceEventHandlerFuncs{ //nolint:exhaustruct
 		AddFunc: newCallbackOnAddAppUser(cocotolaCoreCallbackClient, logger),
 	}
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {

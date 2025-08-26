@@ -56,13 +56,13 @@ func (x *wrappedDB) WhereNotRemoved(table HasTableName) *wrappedDB {
 }
 
 func (x *wrappedDB) WhereAppUser() *wrappedDB {
-	return x.WhereOrganizationID(&appUserEntity{}, x.organizationID).WhereNotRemoved(&appUserEntity{})
+	return x.WhereOrganizationID(&appUserEntity{}, x.organizationID).WhereNotRemoved(&appUserEntity{}) //nolint:exhaustruct
 }
 
 func (x *wrappedDB) WhereUserGroup() *wrappedDB {
-	return x.WhereOrganizationID(&userGroupEntity{}, x.organizationID).WhereNotRemoved(&userGroupEntity{})
+	return x.WhereOrganizationID(&userGroupEntity{}, x.organizationID).WhereNotRemoved(&userGroupEntity{}) //nolint:exhaustruct
 }
 
 func (x *wrappedDB) WherePairOfUserAndGroup() *wrappedDB {
-	return x.WhereOrganizationID(&pairOfUserAndGroupEntity{}, x.organizationID)
+	return x.WhereOrganizationID(&pairOfUserAndGroupEntity{}, x.organizationID) //nolint:exhaustruct
 }

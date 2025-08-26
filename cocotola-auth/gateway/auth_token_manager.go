@@ -18,7 +18,8 @@ import (
 )
 
 type AppUserClaims struct {
-	LoginID          string `json:"loginId"`
+	LoginID string `json:"loginId"`
+	// TODO: Check if AppUserID is needed in the token
 	AppUserID        int    `json:"appUserId"`
 	Username         string `json:"username"`
 	OrganizationID   int    `json:"organizationId"`
@@ -147,14 +148,14 @@ func (m *AuthTokenManager) createJWT(ctx context.Context, appUser service.AppUse
 	}
 
 	now := time.Now()
-	claims := AppUserClaims{
+	claims := AppUserClaims{ //nolint:exhaustruct
 		// AppUserID:        appUser.AppUserID().Int(),
 		LoginID:          appUser.LoginID(),
 		Username:         appUser.Username(),
 		OrganizationID:   organization.OrganizationID().Int(),
 		OrganizationName: organization.Name(),
 		TokenType:        tokenType,
-		RegisteredClaims: jwt.RegisteredClaims{
+		RegisteredClaims: jwt.RegisteredClaims{ //nolint:exhaustruct
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(duration)),
 		},
@@ -191,7 +192,7 @@ func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (
 		return m.SigningKey, nil
 	}
 
-	currentToken, err := jwt.ParseWithClaims(tokenString, &AppUserClaims{}, keyFunc)
+	currentToken, err := jwt.ParseWithClaims(tokenString, &AppUserClaims{}, keyFunc) //nolint:exhaustruct
 	if err != nil {
 		m.logger.InfoContext(ctx, fmt.Sprintf("%v", err))
 		// return nil, fmt.Errorf("jwt.ParseWithClaims. err: %w", domain.ErrUnauthenticated)
@@ -229,7 +230,8 @@ func (m *AuthTokenManager) RefreshToken(ctx context.Context, tokenString string)
 	// 	return "", err
 	// }
 
-	appUser := &appUser{
+	// TODO: check
+	appUser := &appUser{ //nolint:exhaustruct
 		// appUserID: appUserID,
 		loginID:  currentClaims.LoginID,
 		username: currentClaims.Username,

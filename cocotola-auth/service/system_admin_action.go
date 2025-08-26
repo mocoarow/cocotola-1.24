@@ -47,8 +47,9 @@ func (a *SystemAdminAction) initSystemAdmin(ctx context.Context) error {
 }
 
 func NewSystemAdminAction(ctx context.Context, _ libdomain.SystemToken, rf RepositoryFactory) (*SystemAdminAction, error) {
-	action := SystemAdminAction{}
-	action.rf = rf
+	action := SystemAdminAction{ //nolint:exhaustruct
+		rf: rf,
+	}
 	if err := action.initSystemAdmin(ctx); err != nil {
 		return nil, mbliberrors.Errorf("initSystemAdmin: %w", err)
 	}

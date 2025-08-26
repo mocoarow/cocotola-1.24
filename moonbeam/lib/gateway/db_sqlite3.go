@@ -37,7 +37,7 @@ type SQLite3Config struct {
 func OpenSQLite3(cfg *SQLite3Config, logLevel slog.Level, appName string) (*gorm.DB, error) {
 	gormDialector := gorm_sqlite.Open(cfg.File)
 
-	gormConfig := gorm.Config{
+	gormConfig := gorm.Config{ //nolint:exhaustruct
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
 			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
@@ -60,7 +60,7 @@ func MigrateSQLite3DB(db *gorm.DB, sqlFS fs.FS) error {
 	var _ = sourceDriver
 
 	return MigrateDB(db, driverName, sourceDriver, func(sqlDB *sql.DB) (database.Driver, error) {
-		return migrate_sqlite3.WithInstance(sqlDB, &migrate_sqlite3.Config{})
+		return migrate_sqlite3.WithInstance(sqlDB, &migrate_sqlite3.Config{}) //nolint:exhaustruct
 	})
 }
 

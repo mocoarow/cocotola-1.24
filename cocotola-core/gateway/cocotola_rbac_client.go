@@ -94,7 +94,7 @@ func (c *cocotolaRBACClient) CheckAuthorization(ctx context.Context, param *liba
 		return false, mbliberrors.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	apiResp := libapi.AuthorizeResponse{}
+	var apiResp libapi.AuthorizeResponse
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
 		return false, mbliberrors.Errorf("decode response body: %w", err)
 	}

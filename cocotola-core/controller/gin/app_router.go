@@ -70,7 +70,7 @@ func GetBasicPrivateRouterGroupFuncs(_ context.Context, txManager, nonTxManager 
 
 func InitBearerTokenAuthMiddleware(authClientConfig *config.AuthAPIClientConfig) (gin.HandlerFunc, error) {
 	// middleware
-	httpClient := http.Client{
+	httpClient := http.Client{ //nolint:exhaustruct
 		Timeout:   time.Duration(authClientConfig.TimeoutSec) * time.Second,
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}

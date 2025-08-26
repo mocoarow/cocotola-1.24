@@ -37,8 +37,8 @@ func newReplaceAttr(platform string) func([]string, slog.Attr) slog.Attr {
 func InitLog(cfg *LogConfig) {
 	defaultLogLevel := stringToLogLevel(cfg.Level)
 
-	slog.SetDefault(slog.New(slogotel.OtelHandler{
-		Next: slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	slog.SetDefault(slog.New(slogotel.OtelHandler{ //nolint:exhaustruct
+		Next: slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{ //nolint:exhaustruct
 			Level:       defaultLogLevel,
 			ReplaceAttr: newReplaceAttr(cfg.Platform),
 		}),

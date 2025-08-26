@@ -146,7 +146,7 @@ func (r *appUserRepository) FindSystemOwnerByOrganizationID(ctx context.Context,
 	_, span := tracer.Start(ctx, "appUserRepository.FindSystemOwnerByOrganizationID")
 	defer span.End()
 
-	appUser := appUserEntity{}
+	var appUser appUserEntity
 	wrappedDB := wrappedDB{dialect: r.dialect, db: r.db, organizationID: organizationID}
 	db := wrappedDB.WhereAppUser().Where(AppUserTableName+".login_id = ?", service.SystemOwnerLoginID).db
 	if result := db.First(&appUser); result.Error != nil {
@@ -164,7 +164,7 @@ func (r *appUserRepository) FindSystemOwnerByOrganizationName(ctx context.Contex
 	_, span := tracer.Start(ctx, "appUserRepository.FindSystemOwnerByOrganizationName")
 	defer span.End()
 
-	appUserE := appUserEntity{}
+	var appUserE appUserEntity
 	if result := r.db.Table(OrganizationTableName).Select(AppUserTableName+".*").
 		Where(OrganizationTableName+".name = ? and "+AppUserTableName+".removed = ?", organizationName, r.dialect.BoolDefaultValue()).
 		Where("login_id = ?", service.SystemOwnerLoginID).
@@ -209,7 +209,7 @@ func (r *appUserRepository) findAppUserByID(ctx context.Context, organizationID 
 	_, span := tracer.Start(ctx, "appUserRepository.findAppUserByID")
 	defer span.End()
 
-	appUserE := appUserEntity{}
+	var appUserE appUserEntity
 	wrappedDB := wrappedDB{dialect: r.dialect, db: r.db, organizationID: organizationID}
 	db := wrappedDB.WhereAppUser().Where(AppUserTableName+".id = ?", id.Int()).db
 	if result := db.First(&appUserE); result.Error != nil {
@@ -265,7 +265,7 @@ func (r *appUserRepository) findAppUserEntityByLoginID(ctx context.Context, orga
 	_, span := tracer.Start(ctx, "appUserRepository.FindAppUserByLoginID")
 	defer span.End()
 
-	appUser := appUserEntity{}
+	var appUser appUserEntity
 	wrappedDB := wrappedDB{dialect: r.dialect, db: r.db, organizationID: organizationID}
 	db := wrappedDB.WhereAppUser().Where(AppUserTableName+".login_id = ?", loginID).db
 	if result := db.First(&appUser); result.Error != nil {
@@ -283,7 +283,7 @@ func (r *appUserRepository) FindOwnerByLoginID(ctx context.Context, operator ser
 	_, span := tracer.Start(ctx, "appUserRepository.FindOwnerByLoginID")
 	defer span.End()
 
-	appUser := appUserEntity{}
+	var appUser appUserEntity
 	wrappedDB := wrappedDB{dialect: r.dialect, db: r.db, organizationID: operator.OrganizationID()}
 	db := wrappedDB.Table(AppUserTableName).Select(AppUserTableName+".*").
 		WherePairOfUserAndGroup().
@@ -333,8 +333,8 @@ func (r *appUserRepository) AddAppUser(ctx context.Context, operator service.Own
 		hashedPassword = hashedPasswordTmp
 	}
 
-	appUserEntity := appUserEntity{
-		BaseModelEntity: BaseModelEntity{
+	appUserEntity := appUserEntity{ //nolint:exhaustruct
+		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
 			CreatedBy: operator.AppUserID().Int(),
 			UpdatedBy: operator.AppUserID().Int(),
@@ -357,8 +357,8 @@ func (r *appUserRepository) AddSystemOwner(ctx context.Context, operator service
 	_, span := tracer.Start(ctx, "appUserRepository.AddSystemOwner")
 	defer span.End()
 
-	appUserEntity := appUserEntity{
-		BaseModelEntity: BaseModelEntity{
+	appUserEntity := appUserEntity{ //nolint:exhaustruct
+		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
 			CreatedBy: operator.AppUserID().Int(),
 			UpdatedBy: operator.AppUserID().Int(),

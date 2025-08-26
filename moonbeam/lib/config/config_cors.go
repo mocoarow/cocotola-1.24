@@ -8,14 +8,14 @@ type CORSConfig struct {
 
 func InitCORS(cfg *CORSConfig) cors.Config {
 	if len(cfg.AllowOrigins) == 1 && cfg.AllowOrigins[0] == "*" {
-		return cors.Config{
+		return cors.Config{ //nolint:exhaustruct
 			AllowAllOrigins: true,
 			AllowMethods:    []string{"*"},
 			AllowHeaders:    []string{"*"},
 		}
 	}
 
-	return cors.Config{
+	return cors.Config{ //nolint:exhaustruct
 		AllowOrigins: cfg.AllowOrigins,
 		AllowMethods: []string{"*"},
 		AllowHeaders: []string{"*"},

@@ -80,7 +80,7 @@ func (r *userGroupRepository) FindAllUserGroups(ctx context.Context, operator se
 	defer span.End()
 
 	userGroups := []userGroupEntity{}
-	if result := r.db.Where(&userGroupEntity{
+	if result := r.db.Where(&userGroupEntity{ //nolint:exhaustruct
 		OrganizationID: operator.OrganizationID().Int(),
 	}).Find(&userGroups); result.Error != nil {
 		return nil, result.Error
@@ -102,8 +102,8 @@ func (r *userGroupRepository) FindSystemOwnerGroup(ctx context.Context, _ servic
 	_, span := tracer.Start(ctx, "userGroupRepository.FindSystemOwnerGroup")
 	defer span.End()
 
-	userGroup := userGroupEntity{}
-	if result := r.db.Where(&userGroupEntity{
+	var userGroup userGroupEntity
+	if result := r.db.Where(&userGroupEntity{ //nolint:exhaustruct
 		OrganizationID: organizationID.Int(),
 		KeyName:        service.SystemOwnerGroupKey,
 	}).First(&userGroup); result.Error != nil {
@@ -117,7 +117,7 @@ func (r *userGroupRepository) FindUserGroupByID(ctx context.Context, operator se
 	_, span := tracer.Start(ctx, "userGroupRepository.FindUserGroupByID")
 	defer span.End()
 
-	userGroup := userGroupEntity{}
+	var userGroup userGroupEntity
 	if result := r.db.Where("organization_id = ?", operator.OrganizationID().Int()).
 		Where("id = ? and removed = ?", userGroupID.Int(), r.dialect.BoolDefaultValue()).
 		First(&userGroup); result.Error != nil {
@@ -131,7 +131,7 @@ func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator s
 	_, span := tracer.Start(ctx, "userGroupRepository.FindUserGroupByKey")
 	defer span.End()
 
-	userGroup := userGroupEntity{}
+	var userGroup userGroupEntity
 	if result := r.db.Where("organization_id = ?", operator.OrganizationID().Int()).
 		Where("key_name = ? and removed = ?", key, r.dialect.BoolDefaultValue()).
 		First(&userGroup); result.Error != nil {
@@ -142,8 +142,8 @@ func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator s
 }
 
 func (r *userGroupRepository) addUserGroup(appUserID *domain.AppUserID, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
-	userGroup := userGroupEntity{
-		BaseModelEntity: BaseModelEntity{
+	userGroup := userGroupEntity{ //nolint:exhaustruct
+		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
 			CreatedBy: appUserID.Int(),
 			UpdatedBy: appUserID.Int(),
@@ -182,8 +182,8 @@ func (r *userGroupRepository) AddUserGroup(ctx context.Context, operator service
 	_, span := tracer.Start(ctx, "userGroupRepository.AddUserGroup")
 	defer span.End()
 
-	userGroup := userGroupEntity{
-		BaseModelEntity: BaseModelEntity{
+	userGroup := userGroupEntity{ //nolint:exhaustruct
+		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
 			CreatedBy: operator.AppUserID().Int(),
 			UpdatedBy: operator.AppUserID().Int(),

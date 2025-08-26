@@ -114,15 +114,19 @@ func WithAuthorizationManager() SystemOwnerActionOption {
 	}
 }
 func NewSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf RepositoryFactory, options ...SystemOwnerActionOption) (*SystemOwnerAction, error) {
+	if systemToken == nil {
+		return nil, mbliberrors.Errorf("systemToken is nil: %w", nil)
+	}
 	systemAdminAction, err := NewSystemAdminAction(ctx, systemToken, rf)
 	if err != nil {
 		return nil, err
 	}
 
-	action := SystemOwnerAction{}
-	action.rf = rf
-	action.mbrf = systemAdminAction.mbrf
-	action.systemAdmin = systemAdminAction.SystemAdmin
+	action := SystemOwnerAction{ //nolint:exhaustruct
+		rf:          rf,
+		mbrf:        systemAdminAction.mbrf,
+		systemAdmin: systemAdminAction.SystemAdmin,
+	}
 	for _, option := range options {
 		if err := option(ctx, &action); err != nil {
 			return nil, err

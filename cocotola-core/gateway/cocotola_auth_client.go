@@ -50,7 +50,7 @@ func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken s
 	}
 	defer resp.Body.Close()
 
-	response := libapi.AppUserInfoResponse{}
+	var response libapi.AppUserInfoResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, mbliberrors.Errorf("json.NewDecoder: %w", err)
 	}

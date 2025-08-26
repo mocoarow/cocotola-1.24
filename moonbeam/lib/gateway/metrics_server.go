@@ -23,7 +23,7 @@ func MetricsServerProcess(ctx context.Context, port int, gracefulShutdownTimeSec
 	router := gin.New()
 	router.Use(gin.Recovery())
 
-	httpServer := http.Server{
+	httpServer := http.Server{ //nolint:exhaustruct
 		Addr:              ":" + strconv.Itoa(port),
 		Handler:           router,
 		ReadHeaderTimeout: readHeaderTimeout,
