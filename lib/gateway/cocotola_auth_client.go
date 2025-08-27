@@ -9,28 +9,22 @@ import (
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
-
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
+	"github.com/mocoarow/cocotola-1.24/lib/api"
 )
-
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
 
 type cocotolaAuthClient struct {
 	httpClient   HTTPClient
 	authEndpoint *url.URL
 }
 
-func NewCocotolaAuthClient(httpClient HTTPClient, authEndpoint *url.URL) service.CocotolaAuthClient {
+func NewCocotolaAuthClient(httpClient HTTPClient, authEndpoint *url.URL) api.CocotolaAuthClient {
 	return &cocotolaAuthClient{
 		httpClient:   httpClient,
 		authEndpoint: authEndpoint,
 	}
 }
 
-func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken string) (*libapi.AppUserInfoResponse, error) {
+func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken string) (*api.AppUserInfoResponse, error) {
 	ctx, span := tracer.Start(ctx, "cocotolaAuthClient.RetrieveUserInfo")
 	defer span.End()
 
@@ -50,7 +44,7 @@ func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken s
 	}
 	defer resp.Body.Close()
 
-	var response libapi.AppUserInfoResponse
+	var response api.AppUserInfoResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, mbliberrors.Errorf("json.NewDecoder: %w", err)
 	}

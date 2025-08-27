@@ -15,6 +15,7 @@ import (
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/config"
 	controller "github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin"
@@ -51,7 +52,7 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	if err != nil {
 		return mbliberrors.Errorf("Parse: %w", err)
 	}
-	rbacClient := gateway.NewCocotolaRBACClient(&httpClient, authEndpoint, coreConfig.AuthAPIClient.Username, coreConfig.AuthAPIClient.Password)
+	rbacClient := libgateway.NewCocotolaRBACClient(&httpClient, authEndpoint, coreConfig.AuthAPIClient.Username, coreConfig.AuthAPIClient.Password)
 
 	// init auth middleware
 	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(coreConfig.AuthAPIClient)

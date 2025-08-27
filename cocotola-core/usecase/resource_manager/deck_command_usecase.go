@@ -18,10 +18,10 @@ import (
 type DeckCommandUseCase struct {
 	txManager    service.TransactionManager
 	nonTxManager service.TransactionManager
-	rbacClient   service.CocotolaRBACClient
+	rbacClient   libapi.CocotolaRBACClient
 }
 
-func NewDeckCommandUsecase(txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) *DeckCommandUseCase {
+func NewDeckCommandUsecase(txManager, nonTxManager service.TransactionManager, rbacClient libapi.CocotolaRBACClient) *DeckCommandUseCase {
 	return &DeckCommandUseCase{
 		txManager:    txManager,
 		nonTxManager: nonTxManager,

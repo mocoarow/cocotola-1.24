@@ -10,9 +10,7 @@ import (
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
-
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
+	"github.com/mocoarow/cocotola-1.24/lib/api"
 )
 
 type cocotolaRBACClient struct {
@@ -22,7 +20,7 @@ type cocotolaRBACClient struct {
 	authPassword string
 }
 
-func NewCocotolaRBACClient(httpClient HTTPClient, authEndpoint *url.URL, authUsername, authPassword string) service.CocotolaRBACClient {
+func NewCocotolaRBACClient(httpClient HTTPClient, authEndpoint *url.URL, authUsername, authPassword string) api.CocotolaRBACClient {
 	return &cocotolaRBACClient{
 		httpClient:   httpClient,
 		authEndpoint: authEndpoint,
@@ -31,7 +29,7 @@ func NewCocotolaRBACClient(httpClient HTTPClient, authEndpoint *url.URL, authUse
 	}
 }
 
-func (c *cocotolaRBACClient) AddPolicyToUser(ctx context.Context, param *libapi.AddPolicyToUserParameter) error {
+func (c *cocotolaRBACClient) AddPolicyToUser(ctx context.Context, param *api.AddPolicyToUserParameter) error {
 	ctx, span := tracer.Start(ctx, "cocotolaRBACClient.AddPolicyToUser")
 	defer span.End()
 
@@ -64,7 +62,7 @@ func (c *cocotolaRBACClient) AddPolicyToUser(ctx context.Context, param *libapi.
 	return nil
 }
 
-func (c *cocotolaRBACClient) CheckAuthorization(ctx context.Context, param *libapi.AuthorizeRequest) (bool, error) {
+func (c *cocotolaRBACClient) CheckAuthorization(ctx context.Context, param *api.AuthorizeRequest) (bool, error) {
 	ctx, span := tracer.Start(ctx, "cocotolaRBACClient.CheckAuthorization")
 	defer span.End()
 
@@ -94,7 +92,7 @@ func (c *cocotolaRBACClient) CheckAuthorization(ctx context.Context, param *liba
 		return false, mbliberrors.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	var apiResp libapi.AuthorizeResponse
+	var apiResp api.AuthorizeResponse
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
 		return false, mbliberrors.Errorf("decode response body: %w", err)
 	}

@@ -2,7 +2,11 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "api",
-    srcs = ["api.go"],
+    srcs = [
+        "api.go",
+        "cocotola_auth_client.go",
+        "cocotola_rbac_client.go",
+    ],
     importpath = "github.com/mocoarow/cocotola-1.24/lib/api",
     visibility = ["//visibility:public"],
 )

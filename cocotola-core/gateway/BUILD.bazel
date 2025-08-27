@@ -3,8 +3,6 @@ load("@rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "gateway",
     srcs = [
-        "cocotola_auth_client.go",
-        "cocotola_rbac_client.go",
         "deck_repository.go",
         "firebase_client.go",
         "init.go",
@@ -18,7 +16,6 @@ go_library(
     deps = [
         "//cocotola-core/domain",
         "//cocotola-core/service",
-        "//lib/api",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",

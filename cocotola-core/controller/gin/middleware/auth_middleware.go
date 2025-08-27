@@ -9,11 +9,12 @@ import (
 
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 
+	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-func NewAuthMiddleware(cocotolaAuthClient service.CocotolaAuthClient) gin.HandlerFunc {
+func NewAuthMiddleware(cocotolaAuthClient libapi.CocotolaAuthClient) gin.HandlerFunc {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AuthMiddleware"))
 
 	return func(c *gin.Context) {

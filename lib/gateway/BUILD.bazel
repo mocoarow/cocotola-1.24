@@ -2,12 +2,20 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "gateway",
-    srcs = ["multiprocess.go"],
+    srcs = [
+        "cocotola_auth_client.go",
+        "cocotola_rbac_client.go",
+        "init.go",
+        "multiprocess.go",
+    ],
     importpath = "github.com/mocoarow/cocotola-1.24/lib/gateway",
     visibility = ["//visibility:public"],
     deps = [
+        "//lib/api",
         "//lib/controller",
+        "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",
+        "@io_opentelemetry_go_otel//:otel",
         "@org_golang_x_sync//errgroup",
     ],
 )
