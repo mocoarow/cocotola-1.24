@@ -55,6 +55,7 @@ func main() {
 		},
 		Trace: &mblibconfig.TraceConfig{
 			Exporter: "gcp",
+			OTLP:     nil,
 			Google: &mblibconfig.GoogleTraceConfig{
 				ProjectID: "mocoarow-25-08",
 			},
@@ -69,6 +70,8 @@ func main() {
 		Log: &mblibconfig.LogConfig{
 			Level:    "info",
 			Platform: "gcp",
+			Levels:   nil,
+			Enabled:  nil,
 		},
 		Debug: &libconfig.DebugConfig{
 			Gin:  false,

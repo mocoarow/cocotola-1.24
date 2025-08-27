@@ -31,8 +31,9 @@ type Authentication struct {
 	systemOwnerByOrganizationName SystemOwnerByOrganizationName
 }
 
-func NewAuthentication(_ libdomain.SystemToken, transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager, systemOwnerByOrganizationName SystemOwnerByOrganizationName) *Authentication {
+func NewAuthentication(systemToken libdomain.SystemToken, transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager, systemOwnerByOrganizationName SystemOwnerByOrganizationName) *Authentication {
 	return &Authentication{
+		systemToken:                   systemToken,
 		transactionManager:            transactionManager,
 		authTokenManager:              authTokenManager,
 		systemOwnerByOrganizationName: systemOwnerByOrganizationName,

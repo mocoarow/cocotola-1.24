@@ -56,9 +56,9 @@ tasks:
       - |
         pushd {{ .PROJECT }}
         golangci-lint run --config ../.golangci.yml --timeout=5m
-      # - |
-      #   pushd cocotola-synthesizer
-      #   pkgforbid -config=../.github/pkgforbid.yml ./...
+      - |
+        pushd {{ .PROJECT }}
+        pkgforbid -config=../pkgforbid.yml ./...
     requires:
       vars: [PROJECT]
 

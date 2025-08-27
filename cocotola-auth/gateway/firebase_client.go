@@ -16,7 +16,7 @@ type FirebaseClient struct {
 }
 
 func NewFirebaseClient(ctx context.Context, googleProjectID string) (service.FirebaseClient, error) {
-	fireBaseApp, err := firebase.NewApp(ctx, &firebase.Config{
+	fireBaseApp, err := firebase.NewApp(ctx, &firebase.Config{ //nolint:exhaustruct
 		ProjectID: googleProjectID,
 	})
 	if err != nil {

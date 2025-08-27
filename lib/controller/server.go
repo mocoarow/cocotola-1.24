@@ -16,7 +16,7 @@ import (
 func AppServerProcess(ctx context.Context, router http.Handler, port int, readHeaderTimeout time.Duration, shutdownTime time.Duration) error {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "AppServerProcess"))
 
-	httpServer := http.Server{
+	httpServer := http.Server{ //nolint:exhaustruct
 		Addr:              ":" + strconv.Itoa(port),
 		Handler:           router,
 		ReadHeaderTimeout: readHeaderTimeout,

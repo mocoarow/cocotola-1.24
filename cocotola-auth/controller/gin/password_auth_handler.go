@@ -37,7 +37,7 @@ func NewPasswordAuthHandler(passwordUsecase PasswordUsecaseInterface) *PasswordA
 func (h *PasswordAuthHandler) Authorize(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	passwordAuthParameter := libapi.PasswordAuthParameter{}
+	var passwordAuthParameter libapi.PasswordAuthParameter
 	if err := c.ShouldBindJSON(&passwordAuthParameter); err != nil {
 		h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})

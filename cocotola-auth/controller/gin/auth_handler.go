@@ -95,7 +95,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	h.logger.InfoContext(ctx, "Authorize")
-	refreshTokenParameter := libapi.RefreshTokenParameter{}
+	var refreshTokenParameter libapi.RefreshTokenParameter
 	if err := c.ShouldBindJSON(&refreshTokenParameter); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
@@ -109,7 +109,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, libapi.AuthResponse{
+	c.JSON(http.StatusOK, libapi.AuthResponse{ //nolint:exhaustruct
 		AccessToken: &accessToken,
 	})
 }

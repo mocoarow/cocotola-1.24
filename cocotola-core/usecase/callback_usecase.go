@@ -18,11 +18,11 @@ import (
 type Callback struct {
 	txManager    service.TransactionManager
 	nonTxManager service.TransactionManager
-	rbacClient   service.CocotolaRBACClient
+	rbacClient   libapi.CocotolaRBACClient
 	logger       *slog.Logger
 }
 
-func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) *Callback {
+func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient libapi.CocotolaRBACClient) *Callback {
 	return &Callback{
 		txManager:    txManager,
 		nonTxManager: nonTxManager,

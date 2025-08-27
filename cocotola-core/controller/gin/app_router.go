@@ -10,12 +10,14 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"gorm.io/gorm"
 
-	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
+
+	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/config"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/middleware"
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/usecase"
 
@@ -44,7 +46,7 @@ func GetPublicRouterGroupFuncs() []libcontroller.InitRouterGroupFunc {
 	}
 }
 
-func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
+func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient libapi.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - workbookQueryUsecase
 	deckQueryUsecase := resourcemanagergateway.NewDeckQueryUsecase(db)
 	// - workbookCommandUsecase
@@ -60,7 +62,7 @@ func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txMan
 	}, nil
 }
 
-func GetBasicPrivateRouterGroupFuncs(_ context.Context, txManager, nonTxManager service.TransactionManager, rbacClient service.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
+func GetBasicPrivateRouterGroupFuncs(_ context.Context, txManager, nonTxManager service.TransactionManager, rbacClient libapi.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
 	callbackUsecase := usecase.NewCallback(txManager, nonTxManager, rbacClient)
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
@@ -70,7 +72,7 @@ func GetBasicPrivateRouterGroupFuncs(_ context.Context, txManager, nonTxManager 
 
 func InitBearerTokenAuthMiddleware(authClientConfig *config.AuthAPIClientConfig) (gin.HandlerFunc, error) {
 	// middleware
-	httpClient := http.Client{
+	httpClient := http.Client{ //nolint:exhaustruct
 		Timeout:   time.Duration(authClientConfig.TimeoutSec) * time.Second,
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
@@ -78,7 +80,7 @@ func InitBearerTokenAuthMiddleware(authClientConfig *config.AuthAPIClientConfig)
 	if err != nil {
 		return nil, mbliberrors.Errorf("Parse: %w", err)
 	}
-	cocotolaAuthClient := gateway.NewCocotolaAuthClient(&httpClient, authEndpoint)
+	cocotolaAuthClient := libgateway.NewCocotolaAuthClient(&httpClient, authEndpoint)
 
 	return middleware.NewAuthMiddleware(cocotolaAuthClient), nil
 }

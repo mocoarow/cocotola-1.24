@@ -44,7 +44,7 @@ type MySQLConfig struct {
 func OpenMySQLWithDSN(dsn string, logLevel slog.Level, appName string) (*gorm.DB, error) {
 	gormDialector := gorm_mysql.Open(dsn)
 
-	gormConfig := gorm.Config{
+	gormConfig := gorm.Config{ //nolint:exhaustruct
 		Logger: slog_gorm.New(
 			slog_gorm.WithTraceAll(), // trace all messages
 			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
@@ -58,7 +58,7 @@ func OpenMySQLWithDSN(dsn string, logLevel slog.Level, appName string) (*gorm.DB
 }
 
 func OpenMySQL(cfg *MySQLConfig, logLevel slog.Level, appName string) (*gorm.DB, error) {
-	c := mysql.Config{
+	c := mysql.Config{ //nolint:exhaustruct
 		DBName:               cfg.Database,
 		User:                 cfg.Username,
 		Passwd:               cfg.Password,
@@ -85,7 +85,7 @@ func MigrateMySQLDB(db *gorm.DB, sqlFS fs.FS) error {
 	}
 
 	return MigrateDB(db, driverName, sourceDriver, func(sqlDB *sql.DB) (database.Driver, error) {
-		return migrate_mysql.WithInstance(sqlDB, &migrate_mysql.Config{})
+		return migrate_mysql.WithInstance(sqlDB, &migrate_mysql.Config{}) //nolint:exhaustruct
 	})
 }
 

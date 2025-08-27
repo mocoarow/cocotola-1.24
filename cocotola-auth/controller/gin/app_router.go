@@ -69,7 +69,7 @@ func NewAuthTokenManager(ctx context.Context, authConfig *config.AuthConfig) (se
 
 func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, authConfig *config.AuthConfig, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - google
-	httpClient := http.Client{
+	httpClient := http.Client{ //nolint:exhaustruct
 		Timeout:   time.Duration(authConfig.GoogleAPITimeoutSec) * time.Second,
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}

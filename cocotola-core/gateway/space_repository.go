@@ -89,8 +89,8 @@ func (r *spaceRepository) AddSpace(ctx context.Context, operator mbuserservice.O
 	_, span := tracer.Start(ctx, "spaceRepository.AddSpace")
 	defer span.End()
 
-	spaceE := SpaceEntity{
-		BaseModelEntity: mbusergateway.BaseModelEntity{
+	spaceE := SpaceEntity{ //nolint:exhaustruct
+		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
 			CreatedBy: operator.AppUserID().Int(),
 			UpdatedBy: operator.AppUserID().Int(),
@@ -116,7 +116,9 @@ func (r *spaceRepository) UpdateSpace(ctx context.Context, operator service.Oper
 	_, span := tracer.Start(ctx, "spaceRepository.UpdateSpace")
 	defer span.End()
 
-	if result := r.db.Model(&SpaceEntity{}).
+	if result := r.db.Model(
+		&SpaceEntity{}, //nolint:exhaustruct
+	).
 		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
 		Where("id = ?", spaceID.Int()).
 		Where("version = ?", version).
@@ -135,20 +137,22 @@ func (r *spaceRepository) FindSpaces(ctx context.Context, operator service.Opera
 	defer span.End()
 
 	var spacesE []SpaceEntity
-	if result := r.db.Model(&SpaceEntity{}).
+	if result := r.db.Model(
+		&SpaceEntity{}, //nolint:exhaustruct
+	).
 		Where("organization_id = ?", uint(operator.OrganizationID().Value)).
 		Where("owner_id = ?", uint(operator.AppUserID().Value)).
 		Find(&spacesE); result.Error != nil {
 		return nil, mbliberrors.Errorf("spaceRepository.FindSpaces: %w", result.Error)
 	}
 
-	var spaces []*service.Space
-	for _, spaceE := range spacesE {
+	spaces := make([]*service.Space, 0, len(spacesE))
+	for i, spaceE := range spacesE {
 		space, err := spaceE.toSpace()
 		if err != nil {
 			return nil, err
 		}
-		spaces = append(spaces, space)
+		spaces[i] = space
 	}
 
 	return spaces, nil
@@ -159,7 +163,9 @@ func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.Ope
 	defer span.End()
 
 	var spaceE SpaceEntity
-	if result := r.db.Model(&SpaceEntity{}).
+	if result := r.db.Model(
+		&SpaceEntity{}, //nolint:exhaustruct
+	).
 		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
 		Where("owner_id = ?", uint(operator.AppUserID().Int())).
 		Where("id = ?", spaceID.Int()).First(&spaceE); result.Error != nil {

@@ -33,7 +33,7 @@ func NewCallbackHandler(callbackUsecase CallbackUsecase) *CallbackHandler {
 
 func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 	ctx := c.Request.Context()
-	apiReq := libapi.CallbackOnAddAppUserRequest{}
+	var apiReq libapi.CallbackOnAddAppUserRequest
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})

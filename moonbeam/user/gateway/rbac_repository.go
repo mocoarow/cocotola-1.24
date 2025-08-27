@@ -215,7 +215,7 @@ func (r *rbacRepository) NewEnforcerWithGroupsAndUsers(_ context.Context, groups
 	for _, s := range users {
 		subjects = append(subjects, s.Subject())
 	}
-	if err := r.enforcer.LoadFilteredPolicy(gormadapter.Filter{V0: subjects}); err != nil {
+	if err := r.enforcer.LoadFilteredPolicy(gormadapter.Filter{V0: subjects}); err != nil { //nolint:exhaustruct
 		return nil, liberrors.Errorf("e.LoadFilteredPolicy. err: %w", err)
 	}
 

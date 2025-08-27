@@ -90,7 +90,7 @@ func (c *GoogleAuthClient) RetrieveAccessToken(ctx context.Context, code string)
 		return nil, fmt.Errorf("retrieve access token. status: %d, body:%s", resp.StatusCode, string(respBytes))
 	}
 
-	googleAuthResponse := googleAuthResponse{}
+	var googleAuthResponse googleAuthResponse
 	if err := json.NewDecoder(resp.Body).Decode(&googleAuthResponse); err != nil {
 		return nil, mbliberrors.Errorf("json.NewDecoder. err: %w", err)
 	}
@@ -135,7 +135,7 @@ func (c *GoogleAuthClient) RetrieveUserInfo(ctx context.Context, accessToken str
 		return nil, fmt.Errorf("retrieve user info. status: %d, body:%s", resp.StatusCode, string(respBytes))
 	}
 
-	googleUserInfo := googleUserInfo{}
+	var googleUserInfo googleUserInfo
 	if err := json.NewDecoder(resp.Body).Decode(&googleUserInfo); err != nil {
 		return nil, mbliberrors.Errorf("json.NewDecoder. err: %w", err)
 	}

@@ -12,6 +12,7 @@ go_library(
         "//cocotola-core/gateway",
         "//cocotola-core/service",
         "//lib/controller/gin",
+        "//lib/gateway",
         "//moonbeam/lib/config",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",

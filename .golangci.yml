@@ -42,6 +42,21 @@ linters:
     - forcetypeassert
     - canonicalheader
     - decorder
+    - nilnil
+    - prealloc
+    - mirror
+    - misspell
+    - nilerr
+    - noctx
+    - predeclared
+    - reassign
+    - unconvert
+    - gocheckcompilerdirectives
+    - makezero
+    - exhaustruct
+    - exhaustive
+    - fatcontext
+    # - depguard
 
   settings:
     forbidigo:
@@ -88,6 +103,7 @@ linters:
           - dupl
           - nlreturn
           - revive
+          - exhaustruct
 formatters:
   enable:
     - gofmt
