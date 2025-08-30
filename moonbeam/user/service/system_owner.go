@@ -163,7 +163,7 @@ func (m *SystemOwner) AddAppUser(ctx context.Context, param AppUserAddParameterI
 		return nil, liberrors.Errorf("m.appUserRepo.AddAppUser. err: %w", err)
 	}
 
-	m.appUserEventHandler.OnAdd(ctx, map[string]int{
+	go m.appUserEventHandler.OnAdd(context.Background(), map[string]int{
 		"organizationId": m.OrganizationID().Int(),
 		"appUserId":      appUserID.Int(),
 	})

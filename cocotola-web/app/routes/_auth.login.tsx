@@ -1,6 +1,6 @@
 import * as client from "openid-client";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
-import { Link, useLoaderData } from "react-router";
+import { Link, redirect, useLoaderData } from "react-router";
 import { getAuthConfig } from "~/auth.server";
 import { Button } from "~/components/ui/button";
 import {
@@ -11,9 +11,11 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { commitLoginDataSession, getLoginDataSession } from "~/session.server";
+import { serverConfigRedirectUri } from "~/config/config.server";
 export const meta: MetaFunction = () => {
   return [{ title: "Login" }];
 };
+
 
 export async function loader({ request }: LoaderFunctionArgs) {
   console.log("_auth.login.tsx::loader");
@@ -26,7 +28,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getLoginDataSession(request);
 
   const parameters: Record<string, string> = {
-    redirect_uri: "http://localhost:5173/callback",
+    redirect_uri: serverConfigRedirectUri,
     scope: "openid profile email",
     code_challenge: await client.calculatePKCECodeChallenge(codeVerifier),
     code_challenge_method: "S256",

@@ -71,6 +71,9 @@ async function requireAuthUser(request: Request) {
       return {
         loginId,
         name,
+        headers: {
+          "Set-Cookie": await commitUserDataSession(sessionUserData),
+        },
       };
     }
   }

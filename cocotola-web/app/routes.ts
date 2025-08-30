@@ -1,17 +1,8 @@
-import type { RouteConfig } from "@react-router/dev/routes";
-import { remixRoutesOptionAdapter } from "@react-router/remix-routes-option-adapter";
+import { index, type RouteConfig, route } from "@react-router/dev/routes";
+export default [
+  route("login", "./routes/_auth.login.tsx"),
+  route("callback", "./routes/_auth.callback.tsx"),
+  route("logout", "./routes/_auth.logout.tsx"),
 
-export default remixRoutesOptionAdapter((defineRoutes) => {
-  return defineRoutes((route) => {
-    // 認証系
-    route("login", "./routes/_auth.login.tsx");
-    route("callback", "./routes/_auth.callback.tsx");
-    route("logout", "./routes/_auth.logout.tsx");
-
-    // メインレイアウト
-    route("", "./routes/_main.tsx", () => {
-      // index
-      route("", "./routes/_main._index.tsx", { index: true });
-    });
-  });
-}) satisfies RouteConfig;
+  route("", "./routes/_main.tsx", [index("./routes/_main._index.tsx")]),
+] satisfies RouteConfig;
