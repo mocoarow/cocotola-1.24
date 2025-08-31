@@ -122,27 +122,32 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   Widget _buildAnswerDisplayScreen(List<WordProblem> problems) {
     final currentProblem = problems[_currentIndex];
     
+    final englishWords = currentProblem.english
+        .replaceAll('.', ' .')
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .toList();
+
+    // 複数の空欄のインデックスを取得
+    final blankIndices = <int>[];
+    for (int i = 0; i < englishWords.length; i++) {
+      if (englishWords[i] == '___') {
+        blankIndices.add(i);
+      }
+    }
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('単語学習'),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              currentProblem.japanese,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-          ),
-          _buildHintsSection(currentProblem),
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: _transitionToNextProblem,
-            child: const Text('次へ'),
-          ),
-        ],
+      body: ProblemContentWidget(
+        currentProblem: currentProblem,
+        englishWords: englishWords,
+        blankIndices: blankIndices,
+        buildBlankWidget: _buildBlankWidget,
+        buildHintsSection: _buildHintsSection,
+        buildKeyboard: _buildAnswerDisplayKeyboard, // キーボード非表示版
+        buildActionButtons: _buildAnswerDisplayActionButtons, // 次へボタンのみ
       ),
     );
   }
@@ -404,6 +409,26 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
               child: const Text('次へ'),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnswerDisplayKeyboard(WordProblem problem) {
+    // 解説表示時はキーボードを表示しない
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildAnswerDisplayActionButtons(WordProblem problem) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: _transitionToNextProblem,
+            child: const Text('次へ'),
+          ),
         ],
       ),
     );
