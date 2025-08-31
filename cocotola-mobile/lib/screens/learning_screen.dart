@@ -6,6 +6,7 @@ import '../models/word_problem.dart';
 import '../ui/widgets/blank_widget.dart';
 import '../ui/widgets/hints_widget.dart';
 import '../ui/widgets/problem_content_widget.dart';
+import '../ui/screens/problem_display_screen.dart';
 import 'dart:developer' as developer;
 
 enum LearningState {
@@ -173,14 +174,11 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   }
 
   Widget _buildProblemDisplayScreen(List<WordProblem> problems) {
+    // コントローラーが初期化されていない場合は初期化を実行
     final currentProblem = problems[_currentIndex];
     final requiredBlanks = currentProblem.blanks.length;
-    developer.log(
-        '[LearningScreen] Current problem needs $requiredBlanks blanks, we have ${_answerControllers.length}');
-
-    // _answerControllersが初期化されていない場合は空の画面を返す
-    if (_answerControllers.isEmpty ||
-        _answerControllers.length < requiredBlanks) {
+    
+    if (_answerControllers.isEmpty || _answerControllers.length < requiredBlanks) {
       developer.log('[LearningScreen] Controllers not ready, initializing...');
       _initializeControllersForCurrentProblem(problems);
       return const Scaffold(
@@ -188,157 +186,106 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
       );
     }
 
-    final englishWords = currentProblem.english
-        .replaceAll('.', ' .')
-        .split(' ')
-        .where((word) => word.isNotEmpty)
-        .toList();
+    return ProblemDisplayScreen(
+      problems: problems,
+      currentIndex: _currentIndex,
+      answerControllers: _answerControllers,
+      answerFocusNodes: _answerFocusNodes,
+      currentBlankIndex: _currentBlankIndex,
+      cursorPosition: _cursorPosition,
+      onAnswerChanged: (blankIndex, value) {
+        ref
+            .read(wordProblemsProvider.notifier)
+            .updateUserInput(_currentIndex, blankIndex, value);
+        _checkAnswerAutomatically(blankIndex, value);
+      },
+      onBlankTap: (blankIndex) {
+        setState(() {
+          _currentBlankIndex = blankIndex;
+        });
+      },
+      onCheckAnswers: _checkCurrentAnswers,
+      onShowAnswer: () {
+        ref
+            .read(wordProblemsProvider.notifier)
+            .markAsSkipped(_currentIndex);
+        _transitionToAnswerDisplay();
+      },
+      onNextProblem: _transitionToAnswerDisplay,
+      onKeyPressed: _handleKeyPressed,
+      onDeleteKey: _handleDeleteKey,
+      onMoveLeft: _handleMoveLeft,
+      onMoveRight: _handleMoveRight,
+    );
+  }
 
-    // 複数の空欄のインデックスを取得
-    final blankIndices = <int>[];
-    for (int i = 0; i < englishWords.length; i++) {
-      if (englishWords[i] == '___') {
-        blankIndices.add(i);
+  void _handleKeyPressed(String key) {
+    if (_currentBlankIndex < _answerControllers.length) {
+      final controller = _answerControllers[_currentBlankIndex];
+      final text = controller.text;
+      final newText = text.substring(0, _cursorPosition) +
+          key +
+          text.substring(_cursorPosition);
+      controller.text = newText;
+      _cursorPosition++;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: _cursorPosition),
+      );
+      
+      // プロバイダーの状態を更新
+      ref
+          .read(wordProblemsProvider.notifier)
+          .updateUserInput(_currentIndex, _currentBlankIndex, newText);
+      
+      // 自動チェック機能
+      _checkAnswerAutomatically(_currentBlankIndex, newText);
+    }
+  }
+
+  void _handleDeleteKey() {
+    if (_currentBlankIndex < _answerControllers.length &&
+        _cursorPosition > 0) {
+      final controller = _answerControllers[_currentBlankIndex];
+      final text = controller.text;
+      final newText = text.substring(0, _cursorPosition - 1) +
+          text.substring(_cursorPosition);
+      controller.text = newText;
+      _cursorPosition--;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: _cursorPosition),
+      );
+      
+      // プロバイダーの状態を更新
+      ref
+          .read(wordProblemsProvider.notifier)
+          .updateUserInput(_currentIndex, _currentBlankIndex, newText);
+    }
+  }
+
+  void _handleMoveLeft() {
+    if (_cursorPosition > 0) {
+      _cursorPosition--;
+      if (_currentBlankIndex < _answerControllers.length) {
+        _answerControllers[_currentBlankIndex].selection =
+            TextSelection.fromPosition(
+          TextPosition(offset: _cursorPosition),
+        );
+        _answerFocusNodes[_currentBlankIndex].requestFocus();
       }
     }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('単語学習'),
-      ),
-      body: ProblemContentWidget(
-        currentProblem: currentProblem,
-        englishWords: englishWords,
-        blankIndices: blankIndices,
-        buildBlankWidget: (wordIndex, blankIndex, problem) => BlankWidget(
-          wordIndex: wordIndex,
-          blankIndex: blankIndex,
-          problem: problem,
-          controller: _answerControllers[blankIndex],
-          focusNode: _answerFocusNodes[blankIndex],
-          onChanged: (value) {
-            ref
-                .read(wordProblemsProvider.notifier)
-                .updateUserInput(_currentIndex, blankIndex, value);
-            _checkAnswerAutomatically(blankIndex, value);
-          },
-          onTap: () {
-            setState(() {
-              _currentBlankIndex = blankIndex;
-            });
-          },
-        ),
-        buildHintsSection: (problem) => HintsWidget(problem: problem),
-        buildKeyboard: _buildKeyboard,
-        buildActionButtons: _buildActionButtons,
-      ),
-    );
   }
 
-  Widget _buildKeyboard(WordProblem problem) {
-    if (problem.isCompleted) {
-      return const SizedBox.shrink();
+  void _handleMoveRight() {
+    if (_currentBlankIndex < _answerControllers.length) {
+      final controller = _answerControllers[_currentBlankIndex];
+      if (_cursorPosition < controller.text.length) {
+        _cursorPosition++;
+        controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: _cursorPosition),
+        );
+        _answerFocusNodes[_currentBlankIndex].requestFocus();
+      }
     }
-
-    return CustomKeyboard(
-      onKeyPressed: (key) {
-        if (_currentBlankIndex < _answerControllers.length) {
-          final controller = _answerControllers[_currentBlankIndex];
-          final text = controller.text;
-          final newText = text.substring(0, _cursorPosition) +
-              key +
-              text.substring(_cursorPosition);
-          controller.text = newText;
-          _cursorPosition++;
-          controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: _cursorPosition),
-          );
-          
-          // プロバイダーの状態を更新
-          ref
-              .read(wordProblemsProvider.notifier)
-              .updateUserInput(_currentIndex, _currentBlankIndex, newText);
-          
-          // 自動チェック機能
-          _checkAnswerAutomatically(_currentBlankIndex, newText);
-        }
-      },
-      onDelete: () {
-        if (_currentBlankIndex < _answerControllers.length &&
-            _cursorPosition > 0) {
-          final controller = _answerControllers[_currentBlankIndex];
-          final text = controller.text;
-          final newText = text.substring(0, _cursorPosition - 1) +
-              text.substring(_cursorPosition);
-          controller.text = newText;
-          _cursorPosition--;
-          controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: _cursorPosition),
-          );
-          
-          // プロバイダーの状態を更新
-          ref
-              .read(wordProblemsProvider.notifier)
-              .updateUserInput(_currentIndex, _currentBlankIndex, newText);
-        }
-      },
-      onMoveLeft: () {
-        if (_cursorPosition > 0) {
-          _cursorPosition--;
-          if (_currentBlankIndex < _answerControllers.length) {
-            _answerControllers[_currentBlankIndex].selection =
-                TextSelection.fromPosition(
-              TextPosition(offset: _cursorPosition),
-            );
-            _answerFocusNodes[_currentBlankIndex].requestFocus();
-          }
-        }
-      },
-      onMoveRight: () {
-        if (_currentBlankIndex < _answerControllers.length) {
-          final controller = _answerControllers[_currentBlankIndex];
-          if (_cursorPosition < controller.text.length) {
-            _cursorPosition++;
-            controller.selection = TextSelection.fromPosition(
-              TextPosition(offset: _cursorPosition),
-            );
-            _answerFocusNodes[_currentBlankIndex].requestFocus();
-          }
-        }
-      },
-    );
-  }
-
-  Widget _buildActionButtons(WordProblem problem) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              ref
-                  .read(wordProblemsProvider.notifier)
-                  .markAsSkipped(_currentIndex);
-              _transitionToAnswerDisplay();
-            },
-            child: const Text('答えを見る'),
-          ),
-          if (!problem.isCompleted) ...[
-            ElevatedButton(
-              onPressed: _checkCurrentAnswers,
-              child: const Text('確認'),
-            ),
-          ],
-          if (problem.isCompleted) ...[
-            ElevatedButton(
-              onPressed: _transitionToAnswerDisplay,
-              child: const Text('次へ'),
-            ),
-          ],
-        ],
-      ),
-    );
   }
 
   Widget _buildAnswerDisplayKeyboard(WordProblem problem) {
