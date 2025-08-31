@@ -160,50 +160,60 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   }
 
   void _transitionToNextProblem() {
-    developer.log(
-        '[LearningScreen] _transitionToNextProblem called, current index: $_currentIndex');
+    developer.log('[LearningScreen] _transitionToNextProblem called, current index: $_currentIndex');
 
     final problems = ref.read(wordProblemsProvider);
-    final currentProblemIndex = _currentIndex;
+    final nextIndex = _findNextIncompleteProblem(problems);
 
-    // 未完了の問題を探す（現在の問題の次から）
-    int? nextIncompleteIndex;
-    for (int i = 1; i < problems.length; i++) {
-      final checkIndex = (currentProblemIndex + i) % problems.length;
-      if (!problems[checkIndex].isCompleted) {
-        nextIncompleteIndex = checkIndex;
-        break;
-      }
-    }
-
-    // 未完了の問題がない場合は、完了状態に遷移
-    if (nextIncompleteIndex == null) {
-      developer.log(
-          '[LearningScreen] All problems completed, transitioning to completed state');
+    if (nextIndex == null) {
+      // 全ての問題が完了した場合
+      developer.log('[LearningScreen] All problems completed, transitioning to completed state');
       setState(() {
         _currentState = LearningState.completed;
       });
       return;
     }
 
-    final newIndex = nextIncompleteIndex;
+    // 次の未完了問題に遷移
+    _moveToNextProblem(nextIndex);
+  }
 
+  /// 次の未完了問題のインデックスを検索
+  int? _findNextIncompleteProblem(List<WordProblem> problems) {
+    // 現在の問題の次から検索
+    for (int i = _currentIndex + 1; i < problems.length; i++) {
+      if (!problems[i].isCompleted) {
+        return i;
+      }
+    }
+    
+    // 見つからない場合、先頭から現在の問題まで検索（循環）
+    for (int i = 0; i < _currentIndex; i++) {
+      if (!problems[i].isCompleted) {
+        return i;
+      }
+    }
+    
+    // 全ての問題が完了している場合
+    return null;
+  }
+
+  /// 指定された問題インデックスに移動
+  void _moveToNextProblem(int newIndex) {
+    developer.log('[LearningScreen] Moving to problem $newIndex');
+    
     // 新しい問題のユーザー入力をクリア
     ref.read(wordProblemsProvider.notifier).clearUserInputs(newIndex);
-    developer.log('[LearningScreen] Cleared user inputs for new problem');
-
+    
     setState(() {
       _currentIndex = newIndex;
-      _currentState = LearningState.problemDisplay; // 問題表示状態に遷移
+      _currentState = LearningState.problemDisplay;
     });
-
-    developer.log(
-        '[LearningScreen] New index: $_currentIndex, state: $_currentState');
-
-    // 既存のコントローラーを破棄して新しい問題用に再初期化をフォース
+    
+    developer.log('[LearningScreen] Moved to problem $_currentIndex');
+    
+    // 既存のコントローラーを破棄して新しい問題用に再初期化
     _disposeControllers();
-
-    // 次のbuildで新しいコントローラーが作成される
   }
 
   void _transitionToAnswerDisplay() {
