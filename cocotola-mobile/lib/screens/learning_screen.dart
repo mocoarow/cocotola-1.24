@@ -110,30 +110,11 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         appBar: AppBar(
           title: const Text('単語学習'),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 最後の問題の解説を表示
-              if (problems.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    problems[problems.length - 1].japanese,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                ),
-                _buildHintsSection(problems[problems.length - 1]),
-                const SizedBox(height: 32),
-              ],
-              const Text(
-                'お疲れ様でした！\n全問正解です！',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 24),
-              ),
-              const SizedBox(height: 16),
-            ],
+        body: const Center(
+          child: Text(
+            'お疲れ様でした！\n全問正解です！',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 24),
           ),
         ),
       );
