@@ -18,6 +18,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   int _currentIndex = 0;
   int _currentBlankIndex = 0;
   int _cursorPosition = 0;
+  bool _showFinalCompletion = false;
 
   @override
   void initState() {
@@ -103,7 +104,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
 
     // 全問完了かチェック
     final allCompleted = problems.every((problem) => problem.isCompleted);
-    if (allCompleted) {
+    if (allCompleted && _showFinalCompletion) {
       // 最後の問題の解説を表示した後に完了メッセージを表示
       return Scaffold(
         appBar: AppBar(
@@ -426,9 +427,12 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
       }
     }
 
-    // 未完了の問題がない場合は、全問完了として何もしない
+    // 未完了の問題がない場合は、全問完了フラグをセット
     if (nextIncompleteIndex == null) {
-      developer.log('[LearningScreen] All problems completed, staying on current problem');
+      developer.log('[LearningScreen] All problems completed, showing final completion');
+      setState(() {
+        _showFinalCompletion = true;
+      });
       return;
     }
 
