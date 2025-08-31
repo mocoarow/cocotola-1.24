@@ -6,7 +6,8 @@ import '../models/word_problem.dart';
 import '../ui/widgets/blank_widget.dart';
 import '../ui/widgets/hints_widget.dart';
 import '../ui/widgets/problem_content_widget.dart';
-import '../ui/screens/problem_display_screen.dart';
+import '../ui/screens/answer_display_screen.dart';
+import '../ui/screens/problem_display_wrapper.dart';
 import 'dart:developer' as developer;
 
 enum LearningState {
@@ -124,75 +125,23 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   }
 
   Widget _buildAnswerDisplayScreen(List<WordProblem> problems) {
-    final currentProblem = problems[_currentIndex];
-    
-    final englishWords = currentProblem.english
-        .replaceAll('.', ' .')
-        .split(' ')
-        .where((word) => word.isNotEmpty)
-        .toList();
-
-    // 複数の空欄のインデックスを取得
-    final blankIndices = <int>[];
-    for (int i = 0; i < englishWords.length; i++) {
-      if (englishWords[i] == '___') {
-        blankIndices.add(i);
-      }
-    }
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('単語学習'),
-      ),
-      body: ProblemContentWidget(
-        currentProblem: currentProblem,
-        englishWords: englishWords,
-        blankIndices: blankIndices,
-        buildBlankWidget: (wordIndex, blankIndex, problem) => BlankWidget(
-          wordIndex: wordIndex,
-          blankIndex: blankIndex,
-          problem: problem,
-          controller: _answerControllers[blankIndex],
-          focusNode: _answerFocusNodes[blankIndex],
-          onChanged: (value) {
-            ref
-                .read(wordProblemsProvider.notifier)
-                .updateUserInput(_currentIndex, blankIndex, value);
-            _checkAnswerAutomatically(blankIndex, value);
-          },
-          onTap: () {
-            setState(() {
-              _currentBlankIndex = blankIndex;
-            });
-          },
-        ),
-        buildHintsSection: (problem) => HintsWidget(problem: problem),
-        buildKeyboard: _buildAnswerDisplayKeyboard, // キーボード非表示版
-        buildActionButtons: _buildAnswerDisplayActionButtons, // 次へボタンのみ
-      ),
-    );
-  }
-
-  Widget _buildProblemDisplayScreen(List<WordProblem> problems) {
-    // コントローラーが初期化されていない場合は初期化を実行
-    final currentProblem = problems[_currentIndex];
-    final requiredBlanks = currentProblem.blanks.length;
-    
-    if (_answerControllers.isEmpty || _answerControllers.length < requiredBlanks) {
-      developer.log('[LearningScreen] Controllers not ready, initializing...');
-      _initializeControllersForCurrentProblem(problems);
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return ProblemDisplayScreen(
+    return AnswerDisplayScreen(
       problems: problems,
       currentIndex: _currentIndex,
       answerControllers: _answerControllers,
       answerFocusNodes: _answerFocusNodes,
+      onNextProblem: _transitionToNextProblem,
+    );
+  }
+
+  Widget _buildProblemDisplayScreen(List<WordProblem> problems) {
+    return ProblemDisplayWrapper(
+      problems: problems,
+      currentIndex: _currentIndex,
       currentBlankIndex: _currentBlankIndex,
       cursorPosition: _cursorPosition,
+      answerControllers: _answerControllers,
+      answerFocusNodes: _answerFocusNodes,
       onAnswerChanged: (blankIndex, value) {
         ref
             .read(wordProblemsProvider.notifier)
@@ -216,6 +165,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
       onDeleteKey: _handleDeleteKey,
       onMoveLeft: _handleMoveLeft,
       onMoveRight: _handleMoveRight,
+      onInitializeControllers: _initializeControllersForCurrentProblem,
     );
   }
 
@@ -286,26 +236,6 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         _answerFocusNodes[_currentBlankIndex].requestFocus();
       }
     }
-  }
-
-  Widget _buildAnswerDisplayKeyboard(WordProblem problem) {
-    // 解説表示時はキーボードを表示しない
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildAnswerDisplayActionButtons(WordProblem problem) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ElevatedButton(
-            onPressed: _transitionToNextProblem,
-            child: const Text('次へ'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _checkCurrentAnswers() {
