@@ -47,13 +47,14 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentProblem = widget.config.problems[widget.config.currentIndex];
+    // final currentProblem = widget.config.problems[widget.config.currentIndex];
+    final currentProblem = widget.config.problem;
     final requiredBlanks = currentProblem.blanks.length;
 
     // コントローラーが初期化されていない場合は初期化を実行
     if (widget.config.answerControllers.isEmpty ||
         widget.config.answerControllers.length < requiredBlanks) {
-      widget.callbacks.onInitializeControllers(widget.config.problems);
+      widget.callbacks.onInitializeControllers();
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -77,27 +78,33 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
           controller: widget.config.answerControllers[blankIndex],
           focusNode: widget.config.answerFocusNodes[blankIndex],
           onChanged: (value) {
-            developer.log('[ProblemDisplayScreen] Physical keyboard input for blank $blankIndex with value: "$value"');
-            
+            developer.log(
+                '[ProblemDisplayScreen] Physical keyboard input for blank $blankIndex with value: "$value"');
+
             // 物理キーボード入力時の現在フォーカス状態を同期
             if (_currentBlankIndex != blankIndex) {
-              developer.log('[ProblemDisplayScreen] Syncing focus from blank $_currentBlankIndex to $blankIndex');
+              developer.log(
+                  '[ProblemDisplayScreen] Syncing focus from blank $_currentBlankIndex to $blankIndex');
               setState(() {
                 _currentBlankIndex = blankIndex;
-                _cursorPosition = widget.config.answerControllers[blankIndex].selection.end;
+                _cursorPosition =
+                    widget.config.answerControllers[blankIndex].selection.end;
               });
             } else {
               // 同じ空欄での物理キーボード入力時もカーソル位置を更新
-              final newCursorPosition = widget.config.answerControllers[blankIndex].selection.end;
-              developer.log('[ProblemDisplayScreen] Updating cursor position from $_cursorPosition to $newCursorPosition');
+              final newCursorPosition =
+                  widget.config.answerControllers[blankIndex].selection.end;
+              developer.log(
+                  '[ProblemDisplayScreen] Updating cursor position from $_cursorPosition to $newCursorPosition');
               setState(() {
                 _cursorPosition = newCursorPosition;
               });
             }
-            
+
             widget.callbacks.onAnswerChanged(blankIndex, value);
             // 物理キーボード入力時も自動チェック
-            developer.log('[ProblemDisplayScreen] Calling auto-check for physical keyboard input');
+            developer.log(
+                '[ProblemDisplayScreen] Calling auto-check for physical keyboard input');
             _checkAnswerAutomatically(blankIndex, value);
           },
           onTap: () => _handleBlankTap(blankIndex),
@@ -145,9 +152,12 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
 
   void _handleBlankTap(int blankIndex) {
     final controller = widget.config.answerControllers[blankIndex];
-    final cursorPos = controller.selection.isValid ? controller.selection.end : controller.text.length;
-    developer.log('[ProblemDisplayScreen] _handleBlankTap: blank $blankIndex, cursor position: $cursorPos');
-    
+    final cursorPos = controller.selection.isValid
+        ? controller.selection.end
+        : controller.text.length;
+    developer.log(
+        '[ProblemDisplayScreen] _handleBlankTap: blank $blankIndex, cursor position: $cursorPos');
+
     setState(() {
       _currentBlankIndex = blankIndex;
       _cursorPosition = cursorPos;
@@ -155,17 +165,20 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
   }
 
   void _handleKeyPressed(String key) {
-    developer.log('[ProblemDisplayScreen] _handleKeyPressed: "$key" at position $_cursorPosition in blank $_currentBlankIndex');
+    developer.log(
+        '[ProblemDisplayScreen] _handleKeyPressed: "$key" at position $_cursorPosition in blank $_currentBlankIndex');
     if (_currentBlankIndex < widget.config.answerControllers.length) {
       final controller = widget.config.answerControllers[_currentBlankIndex];
       final text = controller.text;
-      developer.log('[ProblemDisplayScreen] Current text: "$text", inserting at position $_cursorPosition');
+      developer.log(
+          '[ProblemDisplayScreen] Current text: "$text", inserting at position $_cursorPosition');
       final newText = text.substring(0, _cursorPosition) +
           key +
           text.substring(_cursorPosition);
       controller.text = newText;
       _cursorPosition++;
-      developer.log('[ProblemDisplayScreen] New text: "$newText", new cursor position: $_cursorPosition');
+      developer.log(
+          '[ProblemDisplayScreen] New text: "$newText", new cursor position: $_cursorPosition');
       controller.selection = TextSelection.fromPosition(
         TextPosition(offset: _cursorPosition),
       );
@@ -229,42 +242,48 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
   }
 
   void _checkAnswerAutomatically(int blankIndex, String value) {
-    developer.log('[ProblemDisplayScreen] _checkAnswerAutomatically called for blank $blankIndex with value "$value"');
-    
-    final currentProblem = widget.config.problems[widget.config.currentIndex];
+    developer.log(
+        '[ProblemDisplayScreen] _checkAnswerAutomatically called for blank $blankIndex with value "$value"');
+
+    // final currentProblem = widget.config.problems[widget.config.currentIndex];
+    final currentProblem = widget.config.problem;
     final blank = currentProblem.blanks[blankIndex];
-    
-    developer.log('[ProblemDisplayScreen] Expected answer: "${blank.answer}", isAnswered: ${blank.isAnswered}');
-    
+
+    developer.log(
+        '[ProblemDisplayScreen] Expected answer: "${blank.answer}", isAnswered: ${blank.isAnswered}');
+
     // 既に回答済みの場合は何もしない
     if (blank.isAnswered) {
-      developer.log('[ProblemDisplayScreen] Blank already answered, skipping auto-check');
+      developer.log(
+          '[ProblemDisplayScreen] Blank already answered, skipping auto-check');
       return;
     }
-    
+
     final trimmedValue = value.trim();
     developer.log('[ProblemDisplayScreen] trimmedValue: "$trimmedValue"');
     if (trimmedValue.isNotEmpty) {
-      final isCorrect = trimmedValue.toLowerCase() == blank.answer.toLowerCase();
-      developer.log('[ProblemDisplayScreen] Comparing "$trimmedValue" with "${blank.answer}", isCorrect: $isCorrect');
-      
+      final isCorrect =
+          trimmedValue.toLowerCase() == blank.answer.toLowerCase();
+      developer.log(
+          '[ProblemDisplayScreen] Comparing "$trimmedValue" with "${blank.answer}", isCorrect: $isCorrect');
+
       if (isCorrect) {
-        developer.log('[ProblemDisplayScreen] Auto-check: Correct answer detected for blank $blankIndex');
-        
+        developer.log(
+            '[ProblemDisplayScreen] Auto-check: Correct answer detected for blank $blankIndex');
+
         // プロバイダーで正解をマーク
-        ref.read(wordProblemsProvider.notifier).checkAnswer(
-          widget.config.currentIndex, 
-          blankIndex, 
-          trimmedValue
-        );
-        
+        ref
+            .read(wordProblemsProvider.notifier)
+            .checkAnswer(widget.config.currentIndex, blankIndex, trimmedValue);
+
         // 正解時に次の未回答空欄にフォーカスを移動
         _moveToNextIncorrectBlank(blankIndex);
-        
+
         // 全ての空欄が正解かチェック
         _checkIfAllBlanksCompleted();
       } else {
-        developer.log('[ProblemDisplayScreen] Answer not correct, continuing...');
+        developer
+            .log('[ProblemDisplayScreen] Answer not correct, continuing...');
       }
     } else {
       developer.log('[ProblemDisplayScreen] Empty value, skipping auto-check');
@@ -273,36 +292,43 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
 
   void _moveToNextIncorrectBlank(int currentBlankIndex) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final updatedProblem = ref.read(wordProblemsProvider)[widget.config.currentIndex];
-      
+      final updatedProblem =
+          ref.read(wordProblemsProvider)[widget.config.currentIndex];
+
       // 次の未回答空欄を探す（現在の空欄の次から）
       int? nextIncorrectBlankIndex;
-      
+
       // 現在の空欄より後ろを探す
-      for (int i = currentBlankIndex + 1; i < updatedProblem.blanks.length; i++) {
-        if (!updatedProblem.blanks[i].isAnswered || !updatedProblem.blanks[i].isCorrect) {
+      for (int i = currentBlankIndex + 1;
+          i < updatedProblem.blanks.length;
+          i++) {
+        if (!updatedProblem.blanks[i].isAnswered ||
+            !updatedProblem.blanks[i].isCorrect) {
           nextIncorrectBlankIndex = i;
           break;
         }
       }
-      
+
       // 後ろで見つからない場合、先頭から現在の空欄まで探す
       if (nextIncorrectBlankIndex == null) {
         for (int i = 0; i < currentBlankIndex; i++) {
-          if (!updatedProblem.blanks[i].isAnswered || !updatedProblem.blanks[i].isCorrect) {
+          if (!updatedProblem.blanks[i].isAnswered ||
+              !updatedProblem.blanks[i].isCorrect) {
             nextIncorrectBlankIndex = i;
             break;
           }
         }
       }
-      
+
       // 未回答空欄が見つかった場合、フォーカスを移動
-      if (nextIncorrectBlankIndex != null && 
+      if (nextIncorrectBlankIndex != null &&
           nextIncorrectBlankIndex < widget.config.answerFocusNodes.length) {
-        developer.log('[ProblemDisplayScreen] Moving focus to blank $nextIncorrectBlankIndex');
+        developer.log(
+            '[ProblemDisplayScreen] Moving focus to blank $nextIncorrectBlankIndex');
         setState(() {
           _currentBlankIndex = nextIncorrectBlankIndex!;
-          _cursorPosition = widget.config.answerControllers[nextIncorrectBlankIndex].text.length;
+          _cursorPosition = widget
+              .config.answerControllers[nextIncorrectBlankIndex].text.length;
         });
         widget.config.answerFocusNodes[nextIncorrectBlankIndex].requestFocus();
       }
@@ -311,10 +337,12 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
 
   void _checkIfAllBlanksCompleted() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final updatedProblem = ref.read(wordProblemsProvider)[widget.config.currentIndex];
-      
+      final updatedProblem =
+          ref.read(wordProblemsProvider)[widget.config.currentIndex];
+
       if (updatedProblem.isCompleted) {
-        developer.log('[ProblemDisplayScreen] All blanks completed, notifying parent');
+        developer.log(
+            '[ProblemDisplayScreen] All blanks completed, notifying parent');
         // 親コンポーネントに完了を通知
         widget.callbacks.onAllBlanksCompleted();
       }

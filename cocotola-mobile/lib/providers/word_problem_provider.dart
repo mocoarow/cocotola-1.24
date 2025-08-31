@@ -98,7 +98,9 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
     final problem = state[problemIndex];
     final blank = problem.blanks[blankIndex];
 
-    if (blank.isAnswered && blank.isCorrect) return; // 正解済みの場合は更新しない
+    if (blank.isAnswered && blank.isCorrect) {
+      return; // 正解済みの場合は更新しない
+    }
 
     final updatedBlank = blank.copyWith(userInput: input);
     final updatedProblem = problem.updateBlank(blankIndex, updatedBlank);
@@ -110,30 +112,36 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
   }
 
   void clearUserInputs(int problemIndex) {
-    developer.log('[WordProblemsProvider] clearUserInputs called for problem $problemIndex');
+    developer.log(
+        '[WordProblemsProvider] clearUserInputs called for problem $problemIndex');
     final problem = state[problemIndex];
-    developer.log('[WordProblemsProvider] Before clear - blanks count: ${problem.blanks.length}');
-    
+    developer.log(
+        '[WordProblemsProvider] Before clear - blanks count: ${problem.blanks.length}');
+
     for (int i = 0; i < problem.blanks.length; i++) {
-      developer.log('[WordProblemsProvider] Blank[$i] before: userInput="${problem.blanks[i].userInput}", isAnswered=${problem.blanks[i].isAnswered}');
+      developer.log(
+          '[WordProblemsProvider] Blank[$i] before: userInput="${problem.blanks[i].userInput}", isAnswered=${problem.blanks[i].isAnswered}');
     }
-    
-    final clearedBlanks = problem.blanks.map((blank) => blank.copyWith(
-      userInput: '',
-      isAnswered: false,
-      isCorrect: false,
-    )).toList();
-    
+
+    final clearedBlanks = problem.blanks
+        .map((blank) => blank.copyWith(
+              userInput: '',
+              isAnswered: false,
+              isCorrect: false,
+            ))
+        .toList();
+
     final updatedProblem = problem.copyWith(blanks: clearedBlanks);
-    
+
     state = [
       for (int i = 0; i < state.length; i++)
         if (i == problemIndex) updatedProblem else state[i]
     ];
-    
+
     developer.log('[WordProblemsProvider] After clear - state updated');
     for (int i = 0; i < state[problemIndex].blanks.length; i++) {
-      developer.log('[WordProblemsProvider] Blank[$i] after: userInput="${state[problemIndex].blanks[i].userInput}", isAnswered=${state[problemIndex].blanks[i].isAnswered}');
+      developer.log(
+          '[WordProblemsProvider] Blank[$i] after: userInput="${state[problemIndex].blanks[i].userInput}", isAnswered=${state[problemIndex].blanks[i].isAnswered}');
     }
   }
 }

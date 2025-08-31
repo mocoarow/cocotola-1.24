@@ -34,8 +34,9 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   }
 
   void _initializeControllersForCurrentProblem(List<WordProblem> problems) {
-    developer.log('[LearningScreen] _initializeControllersForCurrentProblem called for currentIndex: $_currentIndex');
-    
+    developer.log(
+        '[LearningScreen] _initializeControllersForCurrentProblem called for currentIndex: $_currentIndex');
+
     if (problems.isNotEmpty && _currentIndex < problems.length) {
       final currentProblem = problems[_currentIndex];
       final maxBlanks = currentProblem.blanks.length;
@@ -47,7 +48,8 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
       _answerControllers = List.generate(maxBlanks, (index) {
         final blank = currentProblem.blanks[index];
         // 正解済みの場合は答えを表示、そうでなければ空文字
-        final initialText = (blank.isAnswered && blank.isCorrect) ? blank.answer : '';
+        final initialText =
+            (blank.isAnswered && blank.isCorrect) ? blank.answer : '';
         return TextEditingController(text: initialText);
       });
       _answerFocusNodes = List.generate(maxBlanks, (index) => FocusNode());
@@ -119,6 +121,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     return ProblemDisplayScreen(
       config: ProblemDisplayConfig(
         problems: problems,
+        problem: problems[_currentIndex],
         currentIndex: _currentIndex,
         answerControllers: _answerControllers,
         answerFocusNodes: _answerFocusNodes,
@@ -130,7 +133,8 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
               .updateUserInput(_currentIndex, blankIndex, value);
         },
         onAllBlanksCompleted: () {
-          developer.log('[LearningScreen] All blanks completed, transitioning to answer display');
+          developer.log(
+              '[LearningScreen] All blanks completed, transitioning to answer display');
           setState(() {
             _currentState = LearningState.answerDisplay;
           });
@@ -140,20 +144,23 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
           _transitionToAnswerDisplay();
         },
         onNextProblem: _transitionToAnswerDisplay,
-        onInitializeControllers: _initializeControllersForCurrentProblem,
+        onInitializeControllers: () =>
+            _initializeControllersForCurrentProblem(problems),
       ),
     );
   }
 
   void _transitionToNextProblem() {
-    developer.log('[LearningScreen] _transitionToNextProblem called, current index: $_currentIndex');
+    developer.log(
+        '[LearningScreen] _transitionToNextProblem called, current index: $_currentIndex');
 
     final problems = ref.read(wordProblemsProvider);
     final nextIndex = _findNextIncompleteProblem(problems);
 
     if (nextIndex == null) {
       // 全ての問題が完了した場合
-      developer.log('[LearningScreen] All problems completed, transitioning to completed state');
+      developer.log(
+          '[LearningScreen] All problems completed, transitioning to completed state');
       setState(() {
         _currentState = LearningState.completed;
       });
@@ -172,14 +179,14 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         return i;
       }
     }
-    
+
     // 見つからない場合、先頭から現在の問題まで検索（循環）
     for (int i = 0; i < _currentIndex; i++) {
       if (!problems[i].isCompleted) {
         return i;
       }
     }
-    
+
     // 全ての問題が完了している場合
     return null;
   }
@@ -187,17 +194,17 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   /// 指定された問題インデックスに移動
   void _moveToNextProblem(int newIndex) {
     developer.log('[LearningScreen] Moving to problem $newIndex');
-    
+
     // 新しい問題のユーザー入力をクリア
     ref.read(wordProblemsProvider.notifier).clearUserInputs(newIndex);
-    
+
     setState(() {
       _currentIndex = newIndex;
       _currentState = LearningState.problemDisplay;
     });
-    
+
     developer.log('[LearningScreen] Moved to problem $_currentIndex');
-    
+
     // 既存のコントローラーを破棄して新しい問題用に再初期化
     _disposeControllers();
   }
