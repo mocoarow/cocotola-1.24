@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/word_problem.dart';
+import 'dart:developer' as developer;
 
 final wordProblemsProvider =
     StateNotifierProvider<WordProblemsNotifier, List<WordProblem>>((ref) {
@@ -109,12 +110,12 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
   }
 
   void clearUserInputs(int problemIndex) {
-    print('[WordProblemsProvider] clearUserInputs called for problem $problemIndex');
+    developer.log('[WordProblemsProvider] clearUserInputs called for problem $problemIndex');
     final problem = state[problemIndex];
-    print('[WordProblemsProvider] Before clear - blanks count: ${problem.blanks.length}');
+    developer.log('[WordProblemsProvider] Before clear - blanks count: ${problem.blanks.length}');
     
     for (int i = 0; i < problem.blanks.length; i++) {
-      print('[WordProblemsProvider] Blank[$i] before: userInput="${problem.blanks[i].userInput}", isAnswered=${problem.blanks[i].isAnswered}');
+      developer.log('[WordProblemsProvider] Blank[$i] before: userInput="${problem.blanks[i].userInput}", isAnswered=${problem.blanks[i].isAnswered}');
     }
     
     final clearedBlanks = problem.blanks.map((blank) => blank.copyWith(
@@ -130,9 +131,9 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
         if (i == problemIndex) updatedProblem else state[i]
     ];
     
-    print('[WordProblemsProvider] After clear - state updated');
+    developer.log('[WordProblemsProvider] After clear - state updated');
     for (int i = 0; i < state[problemIndex].blanks.length; i++) {
-      print('[WordProblemsProvider] Blank[$i] after: userInput="${state[problemIndex].blanks[i].userInput}", isAnswered=${state[problemIndex].blanks[i].isAnswered}');
+      developer.log('[WordProblemsProvider] Blank[$i] after: userInput="${state[problemIndex].blanks[i].userInput}", isAnswered=${state[problemIndex].blanks[i].isAnswered}');
     }
   }
 }

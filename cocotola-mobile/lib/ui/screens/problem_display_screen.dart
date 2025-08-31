@@ -7,7 +7,7 @@ import '../widgets/problem_content_widget.dart';
 import '../../widgets/custom_keyboard.dart';
 import 'dart:developer' as developer;
 
-class ProblemDisplayScreen extends ConsumerWidget {
+class ProblemDisplayScreen extends ConsumerStatefulWidget {
   final List<WordProblem> problems;
   final int currentIndex;
   final List<TextEditingController> answerControllers;
@@ -23,6 +23,7 @@ class ProblemDisplayScreen extends ConsumerWidget {
   final VoidCallback onDeleteKey;
   final VoidCallback onMoveLeft;
   final VoidCallback onMoveRight;
+  final void Function(List<WordProblem>) onInitializeControllers;
 
   const ProblemDisplayScreen({
     super.key,
@@ -41,19 +42,26 @@ class ProblemDisplayScreen extends ConsumerWidget {
     required this.onDeleteKey,
     required this.onMoveLeft,
     required this.onMoveRight,
+    required this.onInitializeControllers,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentProblem = problems[currentIndex];
+  ConsumerState<ProblemDisplayScreen> createState() => _ProblemDisplayScreenState();
+}
+
+class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final currentProblem = widget.problems[widget.currentIndex];
     final requiredBlanks = currentProblem.blanks.length;
     
     developer.log(
-        '[ProblemDisplayScreen] Current problem needs $requiredBlanks blanks, we have ${answerControllers.length}');
+        '[ProblemDisplayScreen] Current problem needs $requiredBlanks blanks, we have ${widget.answerControllers.length}');
 
-    // コントローラーが初期化されていない場合はローディング表示
-    if (answerControllers.isEmpty || answerControllers.length < requiredBlanks) {
-      developer.log('[ProblemDisplayScreen] Controllers not ready, showing loading...');
+    // コントローラーが初期化されていない場合は初期化を実行
+    if (widget.answerControllers.isEmpty || widget.answerControllers.length < requiredBlanks) {
+      developer.log('[ProblemDisplayScreen] Controllers not ready, initializing...');
+      widget.onInitializeControllers(widget.problems);
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -85,10 +93,10 @@ class ProblemDisplayScreen extends ConsumerWidget {
           wordIndex: wordIndex,
           blankIndex: blankIndex,
           problem: problem,
-          controller: answerControllers[blankIndex],
-          focusNode: answerFocusNodes[blankIndex],
-          onChanged: (value) => onAnswerChanged(blankIndex, value),
-          onTap: () => onBlankTap(blankIndex),
+          controller: widget.answerControllers[blankIndex],
+          focusNode: widget.answerFocusNodes[blankIndex],
+          onChanged: (value) => widget.onAnswerChanged(blankIndex, value),
+          onTap: () => widget.onBlankTap(blankIndex),
         ),
         buildHintsSection: (problem) => HintsWidget(problem: problem),
         buildKeyboard: _buildKeyboard,
@@ -103,10 +111,10 @@ class ProblemDisplayScreen extends ConsumerWidget {
     }
 
     return CustomKeyboard(
-      onKeyPressed: onKeyPressed,
-      onDelete: onDeleteKey,
-      onMoveLeft: onMoveLeft,
-      onMoveRight: onMoveRight,
+      onKeyPressed: widget.onKeyPressed,
+      onDelete: widget.onDeleteKey,
+      onMoveLeft: widget.onMoveLeft,
+      onMoveRight: widget.onMoveRight,
     );
   }
 
@@ -117,18 +125,18 @@ class ProblemDisplayScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           ElevatedButton(
-            onPressed: onShowAnswer,
+            onPressed: widget.onShowAnswer,
             child: const Text('答えを見る'),
           ),
           if (!problem.isCompleted) ...[
             ElevatedButton(
-              onPressed: onCheckAnswers,
+              onPressed: widget.onCheckAnswers,
               child: const Text('確認'),
             ),
           ],
           if (problem.isCompleted) ...[
             ElevatedButton(
-              onPressed: onNextProblem,
+              onPressed: widget.onNextProblem,
               child: const Text('次へ'),
             ),
           ],

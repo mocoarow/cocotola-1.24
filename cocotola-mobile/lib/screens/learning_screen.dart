@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/word_problem_provider.dart';
-import '../widgets/custom_keyboard.dart';
 import '../models/word_problem.dart';
-import '../ui/widgets/blank_widget.dart';
-import '../ui/widgets/hints_widget.dart';
-import '../ui/widgets/problem_content_widget.dart';
 import '../ui/screens/answer_display_screen.dart';
-import '../ui/screens/problem_display_wrapper.dart';
+import '../ui/screens/problem_display_screen.dart';
 import 'dart:developer' as developer;
 
 enum LearningState {
@@ -135,7 +131,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   }
 
   Widget _buildProblemDisplayScreen(List<WordProblem> problems) {
-    return ProblemDisplayWrapper(
+    return ProblemDisplayScreen(
       problems: problems,
       currentIndex: _currentIndex,
       currentBlankIndex: _currentBlankIndex,
