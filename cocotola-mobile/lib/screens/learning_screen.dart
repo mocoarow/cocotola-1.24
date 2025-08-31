@@ -104,15 +104,35 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     // 全問完了かチェック
     final allCompleted = problems.every((problem) => problem.isCompleted);
     if (allCompleted) {
+      // 最後の問題の解説を表示した後に完了メッセージを表示
       return Scaffold(
         appBar: AppBar(
           title: const Text('単語学習'),
         ),
-        body: const Center(
-          child: Text(
-            'お疲れ様でした！\n全問正解です！',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 24),
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 最後の問題の解説を表示
+              if (problems.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    problems[problems.length - 1].japanese,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                _buildHintsSection(problems[problems.length - 1]),
+                const SizedBox(height: 32),
+              ],
+              const Text(
+                'お疲れ様でした！\n全問正解です！',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 24),
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
       );
@@ -393,8 +413,26 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     developer.log(
         '[LearningScreen] _moveToNextProblem called, current index: $_currentIndex');
 
-    final newIndex =
-        (_currentIndex + 1) % ref.read(wordProblemsProvider).length;
+    final problems = ref.read(wordProblemsProvider);
+    final currentProblemIndex = _currentIndex;
+
+    // 未完了の問題を探す（現在の問題の次から）
+    int? nextIncompleteIndex;
+    for (int i = 1; i < problems.length; i++) {
+      final checkIndex = (currentProblemIndex + i) % problems.length;
+      if (!problems[checkIndex].isCompleted) {
+        nextIncompleteIndex = checkIndex;
+        break;
+      }
+    }
+
+    // 未完了の問題がない場合は、全問完了として何もしない
+    if (nextIncompleteIndex == null) {
+      developer.log('[LearningScreen] All problems completed, staying on current problem');
+      return;
+    }
+
+    final newIndex = nextIncompleteIndex;
 
     // 新しい問題のユーザー入力をクリア
     ref.read(wordProblemsProvider.notifier).clearUserInputs(newIndex);
