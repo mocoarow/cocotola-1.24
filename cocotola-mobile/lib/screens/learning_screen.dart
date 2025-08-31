@@ -144,8 +144,25 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         currentProblem: currentProblem,
         englishWords: englishWords,
         blankIndices: blankIndices,
-        buildBlankWidget: _buildBlankWidget,
-        buildHintsSection: _buildHintsSection,
+        buildBlankWidget: (wordIndex, blankIndex, problem) => BlankWidget(
+          wordIndex: wordIndex,
+          blankIndex: blankIndex,
+          problem: problem,
+          controller: _answerControllers[blankIndex],
+          focusNode: _answerFocusNodes[blankIndex],
+          onChanged: (value) {
+            ref
+                .read(wordProblemsProvider.notifier)
+                .updateUserInput(_currentIndex, blankIndex, value);
+            _checkAnswerAutomatically(blankIndex, value);
+          },
+          onTap: () {
+            setState(() {
+              _currentBlankIndex = blankIndex;
+            });
+          },
+        ),
+        buildHintsSection: (problem) => HintsWidget(problem: problem),
         buildKeyboard: _buildAnswerDisplayKeyboard, // キーボード非表示版
         buildActionButtons: _buildAnswerDisplayActionButtons, // 次へボタンのみ
       ),
@@ -190,120 +207,27 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         currentProblem: currentProblem,
         englishWords: englishWords,
         blankIndices: blankIndices,
-        buildBlankWidget: _buildBlankWidget,
-        buildHintsSection: _buildHintsSection,
+        buildBlankWidget: (wordIndex, blankIndex, problem) => BlankWidget(
+          wordIndex: wordIndex,
+          blankIndex: blankIndex,
+          problem: problem,
+          controller: _answerControllers[blankIndex],
+          focusNode: _answerFocusNodes[blankIndex],
+          onChanged: (value) {
+            ref
+                .read(wordProblemsProvider.notifier)
+                .updateUserInput(_currentIndex, blankIndex, value);
+            _checkAnswerAutomatically(blankIndex, value);
+          },
+          onTap: () {
+            setState(() {
+              _currentBlankIndex = blankIndex;
+            });
+          },
+        ),
+        buildHintsSection: (problem) => HintsWidget(problem: problem),
         buildKeyboard: _buildKeyboard,
         buildActionButtons: _buildActionButtons,
-      ),
-    );
-  }
-
-  Widget _buildBlankWidget(int wordIndex, int blankIndex, WordProblem problem) {
-    final blank = problem.blanks[blankIndex];
-    final inputWidth = (blank.answer.length * 20.0).clamp(100.0, 200.0);
-
-    developer.log(
-        '[LearningScreen] _buildBlankWidget[$blankIndex] - userInput: "${blank.userInput}", isAnswered: ${blank.isAnswered}');
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-      width: inputWidth,
-      child: blank.isAnswered && blank.isCorrect
-          ? Container(
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.green, width: 2),
-                borderRadius: BorderRadius.circular(4),
-                color: Colors.green.shade50,
-              ),
-              child: Text(
-                blank.answer,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-            )
-          : TextField(
-              controller: (() {
-                final controller = _answerControllers[blankIndex];
-                // プロバイダーの状態とコントローラーが同期していない場合は更新
-                if (controller.text != blank.userInput) {
-                  developer.log(
-                      '[LearningScreen] Syncing controller[$blankIndex] text from "${controller.text}" to "${blank.userInput}"');
-                  controller.text = blank.userInput;
-                }
-                return controller;
-              })(),
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                fillColor: blank.isAnswered && !blank.isCorrect
-                    ? Colors.red.shade50
-                    : null,
-                filled: blank.isAnswered && !blank.isCorrect,
-              ),
-              focusNode: _answerFocusNodes[blankIndex],
-              enabled: !(blank.isAnswered && blank.isCorrect),
-              onChanged: (value) {
-                ref
-                    .read(wordProblemsProvider.notifier)
-                    .updateUserInput(_currentIndex, blankIndex, value);
-                
-                // 自動チェック機能：入力文字が正解と一致した場合は自動で正解にする
-                _checkAnswerAutomatically(blankIndex, value);
-              },
-              onTap: () {
-                setState(() {
-                  _currentBlankIndex = blankIndex;
-                });
-              },
-            ),
-    );
-  }
-
-  Widget _buildHintsSection(WordProblem problem) {
-    final correctBlanks = problem.blanks
-        .where((blank) => blank.isAnswered && blank.isCorrect)
-        .toList();
-
-    if (correctBlanks.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: correctBlanks
-            .map((blank) => Container(
-                  margin: const EdgeInsets.only(bottom: 8.0),
-                  padding: const EdgeInsets.all(12.0),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green.shade200),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        '正解: ${blank.answer}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'ヒント: ${blank.hint}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ))
-            .toList(),
       ),
     );
   }
@@ -618,6 +542,135 @@ class ProblemContentWidget extends StatelessWidget {
         buildKeyboard(currentProblem),
         buildActionButtons(currentProblem),
       ],
+    );
+  }
+}
+
+class HintsWidget extends StatelessWidget {
+  final WordProblem problem;
+
+  const HintsWidget({
+    super.key,
+    required this.problem,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final correctBlanks = problem.blanks
+        .where((blank) => blank.isAnswered && blank.isCorrect)
+        .toList();
+
+    if (correctBlanks.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: correctBlanks
+            .map((blank) => Container(
+                  margin: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.all(12.0),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        '正解: ${blank.answer}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'ヒント: ${blank.hint}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ))
+            .toList(),
+      ),
+    );
+  }
+}
+
+class BlankWidget extends StatelessWidget {
+  final int wordIndex;
+  final int blankIndex;
+  final WordProblem problem;
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final void Function(String) onChanged;
+  final VoidCallback onTap;
+
+  const BlankWidget({
+    super.key,
+    required this.wordIndex,
+    required this.blankIndex,
+    required this.problem,
+    required this.controller,
+    required this.focusNode,
+    required this.onChanged,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final blank = problem.blanks[blankIndex];
+    final inputWidth = (blank.answer.length * 20.0).clamp(100.0, 200.0);
+
+    developer.log(
+        '[BlankWidget] _buildBlankWidget[$blankIndex] - userInput: "${blank.userInput}", isAnswered: ${blank.isAnswered}');
+
+    // プロバイダーの状態とコントローラーが同期していない場合は更新
+    if (controller.text != blank.userInput) {
+      developer.log(
+          '[BlankWidget] Syncing controller[$blankIndex] text from "${controller.text}" to "${blank.userInput}"');
+      controller.text = blank.userInput;
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+      width: inputWidth,
+      child: blank.isAnswered && blank.isCorrect
+          ? Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.green, width: 2),
+                borderRadius: BorderRadius.circular(4),
+                color: Colors.green.shade50,
+              ),
+              child: Text(
+                blank.answer,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+            )
+          : TextField(
+              controller: controller,
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                fillColor: blank.isAnswered && !blank.isCorrect
+                    ? Colors.red.shade50
+                    : null,
+                filled: blank.isAnswered && !blank.isCorrect,
+              ),
+              focusNode: focusNode,
+              enabled: !(blank.isAnswered && blank.isCorrect),
+              onChanged: onChanged,
+              onTap: onTap,
+            ),
     );
   }
 }
