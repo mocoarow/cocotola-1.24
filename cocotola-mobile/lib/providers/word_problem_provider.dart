@@ -109,7 +109,13 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
   }
 
   void clearUserInputs(int problemIndex) {
+    print('[WordProblemsProvider] clearUserInputs called for problem $problemIndex');
     final problem = state[problemIndex];
+    print('[WordProblemsProvider] Before clear - blanks count: ${problem.blanks.length}');
+    
+    for (int i = 0; i < problem.blanks.length; i++) {
+      print('[WordProblemsProvider] Blank[$i] before: userInput="${problem.blanks[i].userInput}", isAnswered=${problem.blanks[i].isAnswered}');
+    }
     
     final clearedBlanks = problem.blanks.map((blank) => blank.copyWith(
       userInput: '',
@@ -123,5 +129,10 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
       for (int i = 0; i < state.length; i++)
         if (i == problemIndex) updatedProblem else state[i]
     ];
+    
+    print('[WordProblemsProvider] After clear - state updated');
+    for (int i = 0; i < state[problemIndex].blanks.length; i++) {
+      print('[WordProblemsProvider] Blank[$i] after: userInput="${state[problemIndex].blanks[i].userInput}", isAnswered=${state[problemIndex].blanks[i].isAnswered}');
+    }
   }
 }
