@@ -99,9 +99,16 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
               developer.log('[ProblemDisplayScreen] Syncing focus from blank $_currentBlankIndex to $blankIndex');
               setState(() {
                 _currentBlankIndex = blankIndex;
-                _cursorPosition = widget.config.answerControllers[blankIndex].selection.start;
+                _cursorPosition = widget.config.answerControllers[blankIndex].selection.end;
               });
               widget.callbacks.onBlankIndexChanged(blankIndex);
+            } else {
+              // 同じ空欄での物理キーボード入力時もカーソル位置を更新
+              final newCursorPosition = widget.config.answerControllers[blankIndex].selection.end;
+              developer.log('[ProblemDisplayScreen] Updating cursor position from $_cursorPosition to $newCursorPosition');
+              setState(() {
+                _cursorPosition = newCursorPosition;
+              });
             }
             
             widget.callbacks.onAnswerChanged(blankIndex, value);
@@ -159,24 +166,30 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
   }
 
   void _handleBlankTap(int blankIndex) {
+    final controller = widget.config.answerControllers[blankIndex];
+    final cursorPos = controller.selection.isValid ? controller.selection.end : controller.text.length;
+    developer.log('[ProblemDisplayScreen] _handleBlankTap: blank $blankIndex, cursor position: $cursorPos');
+    
     setState(() {
       _currentBlankIndex = blankIndex;
-      _cursorPosition = widget.config.answerControllers[blankIndex].text.length;
+      _cursorPosition = cursorPos;
     });
     widget.callbacks.onBlankTap(blankIndex);
     widget.callbacks.onBlankIndexChanged(blankIndex);
   }
 
   void _handleKeyPressed(String key) {
-    developer.log('_handleKeyPresssed');
+    developer.log('[ProblemDisplayScreen] _handleKeyPressed: "$key" at position $_cursorPosition in blank $_currentBlankIndex');
     if (_currentBlankIndex < widget.config.answerControllers.length) {
       final controller = widget.config.answerControllers[_currentBlankIndex];
       final text = controller.text;
+      developer.log('[ProblemDisplayScreen] Current text: "$text", inserting at position $_cursorPosition');
       final newText = text.substring(0, _cursorPosition) +
           key +
           text.substring(_cursorPosition);
       controller.text = newText;
       _cursorPosition++;
+      developer.log('[ProblemDisplayScreen] New text: "$newText", new cursor position: $_cursorPosition');
       controller.selection = TextSelection.fromPosition(
         TextPosition(offset: _cursorPosition),
       );
