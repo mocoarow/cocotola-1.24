@@ -8,9 +8,9 @@ import '../ui/screens/problem_display_screen.dart';
 import 'dart:developer' as developer;
 
 enum LearningState {
-  problemDisplay,  // 問題表示状態
-  answerDisplay,   // 答え表示状態（解説表示）
-  completed        // 完了状態
+  problemDisplay, // 問題表示状態
+  answerDisplay, // 答え表示状態（解説表示）
+  completed // 完了状態
 }
 
 class LearningScreen extends ConsumerStatefulWidget {
@@ -97,10 +97,10 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     switch (_currentState) {
       case LearningState.completed:
         return _buildCompletedScreen();
-      
+
       case LearningState.answerDisplay:
         return _buildAnswerDisplayScreen(problems);
-      
+
       case LearningState.problemDisplay:
         return _buildProblemDisplayScreen(problems);
     }
@@ -136,8 +136,8 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
       config: ProblemDisplayConfig(
         problems: problems,
         currentIndex: _currentIndex,
-        currentBlankIndex: _currentBlankIndex,
-        cursorPosition: _cursorPosition,
+        initialBlankIndex: _currentBlankIndex,
+        initialCursorPosition: _cursorPosition,
         answerControllers: _answerControllers,
         answerFocusNodes: _answerFocusNodes,
       ),
@@ -146,97 +146,27 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
           ref
               .read(wordProblemsProvider.notifier)
               .updateUserInput(_currentIndex, blankIndex, value);
+        },
+        onAnswerChangedForAutoCheck: (blankIndex, value) {
           _checkAnswerAutomatically(blankIndex, value);
         },
         onBlankTap: (blankIndex) {
+          // ProblemDisplayScreenで処理されるため、ここでは何もしない
+        },
+        onBlankIndexChanged: (blankIndex) {
           setState(() {
             _currentBlankIndex = blankIndex;
           });
         },
         onCheckAnswers: _checkCurrentAnswers,
         onShowAnswer: () {
-          ref
-              .read(wordProblemsProvider.notifier)
-              .markAsSkipped(_currentIndex);
+          ref.read(wordProblemsProvider.notifier).markAsSkipped(_currentIndex);
           _transitionToAnswerDisplay();
         },
         onNextProblem: _transitionToAnswerDisplay,
-        onKeyPressed: _handleKeyPressed,
-        onDeleteKey: _handleDeleteKey,
-        onMoveLeft: _handleMoveLeft,
-        onMoveRight: _handleMoveRight,
         onInitializeControllers: _initializeControllersForCurrentProblem,
       ),
     );
-  }
-
-  void _handleKeyPressed(String key) {
-    if (_currentBlankIndex < _answerControllers.length) {
-      final controller = _answerControllers[_currentBlankIndex];
-      final text = controller.text;
-      final newText = text.substring(0, _cursorPosition) +
-          key +
-          text.substring(_cursorPosition);
-      controller.text = newText;
-      _cursorPosition++;
-      controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: _cursorPosition),
-      );
-      
-      // プロバイダーの状態を更新
-      ref
-          .read(wordProblemsProvider.notifier)
-          .updateUserInput(_currentIndex, _currentBlankIndex, newText);
-      
-      // 自動チェック機能
-      _checkAnswerAutomatically(_currentBlankIndex, newText);
-    }
-  }
-
-  void _handleDeleteKey() {
-    if (_currentBlankIndex < _answerControllers.length &&
-        _cursorPosition > 0) {
-      final controller = _answerControllers[_currentBlankIndex];
-      final text = controller.text;
-      final newText = text.substring(0, _cursorPosition - 1) +
-          text.substring(_cursorPosition);
-      controller.text = newText;
-      _cursorPosition--;
-      controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: _cursorPosition),
-      );
-      
-      // プロバイダーの状態を更新
-      ref
-          .read(wordProblemsProvider.notifier)
-          .updateUserInput(_currentIndex, _currentBlankIndex, newText);
-    }
-  }
-
-  void _handleMoveLeft() {
-    if (_cursorPosition > 0) {
-      _cursorPosition--;
-      if (_currentBlankIndex < _answerControllers.length) {
-        _answerControllers[_currentBlankIndex].selection =
-            TextSelection.fromPosition(
-          TextPosition(offset: _cursorPosition),
-        );
-        _answerFocusNodes[_currentBlankIndex].requestFocus();
-      }
-    }
-  }
-
-  void _handleMoveRight() {
-    if (_currentBlankIndex < _answerControllers.length) {
-      final controller = _answerControllers[_currentBlankIndex];
-      if (_cursorPosition < controller.text.length) {
-        _cursorPosition++;
-        controller.selection = TextSelection.fromPosition(
-          TextPosition(offset: _cursorPosition),
-        );
-        _answerFocusNodes[_currentBlankIndex].requestFocus();
-      }
-    }
   }
 
   void _checkCurrentAnswers() {
@@ -247,7 +177,8 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     for (int i = 0; i < problem.blanks.length; i++) {
       final userInput = _answerControllers[i].text.trim();
       if (userInput.isNotEmpty && !problem.blanks[i].isAnswered) {
-        final isCorrect = userInput.toLowerCase().trim() == problem.blanks[i].answer.toLowerCase().trim();
+        final isCorrect = userInput.toLowerCase().trim() ==
+            problem.blanks[i].answer.toLowerCase().trim();
         if (isCorrect) {
           hasNewCorrectAnswer = true;
           firstCorrectBlankIndex ??= i; // 最初の正解のインデックスを記録
@@ -257,74 +188,99 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
             .checkAnswer(_currentIndex, i, userInput);
       }
     }
-    
+
     // 新しい正解があった場合、フォーカスを次の未回答空欄に移動
     if (hasNewCorrectAnswer && firstCorrectBlankIndex != null) {
       _moveToNextIncorrectBlank(firstCorrectBlankIndex);
     }
-    
+
     // 全ての空欄が完了したかチェック
     _checkIfAllBlanksCompleted();
   }
 
   void _checkAnswerAutomatically(int blankIndex, String value) {
+    developer.log(
+        '[LearningScreen] _checkAnswerAutomatically called for blank $blankIndex with value "$value"');
+
     final problem = ref.read(wordProblemsProvider)[_currentIndex];
     final blank = problem.blanks[blankIndex];
-    
+
+    developer.log(
+        '[LearningScreen] Expected answer: "${blank.answer}", isAnswered: ${blank.isAnswered}');
+
     // 既に回答済みの場合は何もしない
-    if (blank.isAnswered) return;
-    
+    if (blank.isAnswered) {
+      developer
+          .log('[LearningScreen] Blank already answered, skipping auto-check');
+      return;
+    }
+
     final trimmedValue = value.trim();
+    developer.log('[LearningScreen] trimmedValue: "$trimmedValue"');
     if (trimmedValue.isNotEmpty) {
-      final isCorrect = trimmedValue.toLowerCase() == blank.answer.toLowerCase();
-      
+      final isCorrect =
+          trimmedValue.toLowerCase() == blank.answer.toLowerCase();
+      developer.log(
+          '[LearningScreen] Comparing "$trimmedValue" with "${blank.answer}", isCorrect: $isCorrect');
+
       if (isCorrect) {
-        developer.log('[LearningScreen] Auto-check: Correct answer detected for blank $blankIndex');
+        developer.log(
+            '[LearningScreen] Auto-check: Correct answer detected for blank $blankIndex');
         ref
             .read(wordProblemsProvider.notifier)
             .checkAnswer(_currentIndex, blankIndex, trimmedValue);
-        
+
         // 正解時に次の未回答空欄にフォーカスを移動
         _moveToNextIncorrectBlank(blankIndex);
-        
+
         // 全ての空欄が正解かチェック
         _checkIfAllBlanksCompleted();
+      } else {
+        developer.log('[LearningScreen] Answer not correct, continuing...');
       }
+    } else {
+      developer.log('[LearningScreen] Empty value, skipping auto-check');
     }
   }
 
   void _moveToNextIncorrectBlank(int currentBlankIndex) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final updatedProblem = ref.read(wordProblemsProvider)[_currentIndex];
-      
+
       // 次の未回答空欄を探す（現在の空欄の次から）
       int? nextIncorrectBlankIndex;
-      
+
       // 現在の空欄より後ろを探す
-      for (int i = currentBlankIndex + 1; i < updatedProblem.blanks.length; i++) {
-        if (!updatedProblem.blanks[i].isAnswered || !updatedProblem.blanks[i].isCorrect) {
+      for (int i = currentBlankIndex + 1;
+          i < updatedProblem.blanks.length;
+          i++) {
+        if (!updatedProblem.blanks[i].isAnswered ||
+            !updatedProblem.blanks[i].isCorrect) {
           nextIncorrectBlankIndex = i;
           break;
         }
       }
-      
+
       // 後ろで見つからない場合、先頭から現在の空欄まで探す
       if (nextIncorrectBlankIndex == null) {
         for (int i = 0; i < currentBlankIndex; i++) {
-          if (!updatedProblem.blanks[i].isAnswered || !updatedProblem.blanks[i].isCorrect) {
+          if (!updatedProblem.blanks[i].isAnswered ||
+              !updatedProblem.blanks[i].isCorrect) {
             nextIncorrectBlankIndex = i;
             break;
           }
         }
       }
-      
+
       // 未回答空欄が見つかった場合、フォーカスを移動
-      if (nextIncorrectBlankIndex != null && 
+      if (nextIncorrectBlankIndex != null &&
           nextIncorrectBlankIndex < _answerFocusNodes.length) {
-        developer.log('[LearningScreen] Moving focus to blank $nextIncorrectBlankIndex');
+        developer.log(
+            '[LearningScreen] Moving focus to blank $nextIncorrectBlankIndex');
         setState(() {
           _currentBlankIndex = nextIncorrectBlankIndex!;
-          _cursorPosition = _answerControllers[nextIncorrectBlankIndex].text.length;
+          _cursorPosition =
+              _answerControllers[nextIncorrectBlankIndex].text.length;
         });
         _answerFocusNodes[nextIncorrectBlankIndex].requestFocus();
       }
@@ -335,9 +291,10 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     // 少し遅延を入れてからチェック（Riverpodの状態更新を待つため）
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final updatedProblem = ref.read(wordProblemsProvider)[_currentIndex];
-      
+
       if (updatedProblem.isCompleted) {
-        developer.log('[LearningScreen] All blanks completed, transitioning to answer display');
+        developer.log(
+            '[LearningScreen] All blanks completed, transitioning to answer display');
         setState(() {
           _currentState = LearningState.answerDisplay;
         });
@@ -364,7 +321,8 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
 
     // 未完了の問題がない場合は、完了状態に遷移
     if (nextIncompleteIndex == null) {
-      developer.log('[LearningScreen] All problems completed, transitioning to completed state');
+      developer.log(
+          '[LearningScreen] All problems completed, transitioning to completed state');
       setState(() {
         _currentState = LearningState.completed;
       });
@@ -381,14 +339,15 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
       _currentIndex = newIndex;
       _currentBlankIndex = 0;
       _cursorPosition = 0;
-      _currentState = LearningState.problemDisplay;  // 問題表示状態に遷移
+      _currentState = LearningState.problemDisplay; // 問題表示状態に遷移
     });
 
-    developer.log('[LearningScreen] New index: $_currentIndex, state: $_currentState');
+    developer.log(
+        '[LearningScreen] New index: $_currentIndex, state: $_currentState');
 
     // 既存のコントローラーを破棄して新しい問題用に再初期化をフォース
     _disposeControllers();
-    
+
     // 次のbuildで新しいコントローラーが作成される
   }
 

@@ -19,21 +19,44 @@ class ProblemDisplayScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ProblemDisplayScreen> createState() => _ProblemDisplayScreenState();
+  ConsumerState<ProblemDisplayScreen> createState() =>
+      _ProblemDisplayScreenState();
 }
 
 class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
+  int _currentBlankIndex = 0;
+  int _cursorPosition = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentBlankIndex = widget.config.initialBlankIndex;
+    _cursorPosition = widget.config.initialCursorPosition;
+  }
+
+  @override
+  void didUpdateWidget(ProblemDisplayScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 新しい問題に変わった場合、初期値をリセット
+    if (oldWidget.config.currentIndex != widget.config.currentIndex) {
+      _currentBlankIndex = widget.config.initialBlankIndex;
+      _cursorPosition = widget.config.initialCursorPosition;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentProblem = widget.config.problems[widget.config.currentIndex];
     final requiredBlanks = currentProblem.blanks.length;
-    
+
     developer.log(
         '[ProblemDisplayScreen] Current problem needs $requiredBlanks blanks, we have ${widget.config.answerControllers.length}');
 
     // コントローラーが初期化されていない場合は初期化を実行
-    if (widget.config.answerControllers.isEmpty || widget.config.answerControllers.length < requiredBlanks) {
-      developer.log('[ProblemDisplayScreen] Controllers not ready, initializing...');
+    if (widget.config.answerControllers.isEmpty ||
+        widget.config.answerControllers.length < requiredBlanks) {
+      developer
+          .log('[ProblemDisplayScreen] Controllers not ready, initializing...');
       widget.callbacks.onInitializeControllers(widget.config.problems);
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -68,8 +91,25 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
           problem: problem,
           controller: widget.config.answerControllers[blankIndex],
           focusNode: widget.config.answerFocusNodes[blankIndex],
-          onChanged: (value) => widget.callbacks.onAnswerChanged(blankIndex, value),
-          onTap: () => widget.callbacks.onBlankTap(blankIndex),
+          onChanged: (value) {
+            developer.log('[ProblemDisplayScreen] Physical keyboard input for blank $blankIndex with value: "$value"');
+            
+            // 物理キーボード入力時の現在フォーカス状態を同期
+            if (_currentBlankIndex != blankIndex) {
+              developer.log('[ProblemDisplayScreen] Syncing focus from blank $_currentBlankIndex to $blankIndex');
+              setState(() {
+                _currentBlankIndex = blankIndex;
+                _cursorPosition = widget.config.answerControllers[blankIndex].selection.start;
+              });
+              widget.callbacks.onBlankIndexChanged(blankIndex);
+            }
+            
+            widget.callbacks.onAnswerChanged(blankIndex, value);
+            // 物理キーボード入力時も自動チェック
+            developer.log('[ProblemDisplayScreen] Calling auto-check for physical keyboard input');
+            widget.callbacks.onAnswerChangedForAutoCheck(blankIndex, value);
+          },
+          onTap: () => _handleBlankTap(blankIndex),
         ),
         buildHintsSection: (problem) => HintsWidget(problem: problem),
         buildKeyboard: _buildKeyboard,
@@ -84,10 +124,10 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
     }
 
     return CustomKeyboard(
-      onKeyPressed: widget.callbacks.onKeyPressed,
-      onDelete: widget.callbacks.onDeleteKey,
-      onMoveLeft: widget.callbacks.onMoveLeft,
-      onMoveRight: widget.callbacks.onMoveRight,
+      onKeyPressed: _handleKeyPressed,
+      onDelete: _handleDeleteKey,
+      onMoveLeft: _handleMoveLeft,
+      onMoveRight: _handleMoveRight,
     );
   }
 
@@ -116,5 +156,86 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
         ],
       ),
     );
+  }
+
+  void _handleBlankTap(int blankIndex) {
+    setState(() {
+      _currentBlankIndex = blankIndex;
+      _cursorPosition = widget.config.answerControllers[blankIndex].text.length;
+    });
+    widget.callbacks.onBlankTap(blankIndex);
+    widget.callbacks.onBlankIndexChanged(blankIndex);
+  }
+
+  void _handleKeyPressed(String key) {
+    developer.log('_handleKeyPresssed');
+    if (_currentBlankIndex < widget.config.answerControllers.length) {
+      final controller = widget.config.answerControllers[_currentBlankIndex];
+      final text = controller.text;
+      final newText = text.substring(0, _cursorPosition) +
+          key +
+          text.substring(_cursorPosition);
+      controller.text = newText;
+      _cursorPosition++;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: _cursorPosition),
+      );
+
+      // プロバイダーの状態を更新
+      widget.callbacks.onAnswerChanged(_currentBlankIndex, newText);
+
+      developer.log(
+          '[ProblemDisplayScreen] _handleKeyPressed onAnswerChanged called for blank $_currentBlankIndex with input: $newText');
+      // 自動チェック機能を呼び出し（親コンポーネントで処理）
+      widget.callbacks.onAnswerChangedForAutoCheck(_currentBlankIndex, newText);
+    }
+  }
+
+  void _handleDeleteKey() {
+    if (_currentBlankIndex < widget.config.answerControllers.length &&
+        _cursorPosition > 0) {
+      final controller = widget.config.answerControllers[_currentBlankIndex];
+      final text = controller.text;
+      final newText = text.substring(0, _cursorPosition - 1) +
+          text.substring(_cursorPosition);
+      controller.text = newText;
+      _cursorPosition--;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: _cursorPosition),
+      );
+
+      // プロバイダーの状態を更新
+      widget.callbacks.onAnswerChanged(_currentBlankIndex, newText);
+    }
+  }
+
+  void _handleMoveLeft() {
+    if (_cursorPosition > 0) {
+      setState(() {
+        _cursorPosition--;
+      });
+      if (_currentBlankIndex < widget.config.answerControllers.length) {
+        widget.config.answerControllers[_currentBlankIndex].selection =
+            TextSelection.fromPosition(
+          TextPosition(offset: _cursorPosition),
+        );
+        widget.config.answerFocusNodes[_currentBlankIndex].requestFocus();
+      }
+    }
+  }
+
+  void _handleMoveRight() {
+    if (_currentBlankIndex < widget.config.answerControllers.length) {
+      final controller = widget.config.answerControllers[_currentBlankIndex];
+      if (_cursorPosition < controller.text.length) {
+        setState(() {
+          _cursorPosition++;
+        });
+        controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: _cursorPosition),
+        );
+        widget.config.answerFocusNodes[_currentBlankIndex].requestFocus();
+      }
+    }
   }
 }
