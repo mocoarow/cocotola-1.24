@@ -48,6 +48,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         developer.log(
             '[LearningScreen] Blank[$index] state: userInput="${blank.userInput}", isAnswered=${blank.isAnswered}, isCorrect=${blank.isCorrect}');
 
+        // 正解済みの場合は答えを表示、そうでなければ空文字
         final initialText =
             (blank.isAnswered && blank.isCorrect) ? blank.answer : '';
         developer.log(
@@ -208,9 +209,12 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
           : TextField(
               controller: (() {
                 final controller = _answerControllers[blankIndex];
-                developer.log(
-                    '[LearningScreen] Setting controller[$blankIndex] text from "${controller.text}" to "${blank.userInput}"');
-                // controller.text = blank.userInput;
+                // プロバイダーの状態とコントローラーが同期していない場合は更新
+                if (controller.text != blank.userInput) {
+                  developer.log(
+                      '[LearningScreen] Syncing controller[$blankIndex] text from "${controller.text}" to "${blank.userInput}"');
+                  controller.text = blank.userInput;
+                }
                 return controller;
               })(),
               textAlign: TextAlign.center,
@@ -392,6 +396,10 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     final newIndex =
         (_currentIndex + 1) % ref.read(wordProblemsProvider).length;
 
+    // 新しい問題のユーザー入力をクリア
+    ref.read(wordProblemsProvider.notifier).clearUserInputs(newIndex);
+    developer.log('[LearningScreen] Cleared user inputs for new problem');
+
     setState(() {
       _currentIndex = newIndex;
       _currentBlankIndex = 0;
@@ -400,11 +408,10 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
 
     developer.log('[LearningScreen] New index: $_currentIndex');
 
-    // 新しい問題のユーザー入力をクリア
-    ref.read(wordProblemsProvider.notifier).clearUserInputs(newIndex);
-    developer.log('[LearningScreen] Cleared user inputs for new problem');
-
-    // コントローラーは次のbuildで自動的に再初期化される
+    // 既存のコントローラーを破棄して新しい問題用に再初期化をフォース
+    _disposeControllers();
+    
+    // 次のbuildで新しいコントローラーが作成される
   }
 
   void _disposeControllers() {
