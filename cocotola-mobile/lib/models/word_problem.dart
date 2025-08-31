@@ -60,6 +60,25 @@ class WordProblem {
     );
   }
 
+  List<String> get englishWords {
+    return english
+        .replaceAll('.', ' .')
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .toList();
+  }
+
+  List<int> get blankIndices {
+    final words = englishWords;
+    final indices = <int>[];
+    for (int i = 0; i < words.length; i++) {
+      if (words[i] == '___') {
+        indices.add(i);
+      }
+    }
+    return indices;
+  }
+
   WordProblem updateBlank(int index, BlankAnswer newBlank) {
     final updatedBlanks = List<BlankAnswer>.from(blanks);
     updatedBlanks[index] = newBlank;

@@ -34,37 +34,23 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   }
 
   void _initializeControllersForCurrentProblem(List<WordProblem> problems) {
-    developer.log(
-        '[LearningScreen] _initializeControllersForCurrentProblem called for currentIndex: $_currentIndex');
+    developer.log('[LearningScreen] _initializeControllersForCurrentProblem called for currentIndex: $_currentIndex');
+    
     if (problems.isNotEmpty && _currentIndex < problems.length) {
-      final maxBlanks = problems[_currentIndex].blanks.length;
-      developer
-          .log('[LearningScreen] Max blanks for current problem: $maxBlanks');
+      final currentProblem = problems[_currentIndex];
+      final maxBlanks = currentProblem.blanks.length;
 
       // 既存のコントローラーを破棄
       _disposeControllers();
 
       // 新しいコントローラーを作成
-      final currentProblem = problems[_currentIndex];
-      developer.log(
-          '[LearningScreen] Current problem has ${currentProblem.blanks.length} blanks');
-
       _answerControllers = List.generate(maxBlanks, (index) {
-        // stateのuserInputを確認し、正解済みでない場合は空文字にする
         final blank = currentProblem.blanks[index];
-        developer.log(
-            '[LearningScreen] Blank[$index] state: userInput="${blank.userInput}", isAnswered=${blank.isAnswered}, isCorrect=${blank.isCorrect}');
-
         // 正解済みの場合は答えを表示、そうでなければ空文字
-        final initialText =
-            (blank.isAnswered && blank.isCorrect) ? blank.answer : '';
-        developer.log(
-            '[LearningScreen] Controller[$index] will be initialized with: "$initialText"');
+        final initialText = (blank.isAnswered && blank.isCorrect) ? blank.answer : '';
         return TextEditingController(text: initialText);
       });
       _answerFocusNodes = List.generate(maxBlanks, (index) => FocusNode());
-      developer.log(
-          '[LearningScreen] Controllers initialized: ${_answerControllers.length}');
 
       // setStateを使って再描画をトリガー
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -224,8 +210,6 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   }
 
   void _disposeControllers() {
-    developer.log(
-        '[LearningScreen] _disposeControllers called, disposing ${_answerControllers.length} controllers');
     for (final controller in _answerControllers) {
       controller.dispose();
     }
@@ -234,7 +218,6 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     }
     _answerControllers.clear();
     _answerFocusNodes.clear();
-    developer.log('[LearningScreen] Controllers cleared');
   }
 
   @override

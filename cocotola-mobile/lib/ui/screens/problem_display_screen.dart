@@ -50,33 +50,17 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
     final currentProblem = widget.config.problems[widget.config.currentIndex];
     final requiredBlanks = currentProblem.blanks.length;
 
-    developer.log(
-        '[ProblemDisplayScreen] Current problem needs $requiredBlanks blanks, we have ${widget.config.answerControllers.length}');
-
     // コントローラーが初期化されていない場合は初期化を実行
     if (widget.config.answerControllers.isEmpty ||
         widget.config.answerControllers.length < requiredBlanks) {
-      developer
-          .log('[ProblemDisplayScreen] Controllers not ready, initializing...');
       widget.callbacks.onInitializeControllers(widget.config.problems);
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    final englishWords = currentProblem.english
-        .replaceAll('.', ' .')
-        .split(' ')
-        .where((word) => word.isNotEmpty)
-        .toList();
-
-    // 複数の空欄のインデックスを取得
-    final blankIndices = <int>[];
-    for (int i = 0; i < englishWords.length; i++) {
-      if (englishWords[i] == '___') {
-        blankIndices.add(i);
-      }
-    }
+    final englishWords = currentProblem.englishWords;
+    final blankIndices = currentProblem.blankIndices;
 
     return Scaffold(
       appBar: AppBar(

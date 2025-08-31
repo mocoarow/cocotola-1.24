@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/word_problem.dart';
-import 'dart:developer' as developer;
 
 class BlankWidget extends StatelessWidget {
   final int wordIndex;
@@ -27,13 +26,8 @@ class BlankWidget extends StatelessWidget {
     final blank = problem.blanks[blankIndex];
     final inputWidth = (blank.answer.length * 20.0).clamp(100.0, 200.0);
 
-    developer.log(
-        '[BlankWidget] _buildBlankWidget[$blankIndex] - userInput: "${blank.userInput}", isAnswered: ${blank.isAnswered}');
-
     // プロバイダーの状態とコントローラーが同期していない場合は更新
     if (controller.text != blank.userInput) {
-      developer.log(
-          '[BlankWidget] Syncing controller[$blankIndex] text from "${controller.text}" to "${blank.userInput}"');
       controller.text = blank.userInput;
     }
 

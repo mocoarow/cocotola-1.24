@@ -24,19 +24,8 @@ class AnswerDisplayScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentProblem = problems[currentIndex];
     
-    final englishWords = currentProblem.english
-        .replaceAll('.', ' .')
-        .split(' ')
-        .where((word) => word.isNotEmpty)
-        .toList();
-
-    // 複数の空欄のインデックスを取得
-    final blankIndices = <int>[];
-    for (int i = 0; i < englishWords.length; i++) {
-      if (englishWords[i] == '___') {
-        blankIndices.add(i);
-      }
-    }
+    final englishWords = currentProblem.englishWords;
+    final blankIndices = currentProblem.blankIndices;
     
     return Scaffold(
       appBar: AppBar(
