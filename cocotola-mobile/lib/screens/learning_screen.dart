@@ -385,7 +385,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
               child: const Text('確認'),
             ),
           ],
-          if (problem.hasAnyCorrectAnswer) ...[
+          if (problem.isCompleted) ...[
             ElevatedButton(
               onPressed: _moveToNextProblem,
               child: const Text('次へ'),
