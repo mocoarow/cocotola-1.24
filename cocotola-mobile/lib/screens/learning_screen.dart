@@ -5,6 +5,12 @@ import '../widgets/custom_keyboard.dart';
 import '../models/word_problem.dart';
 import 'dart:developer' as developer;
 
+enum LearningState {
+  problemDisplay,  // 問題表示状態
+  answerDisplay,   // 答え表示状態（解説表示）
+  completed        // 完了状態
+}
+
 class LearningScreen extends ConsumerStatefulWidget {
   const LearningScreen({super.key});
 
@@ -18,7 +24,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   int _currentIndex = 0;
   int _currentBlankIndex = 0;
   int _cursorPosition = 0;
-  bool _showFinalCompletion = false;
+  LearningState _currentState = LearningState.problemDisplay;
 
   @override
   void initState() {
@@ -78,15 +84,70 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   Widget build(BuildContext context) {
     final problems = ref.watch(wordProblemsProvider);
     developer.log(
-        '[LearningScreen] build called - problems count: ${problems.length}, currentIndex: $_currentIndex');
-    developer.log(
-        '[LearningScreen] controllers length: ${_answerControllers.length}');
+        '[LearningScreen] build called - problems count: ${problems.length}, currentIndex: $_currentIndex, state: $_currentState');
 
     if (problems.isEmpty) {
       developer.log('[LearningScreen] No problems available');
       return const Center(child: Text('お疲れ様でした！'));
     }
 
+    // 状態に基づいてUIを返す
+    switch (_currentState) {
+      case LearningState.completed:
+        return _buildCompletedScreen();
+      
+      case LearningState.answerDisplay:
+        return _buildAnswerDisplayScreen(problems);
+      
+      case LearningState.problemDisplay:
+        return _buildProblemDisplayScreen(problems);
+    }
+  }
+
+  Widget _buildCompletedScreen() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('単語学習'),
+      ),
+      body: const Center(
+        child: Text(
+          'お疲れ様でした！\n全問正解です！',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnswerDisplayScreen(List<WordProblem> problems) {
+    final currentProblem = problems[_currentIndex];
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('単語学習'),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              currentProblem.japanese,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
+          _buildHintsSection(currentProblem),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: _transitionToNextProblem,
+            child: const Text('次へ'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProblemDisplayScreen(List<WordProblem> problems) {
     final currentProblem = problems[_currentIndex];
     final requiredBlanks = currentProblem.blanks.length;
     developer.log(
@@ -101,27 +162,6 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    // 全問完了かチェック
-    final allCompleted = problems.every((problem) => problem.isCompleted);
-    if (allCompleted && _showFinalCompletion) {
-      // 最後の問題の解説を表示した後に完了メッセージを表示
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('単語学習'),
-        ),
-        body: const Center(
-          child: Text(
-            'お疲れ様でした！\n全問正解です！',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 24),
-          ),
-        ),
-      );
-    }
-
-    developer.log(
-        '[LearningScreen] Rendering problem UI for currentIndex: $_currentIndex');
 
     final englishWords = currentProblem.english
         .replaceAll('.', ' .')
@@ -348,7 +388,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
               ref
                   .read(wordProblemsProvider.notifier)
                   .markAsSkipped(_currentIndex);
-              _moveToNextProblem();
+              _transitionToAnswerDisplay();
             },
             child: const Text('答えを見る'),
           ),
@@ -360,7 +400,7 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
           ],
           if (problem.isCompleted) ...[
             ElevatedButton(
-              onPressed: _moveToNextProblem,
+              onPressed: _transitionToAnswerDisplay,
               child: const Text('次へ'),
             ),
           ],
@@ -380,6 +420,9 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
             .checkAnswer(_currentIndex, i, userInput);
       }
     }
+    
+    // 全ての空欄が完了したかチェック
+    _checkIfAllBlanksCompleted();
   }
 
   void _checkAnswerAutomatically(int blankIndex, String value) {
@@ -398,13 +441,30 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         ref
             .read(wordProblemsProvider.notifier)
             .checkAnswer(_currentIndex, blankIndex, trimmedValue);
+        
+        // 全ての空欄が正解かチェック
+        _checkIfAllBlanksCompleted();
       }
     }
   }
 
-  void _moveToNextProblem() {
+  void _checkIfAllBlanksCompleted() {
+    // 少し遅延を入れてからチェック（Riverpodの状態更新を待つため）
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final updatedProblem = ref.read(wordProblemsProvider)[_currentIndex];
+      
+      if (updatedProblem.isCompleted) {
+        developer.log('[LearningScreen] All blanks completed, transitioning to answer display');
+        setState(() {
+          _currentState = LearningState.answerDisplay;
+        });
+      }
+    });
+  }
+
+  void _transitionToNextProblem() {
     developer.log(
-        '[LearningScreen] _moveToNextProblem called, current index: $_currentIndex');
+        '[LearningScreen] _transitionToNextProblem called, current index: $_currentIndex');
 
     final problems = ref.read(wordProblemsProvider);
     final currentProblemIndex = _currentIndex;
@@ -419,11 +479,11 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
       }
     }
 
-    // 未完了の問題がない場合は、全問完了フラグをセット
+    // 未完了の問題がない場合は、完了状態に遷移
     if (nextIncompleteIndex == null) {
-      developer.log('[LearningScreen] All problems completed, showing final completion');
+      developer.log('[LearningScreen] All problems completed, transitioning to completed state');
       setState(() {
-        _showFinalCompletion = true;
+        _currentState = LearningState.completed;
       });
       return;
     }
@@ -438,14 +498,22 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
       _currentIndex = newIndex;
       _currentBlankIndex = 0;
       _cursorPosition = 0;
+      _currentState = LearningState.problemDisplay;  // 問題表示状態に遷移
     });
 
-    developer.log('[LearningScreen] New index: $_currentIndex');
+    developer.log('[LearningScreen] New index: $_currentIndex, state: $_currentState');
 
     // 既存のコントローラーを破棄して新しい問題用に再初期化をフォース
     _disposeControllers();
     
     // 次のbuildで新しいコントローラーが作成される
+  }
+
+  void _transitionToAnswerDisplay() {
+    developer.log('[LearningScreen] Transitioning to answer display state');
+    setState(() {
+      _currentState = LearningState.answerDisplay;
+    });
   }
 
   void _disposeControllers() {
