@@ -24,8 +24,6 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
   List<TextEditingController> _answerControllers = [];
   List<FocusNode> _answerFocusNodes = [];
   int _currentIndex = 0;
-  int _currentBlankIndex = 0;
-  int _cursorPosition = 0;
   LearningState _currentState = LearningState.problemDisplay;
 
   @override
@@ -136,8 +134,6 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
       config: ProblemDisplayConfig(
         problems: problems,
         currentIndex: _currentIndex,
-        initialBlankIndex: _currentBlankIndex,
-        initialCursorPosition: _cursorPosition,
         answerControllers: _answerControllers,
         answerFocusNodes: _answerFocusNodes,
       ),
@@ -146,11 +142,6 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
           ref
               .read(wordProblemsProvider.notifier)
               .updateUserInput(_currentIndex, blankIndex, value);
-        },
-        onBlankIndexChanged: (blankIndex) {
-          setState(() {
-            _currentBlankIndex = blankIndex;
-          });
         },
         onAllBlanksCompleted: () {
           developer.log('[LearningScreen] All blanks completed, transitioning to answer display');
@@ -203,8 +194,6 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
 
     setState(() {
       _currentIndex = newIndex;
-      _currentBlankIndex = 0;
-      _cursorPosition = 0;
       _currentState = LearningState.problemDisplay; // 問題表示状態に遷移
     });
 

@@ -31,8 +31,8 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
   @override
   void initState() {
     super.initState();
-    _currentBlankIndex = widget.config.initialBlankIndex;
-    _cursorPosition = widget.config.initialCursorPosition;
+    _currentBlankIndex = 0;
+    _cursorPosition = 0;
   }
 
   @override
@@ -40,8 +40,8 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
     super.didUpdateWidget(oldWidget);
     // 新しい問題に変わった場合、初期値をリセット
     if (oldWidget.config.currentIndex != widget.config.currentIndex) {
-      _currentBlankIndex = widget.config.initialBlankIndex;
-      _cursorPosition = widget.config.initialCursorPosition;
+      _currentBlankIndex = 0;
+      _cursorPosition = 0;
     }
   }
 
@@ -102,7 +102,6 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
                 _currentBlankIndex = blankIndex;
                 _cursorPosition = widget.config.answerControllers[blankIndex].selection.end;
               });
-              widget.callbacks.onBlankIndexChanged(blankIndex);
             } else {
               // 同じ空欄での物理キーボード入力時もカーソル位置を更新
               final newCursorPosition = widget.config.answerControllers[blankIndex].selection.end;
@@ -169,7 +168,6 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
       _currentBlankIndex = blankIndex;
       _cursorPosition = cursorPos;
     });
-    widget.callbacks.onBlankIndexChanged(blankIndex);
   }
 
   void _handleKeyPressed(String key) {
@@ -323,9 +321,6 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
           _cursorPosition = widget.config.answerControllers[nextIncorrectBlankIndex].text.length;
         });
         widget.config.answerFocusNodes[nextIncorrectBlankIndex].requestFocus();
-        
-        // 親にも空欄インデックス変更を通知
-        widget.callbacks.onBlankIndexChanged(nextIncorrectBlankIndex);
       }
     });
   }
