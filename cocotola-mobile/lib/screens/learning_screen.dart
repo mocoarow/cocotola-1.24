@@ -147,18 +147,17 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
               .read(wordProblemsProvider.notifier)
               .updateUserInput(_currentIndex, blankIndex, value);
         },
-        onAnswerChangedForAutoCheck: (blankIndex, value) {
-          _checkAnswerAutomatically(blankIndex, value);
-        },
-        onBlankTap: (blankIndex) {
-          // ProblemDisplayScreenで処理されるため、ここでは何もしない
-        },
         onBlankIndexChanged: (blankIndex) {
           setState(() {
             _currentBlankIndex = blankIndex;
           });
         },
-        onCheckAnswers: _checkCurrentAnswers,
+        onAllBlanksCompleted: () {
+          developer.log('[LearningScreen] All blanks completed, transitioning to answer display');
+          setState(() {
+            _currentState = LearningState.answerDisplay;
+          });
+        },
         onShowAnswer: () {
           ref.read(wordProblemsProvider.notifier).markAsSkipped(_currentIndex);
           _transitionToAnswerDisplay();
@@ -167,139 +166,6 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         onInitializeControllers: _initializeControllersForCurrentProblem,
       ),
     );
-  }
-
-  void _checkCurrentAnswers() {
-    final problem = ref.read(wordProblemsProvider)[_currentIndex];
-    bool hasNewCorrectAnswer = false;
-    int? firstCorrectBlankIndex;
-
-    for (int i = 0; i < problem.blanks.length; i++) {
-      final userInput = _answerControllers[i].text.trim();
-      if (userInput.isNotEmpty && !problem.blanks[i].isAnswered) {
-        final isCorrect = userInput.toLowerCase().trim() ==
-            problem.blanks[i].answer.toLowerCase().trim();
-        if (isCorrect) {
-          hasNewCorrectAnswer = true;
-          firstCorrectBlankIndex ??= i; // 最初の正解のインデックスを記録
-        }
-        ref
-            .read(wordProblemsProvider.notifier)
-            .checkAnswer(_currentIndex, i, userInput);
-      }
-    }
-
-    // 新しい正解があった場合、フォーカスを次の未回答空欄に移動
-    if (hasNewCorrectAnswer && firstCorrectBlankIndex != null) {
-      _moveToNextIncorrectBlank(firstCorrectBlankIndex);
-    }
-
-    // 全ての空欄が完了したかチェック
-    _checkIfAllBlanksCompleted();
-  }
-
-  void _checkAnswerAutomatically(int blankIndex, String value) {
-    developer.log(
-        '[LearningScreen] _checkAnswerAutomatically called for blank $blankIndex with value "$value"');
-
-    final problem = ref.read(wordProblemsProvider)[_currentIndex];
-    final blank = problem.blanks[blankIndex];
-
-    developer.log(
-        '[LearningScreen] Expected answer: "${blank.answer}", isAnswered: ${blank.isAnswered}');
-
-    // 既に回答済みの場合は何もしない
-    if (blank.isAnswered) {
-      developer
-          .log('[LearningScreen] Blank already answered, skipping auto-check');
-      return;
-    }
-
-    final trimmedValue = value.trim();
-    developer.log('[LearningScreen] trimmedValue: "$trimmedValue"');
-    if (trimmedValue.isNotEmpty) {
-      final isCorrect =
-          trimmedValue.toLowerCase() == blank.answer.toLowerCase();
-      developer.log(
-          '[LearningScreen] Comparing "$trimmedValue" with "${blank.answer}", isCorrect: $isCorrect');
-
-      if (isCorrect) {
-        developer.log(
-            '[LearningScreen] Auto-check: Correct answer detected for blank $blankIndex');
-        ref
-            .read(wordProblemsProvider.notifier)
-            .checkAnswer(_currentIndex, blankIndex, trimmedValue);
-
-        // 正解時に次の未回答空欄にフォーカスを移動
-        _moveToNextIncorrectBlank(blankIndex);
-
-        // 全ての空欄が正解かチェック
-        _checkIfAllBlanksCompleted();
-      } else {
-        developer.log('[LearningScreen] Answer not correct, continuing...');
-      }
-    } else {
-      developer.log('[LearningScreen] Empty value, skipping auto-check');
-    }
-  }
-
-  void _moveToNextIncorrectBlank(int currentBlankIndex) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final updatedProblem = ref.read(wordProblemsProvider)[_currentIndex];
-
-      // 次の未回答空欄を探す（現在の空欄の次から）
-      int? nextIncorrectBlankIndex;
-
-      // 現在の空欄より後ろを探す
-      for (int i = currentBlankIndex + 1;
-          i < updatedProblem.blanks.length;
-          i++) {
-        if (!updatedProblem.blanks[i].isAnswered ||
-            !updatedProblem.blanks[i].isCorrect) {
-          nextIncorrectBlankIndex = i;
-          break;
-        }
-      }
-
-      // 後ろで見つからない場合、先頭から現在の空欄まで探す
-      if (nextIncorrectBlankIndex == null) {
-        for (int i = 0; i < currentBlankIndex; i++) {
-          if (!updatedProblem.blanks[i].isAnswered ||
-              !updatedProblem.blanks[i].isCorrect) {
-            nextIncorrectBlankIndex = i;
-            break;
-          }
-        }
-      }
-
-      // 未回答空欄が見つかった場合、フォーカスを移動
-      if (nextIncorrectBlankIndex != null &&
-          nextIncorrectBlankIndex < _answerFocusNodes.length) {
-        developer.log(
-            '[LearningScreen] Moving focus to blank $nextIncorrectBlankIndex');
-        setState(() {
-          _currentBlankIndex = nextIncorrectBlankIndex!;
-          _cursorPosition =
-              _answerControllers[nextIncorrectBlankIndex].text.length;
-        });
-        _answerFocusNodes[nextIncorrectBlankIndex].requestFocus();
-      }
-    });
-  }
-
-  void _checkIfAllBlanksCompleted() {
-    // 少し遅延を入れてからチェック（Riverpodの状態更新を待つため）
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final updatedProblem = ref.read(wordProblemsProvider)[_currentIndex];
-
-      if (updatedProblem.isCompleted) {
-        developer.log(
-            '[LearningScreen] All blanks completed, transitioning to answer display');
-        setState(() {
-          _currentState = LearningState.answerDisplay;
-        });
-      }
-    });
   }
 
   void _transitionToNextProblem() {

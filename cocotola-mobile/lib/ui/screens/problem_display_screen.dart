@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/word_problem.dart';
 import '../../models/problem_display_config.dart';
+import '../../providers/word_problem_provider.dart';
 import '../widgets/blank_widget.dart';
 import '../widgets/hints_widget.dart';
 import '../widgets/problem_content_widget.dart';
@@ -114,7 +115,7 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
             widget.callbacks.onAnswerChanged(blankIndex, value);
             // 物理キーボード入力時も自動チェック
             developer.log('[ProblemDisplayScreen] Calling auto-check for physical keyboard input');
-            widget.callbacks.onAnswerChangedForAutoCheck(blankIndex, value);
+            _checkAnswerAutomatically(blankIndex, value);
           },
           onTap: () => _handleBlankTap(blankIndex),
         ),
@@ -148,12 +149,6 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
             onPressed: widget.callbacks.onShowAnswer,
             child: const Text('答えを見る'),
           ),
-          if (!problem.isCompleted) ...[
-            ElevatedButton(
-              onPressed: widget.callbacks.onCheckAnswers,
-              child: const Text('確認'),
-            ),
-          ],
           if (problem.isCompleted) ...[
             ElevatedButton(
               onPressed: widget.callbacks.onNextProblem,
@@ -174,7 +169,6 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
       _currentBlankIndex = blankIndex;
       _cursorPosition = cursorPos;
     });
-    widget.callbacks.onBlankTap(blankIndex);
     widget.callbacks.onBlankIndexChanged(blankIndex);
   }
 
@@ -199,8 +193,8 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
 
       developer.log(
           '[ProblemDisplayScreen] _handleKeyPressed onAnswerChanged called for blank $_currentBlankIndex with input: $newText');
-      // 自動チェック機能を呼び出し（親コンポーネントで処理）
-      widget.callbacks.onAnswerChangedForAutoCheck(_currentBlankIndex, newText);
+      // 自動チェック機能を呼び出し
+      _checkAnswerAutomatically(_currentBlankIndex, newText);
     }
   }
 
@@ -250,5 +244,101 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
         widget.config.answerFocusNodes[_currentBlankIndex].requestFocus();
       }
     }
+  }
+
+  void _checkAnswerAutomatically(int blankIndex, String value) {
+    developer.log('[ProblemDisplayScreen] _checkAnswerAutomatically called for blank $blankIndex with value "$value"');
+    
+    final currentProblem = widget.config.problems[widget.config.currentIndex];
+    final blank = currentProblem.blanks[blankIndex];
+    
+    developer.log('[ProblemDisplayScreen] Expected answer: "${blank.answer}", isAnswered: ${blank.isAnswered}');
+    
+    // 既に回答済みの場合は何もしない
+    if (blank.isAnswered) {
+      developer.log('[ProblemDisplayScreen] Blank already answered, skipping auto-check');
+      return;
+    }
+    
+    final trimmedValue = value.trim();
+    developer.log('[ProblemDisplayScreen] trimmedValue: "$trimmedValue"');
+    if (trimmedValue.isNotEmpty) {
+      final isCorrect = trimmedValue.toLowerCase() == blank.answer.toLowerCase();
+      developer.log('[ProblemDisplayScreen] Comparing "$trimmedValue" with "${blank.answer}", isCorrect: $isCorrect');
+      
+      if (isCorrect) {
+        developer.log('[ProblemDisplayScreen] Auto-check: Correct answer detected for blank $blankIndex');
+        
+        // プロバイダーで正解をマーク
+        ref.read(wordProblemsProvider.notifier).checkAnswer(
+          widget.config.currentIndex, 
+          blankIndex, 
+          trimmedValue
+        );
+        
+        // 正解時に次の未回答空欄にフォーカスを移動
+        _moveToNextIncorrectBlank(blankIndex);
+        
+        // 全ての空欄が正解かチェック
+        _checkIfAllBlanksCompleted();
+      } else {
+        developer.log('[ProblemDisplayScreen] Answer not correct, continuing...');
+      }
+    } else {
+      developer.log('[ProblemDisplayScreen] Empty value, skipping auto-check');
+    }
+  }
+
+  void _moveToNextIncorrectBlank(int currentBlankIndex) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final updatedProblem = ref.read(wordProblemsProvider)[widget.config.currentIndex];
+      
+      // 次の未回答空欄を探す（現在の空欄の次から）
+      int? nextIncorrectBlankIndex;
+      
+      // 現在の空欄より後ろを探す
+      for (int i = currentBlankIndex + 1; i < updatedProblem.blanks.length; i++) {
+        if (!updatedProblem.blanks[i].isAnswered || !updatedProblem.blanks[i].isCorrect) {
+          nextIncorrectBlankIndex = i;
+          break;
+        }
+      }
+      
+      // 後ろで見つからない場合、先頭から現在の空欄まで探す
+      if (nextIncorrectBlankIndex == null) {
+        for (int i = 0; i < currentBlankIndex; i++) {
+          if (!updatedProblem.blanks[i].isAnswered || !updatedProblem.blanks[i].isCorrect) {
+            nextIncorrectBlankIndex = i;
+            break;
+          }
+        }
+      }
+      
+      // 未回答空欄が見つかった場合、フォーカスを移動
+      if (nextIncorrectBlankIndex != null && 
+          nextIncorrectBlankIndex < widget.config.answerFocusNodes.length) {
+        developer.log('[ProblemDisplayScreen] Moving focus to blank $nextIncorrectBlankIndex');
+        setState(() {
+          _currentBlankIndex = nextIncorrectBlankIndex!;
+          _cursorPosition = widget.config.answerControllers[nextIncorrectBlankIndex].text.length;
+        });
+        widget.config.answerFocusNodes[nextIncorrectBlankIndex].requestFocus();
+        
+        // 親にも空欄インデックス変更を通知
+        widget.callbacks.onBlankIndexChanged(nextIncorrectBlankIndex);
+      }
+    });
+  }
+
+  void _checkIfAllBlanksCompleted() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final updatedProblem = ref.read(wordProblemsProvider)[widget.config.currentIndex];
+      
+      if (updatedProblem.isCompleted) {
+        developer.log('[ProblemDisplayScreen] All blanks completed, notifying parent');
+        // 親コンポーネントに完了を通知
+        widget.callbacks.onAllBlanksCompleted();
+      }
+    });
   }
 }

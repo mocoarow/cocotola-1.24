@@ -23,20 +23,16 @@ class ProblemDisplayConfig {
 /// ProblemDisplayScreenのコールバック関数を管理するクラス
 class ProblemDisplayCallbacks {
   final void Function(int blankIndex, String value) onAnswerChanged;
-  final void Function(int blankIndex, String value) onAnswerChangedForAutoCheck; // 自動チェック用
-  final void Function(int blankIndex) onBlankTap;
   final void Function(int blankIndex) onBlankIndexChanged; // 現在の空欄インデックス変更通知
-  final VoidCallback onCheckAnswers;
+  final VoidCallback onAllBlanksCompleted; // 全空欄完了通知
   final VoidCallback onShowAnswer;
   final VoidCallback onNextProblem;
   final void Function(List<WordProblem>) onInitializeControllers;
 
   const ProblemDisplayCallbacks({
     required this.onAnswerChanged,
-    required this.onAnswerChangedForAutoCheck,
-    required this.onBlankTap,
     required this.onBlankIndexChanged,
-    required this.onCheckAnswers,
+    required this.onAllBlanksCompleted,
     required this.onShowAnswer,
     required this.onNextProblem,
     required this.onInitializeControllers,
