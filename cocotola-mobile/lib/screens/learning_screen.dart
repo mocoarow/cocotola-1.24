@@ -233,6 +233,9 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
                 ref
                     .read(wordProblemsProvider.notifier)
                     .updateUserInput(_currentIndex, blankIndex, value);
+                
+                // 自動チェック機能：入力文字が正解と一致した場合は自動で正解にする
+                _checkAnswerAutomatically(blankIndex, value);
               },
               onTap: () {
                 setState(() {
@@ -297,13 +300,22 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         if (_currentBlankIndex < _answerControllers.length) {
           final controller = _answerControllers[_currentBlankIndex];
           final text = controller.text;
-          controller.text = text.substring(0, _cursorPosition) +
+          final newText = text.substring(0, _cursorPosition) +
               key +
               text.substring(_cursorPosition);
+          controller.text = newText;
           _cursorPosition++;
           controller.selection = TextSelection.fromPosition(
             TextPosition(offset: _cursorPosition),
           );
+          
+          // プロバイダーの状態を更新
+          ref
+              .read(wordProblemsProvider.notifier)
+              .updateUserInput(_currentIndex, _currentBlankIndex, newText);
+          
+          // 自動チェック機能
+          _checkAnswerAutomatically(_currentBlankIndex, newText);
         }
       },
       onDelete: () {
@@ -311,12 +323,18 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
             _cursorPosition > 0) {
           final controller = _answerControllers[_currentBlankIndex];
           final text = controller.text;
-          controller.text = text.substring(0, _cursorPosition - 1) +
+          final newText = text.substring(0, _cursorPosition - 1) +
               text.substring(_cursorPosition);
+          controller.text = newText;
           _cursorPosition--;
           controller.selection = TextSelection.fromPosition(
             TextPosition(offset: _cursorPosition),
           );
+          
+          // プロバイダーの状態を更新
+          ref
+              .read(wordProblemsProvider.notifier)
+              .updateUserInput(_currentIndex, _currentBlankIndex, newText);
         }
       },
       onMoveLeft: () {
@@ -387,6 +405,26 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         ref
             .read(wordProblemsProvider.notifier)
             .checkAnswer(_currentIndex, i, userInput);
+      }
+    }
+  }
+
+  void _checkAnswerAutomatically(int blankIndex, String value) {
+    final problem = ref.read(wordProblemsProvider)[_currentIndex];
+    final blank = problem.blanks[blankIndex];
+    
+    // 既に回答済みの場合は何もしない
+    if (blank.isAnswered) return;
+    
+    final trimmedValue = value.trim();
+    if (trimmedValue.isNotEmpty) {
+      final isCorrect = trimmedValue.toLowerCase() == blank.answer.toLowerCase();
+      
+      if (isCorrect) {
+        developer.log('[LearningScreen] Auto-check: Correct answer detected for blank $blankIndex');
+        ref
+            .read(wordProblemsProvider.notifier)
+            .checkAnswer(_currentIndex, blankIndex, trimmedValue);
       }
     }
   }
