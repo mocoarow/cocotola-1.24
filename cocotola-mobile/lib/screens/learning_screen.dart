@@ -236,14 +236,26 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
 
   void _checkCurrentAnswers() {
     final problem = ref.read(wordProblemsProvider)[_currentIndex];
+    bool hasNewCorrectAnswer = false;
+    int? firstCorrectBlankIndex;
 
     for (int i = 0; i < problem.blanks.length; i++) {
       final userInput = _answerControllers[i].text.trim();
       if (userInput.isNotEmpty && !problem.blanks[i].isAnswered) {
+        final isCorrect = userInput.toLowerCase().trim() == problem.blanks[i].answer.toLowerCase().trim();
+        if (isCorrect) {
+          hasNewCorrectAnswer = true;
+          firstCorrectBlankIndex ??= i; // 最初の正解のインデックスを記録
+        }
         ref
             .read(wordProblemsProvider.notifier)
             .checkAnswer(_currentIndex, i, userInput);
       }
+    }
+    
+    // 新しい正解があった場合、フォーカスを次の未回答空欄に移動
+    if (hasNewCorrectAnswer && firstCorrectBlankIndex != null) {
+      _moveToNextIncorrectBlank(firstCorrectBlankIndex);
     }
     
     // 全ての空欄が完了したかチェック
@@ -267,10 +279,51 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
             .read(wordProblemsProvider.notifier)
             .checkAnswer(_currentIndex, blankIndex, trimmedValue);
         
+        // 正解時に次の未回答空欄にフォーカスを移動
+        _moveToNextIncorrectBlank(blankIndex);
+        
         // 全ての空欄が正解かチェック
         _checkIfAllBlanksCompleted();
       }
     }
+  }
+
+  void _moveToNextIncorrectBlank(int currentBlankIndex) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final updatedProblem = ref.read(wordProblemsProvider)[_currentIndex];
+      
+      // 次の未回答空欄を探す（現在の空欄の次から）
+      int? nextIncorrectBlankIndex;
+      
+      // 現在の空欄より後ろを探す
+      for (int i = currentBlankIndex + 1; i < updatedProblem.blanks.length; i++) {
+        if (!updatedProblem.blanks[i].isAnswered || !updatedProblem.blanks[i].isCorrect) {
+          nextIncorrectBlankIndex = i;
+          break;
+        }
+      }
+      
+      // 後ろで見つからない場合、先頭から現在の空欄まで探す
+      if (nextIncorrectBlankIndex == null) {
+        for (int i = 0; i < currentBlankIndex; i++) {
+          if (!updatedProblem.blanks[i].isAnswered || !updatedProblem.blanks[i].isCorrect) {
+            nextIncorrectBlankIndex = i;
+            break;
+          }
+        }
+      }
+      
+      // 未回答空欄が見つかった場合、フォーカスを移動
+      if (nextIncorrectBlankIndex != null && 
+          nextIncorrectBlankIndex < _answerFocusNodes.length) {
+        developer.log('[LearningScreen] Moving focus to blank $nextIncorrectBlankIndex');
+        setState(() {
+          _currentBlankIndex = nextIncorrectBlankIndex!;
+          _cursorPosition = _answerControllers[nextIncorrectBlankIndex].text.length;
+        });
+        _answerFocusNodes[nextIncorrectBlankIndex].requestFocus();
+      }
+    });
   }
 
   void _checkIfAllBlanksCompleted() {
