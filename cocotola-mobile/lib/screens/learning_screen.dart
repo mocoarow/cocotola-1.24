@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/word_problem_provider.dart';
 import '../models/word_problem.dart';
+import '../models/problem_display_config.dart';
 import '../ui/screens/answer_display_screen.dart';
 import '../ui/screens/problem_display_screen.dart';
 import 'dart:developer' as developer;
@@ -132,36 +133,40 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
 
   Widget _buildProblemDisplayScreen(List<WordProblem> problems) {
     return ProblemDisplayScreen(
-      problems: problems,
-      currentIndex: _currentIndex,
-      currentBlankIndex: _currentBlankIndex,
-      cursorPosition: _cursorPosition,
-      answerControllers: _answerControllers,
-      answerFocusNodes: _answerFocusNodes,
-      onAnswerChanged: (blankIndex, value) {
-        ref
-            .read(wordProblemsProvider.notifier)
-            .updateUserInput(_currentIndex, blankIndex, value);
-        _checkAnswerAutomatically(blankIndex, value);
-      },
-      onBlankTap: (blankIndex) {
-        setState(() {
-          _currentBlankIndex = blankIndex;
-        });
-      },
-      onCheckAnswers: _checkCurrentAnswers,
-      onShowAnswer: () {
-        ref
-            .read(wordProblemsProvider.notifier)
-            .markAsSkipped(_currentIndex);
-        _transitionToAnswerDisplay();
-      },
-      onNextProblem: _transitionToAnswerDisplay,
-      onKeyPressed: _handleKeyPressed,
-      onDeleteKey: _handleDeleteKey,
-      onMoveLeft: _handleMoveLeft,
-      onMoveRight: _handleMoveRight,
-      onInitializeControllers: _initializeControllersForCurrentProblem,
+      config: ProblemDisplayConfig(
+        problems: problems,
+        currentIndex: _currentIndex,
+        currentBlankIndex: _currentBlankIndex,
+        cursorPosition: _cursorPosition,
+        answerControllers: _answerControllers,
+        answerFocusNodes: _answerFocusNodes,
+      ),
+      callbacks: ProblemDisplayCallbacks(
+        onAnswerChanged: (blankIndex, value) {
+          ref
+              .read(wordProblemsProvider.notifier)
+              .updateUserInput(_currentIndex, blankIndex, value);
+          _checkAnswerAutomatically(blankIndex, value);
+        },
+        onBlankTap: (blankIndex) {
+          setState(() {
+            _currentBlankIndex = blankIndex;
+          });
+        },
+        onCheckAnswers: _checkCurrentAnswers,
+        onShowAnswer: () {
+          ref
+              .read(wordProblemsProvider.notifier)
+              .markAsSkipped(_currentIndex);
+          _transitionToAnswerDisplay();
+        },
+        onNextProblem: _transitionToAnswerDisplay,
+        onKeyPressed: _handleKeyPressed,
+        onDeleteKey: _handleDeleteKey,
+        onMoveLeft: _handleMoveLeft,
+        onMoveRight: _handleMoveRight,
+        onInitializeControllers: _initializeControllersForCurrentProblem,
+      ),
     );
   }
 
