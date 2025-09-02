@@ -1,4 +1,4 @@
-load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "domain",
@@ -16,5 +16,29 @@ go_library(
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/user/domain",
+    ],
+)
+
+go_test(
+    name = "domain_s_test",
+    size = "small",
+    srcs = ["deck_test.go"],
+    gotags = ["small"],
+    deps = [
+        ":domain",
+        "//moonbeam/lib/domain",
+        "//moonbeam/user/domain",
+        "@com_github_stretchr_testify//require",
+    ],
+)
+
+go_test(
+    name = "domain_test",
+    srcs = ["deck_test.go"],
+    deps = [
+        ":domain",
+        "//moonbeam/lib/domain",
+        "//moonbeam/user/domain",
+        "@com_github_stretchr_testify//require",
     ],
 )

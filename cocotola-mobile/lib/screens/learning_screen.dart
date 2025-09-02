@@ -5,90 +5,46 @@ import '../models/word_problem.dart';
 import '../models/problem_display_config.dart';
 import '../ui/screens/answer_display_screen.dart';
 import '../ui/screens/problem_display_screen.dart';
+import '../view_models/learning_view_model.dart';
 import 'dart:developer' as developer;
 
-enum LearningState {
-  problemDisplay, // 問題表示状態
-  answerDisplay, // 答え表示状態（解説表示）
-  completed // 完了状態
-}
-
-class LearningScreen extends ConsumerStatefulWidget {
+class LearningScreen extends ConsumerWidget {
   const LearningScreen({super.key});
 
   @override
-  ConsumerState<LearningScreen> createState() => _LearningScreenState();
-}
-
-class _LearningScreenState extends ConsumerState<LearningScreen> {
-  List<TextEditingController> _answerControllers = [];
-  List<FocusNode> _answerFocusNodes = [];
-  int _currentIndex = 0;
-  LearningState _currentState = LearningState.problemDisplay;
-
-  @override
-  void initState() {
-    super.initState();
-    developer.log('[LearningScreen] initState called');
-    // 初期化は最初のbuildで行う
-  }
-
-  void _initializeControllersForCurrentProblem(List<WordProblem> problems) {
-    developer.log(
-        '[LearningScreen] _initializeControllersForCurrentProblem called for currentIndex: $_currentIndex');
-
-    if (problems.isNotEmpty && _currentIndex < problems.length) {
-      final currentProblem = problems[_currentIndex];
-      final maxBlanks = currentProblem.blanks.length;
-
-      // 既存のコントローラーを破棄
-      _disposeControllers();
-
-      // 新しいコントローラーを作成
-      _answerControllers = List.generate(maxBlanks, (index) {
-        final blank = currentProblem.blanks[index];
-        // 正解済みの場合は答えを表示、そうでなければ空文字
-        final initialText =
-            (blank.isAnswered && blank.isCorrect) ? blank.answer : '';
-        return TextEditingController(text: initialText);
-      });
-      _answerFocusNodes = List.generate(maxBlanks, (index) => FocusNode());
-
-      // setStateを使って再描画をトリガー
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            // コントローラーが初期化されたことを通知
-          });
-          if (_answerFocusNodes.isNotEmpty) {
-            _answerFocusNodes[0].requestFocus();
-          }
-        }
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final problems = ref.watch(wordProblemsProvider);
+    final viewState = ref.watch(learningViewModelProvider);
+    final viewModel = ref.read(learningViewModelProvider.notifier);
+
     developer.log(
-        '[LearningScreen] build called - problems count: ${problems.length}, currentIndex: $_currentIndex, state: $_currentState');
+        '[LearningScreen] build called - problems count: ${problems.length}, currentIndex: ${viewState.currentIndex}, state: ${viewState.currentState}');
 
     if (problems.isEmpty) {
       developer.log('[LearningScreen] No problems available');
       return const Center(child: Text('お疲れ様でした！'));
     }
 
+    // コントローラーが初期化されていない場合は初期化
+    if (viewState.answerControllers.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        viewModel.initializeControllersForCurrentProblem(null, problems);
+      });
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     // 状態に基づいてUIを返す
-    switch (_currentState) {
+    switch (viewState.currentState) {
       case LearningState.completed:
         return _buildCompletedScreen();
 
       case LearningState.answerDisplay:
-        return _buildAnswerDisplayScreen(problems);
+        return _buildAnswerDisplayScreen(problems, viewState, viewModel);
 
       case LearningState.problemDisplay:
-        return _buildProblemDisplayScreen(problems);
+        return _buildProblemDisplayScreen(problems, viewState, viewModel);
     }
   }
 
@@ -107,135 +63,34 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
     );
   }
 
-  Widget _buildAnswerDisplayScreen(List<WordProblem> problems) {
+  Widget _buildAnswerDisplayScreen(List<WordProblem> problems,
+      LearningViewState viewState, LearningViewModel viewModel) {
     return AnswerDisplayScreen(
-      problems: problems,
-      currentIndex: _currentIndex,
-      answerControllers: _answerControllers,
-      answerFocusNodes: _answerFocusNodes,
-      onNextProblem: _transitionToNextProblem,
+      problem: problems[viewState.currentIndex],
+      currentIndex: viewState.currentIndex,
+      answerControllers: viewState.answerControllers,
+      answerFocusNodes: viewState.answerFocusNodes,
+      onNextProblem: viewModel.transitionToNextProblem,
     );
   }
 
-  Widget _buildProblemDisplayScreen(List<WordProblem> problems) {
+  Widget _buildProblemDisplayScreen(List<WordProblem> problems,
+      LearningViewState viewState, LearningViewModel viewModel) {
     return ProblemDisplayScreen(
       config: ProblemDisplayConfig(
-        problems: problems,
-        problem: problems[_currentIndex],
-        currentIndex: _currentIndex,
-        answerControllers: _answerControllers,
-        answerFocusNodes: _answerFocusNodes,
+        problem: problems[viewState.currentIndex],
+        currentIndex: viewState.currentIndex,
+        answerControllers: viewState.answerControllers,
+        answerFocusNodes: viewState.answerFocusNodes,
       ),
       callbacks: ProblemDisplayCallbacks(
-        onAnswerChanged: _handleAnswerChanged,
-        onAllBlanksCompleted: _handleAllBlanksCompleted,
-        onShowAnswer: _handleShowAnswer,
-        onNextProblem: _transitionToAnswerDisplay,
+        onAnswerChanged: viewModel.handleAnswerChanged,
+        onAllBlanksCompleted: viewModel.handleAllBlanksCompleted,
+        onShowAnswer: viewModel.handleShowAnswer,
+        onNextProblem: viewModel.transitionToAnswerDisplay,
         onInitializeControllers: () =>
-            _initializeControllersForCurrentProblem(problems),
+            viewModel.initializeControllersForCurrentProblem(null, problems),
       ),
     );
-  }
-
-  void _handleAnswerChanged(int blankIndex, String value) {
-    ref
-        .read(wordProblemsProvider.notifier)
-        .updateUserInput(_currentIndex, blankIndex, value);
-  }
-
-  void _handleAllBlanksCompleted() {
-    developer.log(
-        '[LearningScreen] All blanks completed, transitioning to answer display');
-    setState(() {
-      _currentState = LearningState.answerDisplay;
-    });
-  }
-
-  void _handleShowAnswer() {
-    ref.read(wordProblemsProvider.notifier).markAsSkipped(_currentIndex);
-    _transitionToAnswerDisplay();
-  }
-
-  void _transitionToNextProblem() {
-    developer.log(
-        '[LearningScreen] _transitionToNextProblem called, current index: $_currentIndex');
-
-    final problems = ref.read(wordProblemsProvider);
-    final nextIndex = _findNextIncompleteProblem(problems);
-
-    if (nextIndex == null) {
-      // 全ての問題が完了した場合
-      developer.log(
-          '[LearningScreen] All problems completed, transitioning to completed state');
-      setState(() {
-        _currentState = LearningState.completed;
-      });
-      return;
-    }
-
-    // 次の未完了問題に遷移
-    _moveToNextProblem(nextIndex);
-  }
-
-  /// 次の未完了問題のインデックスを検索
-  int? _findNextIncompleteProblem(List<WordProblem> problems) {
-    // 現在の問題の次から検索
-    for (int i = _currentIndex + 1; i < problems.length; i++) {
-      if (!problems[i].isCompleted) {
-        return i;
-      }
-    }
-
-    // 見つからない場合、先頭から現在の問題まで検索（循環）
-    for (int i = 0; i < _currentIndex; i++) {
-      if (!problems[i].isCompleted) {
-        return i;
-      }
-    }
-
-    // 全ての問題が完了している場合
-    return null;
-  }
-
-  /// 指定された問題インデックスに移動
-  void _moveToNextProblem(int newIndex) {
-    developer.log('[LearningScreen] Moving to problem $newIndex');
-
-    // 新しい問題のユーザー入力をクリア
-    ref.read(wordProblemsProvider.notifier).clearUserInputs(newIndex);
-
-    setState(() {
-      _currentIndex = newIndex;
-      _currentState = LearningState.problemDisplay;
-    });
-
-    developer.log('[LearningScreen] Moved to problem $_currentIndex');
-
-    // 既存のコントローラーを破棄して新しい問題用に再初期化
-    _disposeControllers();
-  }
-
-  void _transitionToAnswerDisplay() {
-    developer.log('[LearningScreen] Transitioning to answer display state');
-    setState(() {
-      _currentState = LearningState.answerDisplay;
-    });
-  }
-
-  void _disposeControllers() {
-    for (final controller in _answerControllers) {
-      controller.dispose();
-    }
-    for (final focusNode in _answerFocusNodes) {
-      focusNode.dispose();
-    }
-    _answerControllers.clear();
-    _answerFocusNodes.clear();
-  }
-
-  @override
-  void dispose() {
-    _disposeControllers();
-    super.dispose();
   }
 }

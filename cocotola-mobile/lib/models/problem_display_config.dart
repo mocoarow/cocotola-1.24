@@ -3,14 +3,12 @@ import 'word_problem.dart';
 
 /// ProblemDisplayScreenの設定を管理するクラス
 class ProblemDisplayConfig {
-  final List<WordProblem> problems;
   final WordProblem problem;
   final int currentIndex;
   final List<TextEditingController> answerControllers;
   final List<FocusNode> answerFocusNodes;
 
   const ProblemDisplayConfig({
-    required this.problems,
     required this.problem,
     required this.currentIndex,
     required this.answerControllers,

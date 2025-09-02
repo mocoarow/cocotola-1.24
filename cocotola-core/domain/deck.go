@@ -49,16 +49,16 @@ func (v *DeckID) GetRBACObject() mbuserdomain.RBACObject {
 }
 
 type DeckModel struct {
-	*mblibdomain.BaseModel
-	DeckID         *DeckID
-	OrganizationID *mbuserdomain.OrganizationID
-	SpaceID        *SpaceID
-	OwnerID        *mbuserdomain.AppUserID
-	FolderID       *FolderID
-	Name           string `validate:"required"`
-	TemplateID     int    `validate:"required,gte=1"`
-	Lang2          string `validate:"required"`
-	Description    string
+	*mblibdomain.BaseModel `validate:"required"`
+	DeckID                 *DeckID                      `validate:"required"`
+	OrganizationID         *mbuserdomain.OrganizationID `validate:"required"`
+	SpaceID                *SpaceID                     `validate:"required"`
+	OwnerID                *mbuserdomain.AppUserID      `validate:"required"`
+	FolderID               *FolderID                    `validate:"required"`
+	Name                   string                       `validate:"required"`
+	TemplateID             int                          `validate:"required,gte=1"`
+	Lang2                  string                       `validate:"required,len=2"`
+	Description            string
 }
 
 func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *SpaceID, owernID *mbuserdomain.AppUserID, folderID *FolderID, name string, templateID int, lang2 string, description string) (*DeckModel, error) {

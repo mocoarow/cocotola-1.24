@@ -9,6 +9,7 @@ class BlankWidget extends StatelessWidget {
   final FocusNode focusNode;
   final void Function(String) onChanged;
   final VoidCallback onTap;
+  final bool readOnly;
 
   const BlankWidget({
     super.key,
@@ -19,6 +20,7 @@ class BlankWidget extends StatelessWidget {
     required this.focusNode,
     required this.onChanged,
     required this.onTap,
+    this.readOnly = false,
   });
 
   @override
@@ -27,14 +29,15 @@ class BlankWidget extends StatelessWidget {
     final inputWidth = (blank.answer.length * 20.0).clamp(100.0, 200.0);
 
     // プロバイダーの状態とコントローラーが同期していない場合は更新
-    if (controller.text != blank.userInput) {
+    // ただし、readOnly（答え表示）モードの場合はスキップ
+    if (!readOnly && controller.text != blank.userInput) {
       controller.text = blank.userInput;
     }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
       width: inputWidth,
-      child: blank.isAnswered && blank.isCorrect
+      child: (blank.isAnswered && blank.isCorrect) || readOnly
           ? Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
@@ -43,7 +46,7 @@ class BlankWidget extends StatelessWidget {
                 color: Colors.green.shade50,
               ),
               child: Text(
-                blank.answer,
+                readOnly ? controller.text : blank.answer,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
@@ -55,15 +58,16 @@ class BlankWidget extends StatelessWidget {
           : TextField(
               controller: controller,
               textAlign: TextAlign.center,
+              readOnly: readOnly,
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 fillColor: blank.isAnswered && !blank.isCorrect
                     ? Colors.red.shade50
-                    : null,
-                filled: blank.isAnswered && !blank.isCorrect,
+                    : readOnly ? Colors.green.shade50 : null,
+                filled: (blank.isAnswered && !blank.isCorrect) || readOnly,
               ),
               focusNode: focusNode,
-              enabled: !(blank.isAnswered && blank.isCorrect),
+              enabled: !(blank.isAnswered && blank.isCorrect) && !readOnly,
               onChanged: onChanged,
               onTap: onTap,
             ),

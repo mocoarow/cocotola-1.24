@@ -11,6 +11,7 @@ import (
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
@@ -32,6 +33,7 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 
 func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID) error {
 	u.logger.InfoContext(ctx, "OnAddAppUser", slog.Int("app_user_id", appUserID.Int()))
+
 	if err := mblibservice.Do0(ctx, u.nonTxManager, func(rf service.RepositoryFactory) error {
 		spaceRepo, err := rf.NewSpaceRepository(ctx)
 		if err != nil {
@@ -64,7 +66,7 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 			AppUserID:      operator.AppUserID().Int(),
 			ListOfActionObjectEffect: []libapi.ActionObjectEffect{
 				{
-					Action: mbuserdomain.NewRBACAction("CreateDeck").Action(),
+					Action: librbac.CreateDeckAction.Action(),
 					Object: object.Object(),
 					Effect: mbuserservice.RBACAllowEffect.Effect(),
 				},

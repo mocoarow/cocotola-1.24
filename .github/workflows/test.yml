@@ -124,6 +124,8 @@ jobs:
           flutter-version: ${{ matrix.flutter-version }}
       - run: flutter --version
 
+      - run: flutter test
+
       - uses: arduino/setup-task@v2
 
       # - run: task build-web-flutter

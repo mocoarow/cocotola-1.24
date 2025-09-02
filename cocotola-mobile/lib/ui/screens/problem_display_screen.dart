@@ -31,7 +31,7 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
   @override
   void initState() {
     super.initState();
-    _currentBlankIndex = 0;
+    _setInitialBlankIndex();
     _cursorPosition = 0;
   }
 
@@ -40,7 +40,7 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
     super.didUpdateWidget(oldWidget);
     // 新しい問題に変わった場合、初期値をリセット
     if (oldWidget.config.currentIndex != widget.config.currentIndex) {
-      _currentBlankIndex = 0;
+      _setInitialBlankIndex();
       _cursorPosition = 0;
     }
   }
@@ -77,6 +77,7 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
           problem: problem,
           controller: widget.config.answerControllers[blankIndex],
           focusNode: widget.config.answerFocusNodes[blankIndex],
+          readOnly: false, // 問題表示時は編集可能
           onChanged: (value) {
             developer.log(
                 '[ProblemDisplayScreen] Physical keyboard input for blank $blankIndex with value: "$value"');
@@ -276,10 +277,13 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
             .read(wordProblemsProvider.notifier)
             .checkAnswer(widget.config.currentIndex, blankIndex, trimmedValue);
 
+        developer.log(
+            '[ProblemDisplayScreen] Answer marked as correct, checking completion...');
+
         // 正解時に次の未回答空欄にフォーカスを移動
         _moveToNextIncorrectBlank(blankIndex);
 
-        // 全ての空欄が正解かチェック
+        // 全ての空欄が正解かチェック（自動で解説画面に遷移）
         _checkIfAllBlanksCompleted();
       } else {
         developer
@@ -335,12 +339,34 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
     });
   }
 
-  void _checkIfAllBlanksCompleted() {
-    // 現在の問題をウィジェット設定から取得（ref.readを回避）
+  /// 最初の未回答空欄のインデックスを設定
+  void _setInitialBlankIndex() {
     final currentProblem = widget.config.problem;
     
+    // 最初の未回答空欄を見つける
+    for (int i = 0; i < currentProblem.blanks.length; i++) {
+      if (!currentProblem.blanks[i].isAnswered || !currentProblem.blanks[i].isCorrect) {
+        _currentBlankIndex = i;
+        developer.log('[ProblemDisplayScreen] Set initial blank index to $i');
+        return;
+      }
+    }
+    
+    // 全て回答済みの場合は0にセット
+    _currentBlankIndex = 0;
+    developer.log('[ProblemDisplayScreen] All blanks answered, set blank index to 0');
+  }
+
+  void _checkIfAllBlanksCompleted() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (currentProblem.isCompleted) {
+      // プロバイダーから最新の状態を取得
+      final updatedProblems = ref.read(wordProblemsProvider);
+      final updatedProblem = updatedProblems[widget.config.currentIndex];
+      
+      developer.log(
+          '[ProblemDisplayScreen] Checking completion: isCompleted=${updatedProblem.isCompleted}');
+      
+      if (updatedProblem.isCompleted) {
         developer.log(
             '[ProblemDisplayScreen] All blanks completed, notifying parent');
         // 親コンポーネントに完了を通知
