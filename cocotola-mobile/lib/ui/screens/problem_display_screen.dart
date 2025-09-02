@@ -291,19 +291,19 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
   }
 
   void _moveToNextIncorrectBlank(int currentBlankIndex) {
+    // 現在の問題をウィジェット設定から取得（ref.readを回避）
+    final currentProblem = widget.config.problem;
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final updatedProblem =
-          ref.read(wordProblemsProvider)[widget.config.currentIndex];
-
       // 次の未回答空欄を探す（現在の空欄の次から）
       int? nextIncorrectBlankIndex;
 
       // 現在の空欄より後ろを探す
       for (int i = currentBlankIndex + 1;
-          i < updatedProblem.blanks.length;
+          i < currentProblem.blanks.length;
           i++) {
-        if (!updatedProblem.blanks[i].isAnswered ||
-            !updatedProblem.blanks[i].isCorrect) {
+        if (!currentProblem.blanks[i].isAnswered ||
+            !currentProblem.blanks[i].isCorrect) {
           nextIncorrectBlankIndex = i;
           break;
         }
@@ -312,8 +312,8 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
       // 後ろで見つからない場合、先頭から現在の空欄まで探す
       if (nextIncorrectBlankIndex == null) {
         for (int i = 0; i < currentBlankIndex; i++) {
-          if (!updatedProblem.blanks[i].isAnswered ||
-              !updatedProblem.blanks[i].isCorrect) {
+          if (!currentProblem.blanks[i].isAnswered ||
+              !currentProblem.blanks[i].isCorrect) {
             nextIncorrectBlankIndex = i;
             break;
           }
@@ -336,11 +336,11 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
   }
 
   void _checkIfAllBlanksCompleted() {
+    // 現在の問題をウィジェット設定から取得（ref.readを回避）
+    final currentProblem = widget.config.problem;
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final updatedProblem =
-          ref.read(wordProblemsProvider)[widget.config.currentIndex];
-
-      if (updatedProblem.isCompleted) {
+      if (currentProblem.isCompleted) {
         developer.log(
             '[ProblemDisplayScreen] All blanks completed, notifying parent');
         // 親コンポーネントに完了を通知

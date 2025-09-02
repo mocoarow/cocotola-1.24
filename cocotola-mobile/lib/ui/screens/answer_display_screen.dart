@@ -23,10 +23,10 @@ class AnswerDisplayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentProblem = problems[currentIndex];
-    
+
     final englishWords = currentProblem.englishWords;
     final blankIndices = currentProblem.blankIndices;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('単語学習'),

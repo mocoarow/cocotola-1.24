@@ -127,27 +127,33 @@ class _LearningScreenState extends ConsumerState<LearningScreen> {
         answerFocusNodes: _answerFocusNodes,
       ),
       callbacks: ProblemDisplayCallbacks(
-        onAnswerChanged: (blankIndex, value) {
-          ref
-              .read(wordProblemsProvider.notifier)
-              .updateUserInput(_currentIndex, blankIndex, value);
-        },
-        onAllBlanksCompleted: () {
-          developer.log(
-              '[LearningScreen] All blanks completed, transitioning to answer display');
-          setState(() {
-            _currentState = LearningState.answerDisplay;
-          });
-        },
-        onShowAnswer: () {
-          ref.read(wordProblemsProvider.notifier).markAsSkipped(_currentIndex);
-          _transitionToAnswerDisplay();
-        },
+        onAnswerChanged: _handleAnswerChanged,
+        onAllBlanksCompleted: _handleAllBlanksCompleted,
+        onShowAnswer: _handleShowAnswer,
         onNextProblem: _transitionToAnswerDisplay,
         onInitializeControllers: () =>
             _initializeControllersForCurrentProblem(problems),
       ),
     );
+  }
+
+  void _handleAnswerChanged(int blankIndex, String value) {
+    ref
+        .read(wordProblemsProvider.notifier)
+        .updateUserInput(_currentIndex, blankIndex, value);
+  }
+
+  void _handleAllBlanksCompleted() {
+    developer.log(
+        '[LearningScreen] All blanks completed, transitioning to answer display');
+    setState(() {
+      _currentState = LearningState.answerDisplay;
+    });
+  }
+
+  void _handleShowAnswer() {
+    ref.read(wordProblemsProvider.notifier).markAsSkipped(_currentIndex);
+    _transitionToAnswerDisplay();
   }
 
   void _transitionToNextProblem() {
