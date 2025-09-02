@@ -261,6 +261,13 @@ tasks:
     requires:
       vars: [TAG]
 
+  test-mobile:
+    cmds:
+      - |
+        pushd cocotola-mobile
+        flutter test
+        popd
+
   test:
     cmds:
       - rm -f ./coverage.lcov
