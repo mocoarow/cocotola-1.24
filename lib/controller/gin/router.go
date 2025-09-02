@@ -29,10 +29,6 @@ func InitRootRouterGroup(_ context.Context, corsConfig *mblibconfig.CORSConfig, 
 
 	router.Use(gin.Recovery())
 	router.Use(cors.New(ginCorsConfig))
-	if value, ok := logConfig.Enabled["accessLog"]; ok && value {
-		router.Use(sloggin.New(slog.Default()))
-	}
-
 	if debugConfig.Wait {
 		router.Use(middleware.NewWaitMiddleware())
 	}
@@ -43,11 +39,15 @@ func InitRootRouterGroup(_ context.Context, corsConfig *mblibconfig.CORSConfig, 
 func InitAPIRouterGroup(_ context.Context, parentRouterGroup gin.IRouter, appName string, logConfig *mblibconfig.LogConfig) *gin.RouterGroup {
 	api := parentRouterGroup.Group("api")
 	api.Use(otelgin.Middleware(appName))
-	if value, ok := logConfig.Enabled["traceLog"]; ok && value {
-		api.Use(middleware.NewTraceLogMiddleware(appName, true))
-	} else {
-		api.Use(middleware.NewTraceLogMiddleware(appName, false))
+	if value, ok := logConfig.Enabled["accessLog"]; ok && value {
+		api.Use(sloggin.New(slog.Default()))
 	}
+
+	// if value, ok := logConfig.Enabled["traceLog"]; ok && value {
+	// 	api.Use(middleware.NewTraceLogMiddleware(appName, true))
+	// } else {
+	// 	api.Use(middleware.NewTraceLogMiddleware(appName, false))
+	// }
 
 	return api
 }

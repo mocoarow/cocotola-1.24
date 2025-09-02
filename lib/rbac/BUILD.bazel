@@ -1,0 +1,9 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "rbac",
+    srcs = ["rbac.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/lib/rbac",
+    visibility = ["//visibility:public"],
+    deps = ["//moonbeam/user/domain"],
+)

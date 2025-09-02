@@ -102,7 +102,7 @@ jobs:
   test_flutter:
     strategy:
       matrix:
-        flutter-version: [3.27.1]
+        flutter-version: [3.27.3]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -125,5 +125,7 @@ jobs:
       - run: flutter --version
 
       - uses: arduino/setup-task@v2
+
+      - run: task test-mobile
 
       # - run: task build-web-flutter

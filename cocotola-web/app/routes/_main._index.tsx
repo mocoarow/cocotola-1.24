@@ -9,13 +9,13 @@ export const meta: MetaFunction = () => {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   console.log("_main._index.tsx::loader");
-  const userInfo = await requireAuthUser(request);
-  return { userInfo };
+  const authUser = await requireAuthUser(request);
+  return authUser;
 }
 
 export default function Index() {
   console.log("_main.users.tsx::Index");
-  const { userInfo } = useLoaderData<typeof loader>();
+  const userInfo = useLoaderData<typeof loader>();
   const name = userInfo.name;
   return (
     <div>

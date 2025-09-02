@@ -10,6 +10,7 @@ import (
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -31,7 +32,7 @@ func NewDeckCommandUsecase(txManager, nonTxManager service.TransactionManager, r
 
 func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.OperatorInterface, param *service.DeckAddParameter) (*domain.DeckID, error) {
 	// check RBAC
-	action := mbuserdomain.NewRBACAction("CreateDeck")
+	action := librbac.CreateDeckAction
 	object := param.SpaceID.GetRBACObject()
 	ok, err := u.rbacClient.CheckAuthorization(ctx, &libapi.AuthorizeRequest{
 		OrganizationID: operator.OrganizationID().Int(),

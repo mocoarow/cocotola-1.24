@@ -1,0 +1,23 @@
+---
+services:
+  dev-cocotola-jaeger:
+    image: jaegertracing/all-in-one:1.64.0
+    container_name: dev-cocotola-jaeger
+    ports:
+      - 127.0.0.1:4318:4318
+      - 127.0.0.1:14268:14268
+      - 127.0.0.1:16686:16686
+    healthcheck:
+      test: ["CMD", "curl", "-X", "GET", "localhost:14269"]
+      interval: 30s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - AUDIT_WRITE
+      - MKNOD
+      - NET_RAW
+      - SETFCAP
+      - SYS_CHROOT

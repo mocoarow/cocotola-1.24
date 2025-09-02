@@ -68,12 +68,10 @@ func newCallbackOnAddAppUser(cocotolaCoreCallbackClient service.CocotolaCoreCall
 			return
 		}
 
-		go func(ctx context.Context) {
-			logger.InfoContext(ctx, fmt.Sprintf("OnAddAppUser: organizationID=%d, appUserID=%d", organizationID.Int(), appUserID.Int()))
-			if err := cocotolaCoreCallbackClient.OnAddAppUser(ctx, organizationID, appUserID); err != nil {
-				logger.ErrorContext(ctx, fmt.Sprintf("OnAddAppUser: %v", err))
-			}
-		}(context.Background())
+		logger.InfoContext(ctx, fmt.Sprintf("OnAddAppUser: organizationID=%d, appUserID=%d", organizationID.Int(), appUserID.Int()))
+		if err := cocotolaCoreCallbackClient.OnAddAppUser(ctx, organizationID, appUserID); err != nil {
+			logger.ErrorContext(ctx, fmt.Sprintf("OnAddAppUser: %v", err))
+		}
 	}
 }
 
