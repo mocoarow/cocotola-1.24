@@ -28,7 +28,7 @@ func initGoogleRouter(t *testing.T, ctx context.Context, googleUser controller.G
 	initPublicRouterFuncs := []libcontroller.InitRouterGroupFunc{fn}
 	// initPrivateRouterFuncs := []libcontroller.InitRouterGroupFunc{}
 
-	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, logConfig, debugConfig)
+	router := libcontroller.InitRootRouterGroup(ctx, corsConfig, debugConfig)
 	api := router.Group("api")
 	v1 := api.Group("v1")
 
@@ -98,7 +98,7 @@ func TestGoogleAuthHandler_Authorize_shouldReturn500_whenErrorOccur(t *testing.T
 	w := httptest.NewRecorder()
 
 	// when
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/v1/google/authorize", bytes.NewBufferString(`{"organizationName": "ORG_NAME", "sessionState": "VALID_STATE", "paramState": "VALID_STATE", "code": "ERROR_CODE"}`))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "/api/v1/google/authorize", bytes.NewBufferString(`{"organizationName": "ORG_NAME", "sessionState": "VALID_STATE", "paramState": "VALID_STATE", "code": "ERROR_CODE"}`))
 	require.NoError(t, err)
 	r.ServeHTTP(w, req)
 	respBytes := readBytes(t, w.Body)

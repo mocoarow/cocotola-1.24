@@ -60,7 +60,7 @@ func main() {
 	service.A()
 
 	// init gin
-	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Log, cfg.Debug)
+	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
 
 	if err := initialize.Initialize(ctx, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App); err != nil {
 		libdomain.CheckError(err)

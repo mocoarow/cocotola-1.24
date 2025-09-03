@@ -66,7 +66,7 @@ func main() {
 	defer sqlDB.Close()
 	defer tp.ForceFlush(ctx) // flushes any pending spans
 
-	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Log, cfg.Debug)
+	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
 
 	// web
 	{

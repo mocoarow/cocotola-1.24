@@ -35,7 +35,9 @@ go_library(
 )
 
 go_test(
-    name = "gin_test",
+    name = "gin_s_test",
+    size = "small",
+    gotags = ["small"],
     srcs = [
         "auth_handler_s_test.go",
         "google_auth_handler_s_test.go",
