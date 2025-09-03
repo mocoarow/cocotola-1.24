@@ -4,12 +4,12 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
 type ProfileUsecase struct {

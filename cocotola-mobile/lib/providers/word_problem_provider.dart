@@ -13,6 +13,7 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
           WordProblem(
             japanese: '私は毎日英語を勉強します。',
             english: 'I ___ English every day.',
+            cefrLevel: 'A1',
             blanks: [
               BlankAnswer(
                 answer: 'study',
@@ -23,6 +24,7 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
           WordProblem(
             japanese: '彼女は新しい本を買いました。',
             english: 'She ___ a new book.',
+            cefrLevel: 'A2',
             blanks: [
               BlankAnswer(
                 answer: 'bought',
@@ -33,6 +35,7 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
           WordProblem(
             japanese: 'この問題は難しいです。',
             english: 'This problem is ___.',
+            cefrLevel: 'B1',
             blanks: [
               BlankAnswer(
                 answer: 'difficult',
@@ -43,6 +46,7 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
           WordProblem(
             japanese: '私は彼女に図書館で会った。',
             english: 'I ___ her ___ the library.',
+            cefrLevel: 'B1',
             blanks: [
               BlankAnswer(
                 answer: 'met',
@@ -57,6 +61,7 @@ class WordProblemsNotifier extends StateNotifier<List<WordProblem>> {
           WordProblem(
             japanese: '彼は英語を上手に話します。',
             english: 'He speaks English ___.',
+            cefrLevel: 'A2',
             blanks: [
               BlankAnswer(
                 answer: 'well',

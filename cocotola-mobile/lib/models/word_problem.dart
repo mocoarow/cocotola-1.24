@@ -34,12 +34,14 @@ class WordProblem {
   final String japanese;
   final String english;
   final List<BlankAnswer> blanks;
+  final String cefrLevel;
   bool isSkipped;
 
   WordProblem({
     required this.japanese,
     required this.english,
     required this.blanks,
+    this.cefrLevel = 'A1', // デフォルトはA1レベル
     this.isSkipped = false,
   });
 
@@ -50,12 +52,14 @@ class WordProblem {
     String? japanese,
     String? english,
     List<BlankAnswer>? blanks,
+    String? cefrLevel,
     bool? isSkipped,
   }) {
     return WordProblem(
       japanese: japanese ?? this.japanese,
       english: english ?? this.english,
       blanks: blanks ?? this.blanks.map((blank) => blank.copyWith()).toList(),
+      cefrLevel: cefrLevel ?? this.cefrLevel,
       isSkipped: isSkipped ?? this.isSkipped,
     );
   }

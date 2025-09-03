@@ -23,6 +23,7 @@ class ProblemDisplayCallbacks {
   final VoidCallback onShowAnswer;
   final VoidCallback onNextProblem;
   final void Function() onInitializeControllers;
+  final WordProblem Function() getCurrentProblem; // 現在の問題を取得
 
   const ProblemDisplayCallbacks({
     required this.onAnswerChanged,
@@ -30,5 +31,6 @@ class ProblemDisplayCallbacks {
     required this.onShowAnswer,
     required this.onNextProblem,
     required this.onInitializeControllers,
+    required this.getCurrentProblem,
   });
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/word_problem.dart';
 import '../../models/problem_display_config.dart';
-import '../../providers/word_problem_provider.dart';
 import '../widgets/blank_widget.dart';
 import '../widgets/hints_widget.dart';
 import '../widgets/problem_content_widget.dart';
@@ -272,13 +271,9 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
         developer.log(
             '[ProblemDisplayScreen] Auto-check: Correct answer detected for blank $blankIndex');
 
-        // プロバイダーで正解をマーク
-        ref
-            .read(wordProblemsProvider.notifier)
-            .checkAnswer(widget.config.currentIndex, blankIndex, trimmedValue);
-
+        // ViewModelに正解をマーク（既にhandleAnswerChangedで処理済み）
         developer.log(
-            '[ProblemDisplayScreen] Answer marked as correct, checking completion...');
+            '[ProblemDisplayScreen] Answer already marked as correct through onAnswerChanged callback');
 
         // 正解時に次の未回答空欄にフォーカスを移動
         _moveToNextIncorrectBlank(blankIndex);
@@ -359,9 +354,8 @@ class _ProblemDisplayScreenState extends ConsumerState<ProblemDisplayScreen> {
 
   void _checkIfAllBlanksCompleted() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // プロバイダーから最新の状態を取得
-      final updatedProblems = ref.read(wordProblemsProvider);
-      final updatedProblem = updatedProblems[widget.config.currentIndex];
+      // コールバックから最新の問題状態を取得
+      final updatedProblem = widget.callbacks.getCurrentProblem();
       
       developer.log(
           '[ProblemDisplayScreen] Checking completion: isCompleted=${updatedProblem.isCompleted}');
