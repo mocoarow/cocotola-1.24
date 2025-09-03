@@ -7,7 +7,8 @@
 ## 📋 変更前チェックリスト
 
 ### 1. 現在の動作を記録
-```bash
+
+```shell
 # 既存機能のテストを実行
 flutter test
 
@@ -16,6 +17,7 @@ flutter test test/integration/
 ```
 
 ### 2. 影響範囲の分析
+
 - 変更する関数/クラスがどこから呼ばれているかを確認
 - 依存関係を把握する
 - 状態管理の影響を考慮する
@@ -23,15 +25,18 @@ flutter test test/integration/
 ## 🔧 変更中のプラクティス
 
 ### 1. 小さな変更を心がける
+
 - 1つのPRで1つの機能に集中
 - 大きな変更は複数のPRに分割
 
 ### 2. テストファーストアプローチ
+
 - 既存のテストが通ることを確認
 - 新機能のテストを先に書く
 - 変更後もテストが通ることを確認
 
 ### 3. ログの活用
+
 ```dart
 import 'dart:developer' as developer;
 
@@ -45,12 +50,14 @@ void someFunction() {
 ## ✅ 変更後チェックリスト
 
 ### 1. 自動テスト実行
+
 ```bash
 # 回帰テストスクリプト実行
 ./scripts/regression_test.sh
 ```
 
 ### 2. 手動テスト項目
+
 - [ ] 問題セット選択が正常に動作する
 - [ ] テキスト入力が正常に動作する
 - [ ] 正解時の自動遷移が動作する
@@ -61,27 +68,32 @@ void someFunction() {
 - [ ] 戻るナビゲーションが動作する
 
 ### 3. パフォーマンステスト
+
 - メモリリークがないかチェック
 - UIの応答性を確認
 
 ## 🚨 回帰が発生した場合
 
 ### 1. 即座にロールバック
-```bash
+
+```shell
 git revert <commit-hash>
 ```
 
 ### 2. 問題の分析
+
 - どの変更が原因かを特定
 - なぜテストで検出されなかったかを分析
 
 ### 3. テストの改善
+
 - 見落とした部分のテストを追加
 - 統合テストのカバレッジを向上
 
 ## 🛠️ ツール設定
 
 ### VS Code設定（推奨）
+
 ```json
 {
   "editor.formatOnSave": true,
@@ -92,6 +104,7 @@ git revert <commit-hash>
 ```
 
 ### Git Hooks（推奨）
+
 ```bash
 # pre-commit hookを設定
 echo '#!/bin/sh\nflutter analyze && flutter test' > .git/hooks/pre-commit
@@ -101,6 +114,7 @@ chmod +x .git/hooks/pre-commit
 ## 📊 品質メトリクス
 
 定期的に以下を確認：
+
 - テストカバレッジ率
 - コード分析での警告数
 - 実行時間（パフォーマンス回帰）
