@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/problem_set_provider.dart';
-import '../ui/widgets/cefr_level_badge.dart';
+import '../widgets/cefr_level_badge.dart';
 import '../view_models/app_state_manager.dart';
 
 class ProblemSetSelectionScreenUnified extends ConsumerWidget {

@@ -84,7 +84,7 @@ class ProblemContentWidget extends StatelessWidget {
                               border: Border.all(color: Colors.grey.shade300),
                             ),
                             child: Wrap(
-                              alignment: WrapAlignment.center,
+                              alignment: WrapAlignment.start,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 for (int i = 0; i < englishWords.length; i++)
@@ -94,14 +94,11 @@ class ProblemContentWidget extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 4.0, vertical: 2.0),
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          englishWords[i],
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                          ),
+                                      child: Text(
+                                        englishWords[i],
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ),

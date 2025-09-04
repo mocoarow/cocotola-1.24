@@ -54,17 +54,32 @@ class AppStateManager extends StateNotifier<AppState> {
     }
     
     // 正解時の自動処理
-    if (isCorrect && updatedProblem.isCompleted) {
-      developer.log('[AppStateManager] Problem completed automatically');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        transitionToAnswerDisplay();
-      });
+    if (isCorrect) {
+      if (updatedProblem.isCompleted) {
+        developer.log('[AppStateManager] Problem completed automatically');
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          transitionToAnswerDisplay();
+        });
+      } else {
+        // 次の未正解の空欄に自動フォーカス移動
+        _moveToNextIncorrectBlank(updatedProblem);
+      }
     }
   }
 
   /// 答え表示画面への遷移
   void transitionToAnswerDisplay() {
     developer.log('[AppStateManager] Transitioning to answer display');
+    
+    // 答え表示時に全ての空欄のコントローラーに正解を設定
+    if (state.currentProblem != null && state.answerControllers.isNotEmpty) {
+      final currentProblem = state.currentProblem!;
+      for (int i = 0; i < currentProblem.blanks.length && i < state.answerControllers.length; i++) {
+        state.answerControllers[i].text = currentProblem.blanks[i].answer;
+      }
+      developer.log('[AppStateManager] Set correct answers to controllers for answer display');
+    }
+    
     state = state.copyWith(learningState: LearningPhase.answerDisplay);
   }
 
@@ -273,6 +288,34 @@ class AppStateManager extends StateNotifier<AppState> {
         );
         
         state.answerFocusNodes[firstUnAnsweredIndex].requestFocus();
+      }
+    });
+  }
+
+  /// 次の未正解空欄に自動フォーカス移動
+  void _moveToNextIncorrectBlank(WordProblem problem) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 次の未正解空欄を探す
+      int? nextIncorrectBlankIndex;
+      for (int i = 0; i < problem.blanks.length; i++) {
+        if (!problem.blanks[i].isAnswered || !problem.blanks[i].isCorrect) {
+          nextIncorrectBlankIndex = i;
+          break;
+        }
+      }
+      
+      // 見つかった場合、フォーカス移動
+      if (nextIncorrectBlankIndex != null && 
+          nextIncorrectBlankIndex < state.answerFocusNodes.length) {
+        developer.log('[AppStateManager] Moving focus to blank $nextIncorrectBlankIndex');
+        
+        // カスタムキーボード用の状態も更新
+        state = state.copyWith(
+          currentBlankIndex: nextIncorrectBlankIndex,
+          cursorPosition: 0,
+        );
+        
+        state.answerFocusNodes[nextIncorrectBlankIndex].requestFocus();
       }
     });
   }

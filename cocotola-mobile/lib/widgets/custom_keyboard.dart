@@ -32,7 +32,16 @@ class CustomKeyboard extends StatelessWidget {
     
     return Container(
       key: const Key('custom-keyboard'),
-      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
       child: Column(
         children: [
           // カーソル位置インジケーター（条件付き表示）

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../view_models/app_state_manager.dart';
-import '../ui/widgets/problem_content_widget.dart';
-import '../ui/widgets/blank_widget.dart';
-import '../ui/widgets/hints_widget.dart';
+import '../widgets/problem_content_widget.dart';
+import '../widgets/blank_widget.dart';
+import '../widgets/hints_widget.dart';
 import '../widgets/custom_keyboard.dart';
 import 'dart:developer' as developer;
 
@@ -66,10 +66,14 @@ class LearningScreenUnified extends ConsumerWidget {
                 onTap: () => _handleBlankTap(blankIndex, appStateManager, appState),
               ),
               buildHintsSection: (problem) => HintsWidget(problem: problem),
-              buildKeyboard: (problem) => _buildKeyboard(problem, appStateManager),
-              buildActionButtons: (problem) => _buildActionButtons(problem, appStateManager),
+              buildKeyboard: (problem) => const SizedBox.shrink(), // キーボードは下部に移動
+              buildActionButtons: (problem) => const SizedBox.shrink(), // アクションボタンも下部に移動
             ),
           ),
+          // カスタムキーボード（画面下部に固定）
+          _buildKeyboard(currentProblem, appStateManager),
+          // アクションボタン（画面最下部に固定）
+          _buildActionButtons(currentProblem, appStateManager),
         ],
       ),
     );

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../view_models/app_state_manager.dart';
-import '../ui/widgets/problem_content_widget.dart';
-import '../ui/widgets/blank_widget.dart';
-import '../ui/widgets/hints_widget.dart';
+import '../widgets/problem_content_widget.dart';
+import '../widgets/blank_widget.dart';
+import '../widgets/hints_widget.dart';
 
 class AnswerDisplayScreenUnified extends ConsumerWidget {
   const AnswerDisplayScreenUnified({super.key});
@@ -48,9 +48,11 @@ class AnswerDisplayScreenUnified extends ConsumerWidget {
               ),
               buildHintsSection: (problem) => HintsWidget(problem: problem),
               buildKeyboard: (_) => const SizedBox.shrink(), // キーボード非表示
-              buildActionButtons: (_) => _buildActionButtons(appStateManager),
+              buildActionButtons: (_) => const SizedBox.shrink(), // アクションボタンは下部に移動
             ),
           ),
+          // アクションボタン（画面最下部に固定）
+          _buildActionButtons(appStateManager),
         ],
       ),
     );

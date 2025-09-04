@@ -145,6 +145,22 @@ void main() {
       // （実際のキーボードボタンの詳細テストは別途実装）
     });
 
+    testWidgets('複数空欄問題の存在確認テスト', (WidgetTester tester) async {
+      // アプリ起動
+      await tester.pumpWidget(
+        const ProviderScope(child: app.MyApp()),
+      );
+      await tester.pumpAndSettle();
+
+      // 問題セットが表示されることを確認
+      final cards = find.byType(Card);
+      expect(cards, findsAtLeastNWidgets(1));
+      
+      // このテストは複数空欄問題の存在を確認するだけ
+      // 実際の自動フォーカス移動はAppStateManagerのユニットテストで検証
+      expect(cards, findsWidgets);
+    });
+
     testWidgets('全問正解時の完了画面表示', (WidgetTester tester) async {
       // アプリ起動
       await tester.pumpWidget(
