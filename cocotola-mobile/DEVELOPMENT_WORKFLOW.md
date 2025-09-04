@@ -121,7 +121,7 @@ chmod +x .git/hooks/pre-commit
 
 ## 🎯 長期的改善
 
-1. **状態管理の統一化** 
+1. **状態管理の統一化**
    - AppStateManagerを使用して状態を一元管理
    - プロバイダーの依存関係を整理
 
