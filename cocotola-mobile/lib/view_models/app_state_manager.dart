@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../models/word_problem.dart';
+import '../models/problem_base.dart';
 import '../models/problem_set.dart';
 import 'dart:developer' as developer;
 
@@ -19,7 +20,7 @@ class AppStateManager extends StateNotifier<AppState> {
       selectedProblemSet: problemSet,
       currentProblemIndex: 0,
       learningState: LearningPhase.problemDisplay,
-      problems: problemSet.problems.map((p) => p.copyWith()).toList(),
+      problems: problemSet.problems,
       answerControllers: [],
       answerFocusNodes: [],
       currentBlankIndex: 0, // カスタムキーボード用の空欄インデックス初期化
@@ -29,15 +30,16 @@ class AppStateManager extends StateNotifier<AppState> {
     _initializeControllersForCurrentProblem();
   }
 
-  /// ユーザーの回答を処理
+  /// ユーザーの回答を処理（英単語問題用）
   void handleAnswer(int blankIndex, String value) {
-    if (state.selectedProblemSet == null) return;
+    if (state.selectedProblemSet == null || state.currentProblem == null) return;
+    if (state.currentProblem!.type != ProblemType.word) return;
     
-    developer.log('[AppStateManager] Answer changed: blank=$blankIndex, value="$value"');
+    developer.log('[AppStateManager] Word problem answer changed: blank=$blankIndex, value="$value"');
     
-    final updatedProblems = List<WordProblem>.from(state.problems);
-    final currentProblem = updatedProblems[state.currentProblemIndex];
-    final blank = currentProblem.blanks[blankIndex];
+    final updatedProblems = List<Problem>.from(state.problems);
+    final currentWordProblem = updatedProblems[state.currentProblemIndex].wordProblem!;
+    final blank = currentWordProblem.blanks[blankIndex];
     
     final isCorrect = value.toLowerCase().trim() == blank.answer.toLowerCase().trim();
     final updatedBlank = blank.copyWith(
@@ -46,8 +48,8 @@ class AppStateManager extends StateNotifier<AppState> {
       isCorrect: isCorrect,
     );
     
-    final updatedProblem = currentProblem.updateBlank(blankIndex, updatedBlank);
-    updatedProblems[state.currentProblemIndex] = updatedProblem;
+    final updatedWordProblem = currentWordProblem.updateBlank(blankIndex, updatedBlank);
+    updatedProblems[state.currentProblemIndex] = Problem.word(updatedWordProblem);
     
     state = state.copyWith(problems: updatedProblems);
     
@@ -58,27 +60,50 @@ class AppStateManager extends StateNotifier<AppState> {
     
     // 正解時の自動処理
     if (isCorrect) {
-      if (updatedProblem.isCompleted) {
+      if (updatedWordProblem.isCompleted) {
         developer.log('[AppStateManager] Problem completed automatically');
         WidgetsBinding.instance.addPostFrameCallback((_) {
           transitionToAnswerDisplay();
         });
       } else {
         // 次の未正解の空欄に自動フォーカス移動
-        _moveToNextIncorrectBlank(updatedProblem);
+        _moveToNextIncorrectBlank(updatedWordProblem);
       }
     }
+  }
+
+  /// 暗記問題の回答を処理（できた/できなかった）
+  void handleMemorizationAnswer(bool wasCorrect) {
+    if (state.selectedProblemSet == null || state.currentProblem == null) return;
+    if (state.currentProblem!.type != ProblemType.memorization) return;
+    
+    developer.log('[AppStateManager] Memorization problem answered: $wasCorrect');
+    
+    final updatedProblems = List<Problem>.from(state.problems);
+    final currentMemoProblem = updatedProblems[state.currentProblemIndex].memorizationProblem!;
+    
+    final updatedMemoProblem = currentMemoProblem.markAsAnswered(wasCorrect);
+    updatedProblems[state.currentProblemIndex] = Problem.memorization(updatedMemoProblem);
+    
+    state = state.copyWith(problems: updatedProblems);
+    
+    // 次の問題に自動遷移
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      moveToNextProblem();
+    });
   }
 
   /// 答え表示画面への遷移
   void transitionToAnswerDisplay() {
     developer.log('[AppStateManager] Transitioning to answer display');
     
-    // 答え表示時に全ての空欄のコントローラーに正解を設定
-    if (state.currentProblem != null && state.answerControllers.isNotEmpty) {
-      final currentProblem = state.currentProblem!;
-      for (int i = 0; i < currentProblem.blanks.length && i < state.answerControllers.length; i++) {
-        state.answerControllers[i].text = currentProblem.blanks[i].answer;
+    // 英単語問題の場合のみコントローラーに正解を設定
+    if (state.currentProblem != null && 
+        state.currentProblem!.type == ProblemType.word &&
+        state.answerControllers.isNotEmpty) {
+      final currentWordProblem = state.currentProblem!.wordProblem!;
+      for (int i = 0; i < currentWordProblem.blanks.length && i < state.answerControllers.length; i++) {
+        state.answerControllers[i].text = currentWordProblem.blanks[i].answer;
       }
       developer.log('[AppStateManager] Set correct answers to controllers for answer display');
     }
@@ -88,20 +113,37 @@ class AppStateManager extends StateNotifier<AppState> {
 
   /// 次の問題への遷移
   void moveToNextProblem() {
-    final nextIndex = _findNextIncompleteProblemIndex();
-    
-    if (nextIndex == null) {
-      // 全問完了
-      state = state.copyWith(learningState: LearningPhase.completed);
-      return;
+    // 暗記問題の場合は単純に次のインデックスに移動
+    if (state.currentProblem?.type == ProblemType.memorization) {
+      final nextIndex = state.currentProblemIndex + 1;
+      
+      if (nextIndex >= state.problems.length) {
+        // 全問完了
+        state = state.copyWith(learningState: LearningPhase.completed);
+        return;
+      }
+      
+      state = state.copyWith(
+        currentProblemIndex: nextIndex,
+        learningState: LearningPhase.problemDisplay,
+      );
+    } else {
+      // 英単語問題の場合は未完了問題を探す
+      final nextIndex = _findNextIncompleteProblemIndex();
+      
+      if (nextIndex == null) {
+        // 全問完了
+        state = state.copyWith(learningState: LearningPhase.completed);
+        return;
+      }
+      
+      state = state.copyWith(
+        currentProblemIndex: nextIndex,
+        learningState: LearningPhase.problemDisplay,
+        currentBlankIndex: 0, // 最初の空欄にリセット
+        cursorPosition: 0, // カーソル位置もリセット
+      );
     }
-    
-    state = state.copyWith(
-      currentProblemIndex: nextIndex,
-      learningState: LearningPhase.problemDisplay,
-      currentBlankIndex: 0, // 最初の空欄にリセット
-      cursorPosition: 0, // カーソル位置もリセット
-    );
     
     _initializeControllersForCurrentProblem();
   }
@@ -135,16 +177,29 @@ class AppStateManager extends StateNotifier<AppState> {
     
     // 問題をリセット
     final resetProblems = state.selectedProblemSet!.problems.map((problem) {
-      final resetBlanks = problem.blanks.map((blank) => blank.copyWith(
-        userInput: '',
-        isAnswered: false,
-        isCorrect: false,
-      )).toList();
-      
-      return problem.copyWith(
-        blanks: resetBlanks,
-        isSkipped: false,
-      );
+      if (problem.type == ProblemType.word) {
+        final wordProblem = problem.wordProblem!;
+        final resetBlanks = wordProblem.blanks.map((blank) => blank.copyWith(
+          userInput: '',
+          isAnswered: false,
+          isCorrect: false,
+        )).toList();
+        
+        final resetWordProblem = wordProblem.copyWith(
+          blanks: resetBlanks,
+          isSkipped: false,
+        );
+        return Problem.word(resetWordProblem);
+      } else if (problem.type == ProblemType.memorization) {
+        final memoProblem = problem.memorizationProblem!;
+        final resetMemoProblem = memoProblem.copyWith(
+          isAnswered: false,
+          isCorrect: false,
+        );
+        return Problem.memorization(resetMemoProblem);
+      } else {
+        return problem;
+      }
     }).toList();
     
     state = state.copyWith(
@@ -251,7 +306,7 @@ class AppStateManager extends StateNotifier<AppState> {
     }
   }
 
-  /// コントローラーの初期化
+  /// コントローラーの初期化（英単語問題の場合のみ）
   void _initializeControllersForCurrentProblem() {
     if (state.problems.isEmpty || 
         state.currentProblemIndex >= state.problems.length) {
@@ -261,26 +316,37 @@ class AppStateManager extends StateNotifier<AppState> {
     _disposeControllers();
     
     final currentProblem = state.problems[state.currentProblemIndex];
-    final controllers = List.generate(
-      currentProblem.blanks.length,
-      (index) => TextEditingController(text: currentProblem.blanks[index].userInput),
-    );
     
-    final focusNodes = List.generate(
-      currentProblem.blanks.length,
-      (index) => FocusNode(),
-    );
-    
-    state = state.copyWith(
-      answerControllers: controllers,
-      answerFocusNodes: focusNodes,
-    );
-    
-    // 自動フォーカスを設定
-    _setInitialFocus();
+    // 英単語問題の場合のみコントローラーを初期化
+    if (currentProblem.type == ProblemType.word) {
+      final wordProblem = currentProblem.wordProblem!;
+      final controllers = List.generate(
+        wordProblem.blanks.length,
+        (index) => TextEditingController(text: wordProblem.blanks[index].userInput),
+      );
+      
+      final focusNodes = List.generate(
+        wordProblem.blanks.length,
+        (index) => FocusNode(),
+      );
+      
+      state = state.copyWith(
+        answerControllers: controllers,
+        answerFocusNodes: focusNodes,
+      );
+      
+      // 自動フォーカスを設定
+      _setInitialFocus();
+    } else {
+      // 暗記問題の場合はコントローラーは不要
+      state = state.copyWith(
+        answerControllers: [],
+        answerFocusNodes: [],
+      );
+    }
   }
 
-  /// 最初の未回答空欄に自動フォーカスを設定
+  /// 最初の未回答空欄に自動フォーカスを設定（英単語問題の場合のみ）
   void _setInitialFocus() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (state.problems.isEmpty || 
@@ -290,27 +356,32 @@ class AppStateManager extends StateNotifier<AppState> {
       
       final currentProblem = state.problems[state.currentProblemIndex];
       
-      // 最初の未回答空欄を見つける
-      int? firstUnAnsweredIndex;
-      for (int i = 0; i < currentProblem.blanks.length; i++) {
-        if (!currentProblem.blanks[i].isAnswered || !currentProblem.blanks[i].isCorrect) {
-          firstUnAnsweredIndex = i;
-          break;
+      // 英単語問題の場合のみフォーカス設定
+      if (currentProblem.type == ProblemType.word) {
+        final wordProblem = currentProblem.wordProblem!;
+        
+        // 最初の未回答空欄を見つける
+        int? firstUnAnsweredIndex;
+        for (int i = 0; i < wordProblem.blanks.length; i++) {
+          if (!wordProblem.blanks[i].isAnswered || !wordProblem.blanks[i].isCorrect) {
+            firstUnAnsweredIndex = i;
+            break;
+          }
         }
-      }
-      
-      // 見つかった場合、そこにフォーカスを設定
-      if (firstUnAnsweredIndex != null && 
-          firstUnAnsweredIndex < state.answerFocusNodes.length) {
-        developer.log('[AppStateManager] Setting initial focus to blank $firstUnAnsweredIndex');
         
-        // カスタムキーボード用の状態も更新
-        state = state.copyWith(
-          currentBlankIndex: firstUnAnsweredIndex,
-          cursorPosition: 0,
-        );
-        
-        state.answerFocusNodes[firstUnAnsweredIndex].requestFocus();
+        // 見つかった場合、そこにフォーカスを設定
+        if (firstUnAnsweredIndex != null && 
+            firstUnAnsweredIndex < state.answerFocusNodes.length) {
+          developer.log('[AppStateManager] Setting initial focus to blank $firstUnAnsweredIndex');
+          
+          // カスタムキーボード用の状態も更新
+          state = state.copyWith(
+            currentBlankIndex: firstUnAnsweredIndex,
+            cursorPosition: 0,
+          );
+          
+          state.answerFocusNodes[firstUnAnsweredIndex].requestFocus();
+        }
       }
     });
   }
@@ -383,7 +454,7 @@ class AppState {
   final ProblemSet? selectedProblemSet;
   final int currentProblemIndex;
   final LearningPhase learningState;
-  final List<WordProblem> problems;
+  final List<Problem> problems;
   final List<TextEditingController> answerControllers;
   final List<FocusNode> answerFocusNodes;
   final int currentBlankIndex; // 現在フォーカスされている空欄
@@ -404,7 +475,7 @@ class AppState {
     Object? selectedProblemSet = _undefined,
     int? currentProblemIndex,
     LearningPhase? learningState,
-    List<WordProblem>? problems,
+    List<Problem>? problems,
     List<TextEditingController>? answerControllers,
     List<FocusNode>? answerFocusNodes,
     int? currentBlankIndex,
@@ -424,7 +495,7 @@ class AppState {
     );
   }
 
-  WordProblem? get currentProblem => 
+  Problem? get currentProblem => 
       problems.isNotEmpty && currentProblemIndex < problems.length 
           ? problems[currentProblemIndex] 
           : null;

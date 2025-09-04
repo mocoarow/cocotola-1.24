@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../view_models/app_state_manager.dart';
+import '../models/problem_base.dart';
 import '../widgets/problem_content_widget.dart';
 import '../widgets/blank_widget.dart';
 import '../widgets/hints_widget.dart';
+import '../widgets/memorization_answer_widget.dart';
 
 class AnswerDisplayScreenUnified extends ConsumerWidget {
   const AnswerDisplayScreenUnified({super.key});
@@ -21,8 +23,42 @@ class AnswerDisplayScreenUnified extends ConsumerWidget {
     }
 
     final currentProblem = appState.currentProblem!;
-    final englishWords = currentProblem.englishWords;
-    final blankIndices = currentProblem.blankIndices;
+
+    // 問題タイプによって処理を分ける
+    if (currentProblem.type == ProblemType.memorization) {
+      return _buildMemorizationAnswer(context, appState, appStateManager);
+    } else {
+      return _buildWordAnswer(context, appState, appStateManager);
+    }
+  }
+
+  /// 暗記問題の解答画面構築
+  Widget _buildMemorizationAnswer(BuildContext context, AppState appState, AppStateManager appStateManager) {
+    final currentProblem = appState.currentProblem!;
+    final memorizationProblem = currentProblem.memorizationProblem!;
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(appState.selectedProblemSet!.title),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => appStateManager.returnToMenu(),
+          tooltip: 'メニューに戻る',
+        ),
+      ),
+      body: MemorizationAnswerWidget(
+        problem: memorizationProblem,
+        onAnswer: (wasCorrect) => appStateManager.handleMemorizationAnswer(wasCorrect),
+      ),
+    );
+  }
+
+  /// 英単語問題の解答画面構築
+  Widget _buildWordAnswer(BuildContext context, AppState appState, AppStateManager appStateManager) {
+    final currentProblem = appState.currentProblem!;
+    final wordProblem = currentProblem.wordProblem!;
+    final englishWords = wordProblem.englishWords;
+    final blankIndices = wordProblem.blankIndices;
 
     return Scaffold(
       appBar: AppBar(
@@ -38,7 +74,7 @@ class AnswerDisplayScreenUnified extends ConsumerWidget {
           // 答え表示部分
           Expanded(
             child: ProblemContentWidget(
-              currentProblem: currentProblem,
+              currentProblem: wordProblem,
               englishWords: englishWords,
               blankIndices: blankIndices,
               buildBlankWidget: (wordIndex, blankIndex, problem) => BlankWidget(

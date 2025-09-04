@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cocotola/view_models/app_state_manager.dart';
 import 'package:cocotola/models/word_problem.dart';
+import 'package:cocotola/models/problem_base.dart';
 import 'package:cocotola/models/problem_set.dart';
 
 void main() {
@@ -30,7 +31,7 @@ void main() {
         description: 'テスト用の問題セット',
         cefrLevel: 'A1',
         problems: [
-          WordProblem(
+          Problem.word(WordProblem(
             japanese: 'テストの勉強',
             english: '_____ _____ test',
             blanks: [
@@ -38,7 +39,7 @@ void main() {
               BlankAnswer(answer: 'of', hint: 'ヒント2'),
             ],
             cefrLevel: 'A1',
-          ),
+          )),
         ],
       );
 
@@ -55,7 +56,7 @@ void main() {
       
       // 正解が記録されたことを確認
       state = container.read(appStateProvider);
-      final firstBlank = state.currentProblem!.blanks[0];
+      final firstBlank = state.currentProblem!.wordProblem!.blanks[0];
       expect(firstBlank.isAnswered, true);
       expect(firstBlank.isCorrect, true);
       expect(firstBlank.userInput, 'study');
@@ -68,7 +69,7 @@ void main() {
       
       // 2つ目の正解が記録されたことを確認
       state = container.read(appStateProvider);
-      final secondBlank = state.currentProblem!.blanks[1];
+      final secondBlank = state.currentProblem!.wordProblem!.blanks[1];
       expect(secondBlank.isAnswered, true);
       expect(secondBlank.isCorrect, true);
       
@@ -84,7 +85,7 @@ void main() {
         description: 'テスト用の問題セット',
         cefrLevel: 'A1',
         problems: [
-          WordProblem(
+          Problem.word(WordProblem(
             japanese: 'テストの勉強',
             english: '_____ _____ test',
             blanks: [
@@ -92,7 +93,7 @@ void main() {
               BlankAnswer(answer: 'of', hint: 'ヒント2'),
             ],
             cefrLevel: 'A1',
-          ),
+          )),
         ],
       );
 
@@ -104,7 +105,7 @@ void main() {
       
       // 間違いが記録されたことを確認
       var state = container.read(appStateProvider);
-      final firstBlank = state.currentProblem!.blanks[0];
+      final firstBlank = state.currentProblem!.wordProblem!.blanks[0];
       expect(firstBlank.isAnswered, false); // 正解でないため未回答扱い
       expect(firstBlank.isCorrect, false);
       expect(firstBlank.userInput, 'wrong');
@@ -121,14 +122,14 @@ void main() {
         description: 'テスト用の問題セット',
         cefrLevel: 'A1',
         problems: [
-          WordProblem(
+          Problem.word(WordProblem(
             japanese: 'テストの勉学',
             english: '_____ test',
             blanks: [
               BlankAnswer(answer: 'study', hint: 'ヒント1'),
             ],
             cefrLevel: 'A1',
-          ),
+          )),
         ],
       );
 
@@ -153,7 +154,7 @@ void main() {
         description: 'テスト用の問題セット',
         cefrLevel: 'A1',
         problems: [
-          WordProblem(
+          Problem.word(WordProblem(
             japanese: 'テストの勉強',
             english: '_____ _____ test',
             blanks: [
@@ -161,7 +162,7 @@ void main() {
               BlankAnswer(answer: 'of', hint: 'ヒント2'),
             ],
             cefrLevel: 'A1',
-          ),
+          )),
         ],
       );
 
@@ -194,7 +195,7 @@ void main() {
         description: 'テスト用の問題セット',
         cefrLevel: 'A1',
         problems: [
-          WordProblem(
+          Problem.word(WordProblem(
             japanese: 'テストの勉強',
             english: '_____ _____ test',
             blanks: [
@@ -202,7 +203,7 @@ void main() {
               BlankAnswer(answer: 'of', hint: 'ヒント2'),
             ],
             cefrLevel: 'A1',
-          ),
+          )),
         ],
       );
 
@@ -233,14 +234,14 @@ void main() {
         description: 'テスト用の問題セット',
         cefrLevel: 'A1',
         problems: [
-          WordProblem(
+          Problem.word(WordProblem(
             japanese: 'テストの勉強',
             english: '_____ test',
             blanks: [
               BlankAnswer(answer: 'study', hint: 'ヒント1'),
             ],
             cefrLevel: 'A1',
-          ),
+          )),
         ],
       );
 
@@ -276,14 +277,14 @@ void main() {
         description: 'テスト用の問題セット',
         cefrLevel: 'A1',
         problems: [
-          WordProblem(
+          Problem.word(WordProblem(
             japanese: 'テストの勉強',
             english: '_____ test',
             blanks: [
               BlankAnswer(answer: 'study', hint: 'ヒント1'),
             ],
             cefrLevel: 'A1',
-          ),
+          )),
         ],
       );
 

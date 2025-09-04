@@ -31,95 +31,127 @@ class ProblemSetSelectionScreenUnified extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: ListView.builder(
-                itemCount: problemSets.length,
-                itemBuilder: (context, index) {
-                  final problemSet = problemSets[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: problemSets.map((problemSet) {
+                  print('Debug: Building item for ${problemSet.title}');
+                  try {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => appStateManager.selectProblemSet(problemSet),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        problemSet.title,
+                                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue[800],
+                                        ),
+                                      ),
+                                    ),
+                                    CefrLevelBadge(cefrLevel: problemSet.cefrLevel),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  problemSet.description,
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.grey[600],
+                                    height: 1.4,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue[50],
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(color: Colors.blue[200]!),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.quiz,
+                                            size: 16,
+                                            color: Colors.blue[600],
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${problemSet.problemCount}問',
+                                            style: TextStyle(
+                                              color: Colors.blue[600],
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: Colors.grey[400],
+                                      size: 18,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: () => appStateManager.selectProblemSet(problemSet),
+                    );
+                  } catch (e, stackTrace) {
+                    print('Debug: Error building item for ${problemSet.title}: $e');
+                    print('Debug: StackTrace: $stackTrace');
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Card(
+                        elevation: 4,
+                        color: Colors.red[50],
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      problemSet.title,
-                                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue[800],
-                                      ),
-                                    ),
-                                  ),
-                                  CefrLevelBadge(cefrLevel: problemSet.cefrLevel),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
                               Text(
-                                problemSet.description,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey[600],
-                                  height: 1.4,
+                                'Error in ${problemSet.title}:',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red[800],
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue[50],
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: Colors.blue[200]!),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.quiz,
-                                          size: 16,
-                                          color: Colors.blue[600],
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${problemSet.problemCount}問',
-                                          style: TextStyle(
-                                            color: Colors.blue[600],
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.arrow_forward_ios,
-                                    color: Colors.grey[400],
-                                    size: 18,
-                                  ),
-                                ],
+                              const SizedBox(height: 8),
+                              Text(
+                                '$e',
+                                style: TextStyle(color: Colors.red[600]),
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  }
+                }).toList(),
+                ),
               ),
             ),
           ],

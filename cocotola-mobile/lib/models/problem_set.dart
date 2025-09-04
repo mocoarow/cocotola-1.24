@@ -1,11 +1,11 @@
-import 'word_problem.dart';
+import 'problem_base.dart';
 
 class ProblemSet {
   final String id;
   final String title;
   final String description;
   final String cefrLevel;
-  final List<WordProblem> problems;
+  final List<Problem> problems;
   final String iconPath;
   
   const ProblemSet({
@@ -24,7 +24,7 @@ class ProblemSet {
     String? title,
     String? description,
     String? cefrLevel,
-    List<WordProblem>? problems,
+    List<Problem>? problems,
     String? iconPath,
   }) {
     return ProblemSet(
