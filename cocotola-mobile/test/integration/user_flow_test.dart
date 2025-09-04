@@ -218,5 +218,60 @@ void main() {
         expect(find.byType(ProblemSetSelectionScreenUnified), findsOneWidget);
       }
     });
+
+    testWidgets('メニューに戻るボタンの動作', (WidgetTester tester) async {
+      // アプリ起動
+      await tester.pumpWidget(
+        const ProviderScope(child: app.MyApp()),
+      );
+      await tester.pumpAndSettle();
+
+      // 問題セットを選択
+      await tester.tap(find.byType(Card).first);
+      await tester.pumpAndSettle();
+
+      // 学習画面が表示されることを確認
+      expect(find.byType(TextField), findsWidgets);
+      
+      // AppBarの戻るボタンを押す
+      final backButton = find.byIcon(Icons.arrow_back);
+      expect(backButton, findsWidgets); // 複数見つかる可能性があるのでfindsWidgetsに変更
+      await tester.tap(backButton.first); // 最初のボタンをタップ
+      await tester.pumpAndSettle();
+
+      // 問題セット選択画面に戻ったことを確認
+      expect(find.byType(Card), findsWidgets); // 問題セットカードが表示されている
+    });
+
+    testWidgets('答え表示画面からメニューに戻るボタンの動作', (WidgetTester tester) async {
+      // アプリ起動
+      await tester.pumpWidget(
+        const ProviderScope(child: app.MyApp()),
+      );
+      await tester.pumpAndSettle();
+
+      // 問題セットを選択
+      await tester.tap(find.byType(Card).first);
+      await tester.pumpAndSettle();
+
+      // 「答えを見る」ボタンを押して答え表示画面に移動
+      final showAnswerButton = find.text('答えを見る');
+      if (tester.any(showAnswerButton)) {
+        await tester.tap(showAnswerButton);
+        await tester.pumpAndSettle();
+        
+        // 答え表示画面が表示されることを確認
+        expect(find.text('次の問題へ'), findsOneWidget);
+        
+        // AppBarの戻るボタンを押す
+        final backButton = find.byIcon(Icons.arrow_back);
+        expect(backButton, findsWidgets); // 複数見つかる可能性があるのでfindsWidgetsに変更
+        await tester.tap(backButton.first); // 最初のボタンをタップ
+        await tester.pumpAndSettle();
+
+        // 問題セット選択画面に戻ったことを確認
+        expect(find.byType(Card), findsWidgets); // 問題セットカードが表示されている
+      }
+    });
   });
 }

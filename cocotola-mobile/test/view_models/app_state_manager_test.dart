@@ -224,5 +224,84 @@ void main() {
       expect(state.answerControllers[0].text, 'study');
       expect(state.answerControllers[1].text, 'of'); // 2つ目にも正解が設定される
     });
+
+    test('メニューに戻る機能のテスト', () {
+      // テスト用問題を作成
+      final problemSet = ProblemSet(
+        id: 'test-set',
+        title: 'テスト問題セット',
+        description: 'テスト用の問題セット',
+        cefrLevel: 'A1',
+        problems: [
+          WordProblem(
+            japanese: 'テストの勉強',
+            english: '_____ test',
+            blanks: [
+              BlankAnswer(answer: 'study', hint: 'ヒント1'),
+            ],
+            cefrLevel: 'A1',
+          ),
+        ],
+      );
+
+      // 問題セットを選択して学習開始状態にする
+      appStateManager.selectProblemSet(problemSet);
+      
+      var state = container.read(appStateProvider);
+      expect(state.selectedProblemSet, isNotNull);
+      expect(state.learningState, LearningPhase.problemDisplay);
+      expect(state.answerControllers.length, 1);
+      expect(state.answerFocusNodes.length, 1);
+      
+      // メニューに戻る
+      appStateManager.returnToMenu();
+      
+      // 状態がリセットされたことを確認
+      state = container.read(appStateProvider);
+      expect(state.selectedProblemSet, isNull);
+      expect(state.learningState, LearningPhase.problemSelection);
+      expect(state.currentProblemIndex, 0);
+      expect(state.problems, isEmpty);
+      expect(state.answerControllers, isEmpty);
+      expect(state.answerFocusNodes, isEmpty);
+      expect(state.currentBlankIndex, 0);
+      expect(state.cursorPosition, 0);
+    });
+
+    test('答え表示画面からメニューに戻る機能のテスト', () {
+      // テスト用問題を作成
+      final problemSet = ProblemSet(
+        id: 'test-set',
+        title: 'テスト問題セット',
+        description: 'テスト用の問題セット',
+        cefrLevel: 'A1',
+        problems: [
+          WordProblem(
+            japanese: 'テストの勉強',
+            english: '_____ test',
+            blanks: [
+              BlankAnswer(answer: 'study', hint: 'ヒント1'),
+            ],
+            cefrLevel: 'A1',
+          ),
+        ],
+      );
+
+      // 問題セットを選択し、答え表示画面に遷移
+      appStateManager.selectProblemSet(problemSet);
+      appStateManager.transitionToAnswerDisplay();
+      
+      var state = container.read(appStateProvider);
+      expect(state.learningState, LearningPhase.answerDisplay);
+      expect(state.selectedProblemSet, isNotNull);
+      
+      // メニューに戻る
+      appStateManager.returnToMenu();
+      
+      // 状態がリセットされたことを確認
+      state = container.read(appStateProvider);
+      expect(state.selectedProblemSet, isNull);
+      expect(state.learningState, LearningPhase.problemSelection);
+    });
   });
 }

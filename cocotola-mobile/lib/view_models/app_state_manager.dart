@@ -4,6 +4,9 @@ import '../models/word_problem.dart';
 import '../models/problem_set.dart';
 import 'dart:developer' as developer;
 
+// copyWith でnullを明示的に設定するための定数
+const Object _undefined = Object();
+
 /// アプリ全体の状態を管理する統合ViewModel
 class AppStateManager extends StateNotifier<AppState> {
   AppStateManager() : super(const AppState());
@@ -101,6 +104,26 @@ class AppStateManager extends StateNotifier<AppState> {
     );
     
     _initializeControllersForCurrentProblem();
+  }
+
+  /// メニュー（問題セット選択画面）に戻る
+  void returnToMenu() {
+    developer.log('[AppStateManager] Returning to menu');
+    
+    // コントローラーを破棄
+    _disposeControllers();
+    
+    // 状態をリセット
+    state = state.copyWith(
+      selectedProblemSet: null,
+      currentProblemIndex: 0,
+      learningState: LearningPhase.problemSelection,
+      problems: [],
+      answerControllers: [],
+      answerFocusNodes: [],
+      currentBlankIndex: 0,
+      cursorPosition: 0,
+    );
   }
 
   /// 問題セットをリセット
@@ -378,7 +401,7 @@ class AppState {
   });
 
   AppState copyWith({
-    ProblemSet? selectedProblemSet,
+    Object? selectedProblemSet = _undefined,
     int? currentProblemIndex,
     LearningPhase? learningState,
     List<WordProblem>? problems,
@@ -388,7 +411,9 @@ class AppState {
     int? cursorPosition,
   }) {
     return AppState(
-      selectedProblemSet: selectedProblemSet ?? this.selectedProblemSet,
+      selectedProblemSet: selectedProblemSet == _undefined 
+          ? this.selectedProblemSet 
+          : selectedProblemSet as ProblemSet?,
       currentProblemIndex: currentProblemIndex ?? this.currentProblemIndex,
       learningState: learningState ?? this.learningState,
       problems: problems ?? this.problems,

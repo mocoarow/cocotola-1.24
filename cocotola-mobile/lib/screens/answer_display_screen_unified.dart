@@ -27,6 +27,11 @@ class AnswerDisplayScreenUnified extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(appState.selectedProblemSet!.title),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => appStateManager.returnToMenu(),
+          tooltip: 'メニューに戻る',
+        ),
       ),
       body: Column(
         children: [
