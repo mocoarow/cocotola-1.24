@@ -50,6 +50,7 @@ void main() {
         WordProblem(
           japanese: 'テスト問題',
           english: 'This is ___ test.',
+          cefrLevel: 'A1',
           blanks: [
             BlankAnswer(
               answer: 'a',
@@ -74,6 +75,7 @@ void main() {
         WordProblem(
           japanese: '複数空欄テスト',
           english: 'I ___ ___ school.',
+          cefrLevel: 'A2',
           blanks: [
             BlankAnswer(answer: 'go', hint: 'ヒント1'),
             BlankAnswer(answer: 'to', hint: 'ヒント2'),
@@ -93,6 +95,7 @@ void main() {
         WordProblem(
           japanese: '最初の問題',
           english: 'First ___ problem.',
+          cefrLevel: 'A1',
           blanks: [BlankAnswer(answer: 'test', hint: 'ヒント')],
         ),
       ];
@@ -101,6 +104,7 @@ void main() {
         WordProblem(
           japanese: '2番目の問題',
           english: 'Second ___ ___ problem.',
+          cefrLevel: 'B1',
           blanks: [
             BlankAnswer(answer: 'test', hint: 'ヒント1'),
             BlankAnswer(answer: 'case', hint: 'ヒント2'),
@@ -136,11 +140,45 @@ void main() {
     });
 
     test('handleAnswerChanged - メソッドが呼び出せることを確認', () {
+      // テスト用の問題データを初期化
+      final problems = [
+        WordProblem(
+          japanese: 'テスト問題',
+          english: 'This is ___ test.',
+          cefrLevel: 'A1',
+          blanks: [
+            BlankAnswer(
+              answer: 'a',
+              hint: 'テストヒント',
+            ),
+          ],
+        ),
+      ];
+      
+      viewModel.initializeProblems(problems);
+      
       // メソッドが例外をスローしないことを確認
       expect(() => viewModel.handleAnswerChanged(0, 'test'), returnsNormally);
     });
 
     test('handleShowAnswer - メソッドが正しく動作することを確認', () {
+      // テスト用の問題データを初期化
+      final problems = [
+        WordProblem(
+          japanese: 'テスト問題',
+          english: 'This is ___ test.',
+          cefrLevel: 'A1',
+          blanks: [
+            BlankAnswer(
+              answer: 'a',
+              hint: 'テストヒント',
+            ),
+          ],
+        ),
+      ];
+      
+      viewModel.initializeProblems(problems);
+      
       // 初期状態を確認
       expect(container.read(learningViewModelProvider).currentState, 
              LearningState.problemDisplay);
@@ -166,6 +204,7 @@ void main() {
         currentState: LearningState.problemDisplay,
         answerControllers: [],
         answerFocusNodes: [],
+        problems: [],
       );
 
       // currentStateのみ変更
@@ -185,6 +224,7 @@ void main() {
         currentState: LearningState.problemDisplay,
         answerControllers: [],
         answerFocusNodes: [],
+        problems: [],
       );
 
       final updatedState = initialState.copyWith(
@@ -204,6 +244,7 @@ void main() {
         currentState: LearningState.answerDisplay,
         answerControllers: [],
         answerFocusNodes: [],
+        problems: [],
       );
 
       final updatedState = initialState.copyWith(

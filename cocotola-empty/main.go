@@ -90,7 +90,7 @@ func main() {
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
-	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Log, cfg.Debug)
+	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
 
 	// api
 	api := libcontroller.InitAPIRouterGroup(ctx, router, domain.AppName, cfg.Log)

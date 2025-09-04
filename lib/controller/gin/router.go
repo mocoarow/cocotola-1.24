@@ -17,7 +17,7 @@ import (
 
 type InitRouterGroupFunc func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc)
 
-func InitRootRouterGroup(_ context.Context, corsConfig *mblibconfig.CORSConfig, logConfig *mblibconfig.LogConfig, debugConfig *config.DebugConfig) *gin.Engine {
+func InitRootRouterGroup(_ context.Context, corsConfig *mblibconfig.CORSConfig, debugConfig *config.DebugConfig) *gin.Engine {
 	if !debugConfig.Gin {
 		gin.SetMode(gin.ReleaseMode)
 	}
