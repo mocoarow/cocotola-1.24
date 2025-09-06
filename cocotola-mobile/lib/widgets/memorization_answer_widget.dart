@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/memorization_problem.dart';
+import '../utils/markdown_text_parser.dart';
 import 'cefr_level_badge.dart';
 
 /// 暗記問題の解答表示ウィジェット
@@ -50,13 +51,16 @@ class MemorizationAnswerWidget extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 12),
                                 // 問題文
-                                Text(
-                                  problem.question,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                    fontWeight: FontWeight.w500,
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    problem.question,
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlign: problem.questionAlignment,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
@@ -71,29 +75,22 @@ class MemorizationAnswerWidget extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.all(20.0),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch, // カード全体の横幅を使用
                               children: [
-                                Icon(
-                                  Icons.lightbulb,
-                                  size: 32,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  '答え',
-                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
+                                // 解答テキスト（カードの横幅をフル活用）
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: RichText(
+                                    textAlign: problem.answerAlignment,
+                                    text: MarkdownTextParser.parseMarkdown(
+                                      problem.answer,
+                                      Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.3,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  problem.answer,
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.3,
-                                  ),
-                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),

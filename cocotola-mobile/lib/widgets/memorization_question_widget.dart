@@ -44,13 +44,16 @@ class MemorizationQuestionWidget extends StatelessWidget {
                             ),
                             const SizedBox(height: 12),
                             // 問題文
-                            Text(
-                              problem.question,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                fontWeight: FontWeight.w500,
+                            SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                problem.question,
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: problem.questionAlignment,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),

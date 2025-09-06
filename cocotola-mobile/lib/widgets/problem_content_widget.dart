@@ -58,13 +58,16 @@ class ProblemContentWidget extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 12),
                                 // 日本語文
-                                Text(
-                                  currentProblem.japanese,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                    fontWeight: FontWeight.w500,
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    currentProblem.japanese,
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlign: TextAlign.left,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
@@ -78,25 +81,28 @@ class ProblemContentWidget extends StatelessWidget {
                           // 英語文セクション（空欄問題）
                           Padding(
                             padding: const EdgeInsets.all(20.0),
-                            child: Wrap(
-                              alignment: WrapAlignment.start,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                for (int i = 0; i < englishWords.length; i++)
-                                  if (blankIndices.contains(i))
-                                    buildBlankWidget(i, blankIndices.indexOf(i), currentProblem)
-                                  else
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4.0, vertical: 2.0),
-                                      child: Text(
-                                        englishWords[i],
-                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.w500,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Wrap(
+                                alignment: WrapAlignment.start,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  for (int i = 0; i < englishWords.length; i++)
+                                    if (blankIndices.contains(i))
+                                      buildBlankWidget(i, blankIndices.indexOf(i), currentProblem)
+                                    else
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4.0, vertical: 2.0),
+                                        child: Text(
+                                          englishWords[i],
+                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
