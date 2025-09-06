@@ -165,8 +165,8 @@ class LearningScreenUnified extends ConsumerWidget {
         children: [
           ElevatedButton(
             onPressed: () {
-              // 問題をスキップとして処理し答え表示画面へ
-              appStateManager.transitionToAnswerDisplay();
+              // 問題を後回しにして答え表示画面へ
+              appStateManager.handleShowAnswerForWordProblem();
             },
             child: const Text('答えを見る'),
           ),
