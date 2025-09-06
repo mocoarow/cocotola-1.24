@@ -86,21 +86,41 @@ class AppStateManager extends StateNotifier<AppState> {
     
     developer.log('[AppStateManager] Memorization problem answered: $wasCorrect');
     
+    // 問題リストの変更と状態遷移を同時に行う（アトミックな操作）
+    List<Problem> updatedProblems = List.from(state.problems);
+    int nextIndex = state.currentProblemIndex;
+    LearningPhase nextPhase;
+    
     if (wasCorrect) {
-      _removeCompletedProblem();
+      // 正解：問題を削除
+      updatedProblems.removeAt(state.currentProblemIndex);
+      if (nextIndex >= updatedProblems.length) {
+        nextIndex = _Constants.initialProblemIndex;
+      }
     } else {
-      _requeueCurrentProblem();
+      // 不正解：問題を後回しにする
+      final problemToRequeue = updatedProblems.removeAt(state.currentProblemIndex);
+      updatedProblems.add(problemToRequeue);
+      if (nextIndex >= updatedProblems.length) {
+        nextIndex = _Constants.initialProblemIndex;
+      }
     }
     
-    // 学習状態を決定
-    if (state.problems.isEmpty) {
-      state = state.copyWith(learningState: LearningPhase.completed);
+    // 次の状態を決定
+    if (updatedProblems.isEmpty) {
+      nextPhase = LearningPhase.completed;
     } else {
-      // 次の問題表示に遷移
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        state = state.copyWith(learningState: LearningPhase.problemDisplay);
-      });
+      nextPhase = LearningPhase.problemDisplay;
     }
+    
+    // 一度の状態更新で問題リスト、インデックス、フェーズをすべて更新
+    state = state.copyWith(
+      problems: updatedProblems,
+      currentProblemIndex: nextIndex,
+      learningState: nextPhase,
+    );
+    
+    developer.log('[AppStateManager] Memorization answer processed: problems=${updatedProblems.length}, phase=$nextPhase');
   }
 
   /// 答え表示画面への遷移
@@ -507,28 +527,6 @@ class AppStateManager extends StateNotifier<AppState> {
     );
   }
 
-  /// 正解した問題をリストから削除
-  /// 
-  /// 暗記問題で「できた」場合に呼び出される
-  /// 問題完了により学習進捗を管理
-  void _removeCompletedProblem() {
-    if (state.problems.isEmpty || state.currentProblemIndex >= state.problems.length) {
-      return;
-    }
-    
-    final updatedProblems = List<Problem>.from(state.problems);
-    updatedProblems.removeAt(state.currentProblemIndex);
-    
-    int nextIndex = state.currentProblemIndex;
-    if (nextIndex >= updatedProblems.length) {
-      nextIndex = _Constants.initialProblemIndex;
-    }
-    
-    state = state.copyWith(
-      problems: updatedProblems,
-      currentProblemIndex: nextIndex,
-    );
-  }
 
   /// コントローラーを破棄
   void _disposeControllers() {

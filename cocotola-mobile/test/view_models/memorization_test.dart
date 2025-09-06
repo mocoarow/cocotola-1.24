@@ -265,5 +265,79 @@ void main() {
       expect(state.answerControllers, isEmpty);
       expect(state.answerFocusNodes, isEmpty);
     });
+
+    test('暗記問題の回答処理でのアトミックな状態更新確認', () {
+      // 複数の暗記問題セットを作成
+      final problemSet = ProblemSet(
+        id: 'test-atomic-update',
+        title: 'アトミック更新テスト',
+        description: '状態更新がアトミックに行われることをテスト',
+        cefrLevel: 'A1',
+        problems: [
+          Problem.memorization(MemorizationProblem(
+            question: 'first',
+            answer: '最初',
+            cefrLevel: 'A1',
+          )),
+          Problem.memorization(MemorizationProblem(
+            question: 'second',
+            answer: '二番目',
+            cefrLevel: 'A1',
+          )),
+        ],
+      );
+
+      // 問題セットを選択
+      appStateManager.selectProblemSet(problemSet);
+      
+      // 初期状態確認
+      var state = container.read(appStateProvider);
+      expect(state.currentProblem!.memorizationProblem!.question, 'first');
+      expect(state.learningState, LearningPhase.problemDisplay);
+      expect(state.problems.length, 2);
+      
+      // 最初の問題に「できなかった」と回答
+      appStateManager.handleMemorizationAnswer(false);
+      
+      // 状態が一度に更新されていることを確認
+      state = container.read(appStateProvider);
+      expect(state.currentProblem!.memorizationProblem!.question, 'second'); // 次の問題
+      expect(state.learningState, LearningPhase.problemDisplay); // 問題表示状態
+      expect(state.problems.length, 2); // 問題数は変わらない
+      expect(state.problems.last.memorizationProblem!.question, 'first'); // 最初の問題が後回し
+    });
+
+    test('暗記問題で正解時の即座の状態更新確認', () {
+      // 単一の暗記問題セットを作成
+      final problemSet = ProblemSet(
+        id: 'test-immediate-completion',
+        title: '即座の完了テスト',
+        description: '正解時の即座の状態更新をテスト',
+        cefrLevel: 'A1',
+        problems: [
+          Problem.memorization(MemorizationProblem(
+            question: 'test',
+            answer: 'テスト',
+            cefrLevel: 'A1',
+          )),
+        ],
+      );
+
+      // 問題セットを選択
+      appStateManager.selectProblemSet(problemSet);
+      
+      // 初期状態確認
+      var state = container.read(appStateProvider);
+      expect(state.problems.length, 1);
+      expect(state.learningState, LearningPhase.problemDisplay);
+      
+      // 問題に「できた」と回答
+      appStateManager.handleMemorizationAnswer(true);
+      
+      // 即座に完了状態になることを確認
+      state = container.read(appStateProvider);
+      expect(state.learningState, LearningPhase.completed);
+      expect(state.problems.length, 0);
+    });
   });
 }
