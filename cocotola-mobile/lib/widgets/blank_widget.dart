@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:io' show Platform;
 import '../../models/word_problem.dart';
 
 class BlankWidget extends StatelessWidget {
@@ -27,6 +29,10 @@ class BlankWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final blank = problem.blanks[blankIndex];
     final inputWidth = (blank.answer.length * 20.0).clamp(100.0, 200.0);
+    
+    // モバイルプラットフォームかどうかを判定
+    // Web環境では常にfalse、ネイティブ環境でiOS/Androidの場合のみtrue
+    final isMobile = !kIsWeb && (Platform.isIOS || Platform.isAndroid);
 
     // プロバイダーの状態とコントローラーが同期していない場合は更新
     // ただし、readOnly（答え表示）モードの場合はスキップ
@@ -57,7 +63,9 @@ class BlankWidget extends StatelessWidget {
           : TextField(
               controller: controller,
               textAlign: TextAlign.center,
-              readOnly: readOnly,
+              readOnly: isMobile ? true : readOnly, // モバイルでは常にreadOnlyにしてキーボードを非表示
+              showCursor: isMobile ? false : true, // モバイルではカーソルを非表示
+              enableInteractiveSelection: !isMobile, // モバイルではテキスト選択を無効化
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 fillColor: blank.isAnswered && !blank.isCorrect
@@ -67,7 +75,7 @@ class BlankWidget extends StatelessWidget {
               ),
               focusNode: focusNode,
               enabled: !(blank.isAnswered && blank.isCorrect) && !readOnly,
-              onChanged: onChanged,
+              onChanged: isMobile ? null : onChanged, // モバイルでは直接入力を無効化
               onTap: onTap,
             ),
     );
