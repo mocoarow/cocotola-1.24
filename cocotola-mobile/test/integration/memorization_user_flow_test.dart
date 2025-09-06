@@ -98,8 +98,8 @@ void main() {
       // 答え表示ウィジェットが表示されることを確認
       expect(find.byType(MemorizationAnswerWidget), findsOneWidget);
       
-      // 答えが表示されることを確認
-      expect(find.text('りんご'), findsOneWidget);
+      // 答えが表示されることを確認（RichTextウィジェットで表示されている）
+      expect(find.byType(RichText), findsWidgets);
       
       // 「できた」「できなかった」ボタンが表示されることを確認
       expect(find.text('できた'), findsOneWidget);

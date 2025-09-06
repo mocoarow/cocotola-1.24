@@ -4,7 +4,6 @@ import '../view_models/app_state_manager.dart';
 import '../models/problem_base.dart';
 import '../widgets/problem_content_widget.dart';
 import '../widgets/blank_widget.dart';
-import '../widgets/hints_widget.dart';
 import '../widgets/custom_keyboard.dart';
 import '../widgets/memorization_question_widget.dart';
 import '../widgets/memorization_answer_widget.dart';
@@ -50,9 +49,17 @@ class LearningScreenUnified extends ConsumerWidget {
         ),
       ),
       body: appState.learningState == LearningPhase.problemDisplay
-        ? MemorizationQuestionWidget(
-            problem: memorizationProblem,
-            onShowAnswer: () => appStateManager.transitionToAnswerDisplay(),
+        ? Column(
+            children: [
+              // 問題表示部分
+              Expanded(
+                child: MemorizationQuestionWidget(
+                  problem: memorizationProblem,
+                ),
+              ),
+              // アクションボタン（画面最下部に固定）
+              _buildMemorizationActionButtons(memorizationProblem, appStateManager),
+            ],
           )
         : MemorizationAnswerWidget(
             problem: memorizationProblem,
@@ -112,15 +119,21 @@ class LearningScreenUnified extends ConsumerWidget {
                 },
                 onTap: () => _handleBlankTap(blankIndex, appStateManager, appState),
               ),
-              buildHintsSection: (problem) => HintsWidget(problem: problem),
+              buildHintsSection: (problem) => const SizedBox.shrink(),
               buildKeyboard: (problem) => const SizedBox.shrink(), // キーボードは下部に移動
               buildActionButtons: (problem) => const SizedBox.shrink(), // アクションボタンも下部に移動
             ),
           ),
+          // 答えを見るボタン（キーボードの上の左端）
+          Container(
+            color: Colors.grey.shade100,
+            child: _buildShowAnswerButton(wordProblem, appStateManager),
+          ),
           // カスタムキーボード（画面下部に固定）
-          _buildKeyboard(wordProblem, appStateManager),
-          // アクションボタン（画面最下部に固定）
-          _buildActionButtons(wordProblem, appStateManager),
+          Container(
+            color: Colors.grey.shade100,
+            child: _buildKeyboard(wordProblem, appStateManager),
+          ),
         ],
       ),
     );
@@ -157,25 +170,32 @@ class LearningScreenUnified extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButtons(problem, AppStateManager appStateManager) {
+  Widget _buildShowAnswerButton(problem, AppStateManager appStateManager) {
+    if (problem.isCompleted) {
+      return const SizedBox.shrink();
+    }
+    
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           ElevatedButton(
             onPressed: () {
-              // 問題をスキップとして処理し答え表示画面へ
-              appStateManager.transitionToAnswerDisplay();
+              // 問題を後回しにして答え表示画面へ
+              appStateManager.handleShowAnswerForWordProblem();
             },
-            child: const Text('答えを見る'),
-          ),
-          if (problem.isCompleted) ...[
-            ElevatedButton(
-              onPressed: () => appStateManager.transitionToAnswerDisplay(),
-              child: const Text('次へ'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-          ],
+            child: const Text(
+              '答えを見る',
+              style: TextStyle(fontSize: 14),
+            ),
+          ),
         ],
       ),
     );
@@ -189,5 +209,32 @@ class LearningScreenUnified extends ConsumerWidget {
 
     developer.log('[LearningScreenUnified] Blank tapped: $blankIndex, cursor: $cursorPos');
     appStateManager.updateFocusAndCursor(blankIndex, cursorPos);
+  }
+
+  Widget _buildMemorizationActionButtons(memorizationProblem, AppStateManager appStateManager) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              // 暗記問題の答えを見る処理
+              appStateManager.handleShowAnswerForMemorizationProblem();
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              '答えを見る',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/problem_set.dart';
 import '../models/word_problem.dart';
@@ -108,15 +109,17 @@ class ProblemSetsNotifier extends StateNotifier<List<ProblemSet>> {
         problems: [
           Problem.memorization(MemorizationProblem(
             question: 'apple',
-            answer: 'りんご',
+            answer: '**りんご**\n\n*赤い果物*\n`果物の一種`',
             hint: '赤い果物です',
             cefrLevel: 'A1',
           )),
           Problem.memorization(MemorizationProblem(
             question: 'book',
-            answer: '本',
+            answer: '**本**\n\n*知識の源*\n- 小説\n- 教科書\n- 雑誌など',
             hint: '読むものです',
             cefrLevel: 'A1',
+            questionAlignment: TextAlign.left, // 問題文も左寄せ
+            answerAlignment: TextAlign.left, // 左寄せの例
           )),
           Problem.memorization(MemorizationProblem(
             question: 'water',
@@ -134,13 +137,15 @@ class ProblemSetsNotifier extends StateNotifier<List<ProblemSet>> {
         problems: [
           Problem.memorization(MemorizationProblem(
             question: 'Good morning',
-            answer: 'おはようございます',
+            answer: '**おはようございます**\n\n朝の*あいさつ*として使用\n`グッドモーニング`',
             cefrLevel: 'A1',
           )),
           Problem.memorization(MemorizationProblem(
             question: 'Thank you very much',
-            answer: 'どうもありがとうございます',
+            answer: '**どうもありがとうございます**\n\n*とても丁寧な感謝の表現*\n\n使用場面:\n- 目上の人に対して\n- 正式な場面で\n- 深く感謝したい時',
             cefrLevel: 'A1',
+            questionAlignment: TextAlign.left, // 問題文を左寄せ
+            answerAlignment: TextAlign.left, // 左寄せでリスト表示
           )),
           Problem.memorization(MemorizationProblem(
             question: 'How are you?',

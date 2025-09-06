@@ -90,16 +90,14 @@ void main() {
       // 「できた」と回答
       appStateManager.handleMemorizationAnswer(true);
       
-      // 問題が正解として記録されることを確認
+      // 正解した問題はリストから削除されるため、問題数が減ることを確認
       state = container.read(appStateProvider);
-      final answeredProblem = state.currentProblem!.memorizationProblem!;
-      expect(answeredProblem.isAnswered, true);
-      expect(answeredProblem.isCorrect, true);
-      expect(answeredProblem.isCompleted, true);
+      expect(state.problems.length, 0); // 1問から1問削除されて0問になる（完了状態）
+      expect(state.learningState, LearningPhase.completed); // 全問完了
     });
 
     test('暗記問題の「できなかった」回答処理', () {
-      // 暗記問題セットを作成
+      // 暗記問題セットを作成（複数問題で「できなかった」動作を確認）
       final problemSet = ProblemSet(
         id: 'test-memorization-set',
         title: '暗記問題テストセット',
@@ -111,21 +109,30 @@ void main() {
             answer: '本',
             cefrLevel: 'A1',
           )),
+          Problem.memorization(MemorizationProblem(
+            question: 'car',
+            answer: '車',
+            cefrLevel: 'A1',
+          )),
         ],
       );
 
       // 問題セットを選択
       appStateManager.selectProblemSet(problemSet);
       
+      // 最初の問題を確認
+      var state = container.read(appStateProvider);
+      final initialProblem = state.currentProblem!.memorizationProblem!;
+      expect(initialProblem.question, 'book');
+      
       // 「できなかった」と回答
       appStateManager.handleMemorizationAnswer(false);
       
-      // 問題が不正解として記録されることを確認
-      final state = container.read(appStateProvider);
-      final answeredProblem = state.currentProblem!.memorizationProblem!;
-      expect(answeredProblem.isAnswered, true);
-      expect(answeredProblem.isCorrect, false);
-      expect(answeredProblem.isCompleted, true);
+      // 間違えた問題は後回しされ、次の問題に移ることを確認
+      state = container.read(appStateProvider);
+      expect(state.problems.length, 2); // 問題数は変わらない
+      final currentProblem = state.currentProblem!.memorizationProblem!;
+      expect(currentProblem.question, 'car'); // 次の問題になっている
     });
 
     test('複数の暗記問題での問題移動', () async {
@@ -160,13 +167,11 @@ void main() {
       // 最初の問題に「できた」と回答
       appStateManager.handleMemorizationAnswer(true);
       
-      // 手動で次の問題への移動を実行（テスト環境ではWidgetsBindingが実行されない）
-      appStateManager.moveToNextProblem();
-      
-      // 次の問題に移動したことを確認
+      // 正解した問題はリストから削除され、次の問題が表示されることを確認
       state = container.read(appStateProvider);
-      expect(state.currentProblemIndex, 1);
-      expect(state.currentProblem!.memorizationProblem!.question, 'book');
+      expect(state.currentProblemIndex, 0); // インデックスは0のまま（リストから削除されるため）
+      expect(state.problems.length, 1); // 問題数が減る
+      expect(state.currentProblem!.memorizationProblem!.question, 'book'); // 次の問題
       expect(state.learningState, LearningPhase.problemDisplay);
     });
 
@@ -192,12 +197,10 @@ void main() {
       // 問題に回答
       appStateManager.handleMemorizationAnswer(true);
       
-      // 手動で次の問題への移動を実行（テスト環境ではWidgetsBindingが実行されない）
-      appStateManager.moveToNextProblem();
-      
-      // 完了状態になることを確認
+      // 全問完了で完了状態になることを確認
       final state = container.read(appStateProvider);
       expect(state.learningState, LearningPhase.completed);
+      expect(state.problems.length, 0); // 全問削除された
     });
 
     test('暗記問題での答え表示画面遷移', () {
@@ -261,6 +264,115 @@ void main() {
       expect(state.problems, isEmpty);
       expect(state.answerControllers, isEmpty);
       expect(state.answerFocusNodes, isEmpty);
+    });
+
+    test('暗記問題の回答処理でのアトミックな状態更新確認', () {
+      // 複数の暗記問題セットを作成
+      final problemSet = ProblemSet(
+        id: 'test-atomic-update',
+        title: 'アトミック更新テスト',
+        description: '状態更新がアトミックに行われることをテスト',
+        cefrLevel: 'A1',
+        problems: [
+          Problem.memorization(MemorizationProblem(
+            question: 'first',
+            answer: '最初',
+            cefrLevel: 'A1',
+          )),
+          Problem.memorization(MemorizationProblem(
+            question: 'second',
+            answer: '二番目',
+            cefrLevel: 'A1',
+          )),
+        ],
+      );
+
+      // 問題セットを選択
+      appStateManager.selectProblemSet(problemSet);
+      
+      // 初期状態確認
+      var state = container.read(appStateProvider);
+      expect(state.currentProblem!.memorizationProblem!.question, 'first');
+      expect(state.learningState, LearningPhase.problemDisplay);
+      expect(state.problems.length, 2);
+      
+      // 最初の問題に「できなかった」と回答
+      appStateManager.handleMemorizationAnswer(false);
+      
+      // 状態が一度に更新されていることを確認
+      state = container.read(appStateProvider);
+      expect(state.currentProblem!.memorizationProblem!.question, 'second'); // 次の問題
+      expect(state.learningState, LearningPhase.problemDisplay); // 問題表示状態
+      expect(state.problems.length, 2); // 問題数は変わらない
+      expect(state.problems.last.memorizationProblem!.question, 'first'); // 最初の問題が後回し
+    });
+
+    test('暗記問題で正解時の即座の状態更新確認', () {
+      // 単一の暗記問題セットを作成
+      final problemSet = ProblemSet(
+        id: 'test-immediate-completion',
+        title: '即座の完了テスト',
+        description: '正解時の即座の状態更新をテスト',
+        cefrLevel: 'A1',
+        problems: [
+          Problem.memorization(MemorizationProblem(
+            question: 'test',
+            answer: 'テスト',
+            cefrLevel: 'A1',
+          )),
+        ],
+      );
+
+      // 問題セットを選択
+      appStateManager.selectProblemSet(problemSet);
+      
+      // 初期状態確認
+      var state = container.read(appStateProvider);
+      expect(state.problems.length, 1);
+      expect(state.learningState, LearningPhase.problemDisplay);
+      
+      // 問題に「できた」と回答
+      appStateManager.handleMemorizationAnswer(true);
+      
+      // 即座に完了状態になることを確認
+      state = container.read(appStateProvider);
+      expect(state.learningState, LearningPhase.completed);
+      expect(state.problems.length, 0);
+    });
+
+    test('暗記問題での「答えを見る」処理', () {
+      // 暗記問題セットを作成
+      final problemSet = ProblemSet(
+        id: 'test-memorization-show-answer',
+        title: '暗記問題答え表示テスト',
+        description: 'テスト用の暗記問題セット',
+        cefrLevel: 'A1',
+        problems: [
+          Problem.memorization(MemorizationProblem(
+            question: 'dog',
+            answer: '犬',
+            cefrLevel: 'A1',
+          )),
+        ],
+      );
+
+      // 問題セットを選択
+      appStateManager.selectProblemSet(problemSet);
+      
+      // 初期状態確認
+      var state = container.read(appStateProvider);
+      expect(state.learningState, LearningPhase.problemDisplay);
+      expect(state.showAnswerForProblem, isNull);
+      
+      // 「答えを見る」をクリック
+      appStateManager.handleShowAnswerForMemorizationProblem();
+      
+      // 答え表示状態になることを確認
+      state = container.read(appStateProvider);
+      expect(state.learningState, LearningPhase.answerDisplay);
+      expect(state.showAnswerForProblem, isNotNull);
+      expect(state.showAnswerForProblem!.memorizationProblem!.question, 'dog');
+      expect(state.showAnswerForProblem!.memorizationProblem!.answer, '犬');
     });
   });
 }

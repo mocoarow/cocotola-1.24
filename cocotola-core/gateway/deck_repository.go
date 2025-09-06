@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"errors"
+	"html/template"
 
 	"gorm.io/gorm"
 
@@ -11,6 +12,8 @@ import (
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -21,12 +24,12 @@ type DeckEntity struct {
 	ID             int
 	OrganizationID int
 	SpaceID        int
-	OwnerID        int
 	FolderID       int
 	TemplateID     int
 	Name           string
 	Lang2          string
 	Description    string
+	OwnerID        int
 }
 
 func (e *DeckEntity) TableName() string {
@@ -54,13 +57,25 @@ func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 		return nil, mbliberrors.Errorf("new space id(%d): %w", e.ID, err)
 	}
 
-	ownerID, err := mbuserdomain.NewAppUserID(e.OwnerID)
-	if err != nil {
-		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
-	}
 	folderID, err := domain.NewFolderID(e.FolderID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("new folder id(%d): %w", e.FolderID, err)
+	}
+
+	templateID, err := domain.NewTemplateID(e.TemplateID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new template id(%d): %w", e.TemplateID, err)
+	}
+
+	e.Lang2 = template.HTMLEscapeString(e.Lang2)
+	lang2, err := libdomain.NewLang2(e.Lang2)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new lang2(%s): %w", e.Lang2, err)
+	}
+
+	ownerID, err := mbuserdomain.NewAppUserID(e.OwnerID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
 	}
 
 	deckModel, err := domain.NewDeckModel(
@@ -68,12 +83,12 @@ func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 		deckID,
 		organizationID,
 		spaceID,
-		ownerID,
 		folderID,
 		e.Name,
-		e.TemplateID,
-		e.Lang2,
+		templateID,
+		lang2,
 		e.Description,
+		ownerID,
 	)
 	if err != nil {
 		return nil, mbliberrors.Errorf("new deck model: %w", err)
@@ -119,12 +134,12 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 		},
 		OrganizationID: operator.OrganizationID().Int(),
 		SpaceID:        param.SpaceID.Int(),
-		OwnerID:        operator.AppUserID().Int(),
 		FolderID:       folderID,
 		TemplateID:     param.TemplateID.Int(),
 		Name:           param.Name,
 		Lang2:          param.Lang2,
 		Description:    param.Description,
+		OwnerID:        operator.AppUserID().Int(),
 	}
 	if result := r.db.Create(&deckE); result.Error != nil {
 		return nil, mbliberrors.Errorf("add deck entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrDeckAlreadyExists))

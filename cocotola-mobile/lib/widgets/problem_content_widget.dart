@@ -24,33 +24,29 @@ class ProblemContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 問題文をカード形式で表示
-        Flexible(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
+    return Container(
+      color: Colors.grey.shade100, // 背景を薄いグレーに
+      child: Column(
+        children: [
+          // 問題文をカード形式で表示
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Card(
+                      elevation: 2,
+                      color: Colors.white, // カードの背景を白に
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Column(
                         children: [
-                          // 日本語文とCEFRレベル
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16.0),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.blue.shade200),
-                            ),
+                          // 日本語文セクション
+                          Padding(
+                            padding: const EdgeInsets.all(20.0),
                             child: Column(
                               children: [
                                 // CEFRレベルバッジ
@@ -62,62 +58,65 @@ class ProblemContentWidget extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 12),
                                 // 日本語文
-                                Text(
-                                  currentProblem.japanese,
-                                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                    color: Colors.blue.shade800,
-                                    fontWeight: FontWeight.w600,
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    currentProblem.japanese,
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlign: TextAlign.left,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          // 英語文（空欄問題）
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16.0),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: Wrap(
-                              alignment: WrapAlignment.start,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                for (int i = 0; i < englishWords.length; i++)
-                                  if (blankIndices.contains(i))
-                                    buildBlankWidget(i, blankIndices.indexOf(i), currentProblem)
-                                  else
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4.0, vertical: 2.0),
-                                      child: Text(
-                                        englishWords[i],
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
+                          // 区切り線
+                          Divider(
+                            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                            thickness: 1,
+                            height: 1,
+                          ),
+                          // 英語文セクション（空欄問題）
+                          Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Wrap(
+                                alignment: WrapAlignment.start,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  for (int i = 0; i < englishWords.length; i++)
+                                    if (blankIndices.contains(i))
+                                      buildBlankWidget(i, blankIndices.indexOf(i), currentProblem)
+                                    else
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4.0, vertical: 2.0),
+                                        child: Text(
+                                          englishWords[i],
+                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ),
-                buildHintsSection(currentProblem),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-        buildKeyboard(currentProblem),
-        buildActionButtons(currentProblem),
-      ],
+          buildKeyboard(currentProblem),
+          buildActionButtons(currentProblem),
+        ],
+      ),
     );
   }
 }

@@ -8,6 +8,13 @@ import 'dart:developer' as developer;
 // copyWith でnullを明示的に設定するための定数
 const Object _undefined = Object();
 
+// 定数
+class _Constants {
+  static const int initialProblemIndex = 0;
+  static const int initialBlankIndex = 0;
+  static const int initialCursorPosition = 0;
+}
+
 /// アプリ全体の状態を管理する統合ViewModel
 class AppStateManager extends StateNotifier<AppState> {
   AppStateManager() : super(const AppState());
@@ -18,13 +25,13 @@ class AppStateManager extends StateNotifier<AppState> {
     
     state = state.copyWith(
       selectedProblemSet: problemSet,
-      currentProblemIndex: 0,
+      currentProblemIndex: _Constants.initialProblemIndex,
       learningState: LearningPhase.problemDisplay,
       problems: problemSet.problems,
       answerControllers: [],
       answerFocusNodes: [],
-      currentBlankIndex: 0, // カスタムキーボード用の空欄インデックス初期化
-      cursorPosition: 0, // カーソル位置初期化
+      currentBlankIndex: _Constants.initialBlankIndex,
+      cursorPosition: _Constants.initialCursorPosition,
     );
     
     _initializeControllersForCurrentProblem();
@@ -79,18 +86,41 @@ class AppStateManager extends StateNotifier<AppState> {
     
     developer.log('[AppStateManager] Memorization problem answered: $wasCorrect');
     
-    final updatedProblems = List<Problem>.from(state.problems);
-    final currentMemoProblem = updatedProblems[state.currentProblemIndex].memorizationProblem!;
+    // 問題リストの変更と状態遷移を同時に行う（アトミックな操作）
+    List<Problem> updatedProblems = List.from(state.problems);
+    int nextIndex = state.currentProblemIndex;
+    LearningPhase nextPhase;
     
-    final updatedMemoProblem = currentMemoProblem.markAsAnswered(wasCorrect);
-    updatedProblems[state.currentProblemIndex] = Problem.memorization(updatedMemoProblem);
+    if (wasCorrect) {
+      // 正解：問題を削除
+      updatedProblems.removeAt(state.currentProblemIndex);
+      if (nextIndex >= updatedProblems.length) {
+        nextIndex = _Constants.initialProblemIndex;
+      }
+    } else {
+      // 不正解：問題を後回しにする
+      final problemToRequeue = updatedProblems.removeAt(state.currentProblemIndex);
+      updatedProblems.add(problemToRequeue);
+      if (nextIndex >= updatedProblems.length) {
+        nextIndex = _Constants.initialProblemIndex;
+      }
+    }
     
-    state = state.copyWith(problems: updatedProblems);
+    // 次の状態を決定
+    if (updatedProblems.isEmpty) {
+      nextPhase = LearningPhase.completed;
+    } else {
+      nextPhase = LearningPhase.problemDisplay;
+    }
     
-    // 次の問題に自動遷移
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      moveToNextProblem();
-    });
+    // 一度の状態更新で問題リスト、インデックス、フェーズをすべて更新
+    state = state.copyWith(
+      problems: updatedProblems,
+      currentProblemIndex: nextIndex,
+      learningState: nextPhase,
+    );
+    
+    developer.log('[AppStateManager] Memorization answer processed: problems=${updatedProblems.length}, phase=$nextPhase');
   }
 
   /// 答え表示画面への遷移
@@ -111,23 +141,60 @@ class AppStateManager extends StateNotifier<AppState> {
     state = state.copyWith(learningState: LearningPhase.answerDisplay);
   }
 
+  /// 英単語問題で「答えを見る」をクリックした場合の処理
+  void handleShowAnswerForWordProblem() {
+    if (state.selectedProblemSet == null || state.currentProblem == null) return;
+    if (state.currentProblem!.type != ProblemType.word) return;
+    
+    developer.log('[AppStateManager] Word problem show answer');
+    
+    // 現在の問題を答え表示用の問題として保存
+    final currentProblem = state.currentProblem!;
+    
+    // 現在の問題の答えをコントローラーに設定
+    final currentWordProblem = currentProblem.wordProblem!;
+    if (state.answerControllers.isNotEmpty) {
+      for (int i = 0; i < currentWordProblem.blanks.length && i < state.answerControllers.length; i++) {
+        state.answerControllers[i].text = currentWordProblem.blanks[i].answer;
+      }
+      developer.log('[AppStateManager] Set correct answers to controllers');
+    }
+    
+    // 答え表示画面へ遷移（現在の問題を答え表示用として保存）
+    state = state.copyWith(
+      learningState: LearningPhase.answerDisplay,
+      showAnswerForProblem: currentProblem,
+    );
+  }
+
+  /// 暗記問題で「答えを見る」をクリックした場合の処理
+  void handleShowAnswerForMemorizationProblem() {
+    if (state.selectedProblemSet == null || state.currentProblem == null) return;
+    if (state.currentProblem!.type != ProblemType.memorization) return;
+    
+    developer.log('[AppStateManager] Memorization problem show answer');
+    
+    // 現在の問題を答え表示用の問題として保存
+    final currentProblem = state.currentProblem!;
+    
+    // 答え表示画面へ遷移（現在の問題を答え表示用として保存）
+    state = state.copyWith(
+      learningState: LearningPhase.answerDisplay,
+      showAnswerForProblem: currentProblem,
+    );
+  }
+
   /// 次の問題への遷移
   void moveToNextProblem() {
-    // 暗記問題の場合は単純に次のインデックスに移動
-    if (state.currentProblem?.type == ProblemType.memorization) {
-      final nextIndex = state.currentProblemIndex + 1;
-      
-      if (nextIndex >= state.problems.length) {
-        // 全問完了
-        state = state.copyWith(learningState: LearningPhase.completed);
-        return;
-      }
-      
-      state = state.copyWith(
-        currentProblemIndex: nextIndex,
-        learningState: LearningPhase.problemDisplay,
-      );
-    } else {
+    // 「答えを見る」で表示された問題がある場合は、それを後回しにする
+    if (state.showAnswerForProblem != null) {
+      _requeueProblemFromShowAnswer();
+      return;
+    }
+    
+    // 暗記問題の場合は既にhandleMemorizationAnswerで処理済みなので、
+    // ここでは英単語問題のみを処理
+    if (state.currentProblem?.type != ProblemType.memorization) {
       // 英単語問題の場合は未完了問題を探す
       final nextIndex = _findNextIncompleteProblemIndex();
       
@@ -143,9 +210,33 @@ class AppStateManager extends StateNotifier<AppState> {
         currentBlankIndex: 0, // 最初の空欄にリセット
         cursorPosition: 0, // カーソル位置もリセット
       );
+      
+      _initializeControllersForCurrentProblem();
     }
+  }
+  
+  /// 「答えを見る」で表示された問題を後回しにする
+  void _requeueProblemFromShowAnswer() {
+    if (state.showAnswerForProblem == null) return;
     
-    _initializeControllersForCurrentProblem();
+    developer.log('[AppStateManager] Requeuing problem from show answer');
+    
+    // 共通のヘルパーメソッドを使用
+    _requeueCurrentProblem();
+    
+    // すべての問題が完了したかチェック
+    final hasIncompleteProblems = state.problems.any((problem) => !problem.isCompleted);
+    
+    state = state.copyWith(
+      learningState: hasIncompleteProblems ? LearningPhase.problemDisplay : LearningPhase.completed,
+      showAnswerForProblem: null, // 答え表示用問題をクリア
+      currentBlankIndex: 0,
+      cursorPosition: 0,
+    );
+    
+    if (hasIncompleteProblems) {
+      _initializeControllersForCurrentProblem();
+    }
   }
 
   /// メニュー（問題セット選択画面）に戻る
@@ -165,6 +256,7 @@ class AppStateManager extends StateNotifier<AppState> {
       answerFocusNodes: [],
       currentBlankIndex: 0,
       cursorPosition: 0,
+      showAnswerForProblem: null,
     );
   }
 
@@ -414,7 +506,10 @@ class AppStateManager extends StateNotifier<AppState> {
     });
   }
 
-  /// 次の未完了問題を検索
+  /// 次の未完了問題のインデックスを検索
+  /// 
+  /// 現在のインデックス以降から検索し、見つからない場合は先頭から検索
+  /// Returns: 未完了問題のインデックス、見つからない場合はnull
   int? _findNextIncompleteProblemIndex() {
     for (int i = state.currentProblemIndex + 1; i < state.problems.length; i++) {
       if (!state.problems[i].isCompleted) return i;
@@ -424,6 +519,31 @@ class AppStateManager extends StateNotifier<AppState> {
     }
     return null;
   }
+
+  /// 現在の問題を後回しにする（リストの末尾に移動）
+  /// 
+  /// 暗記問題で「できなかった」場合や、英単語問題で「答えを見る」を
+  /// 使用した場合に呼び出される共通処理
+  void _requeueCurrentProblem() {
+    if (state.problems.isEmpty || state.currentProblemIndex >= state.problems.length) {
+      return;
+    }
+    
+    final updatedProblems = List<Problem>.from(state.problems);
+    final problemToRequeue = updatedProblems.removeAt(state.currentProblemIndex);
+    updatedProblems.add(problemToRequeue);
+    
+    int nextIndex = state.currentProblemIndex;
+    if (nextIndex >= updatedProblems.length) {
+      nextIndex = _Constants.initialProblemIndex;
+    }
+    
+    state = state.copyWith(
+      problems: updatedProblems,
+      currentProblemIndex: nextIndex,
+    );
+  }
+
 
   /// コントローラーを破棄
   void _disposeControllers() {
@@ -459,6 +579,7 @@ class AppState {
   final List<FocusNode> answerFocusNodes;
   final int currentBlankIndex; // 現在フォーカスされている空欄
   final int cursorPosition; // カーソル位置
+  final Problem? showAnswerForProblem; // 「答えを見る」で答えを表示中の問題
 
   const AppState({
     this.selectedProblemSet,
@@ -469,6 +590,7 @@ class AppState {
     this.answerFocusNodes = const [],
     this.currentBlankIndex = 0,
     this.cursorPosition = 0,
+    this.showAnswerForProblem,
   });
 
   AppState copyWith({
@@ -480,6 +602,7 @@ class AppState {
     List<FocusNode>? answerFocusNodes,
     int? currentBlankIndex,
     int? cursorPosition,
+    Object? showAnswerForProblem = _undefined,
   }) {
     return AppState(
       selectedProblemSet: selectedProblemSet == _undefined 
@@ -492,6 +615,9 @@ class AppState {
       answerFocusNodes: answerFocusNodes ?? this.answerFocusNodes,
       currentBlankIndex: currentBlankIndex ?? this.currentBlankIndex,
       cursorPosition: cursorPosition ?? this.cursorPosition,
+      showAnswerForProblem: showAnswerForProblem == _undefined 
+          ? this.showAnswerForProblem 
+          : showAnswerForProblem as Problem?,
     );
   }
 

@@ -14,6 +14,7 @@ go_library(
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/domain",
     visibility = ["//visibility:public"],
     deps = [
+        "//lib/domain",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/user/domain",
@@ -27,6 +28,7 @@ go_test(
     gotags = ["small"],
     deps = [
         ":domain",
+        "//lib/domain",
         "//moonbeam/lib/domain",
         "//moonbeam/user/domain",
         "@com_github_stretchr_testify//require",
@@ -38,6 +40,7 @@ go_test(
     srcs = ["deck_test.go"],
     deps = [
         ":domain",
+        "//lib/domain",
         "//moonbeam/lib/domain",
         "//moonbeam/user/domain",
         "@com_github_stretchr_testify//require",
