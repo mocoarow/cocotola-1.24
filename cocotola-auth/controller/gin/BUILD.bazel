@@ -37,7 +37,32 @@ go_library(
 go_test(
     name = "gin_s_test",
     size = "small",
+    srcs = [
+        "auth_handler_s_test.go",
+        "google_auth_handler_s_test.go",
+        "helper_test.go",
+    ],
     gotags = ["small"],
+    deps = [
+        ":gin",
+        "//cocotola-auth/config",
+        "//cocotola-auth/controller/gin/mocks",
+        "//cocotola-auth/domain",
+        "//lib/config",
+        "//lib/controller/gin",
+        "//moonbeam/lib/config",
+        "//moonbeam/user/domain",
+        "@com_github_gin_gonic_gin//:gin",
+        "@com_github_ohler55_ojg//jp",
+        "@com_github_ohler55_ojg//oj",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//mock",
+        "@com_github_stretchr_testify//require",
+    ],
+)
+
+go_test(
+    name = "gin_test",
     srcs = [
         "auth_handler_s_test.go",
         "google_auth_handler_s_test.go",

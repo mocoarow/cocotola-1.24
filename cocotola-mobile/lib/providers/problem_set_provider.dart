@@ -3,13 +3,16 @@ import '../models/problem_set.dart';
 import '../models/word_problem.dart';
 import '../models/memorization_problem.dart';
 import '../models/problem_base.dart';
+import 'card_provider.dart';
 
 final problemSetsProvider = StateNotifierProvider<ProblemSetsNotifier, List<ProblemSet>>((ref) {
-  return ProblemSetsNotifier();
+  return ProblemSetsNotifier(ref);
 });
 
 class ProblemSetsNotifier extends StateNotifier<List<ProblemSet>> {
-  ProblemSetsNotifier() : super(_generateProblemSets());
+  final Ref ref;
+  
+  ProblemSetsNotifier(this.ref) : super(_generateProblemSets());
   
   static List<ProblemSet> _generateProblemSets() {
     return [
@@ -155,5 +158,44 @@ class ProblemSetsNotifier extends StateNotifier<List<ProblemSet>> {
     } catch (e) {
       return null;
     }
+  }
+
+  /// APIから取得したカード問題を問題セットとして追加
+  Future<void> addProblemSetFromApi() async {
+    try {
+      final cardProblems = await ref.read(cardProblemsProvider.future);
+      
+      if (cardProblems.isNotEmpty) {
+        final apiProblemSet = ProblemSet(
+          id: 'api-cards',
+          title: 'APIカード問題セット',
+          description: 'サーバーから取得したカード問題を学習します。',
+          cefrLevel: 'Mixed', // 複数レベルが混在する可能性があるため
+          problems: cardProblems,
+        );
+        
+        // 既存の問題セットと結合（APIセットが既に存在する場合は更新）
+        final updatedState = [...state];
+        final existingIndex = updatedState.indexWhere((set) => set.id == 'api-cards');
+        
+        if (existingIndex != -1) {
+          updatedState[existingIndex] = apiProblemSet;
+        } else {
+          updatedState.add(apiProblemSet);
+        }
+        
+        state = updatedState;
+      } else {
+        throw Exception('APIから問題を取得できませんでした');
+      }
+    } catch (e) {
+      // エラーを再スローして上位で処理
+      rethrow;
+    }
+  }
+
+  /// API問題セットを削除
+  void removeApiProblemSet() {
+    state = state.where((set) => set.id != 'api-cards').toList();
   }
 }

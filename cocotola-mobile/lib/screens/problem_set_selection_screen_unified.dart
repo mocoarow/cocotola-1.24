@@ -157,6 +157,40 @@ class ProblemSetSelectionScreenUnified extends ConsumerWidget {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          try {
+            final problemSetsNotifier = ref.read(problemSetsProvider.notifier);
+            await problemSetsNotifier.addProblemSetFromApi();
+            
+            // 成功時のSnackBar表示
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('API問題セットを追加しました'),
+                  duration: Duration(seconds: 2),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } catch (e) {
+            // エラー時のSnackBar表示
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('エラーが発生しました: $e'),
+                  duration: const Duration(seconds: 3),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+        icon: const Icon(Icons.cloud_download),
+        label: const Text('API問題を追加'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
     );
   }
 }

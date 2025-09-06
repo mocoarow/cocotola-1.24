@@ -19,6 +19,7 @@ import (
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/config"
 	controller "github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/middleware"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -60,12 +61,16 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 		return mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
 	}
 
+	// init guest middleware
+	// TODO:
+	guestMiddleware := middleware.NewGuestMiddleware(1, 1)
+
 	basicAuthMiddleware := gin.BasicAuth(gin.Accounts{
 		coreConfig.CoreAPIServer.Username: coreConfig.CoreAPIServer.Password,
 	})
 
 	// init public and private router group functions
-	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs()
+	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs(ctx, db)
 
 	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, db, txManager, nonTxManager, rbacClient)
 	if err != nil {
@@ -84,7 +89,7 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	v1 := api.Group("v1")
 
 	// public router
-	libcontroller.InitPublicAPIRouterGroup(ctx, v1, publicRouterGroupFuncs)
+	libcontroller.InitPublicAPIRouterGroup(ctx, v1, publicRouterGroupFuncs, guestMiddleware)
 
 	// private router
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, bearerTokenAuthMiddleware, bearerTokenPrivateRouterGroupFuncs)

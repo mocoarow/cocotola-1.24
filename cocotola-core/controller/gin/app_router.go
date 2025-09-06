@@ -21,6 +21,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/usecase"
 
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/guest"
 	resourcemanagergateway "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/resource_manager"
 	resourcemanager "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/resource_manager"
 )
@@ -39,10 +40,12 @@ func NewInitTestRouterFunc() libcontroller.InitRouterGroupFunc {
 	}
 }
 
-func GetPublicRouterGroupFuncs() []libcontroller.InitRouterGroupFunc {
+func GetPublicRouterGroupFuncs(_ context.Context, db *gorm.DB) []libcontroller.InitRouterGroupFunc {
+	cardQueryUsecase := guest.NewCardQueryUsecase(db)
 	// public router
 	return []libcontroller.InitRouterGroupFunc{
 		// controller.NewInitTestRouterFunc(),
+		NewInitCardRouterFunc(cardQueryUsecase),
 	}
 }
 
