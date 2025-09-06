@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//cocotola-core/config",
         "//cocotola-core/controller/gin",
+        "//cocotola-core/controller/gin/middleware",
         "//cocotola-core/domain",
         "//cocotola-core/gateway",
         "//cocotola-core/service",

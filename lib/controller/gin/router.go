@@ -52,9 +52,9 @@ func InitAPIRouterGroup(_ context.Context, parentRouterGroup gin.IRouter, appNam
 	return api
 }
 
-func InitPublicAPIRouterGroup(_ context.Context, parentRouterGroup gin.IRouter, initPublicRouterFunc []InitRouterGroupFunc) {
+func InitPublicAPIRouterGroup(_ context.Context, parentRouterGroup gin.IRouter, initPublicRouterFunc []InitRouterGroupFunc, middleware ...gin.HandlerFunc) {
 	for _, fn := range initPublicRouterFunc {
-		fn(parentRouterGroup)
+		fn(parentRouterGroup, middleware...)
 	}
 }
 
