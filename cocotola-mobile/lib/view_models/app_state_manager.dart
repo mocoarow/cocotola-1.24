@@ -8,6 +8,13 @@ import 'dart:developer' as developer;
 // copyWith でnullを明示的に設定するための定数
 const Object _undefined = Object();
 
+// 定数
+class _Constants {
+  static const int initialProblemIndex = 0;
+  static const int initialBlankIndex = 0;
+  static const int initialCursorPosition = 0;
+}
+
 /// アプリ全体の状態を管理する統合ViewModel
 class AppStateManager extends StateNotifier<AppState> {
   AppStateManager() : super(const AppState());
@@ -18,13 +25,13 @@ class AppStateManager extends StateNotifier<AppState> {
     
     state = state.copyWith(
       selectedProblemSet: problemSet,
-      currentProblemIndex: 0,
+      currentProblemIndex: _Constants.initialProblemIndex,
       learningState: LearningPhase.problemDisplay,
       problems: problemSet.problems,
       answerControllers: [],
       answerFocusNodes: [],
-      currentBlankIndex: 0, // カスタムキーボード用の空欄インデックス初期化
-      cursorPosition: 0, // カーソル位置初期化
+      currentBlankIndex: _Constants.initialBlankIndex,
+      cursorPosition: _Constants.initialCursorPosition,
     );
     
     _initializeControllersForCurrentProblem();
@@ -79,51 +86,21 @@ class AppStateManager extends StateNotifier<AppState> {
     
     developer.log('[AppStateManager] Memorization problem answered: $wasCorrect');
     
-    final updatedProblems = List<Problem>.from(state.problems);
-    
     if (wasCorrect) {
-      // 正解した場合は問題を完了状態にして現在の位置から削除
-      updatedProblems.removeAt(state.currentProblemIndex);
-      
-      // 問題リストを更新
-      state = state.copyWith(problems: updatedProblems);
-      
-      // インデックス調整: 削除により現在のインデックスが末尾を超えた場合は0に戻す
-      int nextIndex = state.currentProblemIndex;
-      if (nextIndex >= updatedProblems.length) {
-        nextIndex = 0;
-      }
-      
-      // 全問完了チェック
-      if (updatedProblems.isEmpty) {
-        state = state.copyWith(learningState: LearningPhase.completed);
-        return;
-      }
-      
-      state = state.copyWith(currentProblemIndex: nextIndex);
-      
+      _removeCompletedProblem();
     } else {
-      // 間違えた場合は問題を後回しにする
-      // 現在の問題を削除して末尾に追加
-      final problemToRequeue = updatedProblems.removeAt(state.currentProblemIndex);
-      updatedProblems.add(problemToRequeue);
-      
-      // 問題リストを更新
-      state = state.copyWith(problems: updatedProblems);
-      
-      // インデックス調整: 削除により現在のインデックスが末尾を超えた場合は0に戻す
-      int nextIndex = state.currentProblemIndex;
-      if (nextIndex >= updatedProblems.length) {
-        nextIndex = 0;
-      }
-      
-      state = state.copyWith(currentProblemIndex: nextIndex);
+      _requeueCurrentProblem();
     }
     
-    // 次の問題表示に遷移
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      state = state.copyWith(learningState: LearningPhase.problemDisplay);
-    });
+    // 学習状態を決定
+    if (state.problems.isEmpty) {
+      state = state.copyWith(learningState: LearningPhase.completed);
+    } else {
+      // 次の問題表示に遷移
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        state = state.copyWith(learningState: LearningPhase.problemDisplay);
+      });
+    }
   }
 
   /// 答え表示画面への遷移
@@ -207,24 +184,13 @@ class AppStateManager extends StateNotifier<AppState> {
     
     developer.log('[AppStateManager] Requeuing problem from show answer');
     
-    final updatedProblems = List<Problem>.from(state.problems);
-    
-    // 現在の問題を削除して末尾に追加
-    final problemToRequeue = updatedProblems.removeAt(state.currentProblemIndex);
-    updatedProblems.add(problemToRequeue);
-    
-    // インデックス調整
-    int nextIndex = state.currentProblemIndex;
-    if (nextIndex >= updatedProblems.length) {
-      nextIndex = 0;
-    }
+    // 共通のヘルパーメソッドを使用
+    _requeueCurrentProblem();
     
     // すべての問題が完了したかチェック
-    final hasIncompleteProblems = updatedProblems.any((problem) => !problem.isCompleted);
+    final hasIncompleteProblems = state.problems.any((problem) => !problem.isCompleted);
     
     state = state.copyWith(
-      problems: updatedProblems,
-      currentProblemIndex: nextIndex,
       learningState: hasIncompleteProblems ? LearningPhase.problemDisplay : LearningPhase.completed,
       showAnswerForProblem: null, // 答え表示用問題をクリア
       currentBlankIndex: 0,
@@ -503,7 +469,10 @@ class AppStateManager extends StateNotifier<AppState> {
     });
   }
 
-  /// 次の未完了問題を検索
+  /// 次の未完了問題のインデックスを検索
+  /// 
+  /// 現在のインデックス以降から検索し、見つからない場合は先頭から検索
+  /// Returns: 未完了問題のインデックス、見つからない場合はnull
   int? _findNextIncompleteProblemIndex() {
     for (int i = state.currentProblemIndex + 1; i < state.problems.length; i++) {
       if (!state.problems[i].isCompleted) return i;
@@ -512,6 +481,53 @@ class AppStateManager extends StateNotifier<AppState> {
       if (!state.problems[i].isCompleted) return i;
     }
     return null;
+  }
+
+  /// 現在の問題を後回しにする（リストの末尾に移動）
+  /// 
+  /// 暗記問題で「できなかった」場合や、英単語問題で「答えを見る」を
+  /// 使用した場合に呼び出される共通処理
+  void _requeueCurrentProblem() {
+    if (state.problems.isEmpty || state.currentProblemIndex >= state.problems.length) {
+      return;
+    }
+    
+    final updatedProblems = List<Problem>.from(state.problems);
+    final problemToRequeue = updatedProblems.removeAt(state.currentProblemIndex);
+    updatedProblems.add(problemToRequeue);
+    
+    int nextIndex = state.currentProblemIndex;
+    if (nextIndex >= updatedProblems.length) {
+      nextIndex = _Constants.initialProblemIndex;
+    }
+    
+    state = state.copyWith(
+      problems: updatedProblems,
+      currentProblemIndex: nextIndex,
+    );
+  }
+
+  /// 正解した問題をリストから削除
+  /// 
+  /// 暗記問題で「できた」場合に呼び出される
+  /// 問題完了により学習進捗を管理
+  void _removeCompletedProblem() {
+    if (state.problems.isEmpty || state.currentProblemIndex >= state.problems.length) {
+      return;
+    }
+    
+    final updatedProblems = List<Problem>.from(state.problems);
+    updatedProblems.removeAt(state.currentProblemIndex);
+    
+    int nextIndex = state.currentProblemIndex;
+    if (nextIndex >= updatedProblems.length) {
+      nextIndex = _Constants.initialProblemIndex;
+    }
+    
+    state = state.copyWith(
+      problems: updatedProblems,
+      currentProblemIndex: nextIndex,
+    );
   }
 
   /// コントローラーを破棄
