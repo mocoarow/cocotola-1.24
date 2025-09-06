@@ -6,6 +6,8 @@ import (
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 )
 
 type FolderID struct {
@@ -53,26 +55,41 @@ type DeckModel struct {
 	DeckID                 *DeckID                      `validate:"required"`
 	OrganizationID         *mbuserdomain.OrganizationID `validate:"required"`
 	SpaceID                *SpaceID                     `validate:"required"`
-	OwnerID                *mbuserdomain.AppUserID      `validate:"required"`
 	FolderID               *FolderID                    `validate:"required"`
 	Name                   string                       `validate:"required"`
-	TemplateID             int                          `validate:"required,gte=1"`
-	Lang2                  string                       `validate:"required,len=2"`
+	TemplateID             *TemplateID                  `validate:"required"`
+	Lang2                  *libdomain.Lang2             `validate:"required"`
 	Description            string
+	OwnerID                *mbuserdomain.AppUserID `validate:"required"`
 }
 
-func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *SpaceID, owernID *mbuserdomain.AppUserID, folderID *FolderID, name string, templateID int, lang2 string, description string) (*DeckModel, error) {
+func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *SpaceID, folderID *FolderID, name string, templateID *TemplateID, lang2 *libdomain.Lang2, description string, owernID *mbuserdomain.AppUserID) (*DeckModel, error) {
+	if baseModel == nil {
+		return nil, mbliberrors.Errorf("baseModel is nil", mblibdomain.ErrInvalidArgument)
+	}
+	if deckID == nil {
+		return nil, mbliberrors.Errorf("deckID is nil", mblibdomain.ErrInvalidArgument)
+	}
+	if organizationID == nil {
+		return nil, mbliberrors.Errorf("organizationID is nil", mblibdomain.ErrInvalidArgument)
+	}
+	if spaceID == nil {
+		return nil, mbliberrors.Errorf("spaceID is nil", mblibdomain.ErrInvalidArgument)
+	}
+	if folderID == nil {
+		return nil, mbliberrors.Errorf("folderID is nil", mblibdomain.ErrInvalidArgument)
+	}
 	m := &DeckModel{
 		BaseModel:      baseModel,
 		DeckID:         deckID,
 		OrganizationID: organizationID,
 		SpaceID:        spaceID,
-		OwnerID:        owernID,
 		FolderID:       folderID,
 		Name:           name,
 		TemplateID:     templateID,
 		Lang2:          lang2,
 		Description:    description,
+		OwnerID:        owernID,
 	}
 
 	if err := mblibdomain.Validator.Struct(m); err != nil {

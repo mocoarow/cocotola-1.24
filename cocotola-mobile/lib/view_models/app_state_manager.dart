@@ -167,6 +167,23 @@ class AppStateManager extends StateNotifier<AppState> {
     );
   }
 
+  /// 暗記問題で「答えを見る」をクリックした場合の処理
+  void handleShowAnswerForMemorizationProblem() {
+    if (state.selectedProblemSet == null || state.currentProblem == null) return;
+    if (state.currentProblem!.type != ProblemType.memorization) return;
+    
+    developer.log('[AppStateManager] Memorization problem show answer');
+    
+    // 現在の問題を答え表示用の問題として保存
+    final currentProblem = state.currentProblem!;
+    
+    // 答え表示画面へ遷移（現在の問題を答え表示用として保存）
+    state = state.copyWith(
+      learningState: LearningPhase.answerDisplay,
+      showAnswerForProblem: currentProblem,
+    );
+  }
+
   /// 次の問題への遷移
   void moveToNextProblem() {
     // 「答えを見る」で表示された問題がある場合は、それを後回しにする

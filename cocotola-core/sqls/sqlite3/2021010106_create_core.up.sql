@@ -1,4 +1,4 @@
-create table `core_deck` (
+create table `core_card` (
  `id`integer primary key
 ,`version` int not null default 1
 ,`created_at` datetime not null default current_timestamp

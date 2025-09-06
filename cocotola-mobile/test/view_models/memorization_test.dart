@@ -339,5 +339,40 @@ void main() {
       expect(state.learningState, LearningPhase.completed);
       expect(state.problems.length, 0);
     });
+
+    test('暗記問題での「答えを見る」処理', () {
+      // 暗記問題セットを作成
+      final problemSet = ProblemSet(
+        id: 'test-memorization-show-answer',
+        title: '暗記問題答え表示テスト',
+        description: 'テスト用の暗記問題セット',
+        cefrLevel: 'A1',
+        problems: [
+          Problem.memorization(MemorizationProblem(
+            question: 'dog',
+            answer: '犬',
+            cefrLevel: 'A1',
+          )),
+        ],
+      );
+
+      // 問題セットを選択
+      appStateManager.selectProblemSet(problemSet);
+      
+      // 初期状態確認
+      var state = container.read(appStateProvider);
+      expect(state.learningState, LearningPhase.problemDisplay);
+      expect(state.showAnswerForProblem, isNull);
+      
+      // 「答えを見る」をクリック
+      appStateManager.handleShowAnswerForMemorizationProblem();
+      
+      // 答え表示状態になることを確認
+      state = container.read(appStateProvider);
+      expect(state.learningState, LearningPhase.answerDisplay);
+      expect(state.showAnswerForProblem, isNotNull);
+      expect(state.showAnswerForProblem!.memorizationProblem!.question, 'dog');
+      expect(state.showAnswerForProblem!.memorizationProblem!.answer, '犬');
+    });
   });
 }

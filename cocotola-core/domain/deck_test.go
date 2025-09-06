@@ -8,8 +8,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	libdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
+	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	userdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
@@ -17,7 +19,7 @@ import (
 func TestNewDeckModel_Valid(t *testing.T) {
 	t.Parallel()
 
-	baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
+	baseModel, err := mblibdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 	require.NoError(t, err)
 
 	deckID, err := domain.NewDeckID(1)
@@ -33,6 +35,12 @@ func TestNewDeckModel_Valid(t *testing.T) {
 	require.NoError(t, err)
 
 	folderID, err := domain.NewFolderID(1)
+	require.NoError(t, err)
+
+	templateID, err := domain.NewTemplateID(1)
+	require.NoError(t, err)
+
+	lang2, err := libdomain.NewLang2("en")
 	require.NoError(t, err)
 
 	deckModel, err := domain.NewDeckModel(
@@ -40,26 +48,26 @@ func TestNewDeckModel_Valid(t *testing.T) {
 		deckID,
 		organizationID,
 		spaceID,
-		ownerID,
 		folderID,
 		"Test Deck",
-		1,
-		"en",
+		templateID,
+		lang2,
 		"Test Description",
+		ownerID,
 	)
 
 	require.NoError(t, err)
 	require.NotNil(t, deckModel)
 	require.Equal(t, "Test Deck", deckModel.Name)
-	require.Equal(t, 1, deckModel.TemplateID)
-	require.Equal(t, "en", deckModel.Lang2)
+	require.Equal(t, 1, deckModel.TemplateID.Int())
+	require.Equal(t, "en", deckModel.Lang2.String())
 	require.Equal(t, "Test Description", deckModel.Description)
 }
 
 func TestNewDeckModel_Invalid(t *testing.T) {
 	t.Parallel()
 
-	baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
+	baseModel, err := mblibdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 	require.NoError(t, err)
 
 	deckID, err := domain.NewDeckID(1)
@@ -71,23 +79,29 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 	spaceID, err := domain.NewSpaceID(1)
 	require.NoError(t, err)
 
-	ownerID, err := userdomain.NewAppUserID(1)
+	folderID, err := domain.NewFolderID(1)
 	require.NoError(t, err)
 
-	folderID, err := domain.NewFolderID(1)
+	templateID, err := domain.NewTemplateID(1)
+	require.NoError(t, err)
+
+	lang2, err := libdomain.NewLang2("en")
+	require.NoError(t, err)
+
+	ownerID, err := userdomain.NewAppUserID(1)
 	require.NoError(t, err)
 
 	tests := []struct {
 		name           string
-		baseModel      *libdomain.BaseModel
+		baseModel      *mblibdomain.BaseModel
 		deckID         *domain.DeckID
 		organizationID *userdomain.OrganizationID
 		spaceID        *domain.SpaceID
-		ownerID        *userdomain.AppUserID
 		folderID       *domain.FolderID
 		deckName       string
-		templateID     int
-		lang2          string
+		templateID     *domain.TemplateID
+		lang2          *libdomain.Lang2
+		ownerID        *userdomain.AppUserID
 	}{
 		{
 			name:           "empty name",
@@ -98,32 +112,8 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 			ownerID:        ownerID,
 			folderID:       folderID,
 			deckName:       "",
-			templateID:     1,
-			lang2:          "en",
-		},
-		{
-			name:           "invalid template ID (zero)",
-			baseModel:      baseModel,
-			deckID:         deckID,
-			organizationID: organizationID,
-			spaceID:        spaceID,
-			ownerID:        ownerID,
-			folderID:       folderID,
-			deckName:       "Test Deck",
-			templateID:     0,
-			lang2:          "en",
-		},
-		{
-			name:           "invalid template ID (negative)",
-			baseModel:      baseModel,
-			deckID:         deckID,
-			organizationID: organizationID,
-			spaceID:        spaceID,
-			ownerID:        ownerID,
-			folderID:       folderID,
-			deckName:       "Test Deck",
-			templateID:     -1,
-			lang2:          "en",
+			templateID:     templateID,
+			lang2:          lang2,
 		},
 		{
 			name:           "empty lang2",
@@ -134,32 +124,8 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 			ownerID:        ownerID,
 			folderID:       folderID,
 			deckName:       "Test Deck",
-			templateID:     1,
-			lang2:          "",
-		},
-		{
-			name:           "lang2 too short (1 char)",
-			baseModel:      baseModel,
-			deckID:         deckID,
-			organizationID: organizationID,
-			spaceID:        spaceID,
-			ownerID:        ownerID,
-			folderID:       folderID,
-			deckName:       "Test Deck",
-			templateID:     1,
-			lang2:          "e",
-		},
-		{
-			name:           "lang2 too long (3 chars)",
-			baseModel:      baseModel,
-			deckID:         deckID,
-			organizationID: organizationID,
-			spaceID:        spaceID,
-			ownerID:        ownerID,
-			folderID:       folderID,
-			deckName:       "Test Deck",
-			templateID:     1,
-			lang2:          "eng",
+			templateID:     templateID,
+			lang2:          nil,
 		},
 		{
 			name:           "nil baseModel",
@@ -170,8 +136,8 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 			ownerID:        ownerID,
 			folderID:       folderID,
 			deckName:       "Test Deck",
-			templateID:     1,
-			lang2:          "en",
+			templateID:     templateID,
+			lang2:          lang2,
 		},
 		{
 			name:           "nil deckID",
@@ -182,8 +148,8 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 			ownerID:        ownerID,
 			folderID:       folderID,
 			deckName:       "Test Deck",
-			templateID:     1,
-			lang2:          "en",
+			templateID:     templateID,
+			lang2:          lang2,
 		},
 		{
 			name:           "nil organizationID",
@@ -194,8 +160,8 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 			ownerID:        ownerID,
 			folderID:       folderID,
 			deckName:       "Test Deck",
-			templateID:     1,
-			lang2:          "en",
+			templateID:     templateID,
+			lang2:          lang2,
 		},
 		{
 			name:           "nil spaceID",
@@ -206,8 +172,8 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 			ownerID:        ownerID,
 			folderID:       folderID,
 			deckName:       "Test Deck",
-			templateID:     1,
-			lang2:          "en",
+			templateID:     templateID,
+			lang2:          lang2,
 		},
 		{
 			name:           "nil ownerID",
@@ -218,8 +184,8 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 			ownerID:        nil,
 			folderID:       folderID,
 			deckName:       "Test Deck",
-			templateID:     1,
-			lang2:          "en",
+			templateID:     templateID,
+			lang2:          lang2,
 		},
 		{
 			name:           "nil folderID",
@@ -230,8 +196,8 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 			ownerID:        ownerID,
 			folderID:       nil,
 			deckName:       "Test Deck",
-			templateID:     1,
-			lang2:          "en",
+			templateID:     templateID,
+			lang2:          lang2,
 		},
 	}
 
@@ -244,16 +210,15 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 				tt.deckID,
 				tt.organizationID,
 				tt.spaceID,
-				tt.ownerID,
 				tt.folderID,
 				tt.deckName,
 				tt.templateID,
 				tt.lang2,
 				"Test Description",
+				tt.ownerID,
 			)
 
 			require.Error(t, err)
-			require.Contains(t, err.Error(), "validate deck model")
 		})
 	}
 }

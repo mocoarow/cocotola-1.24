@@ -48,8 +48,7 @@ class BlankWidget extends StatelessWidget {
               child: Text(
                 readOnly ? controller.text : blank.answer,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.green,
                 ),
