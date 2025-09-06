@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io' show Platform;
 import '../../models/word_problem.dart';
 
 class BlankWidget extends StatelessWidget {
@@ -30,8 +31,8 @@ class BlankWidget extends StatelessWidget {
     final inputWidth = (blank.answer.length * 20.0).clamp(100.0, 200.0);
     
     // モバイルプラットフォームかどうかを判定
-    final isMobile = defaultTargetPlatform == TargetPlatform.iOS || 
-                     defaultTargetPlatform == TargetPlatform.android;
+    // Web環境では常にfalse、ネイティブ環境でiOS/Androidの場合のみtrue
+    final isMobile = !kIsWeb && (Platform.isIOS || Platform.isAndroid);
 
     // プロバイダーの状態とコントローラーが同期していない場合は更新
     // ただし、readOnly（答え表示）モードの場合はスキップ
