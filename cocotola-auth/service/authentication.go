@@ -12,7 +12,6 @@ import (
 
 func GetUserInfo(ctx context.Context, systemToken libdomain.SystemToken, authTokenManager AuthTokenManager, nonTxManager TransactionManager, bearerToken string) (*mbuserdomain.AppUserModel, error) {
 	// TODO: Check whether the token is registered in the Database
-
 	appUserInfo, err := authTokenManager.GetUserInfo(ctx, bearerToken)
 	if err != nil {
 		return nil, mbliberrors.Errorf("GetUserInfo: %w", err)

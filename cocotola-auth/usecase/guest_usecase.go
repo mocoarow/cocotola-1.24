@@ -64,7 +64,6 @@ func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string)
 
 		return targetOorganization, targetAppUser, nil
 	})
-
 	if err != nil {
 		if errors.Is(err, mbuserservice.ErrAppUserNotFound) {
 			return nil, mbliberrors.Errorf("app user not found: %w", domain.ErrUnauthenticated)

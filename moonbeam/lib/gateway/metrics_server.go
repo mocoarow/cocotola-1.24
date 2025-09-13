@@ -37,10 +37,12 @@ func MetricsServerProcess(ctx context.Context, port int, gracefulShutdownTimeSec
 	logger.InfoContext(ctx, fmt.Sprintf("metrics server listening at %v", httpServer.Addr))
 
 	errCh := make(chan error)
+
 	go func() {
 		defer close(errCh)
 		if err := httpServer.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			logger.InfoContext(ctx, fmt.Sprintf("failed to ListenAndServe. err: %v", err))
+
 			errCh <- err
 		}
 	}()
@@ -49,6 +51,7 @@ func MetricsServerProcess(ctx context.Context, port int, gracefulShutdownTimeSec
 	case <-ctx.Done():
 		gracefulShutdownTime1 := time.Duration(gracefulShutdownTimeSec) * time.Second
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), gracefulShutdownTime1)
+
 		defer shutdownCancel()
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
 			logger.InfoContext(ctx, fmt.Sprintf("Server forced to shutdown. err: %v", err))

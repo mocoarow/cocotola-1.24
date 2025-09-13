@@ -21,6 +21,7 @@ func NewAuthMiddleware(cocotolaAuthClient libapi.CocotolaAuthClient) gin.Handler
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		ctx, span := tracer.Start(ctx, "AuthMiddleware")
+
 		defer span.End()
 
 		authorization := c.GetHeader("Authorization")

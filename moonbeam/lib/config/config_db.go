@@ -45,6 +45,7 @@ func MergeFS(driverName string, fss ...fs.FS) (*MergedFS, error) {
 func (f *MergedFS) Open(name string) (fs.File, error) {
 	var file fs.File
 	var err error
+
 	for i := range f.fss {
 		file, err = f.fss[i].Open(name)
 		if err == nil {

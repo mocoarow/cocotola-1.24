@@ -21,6 +21,7 @@ func NewTraceLogMiddleware(appName string, logEnabled bool) gin.HandlerFunc {
 
 		ctx := c.Request.Context()
 		savedCtx := ctx
+
 		defer func() {
 			c.Request = c.Request.WithContext(savedCtx)
 		}()

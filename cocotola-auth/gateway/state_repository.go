@@ -38,6 +38,5 @@ func (r *StateRepository) DoesStateExists(_ context.Context, _ string) (bool, er
 	// }
 
 	// TODO: IMPLE
-
 	return true, nil
 }

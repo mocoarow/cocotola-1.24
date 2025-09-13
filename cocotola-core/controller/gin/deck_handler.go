@@ -60,11 +60,10 @@ func (h *DeckHandler) FindDecks(c *gin.Context) {
 			return h.findDecksAsGuest(ctx, c, operator)
 		} else if operator.Role() == "student" {
 			return h.findDecksAsStudent(ctx, c, operator)
-		} else {
-			h.logger.WarnContext(ctx, fmt.Sprintf("invalid role: %s", operator.Role()))
-
-			return mblibdomain.ErrInvalidArgument
 		}
+		h.logger.WarnContext(ctx, fmt.Sprintf("invalid role: %s", operator.Role()))
+
+		return mblibdomain.ErrInvalidArgument
 	}, h.errorHandle)
 }
 

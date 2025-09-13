@@ -113,14 +113,14 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
 
-	if err := initApp1(ctx, txManager, nonTxManager, organizationID); err != nil {
+	if err := initApp1(ctx, txManager, organizationID); err != nil {
 		return mbliberrors.Errorf("initApp1: %w", err)
 	}
 
 	return nil
 }
 
-func initApp1(ctx context.Context, txManager service.TransactionManager, nonTxManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID) error {
+func initApp1(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID) error {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
 
 	systemAdminID, err := mbuserdomain.NewAppUserID(1)
@@ -147,15 +147,15 @@ func initApp1(ctx context.Context, txManager service.TransactionManager, nonTxMa
 		}
 
 		if errors.Is(err, service.ErrSpaceNotFound) {
-			if spaceID, err := spaceRepo.AddSpace(ctx, operator, &service.SpaceAddParameter{
+			spaceID, err := spaceRepo.AddSpace(ctx, operator, &service.SpaceAddParameter{
 				Name:     "Default Public Space",
 				Key:      "default-public",
 				IsPublic: true,
-			}); err != nil {
+			})
+			if err != nil {
 				return mbliberrors.Errorf("AddSpace: %w", err)
-			} else {
-				logger.Info("default-public space created", slog.Int("spaceID", spaceID.Int()))
 			}
+			logger.Info("default-public space created", slog.Int("spaceID", spaceID.Int()))
 
 			return nil
 		}
@@ -164,7 +164,7 @@ func initApp1(ctx context.Context, txManager service.TransactionManager, nonTxMa
 	}
 
 	if err := mblibservice.Do0(ctx, txManager, fn); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 
 	return nil

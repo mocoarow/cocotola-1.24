@@ -50,8 +50,9 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 		}
 
 		param := service.SpaceAddParameter{
-			Key:  "private",
-			Name: "Private",
+			Key:      "private",
+			Name:     "Private",
+			IsPublic: false,
 		}
 
 		spaceID, err := spaceRepo.AddSpace(ctx, &operator, &param)

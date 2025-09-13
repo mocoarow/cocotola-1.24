@@ -54,6 +54,7 @@ func QueryObject(db *gorm.DB, driverName, objectPrefix, columnName, subject, act
 	objectgKeyword := objectPrefix + "%"
 
 	var objectSelectSQL string
+
 	switch driverName {
 	case "mysql":
 		objectSelectSQL = mysqlObjectSelectSQL
@@ -114,6 +115,7 @@ func FindObject(db *gorm.DB, driverName, object, columnName, subject, action str
 	}
 
 	var objectSelectSQL string
+
 	switch driverName {
 	case "mysql":
 		objectSelectSQL = mysqlObjectFindSQL

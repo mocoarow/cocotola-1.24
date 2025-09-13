@@ -24,7 +24,7 @@ func NewCardQueryUsecase(db *gorm.DB) *CardQueryUseCase {
 	}
 }
 
-func (u *CardQueryUseCase) FindCards(ctx context.Context, operator service.OperatorInterface) ([]*domain.CardModel, error) {
+func (u *CardQueryUseCase) FindCards(ctx context.Context, _ service.OperatorInterface) ([]*domain.CardModel, error) {
 	_, span := tracer.Start(ctx, "CardQueryUseCase.FindDecks")
 	defer span.End()
 	cards := make([]*domain.CardModel, 0)
@@ -83,7 +83,7 @@ func (u *CardQueryUseCase) FindCards(ctx context.Context, operator service.Opera
 
 		content, err := json.Marshal(wp)
 		if err != nil {
-			return nil, err
+			return nil, mbliberrors.Errorf("json.Marshal. err: %w", err)
 		}
 		card, err := domain.NewCardModel(base, cardID, organizationID, deckID, templateID, string(content), ownerID)
 		if err != nil {
@@ -91,6 +91,7 @@ func (u *CardQueryUseCase) FindCards(ctx context.Context, operator service.Opera
 		}
 		cards = append(cards, card)
 	}
+
 	return cards, nil
 }
 

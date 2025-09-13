@@ -25,10 +25,12 @@ func AppServerProcess(ctx context.Context, router http.Handler, port int, readHe
 	logger.InfoContext(ctx, fmt.Sprintf("http server listening at %v", httpServer.Addr))
 
 	errCh := make(chan error)
+
 	go func() {
 		defer close(errCh)
 		if err := httpServer.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			logger.InfoContext(ctx, fmt.Sprintf("failed to ListenAndServe: %v", err))
+
 			errCh <- err
 		}
 	}()

@@ -26,7 +26,7 @@ func NewDeckQueryUsecase(db *gorm.DB) *DeckQueryUseCase {
 	}
 }
 
-func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*domain.DeckModel, error) {
+func (u *DeckQueryUseCase) FindDecks(ctx context.Context, _ service.OperatorInterface) ([]*domain.DeckModel, error) {
 	_, span := tracer.Start(ctx, "DeckQueryUseCase.FindDecks")
 	defer span.End()
 
