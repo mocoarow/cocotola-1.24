@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
@@ -44,7 +43,7 @@ func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string)
 			return nil, nil, mbliberrors.Errorf("organization is nil")
 		}
 
-		guestLoginID := fmt.Sprintf("guest@@%s", organizationName)
+		guestLoginID := libdomain.NewGuestLoginID(organizationName)
 		tmpAppUser, err := action.SystemOwner.FindAppUserByLoginID(ctx, guestLoginID)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("find app user by login id: %w", err)

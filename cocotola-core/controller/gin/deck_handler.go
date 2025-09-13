@@ -16,6 +16,7 @@ import (
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libapideck "github.com/mocoarow/cocotola-1.24/lib/api/deck"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/helper"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
@@ -61,8 +62,8 @@ func (h *DeckHandler) FindDecks(c *gin.Context) {
 		} else if operator.Role() == "student" {
 			return h.findDecksAsStudent(ctx, c, operator)
 		}
-		h.logger.WarnContext(ctx, fmt.Sprintf("invalid role: %s", operator.Role()))
 
+		h.logger.WarnContext(ctx, fmt.Sprintf("invalid role: %s", operator.Role()))
 		return mblibdomain.ErrInvalidArgument
 	}, h.errorHandle)
 }
@@ -93,7 +94,6 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 	}
 
 	c.JSON(http.StatusOK, apiResp)
-
 	return nil
 }
 
@@ -105,8 +105,8 @@ func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, op
 	if err != nil {
 		return mbliberrors.Errorf("FindDecks: %w", err)
 	}
-	c.JSON(http.StatusOK, result)
 
+	c.JSON(http.StatusOK, result)
 	return nil
 }
 
@@ -116,7 +116,6 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("GetIntFromPath. err: %+v", err))
 			c.Status(http.StatusBadRequest)
-
 			return nil
 		}
 
@@ -124,7 +123,6 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("NewDeckID. err: %+v", err))
 			c.Status(http.StatusBadRequest)
-
 			return nil
 		}
 
@@ -134,7 +132,6 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, result)
-
 		return nil
 	}, h.errorHandle)
 }
@@ -145,42 +142,43 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 			return nil
 		}
 		templateID, err := domain.NewTemplateID(apiParam.TemplateID)
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("NewTemplateID: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 			return nil
 		}
 		spaceID, err := domain.NewSpaceID(apiParam.SpaceID)
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("NewSpaceID: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 			return nil
 		}
 
+		lang2, err := libdomain.NewLang2(apiParam.Lang2)
+		if err != nil {
+			h.logger.WarnContext(ctx, fmt.Sprintf("NewLang2: %+v", err))
+			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+			return nil
+		}
 		param := service.DeckAddParameter{
 			SpaceID:     spaceID,
 			FolderID:    nil,
 			TemplateID:  templateID,
 			Name:        apiParam.Name,
-			Lang2:       apiParam.Lang2,
+			Lang2:       lang2,
 			Description: apiParam.Description,
 		}
 		deckID, err := h.deckCommandUsecase.AddDeck(ctx, operator, &param)
 		if err != nil {
 			h.logger.ErrorContext(ctx, fmt.Sprintf("add deck: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 			return nil
 		}
 
 		c.JSON(http.StatusOK, gin.H{"id": deckID.Int()})
-
 		return nil
 	}, h.errorHandle)
 }
@@ -196,7 +194,6 @@ func (h *DeckHandler) UpdateDeck(c *gin.Context) {
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("GetDeckIDFromPath: %+v", err))
 			c.Status(http.StatusBadRequest)
-
 			return nil
 		}
 
@@ -204,7 +201,6 @@ func (h *DeckHandler) UpdateDeck(c *gin.Context) {
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("ShouldBindJSON: %+v", err))
 			c.Status(http.StatusBadRequest)
-
 			return nil
 		}
 
@@ -227,16 +223,15 @@ func (h *DeckHandler) errorHandle(ctx context.Context, c *gin.Context, err error
 	if errors.Is(err, mblibdomain.ErrInvalidArgument) {
 		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler err: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 		return true
 	}
+
 	if errors.Is(err, service.ErrDeckNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{"message": http.StatusText(http.StatusNotFound)})
-
 		return true
 	}
-	h.logger.ErrorContext(ctx, fmt.Sprintf("DeckHandler. error: %+v", err))
 
+	h.logger.ErrorContext(ctx, fmt.Sprintf("DeckHandler. error: %+v", err))
 	return false
 }
 

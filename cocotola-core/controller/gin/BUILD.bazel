@@ -26,6 +26,7 @@ go_library(
         "//lib/api/card",
         "//lib/api/deck",
         "//lib/controller/gin",
+        "//lib/domain",
         "//lib/gateway",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",

@@ -75,7 +75,7 @@ func newCallbackOnAddAppUser(cocotolaCoreCallbackClient service.CocotolaCoreCall
 	}
 }
 
-func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (*mbuserdomain.OrganizationID, error) {
+func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (*mbuserdomain.OrganizationID, *mbuserdomain.AppUserID, error) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-Initialize"))
 	httpClient := http.Client{ //nolint:exhaustruct
 		Timeout:   time.Duration(authConfig.CoreAPIClient.TimeoutSec) * time.Second,
@@ -83,7 +83,7 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 	}
 	coreAPIEndpoint, err := url.Parse(authConfig.CoreAPIClient.Endpoint)
 	if err != nil {
-		return nil, mbliberrors.Errorf("invalid core api endpoint: %w", err)
+		return nil, nil, mbliberrors.Errorf("invalid core api endpoint: %w", err)
 	}
 	cocotolaCoreCallbackClient := gateway.NewCocotolaCoreCallbackClient(&httpClient, coreAPIEndpoint, authConfig.CoreAPIClient.Username, authConfig.CoreAPIClient.Password)
 	appUserEventHandler := mblibservice.ResourceEventHandlerFuncs{ //nolint:exhaustruct
@@ -94,31 +94,31 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
-		return nil, mbliberrors.Errorf("rff: %w", err)
+		return nil, nil, mbliberrors.Errorf("rff: %w", err)
 	}
 
 	// init transaction manager
 	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
 	if err != nil {
-		return nil, mbliberrors.Errorf("NewTransactionManagerT: %w", err)
+		return nil, nil, mbliberrors.Errorf("NewTransactionManagerT: %w", err)
 	}
 
 	// init non transaction manager
 	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
 	if err != nil {
-		return nil, mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
+		return nil, nil, mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
 	}
 
 	// init auth token manager
 	authTokenManager, err := controller.NewAuthTokenManager(ctx, authConfig)
 	if err != nil {
-		return nil, mbliberrors.Errorf("NewAuthTokenManager: %w", err)
+		return nil, nil, mbliberrors.Errorf("NewAuthTokenManager: %w", err)
 	}
 
 	// init auth middleware
 	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(systemToken, authTokenManager, nonTxManager)
 	if err != nil {
-		return nil, mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
+		return nil, nil, mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
 	}
 	basicAuthMiddleware := gin.BasicAuth(gin.Accounts{
 		authConfig.AuthAPIServer.Username: authConfig.AuthAPIServer.Password,
@@ -127,7 +127,7 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 	// init public and private router group functions
 	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, systemToken, authConfig, txManager, nonTxManager, authTokenManager)
 	if err != nil {
-		return nil, mbliberrors.Errorf("GetPublicRouterGroupFuncs: %w", err)
+		return nil, nil, mbliberrors.Errorf("GetPublicRouterGroupFuncs: %w", err)
 	}
 	bearerTokenPrivateRouterGroupFuncs := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, systemToken, txManager, nonTxManager, authTokenManager)
 	basicPrivateRouterGroupFuncs := controller.GetBasicPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
@@ -148,14 +148,15 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 
 	organizationID, err := initApp1(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
 	if err != nil {
-		return nil, mbliberrors.Errorf("initApp1: %w", err)
+		return nil, nil, mbliberrors.Errorf("initApp1: %w", err)
 	}
 
-	if _, err := initApp2(ctx, systemToken, txManager, nonTxManager, "cocotola"); err != nil {
-		return nil, mbliberrors.Errorf("initApp2: %w", err)
+	guestID, err := initApp2(ctx, systemToken, txManager, nonTxManager, "cocotola")
+	if err != nil {
+		return nil, nil, mbliberrors.Errorf("initApp2: %w", err)
 	}
 
-	return organizationID, nil
+	return organizationID, guestID, nil
 }
 
 func addOrganization(ctx context.Context, systemAdminAction *service.SystemAdminAction, organizationName, loginID, password string) (*mbuserdomain.OrganizationID, error) {

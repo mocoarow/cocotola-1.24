@@ -54,7 +54,7 @@ func main() {
 	// init gin
 	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
 
-	if _, err := initialize.Initialize(ctx, systemToken, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App); err != nil {
+	if _, _, err := initialize.Initialize(ctx, systemToken, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App); err != nil {
 		libdomain.CheckError(err)
 	}
 

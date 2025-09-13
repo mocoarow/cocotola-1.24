@@ -2,7 +2,10 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "initialize",
-    srcs = ["initialize.go"],
+    srcs = [
+        "initialize.go",
+        "initialize_english_word.go",
+    ],
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/initialize",
     visibility = ["//visibility:public"],
     deps = [
@@ -13,6 +16,7 @@ go_library(
         "//cocotola-core/gateway",
         "//cocotola-core/service",
         "//lib/controller/gin",
+        "//lib/domain",
         "//lib/gateway",
         "//moonbeam/lib/config",
         "//moonbeam/lib/errors",
@@ -20,6 +24,7 @@ go_library(
         "//moonbeam/lib/log",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
+        "//moonbeam/user/service",
         "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_contrib_instrumentation_net_http_otelhttp//:otelhttp",

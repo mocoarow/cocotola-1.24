@@ -137,7 +137,7 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 		FolderID:       folderID,
 		TemplateID:     param.TemplateID.Int(),
 		Name:           param.Name,
-		Lang2:          param.Lang2,
+		Lang2:          param.Lang2.String(),
 		Description:    param.Description,
 		OwnerID:        operator.AppUserID().Int(),
 	}
@@ -174,14 +174,27 @@ func (r *deckRepository) UpdateDeck(ctx context.Context, operator service.Operat
 	return nil
 }
 
-func (r *deckRepository) FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*service.Deck, error) {
+func (r *deckRepository) FindDecks(ctx context.Context, operator service.OperatorInterface, param *service.FindDecksParameter) ([]*service.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.FindDecks")
 	defer span.End()
 
+	spaceIDs := make([]int, 0, len(param.SpaceIDs))
+	for i, id := range param.SpaceIDs {
+		spaceIDs[i] = id.Int()
+	}
+
+	organizationID := uint(operator.OrganizationID().Int())
+
 	var decksE []DeckEntity
-	if result := r.db.Model(&DeckEntity{}). //nolint:exhaustruct
-						Where("organization_id = ?", uint(operator.OrganizationID().Value)).
-						Find(&decksE); result.Error != nil {
+	if result := r.db.
+		Table(DeckTableName).Select(DeckTableName+".*").
+		Joins("inner join "+SpaceTableName+" on "+DeckTableName+".space_id = "+SpaceTableName+".id").
+		Joins("inner join "+PairOfUserAndSpaceTableName+" on "+SpaceTableName+".id = "+PairOfUserAndSpaceTableName+".space_id").
+		Where(DeckTableName+".organization_id = ?", organizationID).
+		Where(SpaceTableName+".organization_id = ?", organizationID).
+		Where("space_id IN ?", param.SpaceIDs.IDs()).
+		Where(PairOfUserAndSpaceTableName+".app_user_id = ?", operator.AppUserID().Int()).
+		Find(&decksE); result.Error != nil {
 		return nil, mbliberrors.Errorf("deckRepository.FindDecks: %w", result.Error)
 	}
 
@@ -192,6 +205,62 @@ func (r *deckRepository) FindDecks(ctx context.Context, operator service.Operato
 			return nil, err
 		}
 		decks[i] = deck
+	}
+
+	return decks, nil
+}
+
+func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserservice.OperatorInterface) ([]*service.Deck, error) {
+	_, span := tracer.Start(ctx, "deckRepository.FindDecksByOwner")
+	defer span.End()
+
+	var decksE []DeckEntity
+	if result := r.db.
+		Model(&DeckEntity{}). //nolint:exhaustruct
+		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
+		Where("owner_id = ?", uint(operator.AppUserID().Int())).
+		Find(&decksE); result.Error != nil {
+		return nil, mbliberrors.Errorf("deckRepository.FindDecksByOwner: %w", result.Error)
+	}
+
+	decks := make([]*service.Deck, 0, len(decksE))
+	for _, deckE := range decksE {
+		deck, err := deckE.toDeck()
+		if err != nil {
+			return nil, err
+		}
+		decks = append(decks, deck)
+	}
+
+	return decks, nil
+}
+
+func (r *deckRepository) FindDecksInPublicSpace(ctx context.Context, operator service.OperatorInterface) ([]*service.Deck, error) {
+	_, span := tracer.Start(ctx, "deckRepository.FindDecks")
+	defer span.End()
+
+	organizationID := uint(operator.OrganizationID().Int())
+
+	var decksE []DeckEntity
+	if result := r.db.WithContext(ctx).
+		Table(DeckTableName).Select(DeckTableName+".*").
+		Joins("inner join "+SpaceTableName+" on "+DeckTableName+".space_id = "+SpaceTableName+".id").
+		Joins("inner join "+PairOfUserAndSpaceTableName+" on "+SpaceTableName+".id = "+PairOfUserAndSpaceTableName+".space_id").
+		Where(DeckTableName+".organization_id = ?", organizationID).
+		Where(SpaceTableName+".organization_id = ?", organizationID).
+		Where(PairOfUserAndSpaceTableName+".organization_id = ?", organizationID).
+		Where(PairOfUserAndSpaceTableName+".app_user_id = ?", operator.AppUserID().Int()).
+		Find(&decksE); result.Error != nil {
+		return nil, mbliberrors.Errorf("deckRepository.FindDecks: %w", result.Error)
+	}
+
+	decks := make([]*service.Deck, 0, len(decksE))
+	for _, deckE := range decksE {
+		deck, err := deckE.toDeck()
+		if err != nil {
+			return nil, err
+		}
+		decks = append(decks, deck)
 	}
 
 	return decks, nil
