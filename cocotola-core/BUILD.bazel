@@ -19,7 +19,6 @@ go_library(
         "//moonbeam/lib/config",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
-        "//moonbeam/user/domain",
         "@io_opentelemetry_go_otel//:otel",
         "@io_opentelemetry_go_otel//propagation",
     ],

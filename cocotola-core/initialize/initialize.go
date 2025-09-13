@@ -18,6 +18,7 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
@@ -42,7 +43,12 @@ func (o *operator) OrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
 }
 
-func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig, organizationID *mbuserdomain.OrganizationID) error {
+type AuthInitParameter struct {
+	OrganizationID *mbuserdomain.OrganizationID
+	GuestID        *mbuserdomain.AppUserID
+}
+
+func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig, authInitParam *AuthInitParameter) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC)
 	}
@@ -113,37 +119,40 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
 
-	if err := initApp1(ctx, txManager, organizationID); err != nil {
+	spaceID, err := initApp1(ctx, txManager, authInitParam)
+	if err != nil {
 		return mbliberrors.Errorf("initApp1: %w", err)
+	}
+
+	if err := initApp2(ctx, txManager, authInitParam, spaceID); err != nil {
+		return mbliberrors.Errorf("initApp2: %w", err)
+	}
+
+	if err := initEnglishWord(ctx, txManager, authInitParam.OrganizationID); err != nil {
+		return mbliberrors.Errorf("initEnglishWord: %w", err)
 	}
 
 	return nil
 }
 
-func initApp1(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID) error {
+func initApp1(ctx context.Context, txManager service.TransactionManager, authInitParam *AuthInitParameter) (*domain.SpaceID, error) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
 
-	systemAdminID, err := mbuserdomain.NewAppUserID(1)
-	if err != nil {
-		return mbliberrors.Errorf("NewAppUserID: %w", err)
-	}
-
 	operator := &operator{
-		organizationID: organizationID,
-		appUserID:      systemAdminID,
+		organizationID: authInitParam.OrganizationID,
+		appUserID:      mbuserservice.SystemAdminID,
 	}
-	fn := func(rf service.RepositoryFactory) error {
+	fn := func(rf service.RepositoryFactory) (*domain.SpaceID, error) {
 		spaceRepo, err := rf.NewSpaceRepository(ctx)
 		if err != nil {
-			return mbliberrors.Errorf("NewSpaceRepository: %w", err)
+			return nil, mbliberrors.Errorf("NewSpaceRepository: %w", err)
 		}
 
 		// check default-public space
 		space, err := spaceRepo.FindPublicSpaceByKey(ctx, "default-public")
 		if err == nil {
 			logger.Info("default-public space already exists", slog.Int("spaceID", space.SpaceID.Int()))
-
-			return nil
+			return space.SpaceID, nil
 		}
 
 		if errors.Is(err, service.ErrSpaceNotFound) {
@@ -153,14 +162,51 @@ func initApp1(ctx context.Context, txManager service.TransactionManager, organiz
 				IsPublic: true,
 			})
 			if err != nil {
-				return mbliberrors.Errorf("AddSpace: %w", err)
+				return nil, mbliberrors.Errorf("AddSpace: %w", err)
 			}
 			logger.Info("default-public space created", slog.Int("spaceID", spaceID.Int()))
 
-			return nil
+			return spaceID, nil
 		}
 
-		return mbliberrors.Errorf("FindPublicSpaceByKey: %w", err)
+		return nil, mbliberrors.Errorf("FindPublicSpaceByKey: %w", err)
+	}
+
+	spaceID, err := mblibservice.Do1(ctx, txManager, fn)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+
+	return spaceID, nil
+}
+
+func initApp2(ctx context.Context, txManager service.TransactionManager, authInitParam *AuthInitParameter, spaceID *domain.SpaceID) error {
+	operator := &operator{
+		organizationID: authInitParam.OrganizationID,
+		appUserID:      mbuserservice.SystemAdminID,
+	}
+	fn := func(rf service.RepositoryFactory) error {
+		pairOfUserAndSpaceRepo, err := rf.NewPairOfUserAndSpaceRepository(ctx)
+		if err != nil {
+			return mbliberrors.Errorf("NewPairOfUserAndSpaceRepository: %w", err)
+		}
+
+		spaces, err := pairOfUserAndSpaceRepo.FindSpacesByUserID(ctx, operator, authInitParam.GuestID)
+		if err != nil {
+			return mbliberrors.Errorf("FindSpacesByUserID: %w", err)
+		}
+
+		for _, s := range spaces {
+			if s.SpaceID.Int() == spaceID.Int() {
+				// already exists
+				return nil
+			}
+		}
+
+		if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, operator, authInitParam.GuestID, spaceID); err != nil {
+			return mbliberrors.Errorf("AddPairOfUserAndSpace: %w", err)
+		}
+		return nil
 	}
 
 	if err := mblibservice.Do0(ctx, txManager, fn); err != nil {
@@ -169,6 +215,35 @@ func initApp1(ctx context.Context, txManager service.TransactionManager, organiz
 
 	return nil
 }
+
+// func initApp3(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID) error {
+// 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp2"))
+
+// 	operator := &operator{
+// 		organizationID: organizationID,
+// 		appUserID:      mbuserservice.SystemAdminID,
+// 	}
+// 	fn := func(rf service.RepositoryFactory) error {
+// 		spaceRepo, err := rf.NewSpaceRepository(ctx)
+// 		if err != nil {
+// 			return mbliberrors.Errorf("NewSpaceRepository: %w", err)
+// 		}
+
+// 		// check default-public space
+// 		defaultPublicSpace, err := spaceRepo.FindPublicSpaceByKey(ctx, "default-public")
+// 		if err != nil {
+// 			return nil
+// 		}
+
+// 		return mbliberrors.Errorf("FindPublicSpaceByKey: %w", err)
+// 	}
+
+// 	if err := mblibservice.Do0(ctx, txManager, fn); err != nil {
+// 		return err //nolint:wrapcheck
+// 	}
+
+// 	return nil
+// }
 
 // const readHeaderTimeout = time.Duration(30) * time.Second
 

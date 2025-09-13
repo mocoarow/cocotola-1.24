@@ -37,14 +37,19 @@ type SQLite3Config struct {
 func OpenSQLite3(cfg *SQLite3Config, logLevel slog.Level, appName string) (*gorm.DB, error) {
 	gormDialector := gorm_sqlite.Open(cfg.File)
 
+	options := make([]slog_gorm.Option, 0)
+	options = append(options, slog_gorm.WithHandler(slog.Default().With(slog.String(liblog.LoggerNameKey, appName+"-gorm")).Handler()))
+	if logLevel == slog.LevelDebug {
+		options = append(options, slog_gorm.WithTraceAll()) // trace all messages
+	}
+
 	gormConfig := gorm.Config{ //nolint:exhaustruct
-		Logger: slog_gorm.New(
-			slog_gorm.WithTraceAll(), // trace all messages
-			slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
-				return slog.StringValue(appName + "-gorm"), true
-			}),
-			slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, logLevel),
-		),
+		Logger: slog_gorm.New(options...), // trace all messages
+		// slog_gorm.WithContextFunc(liblog.LoggerNameKey, func(_ context.Context) (slog.Value, bool) {
+		// 	return slog.StringValue(appName + "-gorm"), true
+		// }),
+		// slog_gorm.SetLogLevel(slog_gorm.DefaultLogType, slog.LevelDebug),
+
 	}
 
 	return gorm.Open(gormDialector, &gormConfig) //nolint:wrapcheck

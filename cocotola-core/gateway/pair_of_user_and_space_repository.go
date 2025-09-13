@@ -79,7 +79,7 @@ func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context
 // 	return nil
 // }
 
-func (r *pairOfUserAndSpaceRepository) FindSpacesByUserID(_ context.Context, operator service.OperatorInterface, appUserID *mbuserdomain.AppUserID) ([]*service.Space, error) {
+func (r *pairOfUserAndSpaceRepository) FindSpacesByUserID(_ context.Context, operator mbuserservice.AppUserInterface, appUserID *mbuserdomain.AppUserID) ([]*service.Space, error) {
 	spacesE := []SpaceEntity{}
 	if result := r.db.Table(SpaceTableName).Select(SpaceTableName+".*").
 		Where(SpaceTableName+".organization_id = ?", operator.OrganizationID().Int()).

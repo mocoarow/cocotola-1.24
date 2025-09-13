@@ -11,8 +11,8 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cocotola-core/domain",
+        "//cocotola-core/gateway",
         "//cocotola-core/service",
-        "//lib/domain",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/user/domain",

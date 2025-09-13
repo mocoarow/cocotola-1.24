@@ -28,6 +28,16 @@ func (v *SpaceID) GetRBACObject() mbuserdomain.RBACObject {
 	return mbuserdomain.NewRBACObject("space:" + fmt.Sprint(v.Value))
 }
 
+type SpaceIDs []*SpaceID
+
+func (v *SpaceIDs) IDs() []int {
+	ids := make([]int, len(*v))
+	for i, id := range *v {
+		ids[i] = id.Int()
+	}
+	return ids
+}
+
 type SpaceModel struct {
 	*mblibdomain.BaseModel
 	SpaceID        *SpaceID                     `validate:"required"`
