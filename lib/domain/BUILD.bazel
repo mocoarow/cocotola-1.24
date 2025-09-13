@@ -4,6 +4,7 @@ go_library(
     name = "domain",
     srcs = [
         "errors.go",
+        "guest.go",
         "init.go",
         "lang.go",
         "strings.go",

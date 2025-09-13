@@ -30,6 +30,7 @@ type WorkbookUpdateParameter struct {
 type OperatorInterface interface {
 	AppUserID() *mbuserdomain.AppUserID
 	OrganizationID() *mbuserdomain.OrganizationID
+	Role() string
 	// LoginID() string
 	// Username() string
 }

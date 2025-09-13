@@ -34,7 +34,7 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID) error {
 	u.logger.InfoContext(ctx, "OnAddAppUser", slog.Int("app_user_id", appUserID.Int()))
 
-	if err := mblibservice.Do0(ctx, u.nonTxManager, func(rf service.RepositoryFactory) error {
+	fn := func(rf service.RepositoryFactory) error {
 		spaceRepo, err := rf.NewSpaceRepository(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("NewSpaceRepository: %w", err)
@@ -82,7 +82,9 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 		u.logger.InfoContext(ctx, "OnAddAppUser: AddSpace", slog.Int("space_id", spaceID.Int()))
 
 		return nil
-	}); err != nil {
+	}
+
+	if err := mblibservice.Do0(ctx, u.nonTxManager, fn); err != nil {
 		return err //nolint:wrapcheck
 	}
 

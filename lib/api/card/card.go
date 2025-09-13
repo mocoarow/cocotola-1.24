@@ -10,5 +10,5 @@ type FindCardsResponseCard struct {
 	ID         int    `json:"id" binding:"required"`
 	Version    int    `json:"version" binding:"required"`
 	TemplateID int    `json:"templateId" binding:"required"`
-	Content    string `json:"name" binding:"required"`
+	Content    string `json:"content" binding:"required"`
 }

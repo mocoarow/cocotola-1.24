@@ -25,6 +25,8 @@ func NewCardQueryUsecase(db *gorm.DB) *CardQueryUseCase {
 }
 
 func (u *CardQueryUseCase) FindCards(ctx context.Context, operator service.OperatorInterface) ([]*domain.CardModel, error) {
+	_, span := tracer.Start(ctx, "CardQueryUseCase.FindDecks")
+	defer span.End()
 	cards := make([]*domain.CardModel, 0)
 
 	type BlankAnswer struct {

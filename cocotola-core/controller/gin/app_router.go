@@ -22,6 +22,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/usecase"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/guest"
+	guestgatgeway "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/guest"
 	resourcemanagergateway "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/resource_manager"
 	resourcemanager "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/resource_manager"
 )
@@ -51,7 +52,9 @@ func GetPublicRouterGroupFuncs(_ context.Context, db *gorm.DB) []libcontroller.I
 
 func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient libapi.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - workbookQueryUsecase
-	deckQueryUsecase := resourcemanagergateway.NewDeckQueryUsecase(db)
+
+	guestDeckQueryUsecase := guestgatgeway.NewDeckQueryUsecase(db)
+	studentDeckQueryUsecase := resourcemanagergateway.NewDeckQueryUsecase(db)
 	// - workbookCommandUsecase
 	deckCommandUsecase := resourcemanager.NewDeckCommandUsecase(txManager, nonTxManager, rbacClient)
 
@@ -60,7 +63,7 @@ func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txMan
 
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
-		NewInitDeckRouterFunc(deckQueryUsecase, deckCommandUsecase),
+		NewInitDeckRouterFunc(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase),
 		NewInitProfileRouterFunc(profileUsecase),
 	}, nil
 }

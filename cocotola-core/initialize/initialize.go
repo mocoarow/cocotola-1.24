@@ -2,6 +2,8 @@ package initialize
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -13,6 +15,9 @@ import (
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
+	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
@@ -25,7 +30,19 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig) error {
+type operator struct {
+	appUserID      *mbuserdomain.AppUserID
+	organizationID *mbuserdomain.OrganizationID
+}
+
+func (o *operator) AppUserID() *mbuserdomain.AppUserID {
+	return o.appUserID
+}
+func (o *operator) OrganizationID() *mbuserdomain.OrganizationID {
+	return o.organizationID
+}
+
+func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig, organizationID *mbuserdomain.OrganizationID) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC)
 	}
@@ -95,6 +112,60 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, bearerTokenAuthMiddleware, bearerTokenPrivateRouterGroupFuncs)
 
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
+
+	if err := initApp1(ctx, txManager, nonTxManager, organizationID); err != nil {
+		return mbliberrors.Errorf("initApp1: %w", err)
+	}
+
+	return nil
+}
+
+func initApp1(ctx context.Context, txManager service.TransactionManager, nonTxManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID) error {
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
+
+	systemAdminID, err := mbuserdomain.NewAppUserID(1)
+	if err != nil {
+		return mbliberrors.Errorf("NewAppUserID: %w", err)
+	}
+
+	operator := &operator{
+		organizationID: organizationID,
+		appUserID:      systemAdminID,
+	}
+	fn := func(rf service.RepositoryFactory) error {
+		spaceRepo, err := rf.NewSpaceRepository(ctx)
+		if err != nil {
+			return mbliberrors.Errorf("NewSpaceRepository: %w", err)
+		}
+
+		// check default-public space
+		space, err := spaceRepo.FindPublicSpaceByKey(ctx, "default-public")
+		if err == nil {
+			logger.Info("default-public space already exists", slog.Int("spaceID", space.SpaceID.Int()))
+
+			return nil
+		}
+
+		if errors.Is(err, service.ErrSpaceNotFound) {
+			if spaceID, err := spaceRepo.AddSpace(ctx, operator, &service.SpaceAddParameter{
+				Name:     "Default Public Space",
+				Key:      "default-public",
+				IsPublic: true,
+			}); err != nil {
+				return mbliberrors.Errorf("AddSpace: %w", err)
+			} else {
+				logger.Info("default-public space created", slog.Int("spaceID", spaceID.Int()))
+			}
+
+			return nil
+		}
+
+		return mbliberrors.Errorf("FindPublicSpaceByKey: %w", err)
+	}
+
+	if err := mblibservice.Do0(ctx, txManager, fn); err != nil {
+		return err
+	}
 
 	return nil
 }

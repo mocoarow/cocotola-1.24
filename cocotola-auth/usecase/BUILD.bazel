@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "authentication_usecase.go",
         "google_user_usecase.go",
+        "guest_usecase.go",
         "init.go",
         "password_usecase.go",
         "rbac_usecase.go",

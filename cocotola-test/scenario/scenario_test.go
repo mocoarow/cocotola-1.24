@@ -29,11 +29,22 @@ func TestE2E(t *testing.T) {
 		runn.Var("NEW_USER_USERNAME", newUserUsername.String()),
 		runn.Var("NEW_USER_PASSWORD", newUserPassword.String()),
 	}
-	o, err := runn.Load("runntest.yml", opts...)
-	if err != nil {
-		t.Fatal(err)
+	{
+		o, err := runn.Load("guest-test.yml", opts...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := o.RunN(ctx); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if err := o.RunN(ctx); err != nil {
-		t.Fatal(err)
+	{
+		o, err := runn.Load("runn-test.yml", opts...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := o.RunN(ctx); err != nil {
+			t.Fatal(err)
+		}
 	}
 }

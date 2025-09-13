@@ -14,6 +14,7 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapideck "github.com/mocoarow/cocotola-1.24/lib/api/deck"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/helper"
@@ -21,7 +22,12 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-type DeckQueryUsecase interface {
+type GuestDeckQueryUsecase interface {
+	FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*domain.DeckModel, error)
+
+	// RetrieveDeckByID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
+}
+type StudentDeckQueryUsecase interface {
 	FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*domain.DeckModel, error)
 
 	RetrieveDeckByID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
@@ -33,34 +39,76 @@ type DeckCommandUsecase interface {
 }
 
 type DeckHandler struct {
-	deckQueryUsecase   DeckQueryUsecase
-	deckCommandUsecase DeckCommandUsecase
-	logger             *slog.Logger
+	guestDeckQueryUsecase   GuestDeckQueryUsecase
+	studentDeckQueryUsecase StudentDeckQueryUsecase
+	deckCommandUsecase      DeckCommandUsecase
+	logger                  *slog.Logger
 }
 
-func NewDeckHandler(deckQueryUsecase DeckQueryUsecase, deckCommandUsecase DeckCommandUsecase) *DeckHandler {
+func NewDeckHandler(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase) *DeckHandler {
 	return &DeckHandler{
-		deckQueryUsecase:   deckQueryUsecase,
-		deckCommandUsecase: deckCommandUsecase,
-		logger:             slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckHandler")),
+		guestDeckQueryUsecase:   guestDeckQueryUsecase,
+		studentDeckQueryUsecase: studentDeckQueryUsecase,
+		deckCommandUsecase:      deckCommandUsecase,
+		logger:                  slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckHandler")),
 	}
 }
 
 func (h *DeckHandler) FindDecks(c *gin.Context) {
 	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
-		// param := libapi.DeckFindParameter{
-		// 	PageNo:   1,
-		// 	PageSize: defaultPageSize,
-		// }
-		result, err := h.deckQueryUsecase.FindDecks(ctx, operator)
-		if err != nil {
-			return mbliberrors.Errorf("FindDecks: %w", err)
+		if operator.Role() == "guest" {
+			return h.findDecksAsGuest(ctx, c, operator)
+		} else if operator.Role() == "student" {
+			return h.findDecksAsStudent(ctx, c, operator)
+		} else {
+			h.logger.WarnContext(ctx, fmt.Sprintf("invalid role: %s", operator.Role()))
+
+			return mblibdomain.ErrInvalidArgument
 		}
-
-		c.JSON(http.StatusOK, result)
-
-		return nil
 	}, h.errorHandle)
+}
+
+func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, operator service.OperatorInterface) error {
+	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsGuest")
+	defer span.End()
+
+	result, err := h.guestDeckQueryUsecase.FindDecks(ctx, operator)
+	if err != nil {
+		return mbliberrors.Errorf("FindDecks: %w", err)
+	}
+
+	decks := make([]libapideck.FindDecksResponseDeck, 0, len(result))
+	for _, d := range result {
+		decks = append(decks, libapideck.FindDecksResponseDeck{
+			ID:          d.DeckID.Int(),
+			Version:     d.Version,
+			Name:        d.Name,
+			Lang2:       d.Lang2.String(),
+			TemplateID:  d.TemplateID.Int(),
+			Description: d.Description,
+		})
+	}
+	apiResp := libapideck.FindDecksResponse{
+		TotalCount: len(result),
+		Results:    decks,
+	}
+
+	c.JSON(http.StatusOK, apiResp)
+
+	return nil
+}
+
+func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, operator service.OperatorInterface) error {
+	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsStudent")
+	defer span.End()
+
+	result, err := h.studentDeckQueryUsecase.FindDecks(ctx, operator)
+	if err != nil {
+		return mbliberrors.Errorf("FindDecks: %w", err)
+	}
+	c.JSON(http.StatusOK, result)
+
+	return nil
 }
 
 func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
@@ -81,7 +129,7 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 			return nil
 		}
 
-		result, err := h.deckQueryUsecase.RetrieveDeckByID(ctx, operator, deckID)
+		result, err := h.studentDeckQueryUsecase.RetrieveDeckByID(ctx, operator, deckID)
 		if err != nil {
 			return mbliberrors.Errorf("RetrieveDeckByID: %w", err)
 		}
@@ -193,10 +241,10 @@ func (h *DeckHandler) errorHandle(ctx context.Context, c *gin.Context, err error
 	return false
 }
 
-func NewInitDeckRouterFunc(deckQueryUsecase DeckQueryUsecase, deckCommandUsecase DeckCommandUsecase) libcontroller.InitRouterGroupFunc {
+func NewInitDeckRouterFunc(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase) libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
 		deck := parentRouterGroup.Group("deck")
-		deckHandler := NewDeckHandler(deckQueryUsecase, deckCommandUsecase)
+		deckHandler := NewDeckHandler(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase)
 		for _, m := range middleware {
 			deck.Use(m)
 		}

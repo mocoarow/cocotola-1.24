@@ -89,19 +89,19 @@ func (h *UserHandler) RegisterAppUser(c *gin.Context) {
 
 func (h *UserHandler) errorHandle(ctx context.Context, c *gin.Context, err error) bool {
 	if errors.Is(err, mblibdomain.ErrInvalidArgument) {
-		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler err: %+v", err))
+		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler err: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
 		return true
 	}
 	if errors.Is(err, mbuserservice.ErrAppUserNotFound) {
-		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler err: %+v", err))
+		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler err: %+v", err))
 		c.JSON(http.StatusNotFound, gin.H{"message": http.StatusText(http.StatusNotFound)})
 
 		return true
 	}
 	if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
-		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler err: %+v", err))
+		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler err: %+v", err))
 		c.JSON(http.StatusConflict, gin.H{"message": http.StatusText(http.StatusConflict)})
 
 		return true

@@ -7,6 +7,7 @@ go_library(
         "callback_handler.go",
         "card_handler.go",
         "deck_handler.go",
+        "init.go",
         "profile_handler.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin",
@@ -23,6 +24,7 @@ go_library(
         "//cocotola-core/usecase/resource_manager",
         "//lib/api",
         "//lib/api/card",
+        "//lib/api/deck",
         "//lib/controller/gin",
         "//lib/gateway",
         "//moonbeam/lib/domain",
@@ -32,6 +34,7 @@ go_library(
         "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_contrib_instrumentation_net_http_otelhttp//:otelhttp",
+        "@io_opentelemetry_go_otel//:otel",
     ],
 )
 

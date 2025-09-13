@@ -21,6 +21,7 @@ go_library(
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "//moonbeam/sqls",
+        "//moonbeam/user/domain",
         "@com_github_gin_gonic_gin//:gin",
         "@io_opentelemetry_go_otel//:otel",
         "@io_opentelemetry_go_otel//propagation",
