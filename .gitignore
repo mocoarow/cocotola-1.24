@@ -46,3 +46,5 @@ env.sh
 *-test.yml
 
 *.db
+
+.mcp.json

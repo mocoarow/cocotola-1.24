@@ -9,6 +9,7 @@ import (
 type RepositoryFactory interface {
 	// NewWorkbookRepository(ctx context.Context) (WorkbookRepository, error)
 	NewDeckRepository(ctx context.Context) (DeckRepository, error)
+	NewCardRepository(ctx context.Context) (CardRepository, error)
 	NewSpaceRepository(ctx context.Context) (SpaceRepository, error)
 	NewPairOfUserAndSpaceRepository(ctx context.Context) (PairOfUserAndSpaceRepository, error)
 }

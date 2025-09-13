@@ -14,18 +14,121 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID) error {
-	operator := &operator{
-		organizationID: organizationID,
-		appUserID:      mbuserservice.SystemAdminID,
+type englishBlankAnswer struct {
+	Answer string
+}
+
+type englishBlankCard struct {
+	SourceText   string
+	EnglishText  string
+	Level        string
+	BlankAnswers []englishBlankAnswer
+}
+type englishBlankDeck struct {
+	Name  string
+	Lang2 *libdomain.Lang2
+	Cards []englishBlankCard
+}
+
+func getEnglishBlankDecks() []englishBlankDeck {
+	return []englishBlankDeck{
+		{
+			Name:  "初心者向け基本文法",
+			Lang2: libdomain.Lang2JA,
+			Cards: []englishBlankCard{
+				{
+					SourceText:  "私は毎日英語を勉強します。",
+					EnglishText: "I ___ English every day.",
+					Level:       "easyA1",
+					BlankAnswers: []englishBlankAnswer{
+						{Answer: "astudym"},
+					},
+				},
+				{
+					SourceText:  "彼は英語を上手に話します。",
+					EnglishText: "He speaks English ___.",
+					Level:       "A2",
+					BlankAnswers: []englishBlankAnswer{
+						{Answer: "well"},
+					},
+				},
+			},
+		},
+		{
+			Name:  "中級文法チャレンジ",
+			Lang2: libdomain.Lang2JA,
+			Cards: []englishBlankCard{
+				{
+					SourceText:  "私は彼女に図書館で会った。",
+					EnglishText: "I ___ her ___ the library.",
+					Level:       "B1",
+					BlankAnswers: []englishBlankAnswer{
+						{Answer: "met"},
+						{Answer: "at"},
+					},
+				},
+				{
+					SourceText:  "彼女は毎週ピアノを練習しています。",
+					EnglishText: "She ___ the piano every week.",
+					Level:       "A1",
+					BlankAnswers: []englishBlankAnswer{
+						{Answer: "practices"},
+					},
+				},
+			},
+		},
 	}
+}
+func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckRepo service.DeckRepository, cardRepo service.CardRepository, defaultPublicSpace *service.Space, nameToDecks map[string]*service.Deck) error {
 	folderID, err := domain.NewFolderID(0)
 	if err != nil {
 		return mbliberrors.Errorf("new folder id(0). err: %w", err)
 	}
+
 	templateID, err := domain.NewTemplateID(1)
 	if err != nil {
 		return mbliberrors.Errorf("new template id(1). err: %w", err)
+	}
+
+	for _, englishBlankDeck := range getEnglishBlankDecks() {
+		name := englishBlankDeck.Name
+		if _, exists := nameToDecks[name]; exists {
+			continue
+		}
+
+		deckAddParam := service.DeckAddParameter{
+			SpaceID:     defaultPublicSpace.SpaceID,
+			FolderID:    folderID,
+			Name:        name,
+			TemplateID:  templateID,
+			Lang2:       libdomain.Lang2JA,
+			Description: "",
+		}
+
+		deckID, err := deckRepo.AddDeck(ctx, operator, &deckAddParam)
+		if err != nil {
+			return mbliberrors.Errorf("add deck: %w", err)
+		}
+
+		for _, englishBlankCard := range englishBlankDeck.Cards {
+			addCardParam := service.AddCardParameter{
+				DeckID:     deckID,
+				TemplateID: templateID,
+				Content:    englishBlankCard.EnglishText,
+			}
+			if _, err := cardRepo.AddCard(ctx, operator, &addCardParam); err != nil {
+				return mbliberrors.Errorf("add card: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID) error {
+	operator := &operator{
+		organizationID: organizationID,
+		appUserID:      mbuserservice.SystemAdminID,
 	}
 
 	fn := func(rf service.RepositoryFactory) error {
@@ -34,11 +137,11 @@ func initEnglishWord(ctx context.Context, txManager service.TransactionManager, 
 			return mbliberrors.Errorf("NewSpaceRepository: %w", err)
 		}
 
-		// check default-public space
 		defaultPublicSpace, err := spaceRepo.FindPublicSpaceByKey(ctx, "default-public")
 		if err != nil {
-			return nil
+			return mbliberrors.Errorf("FindPublicSpaceByKey: %w", err)
 		}
+
 		deckRepo, err := rf.NewDeckRepository(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("NewDeckRepository: %w", err)
@@ -49,27 +152,20 @@ func initEnglishWord(ctx context.Context, txManager service.TransactionManager, 
 			return mbliberrors.Errorf("FindDecksByOwner: %w", err)
 		}
 
-		deckNames := make(map[string]struct{}, len(decks))
-		for _, d := range decks {
-			deckNames[d.Name] = struct{}{}
+		cardRepo, err := rf.NewCardRepository(ctx)
+		if err != nil {
+			return mbliberrors.Errorf("NewDeckRepository: %w", err)
 		}
 
-		for _, name := range []string{"初心者向け基本文法", "中級文法チャレンジ"} {
-			if _, exists := deckNames[name]; exists {
-				continue
-			}
-			deckAddParam := service.DeckAddParameter{
-				SpaceID:     defaultPublicSpace.SpaceID,
-				FolderID:    folderID,
-				Name:        name,
-				TemplateID:  templateID,
-				Lang2:       libdomain.Lang2JA,
-				Description: "",
-			}
-			if _, err = deckRepo.AddDeck(ctx, operator, &deckAddParam); err != nil {
-				return mbliberrors.Errorf("add deck: %w", err)
-			}
+		nameToDecks := make(map[string]*service.Deck, len(decks))
+		for _, deck := range decks {
+			nameToDecks[deck.Name] = deck
 		}
+
+		if err := initEnglishBlankDeck(ctx, operator, deckRepo, cardRepo, defaultPublicSpace, nameToDecks); err != nil {
+			return mbliberrors.Errorf("initEnglishBlankDeck: %w", err)
+		}
+
 		return nil
 	}
 

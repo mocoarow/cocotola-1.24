@@ -35,6 +35,7 @@ func (v *SpaceIDs) IDs() []int {
 	for i, id := range *v {
 		ids[i] = id.Int()
 	}
+
 	return ids
 }
 

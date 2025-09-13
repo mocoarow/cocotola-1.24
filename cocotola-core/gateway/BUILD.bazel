@@ -3,6 +3,7 @@ load("@rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "gateway",
     srcs = [
+        "card_repository.go",
         "deck_repository.go",
         "firebase_client.go",
         "init.go",

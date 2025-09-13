@@ -36,6 +36,9 @@ func NewRepositoryFactory(_ context.Context, dialect mblibgateway.DialectRDBMS, 
 func (f *RepositoryFactory) NewDeckRepository(_ context.Context) (service.DeckRepository, error) {
 	return NewDeckRepository(f.db), nil
 }
+func (f *RepositoryFactory) NewCardRepository(_ context.Context) (service.CardRepository, error) {
+	return NewCardRepository(f.db), nil
+}
 func (f *RepositoryFactory) NewSpaceRepository(_ context.Context) (service.SpaceRepository, error) {
 	return NewSpaceRepository(f.db), nil
 }

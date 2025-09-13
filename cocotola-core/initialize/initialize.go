@@ -119,6 +119,14 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
 
+	if err := initApp(ctx, txManager, authInitParam); err != nil {
+		return mbliberrors.Errorf("initApp: %w", err)
+	}
+
+	return nil
+}
+
+func initApp(ctx context.Context, txManager service.TransactionManager, authInitParam *AuthInitParameter) error {
 	spaceID, err := initApp1(ctx, txManager, authInitParam)
 	if err != nil {
 		return mbliberrors.Errorf("initApp1: %w", err)
