@@ -21,6 +21,7 @@ func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager servi
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		ctx, span := tracer.Start(ctx, "AuthMiddleware")
+
 		defer span.End()
 
 		authorization := c.GetHeader("Authorization")

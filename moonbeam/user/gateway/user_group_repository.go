@@ -141,7 +141,7 @@ func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator s
 	return userGroup.toUserGroup()
 }
 
-func (r *userGroupRepository) addUserGroup(appUserID *domain.AppUserID, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
+func (r *userGroupRepository) addUserGroup(appUserID *domain.AppUserID, organizationID *domain.OrganizationID, key, name string) (*domain.UserGroupID, error) {
 	userGroup := userGroupEntity{ //nolint:exhaustruct
 		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
@@ -149,8 +149,8 @@ func (r *userGroupRepository) addUserGroup(appUserID *domain.AppUserID, organiza
 			UpdatedBy: appUserID.Int(),
 		},
 		OrganizationID: organizationID.Int(),
-		KeyName:        service.SystemOwnerGroupKey,
-		Name:           service.SystemOwnerGroupName,
+		KeyName:        key,
+		Name:           name,
 	}
 	if result := r.db.Create(&userGroup); result.Error != nil {
 		return nil, liberrors.Errorf(". err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrAppUserAlreadyExists))
@@ -168,14 +168,14 @@ func (r *userGroupRepository) AddSystemOwnerGroup(ctx context.Context, operator 
 	_, span := tracer.Start(ctx, "userGroupRepository.AddSystemOwnerGroup")
 	defer span.End()
 
-	return r.addUserGroup(operator.AppUserID(), organizationID)
+	return r.addUserGroup(operator.AppUserID(), organizationID, service.SystemOwnerGroupKey, service.SystemOwnerGroupName)
 }
 
 func (r *userGroupRepository) AddOwnerGroup(ctx context.Context, operator service.SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.AddOwnerGroup")
 	defer span.End()
 
-	return r.addUserGroup(operator.AppUserID(), organizationID)
+	return r.addUserGroup(operator.AppUserID(), organizationID, service.OwnerGroupKey, service.OwnerGroupName)
 }
 
 func (r *userGroupRepository) AddUserGroup(ctx context.Context, operator service.OwnerModelInterface, parameter service.UserGroupAddParameterInterface) (*domain.UserGroupID, error) {

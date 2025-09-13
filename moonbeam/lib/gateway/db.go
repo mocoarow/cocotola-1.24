@@ -53,7 +53,6 @@ func ConvertRelationError(err error, _ error) error {
 	// if ok := errors.As(err, &mysqlErr); ok && mysqlErr.Number == MYSQL_ER_NO_REFERENCED_ROW_2 {
 	// 	return newErr
 	// }
-
 	return err
 }
 

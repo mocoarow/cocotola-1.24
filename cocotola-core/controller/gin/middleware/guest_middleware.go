@@ -8,5 +8,6 @@ func NewGuestMiddleware(guestOrganizationID int, guestAppUserID int) gin.Handler
 	return func(c *gin.Context) {
 		c.Set("OrganizationID", guestOrganizationID)
 		c.Set("AuthorizedUser", guestAppUserID)
+		c.Set("Role", "guest")
 	}
 }

@@ -9,6 +9,7 @@ create table `core_space` (
 ,`owner_id` int not null
 ,`key` varchar(20) not null
 ,`name` varchar(20) not null
+,`is_public` boolean not null default false
 ,unique(`organization_id`, `owner_id`, `key`)
 ,foreign key(`created_by`) references `mb_app_user`(`id`) on delete cascade
 ,foreign key(`updated_by`) references `mb_app_user`(`id`) on delete cascade

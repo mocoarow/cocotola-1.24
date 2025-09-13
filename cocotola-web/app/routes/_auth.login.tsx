@@ -10,12 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { commitLoginDataSession, getLoginDataSession } from "~/session.server";
 import { serverConfigRedirectUri } from "~/config/config.server";
+import { commitLoginDataSession, getLoginDataSession } from "~/session.server";
 export const meta: MetaFunction = () => {
   return [{ title: "Login" }];
 };
-
 
 export async function loader({ request }: LoaderFunctionArgs) {
   console.log("_auth.login.tsx::loader");

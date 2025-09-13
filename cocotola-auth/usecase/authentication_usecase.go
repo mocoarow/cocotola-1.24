@@ -25,18 +25,21 @@ type AppUserClaims struct {
 }
 
 type Authentication struct {
-	systemToken                   libdomain.SystemToken
-	transactionManager            service.TransactionManager
-	authTokenManager              service.AuthTokenManager
-	systemOwnerByOrganizationName SystemOwnerByOrganizationName
+	systemToken        libdomain.SystemToken
+	transactionManager service.TransactionManager
+	authTokenManager   service.AuthTokenManager
+	// systemOwnerByOrganizationName SystemOwnerByOrganizationName
 }
 
-func NewAuthentication(systemToken libdomain.SystemToken, transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager, systemOwnerByOrganizationName SystemOwnerByOrganizationName) *Authentication {
+func NewAuthentication(systemToken libdomain.SystemToken, transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager,
+
+// systemOwnerByOrganizationName SystemOwnerByOrganizationName
+) *Authentication {
 	return &Authentication{
-		systemToken:                   systemToken,
-		transactionManager:            transactionManager,
-		authTokenManager:              authTokenManager,
-		systemOwnerByOrganizationName: systemOwnerByOrganizationName,
+		systemToken:        systemToken,
+		transactionManager: transactionManager,
+		authTokenManager:   authTokenManager,
+		// systemOwnerByOrganizationName: systemOwnerByOrganizationName,
 	}
 }
 

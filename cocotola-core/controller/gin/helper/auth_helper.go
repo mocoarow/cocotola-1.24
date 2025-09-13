@@ -19,6 +19,7 @@ import (
 type operator struct {
 	appUserID      *mbuserdomain.AppUserID
 	organizationID *mbuserdomain.OrganizationID
+	role           string
 }
 
 func (o *operator) AppUserID() *mbuserdomain.AppUserID {
@@ -26,6 +27,9 @@ func (o *operator) AppUserID() *mbuserdomain.AppUserID {
 }
 func (o *operator) OrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
+}
+func (o *operator) Role() string {
+	return o.role
 }
 
 func HandleSecuredFunction(c *gin.Context, fn func(ctx context.Context, operator service.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
@@ -65,6 +69,7 @@ func HandleSecuredFunction(c *gin.Context, fn func(ctx context.Context, operator
 	operator := &operator{
 		appUserID:      operatorID,
 		organizationID: organizationID,
+		role:           c.GetString("Role"),
 	}
 
 	if newCtx, err := liblibcontroller.AddBaggageMembers(ctx, map[string]string{

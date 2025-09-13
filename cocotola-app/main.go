@@ -19,6 +19,7 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbsqls "github.com/mocoarow/cocotola-1.24/moonbeam/sqls"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -63,6 +64,7 @@ func main() {
 	// init db
 	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, cfg.Log, domain.AppName, mbsqls.SQL, coresqls.SQL)
 	libdomain.CheckError(err)
+
 	defer sqlDB.Close()
 	defer tp.ForceFlush(ctx) // flushes any pending spans
 
@@ -74,17 +76,20 @@ func main() {
 		libdomain.CheckError(err)
 		initGinWeb(ctx, router, viteStaticFS, "flutter")
 	}
+	var organizationID *mbuserdomain.OrganizationID
 	// auth
 	{
 		auth := router.Group("auth")
-		if err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth); err != nil {
+		idTmp, err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth)
+		if err != nil {
 			libdomain.CheckError(err)
 		}
+		organizationID = idTmp
 	}
-	// core
+	// core (<- auth)
 	{
 		core := router.Group("core")
-		if err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Core); err != nil {
+		if err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Core, organizationID); err != nil {
 			libdomain.CheckError(err)
 		}
 	}
@@ -106,8 +111,9 @@ func main() {
 
 func initGinWeb(_ context.Context, router *gin.Engine, viteStaticFS fs.FS, webType string) {
 	router.NoRoute(func(c *gin.Context) {
-		logger := slog.Default()
+		logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, "-main"))
 		logger.InfoContext(c.Request.Context(), c.Request.URL.Path)
+		logger.InfoContext(c.Request.Context(), c.Request.RequestURI)
 
 		var getReactResourcesFunc func() []string
 		switch webType {

@@ -47,13 +47,14 @@ func main() {
 	// init db
 	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, cfg.Log, domain.AppName, mbsql.SQL)
 	libdomain.CheckError(err)
+
 	defer sqlDB.Close()
 	defer tp.ForceFlush(ctx) // flushes any pending spans
 
 	// init gin
 	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
 
-	if err := initialize.Initialize(ctx, systemToken, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App); err != nil {
+	if _, err := initialize.Initialize(ctx, systemToken, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App); err != nil {
 		libdomain.CheckError(err)
 	}
 

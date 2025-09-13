@@ -28,7 +28,6 @@ linters:
     - nestif
     - goconst
     - tagliatelle
-    - nlreturn
     - predeclared
     - importas
     - revive
@@ -56,6 +55,7 @@ linters:
     - exhaustruct
     - exhaustive
     - fatcontext
+    - wsl_v5
     # - depguard
 
   settings:
@@ -84,6 +84,18 @@ linters:
         - .Errorf
         - errors.New(
         - liberrors.Errorf(
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
+      disable:
+        - if
+        - expr
+        - switch
+        - append
+        - range
+        - assign
+        - decl
   exclusions:
     generated: lax
     presets:
@@ -101,7 +113,7 @@ linters:
       - path: _test\.go
         linters:
           - dupl
-          - nlreturn
+          - wsl_v5
           - revive
           - exhaustruct
 formatters:

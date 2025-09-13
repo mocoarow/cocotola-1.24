@@ -66,7 +66,7 @@ func (h *CardHandler) FindCards(c *gin.Context) {
 
 func (h *CardHandler) errorHandle(ctx context.Context, c *gin.Context, err error) bool {
 	if errors.Is(err, mblibdomain.ErrInvalidArgument) {
-		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler err: %+v", err))
+		h.logger.WarnContext(ctx, fmt.Sprintf("CardHandler err: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
 		return true

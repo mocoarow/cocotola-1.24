@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
@@ -16,15 +15,15 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-type PasswordUsecae struct {
+type GuestUsecae struct {
 	systemToken      libdomain.SystemToken
 	txManager        service.TransactionManager
 	nonTxManager     service.TransactionManager
 	authTokenManager service.AuthTokenManager
 }
 
-func NewPassword(systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) *PasswordUsecae {
-	return &PasswordUsecae{
+func NewGuest(systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) *GuestUsecae {
+	return &GuestUsecae{
 		systemToken:      systemToken,
 		txManager:        txManager,
 		nonTxManager:     nonTxManager,
@@ -32,12 +31,8 @@ func NewPassword(systemToken libdomain.SystemToken, txManager, nonTxManager serv
 	}
 }
 
-func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, organizationName string) (*domain.AuthTokenSet, error) {
+func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string) (*domain.AuthTokenSet, error) {
 	var tokenSet *domain.AuthTokenSet
-
-	if strings.Contains(loginID, "guest@@") {
-		return nil, fmt.Errorf("guest cannot authenticate with password")
-	}
 
 	targetOorganization, targetAppUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *appUser, error) {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
@@ -49,14 +44,8 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 			return nil, nil, mbliberrors.Errorf("organization is nil")
 		}
 
-		verified, err := action.SystemOwner.VerifyPassword(ctx, loginID, password)
-		if err != nil {
-			return nil, nil, mbliberrors.Errorf("action.appUserRepo.VerifyPassword: %w", err)
-		} else if !verified {
-			return nil, nil, domain.ErrUnauthenticated
-		}
-
-		tmpAppUser, err := action.SystemOwner.FindAppUserByLoginID(ctx, loginID)
+		guestLoginID := fmt.Sprintf("guest@@%s", organizationName)
+		tmpAppUser, err := action.SystemOwner.FindAppUserByLoginID(ctx, guestLoginID)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("find app user by login id: %w", err)
 		}

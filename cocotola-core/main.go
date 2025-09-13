@@ -12,6 +12,7 @@ import (
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -62,7 +63,9 @@ func main() {
 	// init gin
 	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
 
-	if err := initialize.Initialize(ctx, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App); err != nil {
+	// TODO: fetch organizationID from auth API
+	var organizationID *mbuserdomain.OrganizationID
+	if err := initialize.Initialize(ctx, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App, organizationID); err != nil {
 		libdomain.CheckError(err)
 	}
 

@@ -311,6 +311,7 @@ func testNewUserGroupAddParameter(t *testing.T, key, name, description string) *
 	t.Helper()
 	p, err := service.NewUserGroupAddParameter(key, name, description)
 	require.NoError(t, err)
+
 	return p
 }
 

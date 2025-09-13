@@ -82,11 +82,16 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 		return
 	}
 
+	groups := make([]string, 0, len(appUserInfo.UserGroups))
+	for _, g := range appUserInfo.UserGroups {
+		groups = append(groups, g.Name)
+	}
 	c.JSON(http.StatusOK, libapi.AppUserInfoResponse{
 		AppUserID:      appUserInfo.AppUserID.Int(),
 		OrganizationID: appUserInfo.OrganizationID.Int(),
 		LoginID:        appUserInfo.LoginID,
 		Username:       appUserInfo.Username,
+		UserGroups:     groups,
 	})
 	// TODO: check if the token is registered
 }

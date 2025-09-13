@@ -75,7 +75,7 @@ func newCallbackOnAddAppUser(cocotolaCoreCallbackClient service.CocotolaCoreCall
 	}
 }
 
-func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) error {
+func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (*mbuserdomain.OrganizationID, error) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-Initialize"))
 	httpClient := http.Client{ //nolint:exhaustruct
 		Timeout:   time.Duration(authConfig.CoreAPIClient.TimeoutSec) * time.Second,
@@ -83,7 +83,7 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 	}
 	coreAPIEndpoint, err := url.Parse(authConfig.CoreAPIClient.Endpoint)
 	if err != nil {
-		return mbliberrors.Errorf("invalid core api endpoint: %w", err)
+		return nil, mbliberrors.Errorf("invalid core api endpoint: %w", err)
 	}
 	cocotolaCoreCallbackClient := gateway.NewCocotolaCoreCallbackClient(&httpClient, coreAPIEndpoint, authConfig.CoreAPIClient.Username, authConfig.CoreAPIClient.Password)
 	appUserEventHandler := mblibservice.ResourceEventHandlerFuncs{ //nolint:exhaustruct
@@ -94,31 +94,31 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
-		return mbliberrors.Errorf("rff: %w", err)
+		return nil, mbliberrors.Errorf("rff: %w", err)
 	}
 
 	// init transaction manager
 	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
 	if err != nil {
-		return mbliberrors.Errorf("NewTransactionManagerT: %w", err)
+		return nil, mbliberrors.Errorf("NewTransactionManagerT: %w", err)
 	}
 
 	// init non transaction manager
 	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
 	if err != nil {
-		return mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
+		return nil, mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
 	}
 
 	// init auth token manager
 	authTokenManager, err := controller.NewAuthTokenManager(ctx, authConfig)
 	if err != nil {
-		return mbliberrors.Errorf("NewAuthTokenManager: %w", err)
+		return nil, mbliberrors.Errorf("NewAuthTokenManager: %w", err)
 	}
 
 	// init auth middleware
 	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(systemToken, authTokenManager, nonTxManager)
 	if err != nil {
-		return mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
+		return nil, mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
 	}
 	basicAuthMiddleware := gin.BasicAuth(gin.Accounts{
 		authConfig.AuthAPIServer.Username: authConfig.AuthAPIServer.Password,
@@ -127,7 +127,7 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 	// init public and private router group functions
 	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, systemToken, authConfig, txManager, nonTxManager, authTokenManager)
 	if err != nil {
-		return mbliberrors.Errorf("GetPublicRouterGroupFuncs: %w", err)
+		return nil, mbliberrors.Errorf("GetPublicRouterGroupFuncs: %w", err)
 	}
 	bearerTokenPrivateRouterGroupFuncs := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, systemToken, txManager, nonTxManager, authTokenManager)
 	basicPrivateRouterGroupFuncs := controller.GetBasicPrivateRouterGroupFuncs(ctx, txManager, nonTxManager)
@@ -146,11 +146,16 @@ func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent g
 
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
 
-	if err := initApp1(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword); err != nil {
-		return mbliberrors.Errorf("initApp1: %w", err)
+	organizationID, err := initApp1(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
+	if err != nil {
+		return nil, mbliberrors.Errorf("initApp1: %w", err)
 	}
 
-	return nil
+	if _, err := initApp2(ctx, systemToken, txManager, nonTxManager, "cocotola"); err != nil {
+		return nil, mbliberrors.Errorf("initApp2: %w", err)
+	}
+
+	return organizationID, nil
 }
 
 func addOrganization(ctx context.Context, systemAdminAction *service.SystemAdminAction, organizationName, loginID, password string) (*mbuserdomain.OrganizationID, error) {
@@ -172,29 +177,29 @@ func addOrganization(ctx context.Context, systemAdminAction *service.SystemAdmin
 	return organizationID, nil
 }
 
-func initApp1(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxManager service.TransactionManager, organizationName, loginID, password string) error {
+func initApp1(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxManager service.TransactionManager, organizationName, loginID, password string) (*mbuserdomain.OrganizationID, error) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
 
-	if err := nonTxManager.Do(ctx, func(rf service.RepositoryFactory) error {
+	fn := func(rf service.RepositoryFactory) (*mbuserdomain.OrganizationID, error) {
 		// 1. check whether the organization already exists
 		systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
 		if err != nil {
-			return mbliberrors.Errorf("new organization action: %w", err)
+			return nil, mbliberrors.Errorf("new organization action: %w", err)
 		}
 
 		organization, err := systemAdminAction.SystemAdmin.FindOrganizationByName(ctx, organizationName)
 		if err == nil {
 			logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID().Int()))
 
-			return nil
+			return organization.OrganizationID(), nil
 		} else if !errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
-			return mbliberrors.Errorf("find organization by name(%s): %w", organizationName, err)
+			return nil, mbliberrors.Errorf("find organization by name(%s): %w", organizationName, err)
 		}
 
 		// 2. add organization
 		organizationID, err := addOrganization(ctx, systemAdminAction, organizationName, loginID, password)
 		if err != nil {
-			return mbliberrors.Errorf("add organization: %w", err)
+			return nil, mbliberrors.Errorf("add organization: %w", err)
 		}
 		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
 
@@ -204,12 +209,12 @@ func initApp1(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 			service.WithAuthorizationManager(),
 		)
 		if err != nil {
-			return mbliberrors.Errorf("new system owner action: %w", err)
+			return nil, mbliberrors.Errorf("new system owner action: %w", err)
 		}
 
 		firstOwner, err := systemOwnerAction.SystemOwner.FindAppUserByLoginID(ctx, loginID)
 		if err != nil {
-			return mbliberrors.Errorf("FindAppUserByLoginID: %w", err)
+			return nil, mbliberrors.Errorf("FindAppUserByLoginID: %w", err)
 		}
 		logger.InfoContext(ctx, fmt.Sprintf("firstOwner: %d", firstOwner.AppUserID().Int()))
 
@@ -220,15 +225,65 @@ func initApp1(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 		effect := mbuserservice.RBACAllowEffect
 
 		if err := systemOwnerAction.AuthorizationManager.AddPolicyToUserBySystemOwner(ctx, systemOwnerAction.SystemOwner, subject, action, object, effect); err != nil {
-			return mbliberrors.Errorf("AddPolicyToUserBySystemOwner: %w", err)
+			return nil, mbliberrors.Errorf("AddPolicyToUserBySystemOwner: %w", err)
 		}
 
 		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
 
-		return nil
-	}); err != nil {
-		return err //nolint:wrapcheck
+		return organizationID, nil
 	}
 
-	return nil
+	organizationID, err := mblibservice.Do1(ctx, nonTxManager, fn)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+
+	return organizationID, nil
+}
+
+func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxManager service.TransactionManager, organizationName string) (*mbuserdomain.AppUserID, error) {
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp2"))
+
+	fn := func(rf service.RepositoryFactory) (*mbuserdomain.AppUserID, error) {
+		// 1. check whether the guest user already exists
+		systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
+			service.WithOrganizationByName(organizationName),
+			service.WithAuthorizationManager(),
+		)
+		if err != nil {
+			return nil, mbliberrors.Errorf("new system owner action: %w", err)
+		}
+
+		guestLoginID := fmt.Sprintf("guest@@%s", organizationName)
+		guestUserName := fmt.Sprintf("Guest(%s)", organizationName)
+
+		guest, err := systemOwnerAction.SystemOwner.FindAppUserByLoginID(ctx, guestLoginID)
+		if err == nil {
+			logger.InfoContext(ctx, fmt.Sprintf("organization: %d", guest.AppUserID().Int()))
+
+			return guest.AppUserID(), nil
+		} else if !errors.Is(err, mbuserservice.ErrAppUserNotFound) {
+			return nil, mbliberrors.Errorf("find app user by login id(%s): %w", guestLoginID, err)
+		}
+
+		appUserAddParam, err := mbuserservice.NewAppUserAddParameter(guestLoginID, guestUserName, "", "", "", "", "")
+		if err != nil {
+			return nil, mbliberrors.Errorf("new AppUserAddParameter: %w", err)
+		}
+		guestID, err := systemOwnerAction.SystemOwner.AddAppUser(ctx, appUserAddParam)
+		if err != nil {
+			return nil, mbliberrors.Errorf("FindAppUserByLoginID: %w", err)
+		}
+
+		logger.InfoContext(ctx, fmt.Sprintf("guestID: %d", guestID.Int()))
+
+		return guestID, nil
+	}
+
+	guestID, err := mblibservice.Do1(ctx, nonTxManager, fn)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+
+	return guestID, nil
 }

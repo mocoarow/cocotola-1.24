@@ -250,7 +250,7 @@ func (r *appUserRepository) FindAppUserByLoginID(ctx context.Context, operator s
 }
 
 func (r *appUserRepository) findAppUserByLoginID(ctx context.Context, organizationID *domain.OrganizationID, loginID string) (*service.AppUser, error) {
-	_, span := tracer.Start(ctx, "appUserRepository.FindAppUserByLoginID")
+	_, span := tracer.Start(ctx, "appUserRepository.findAppUserByLoginID")
 	defer span.End()
 
 	appUserEntity, err := r.findAppUserEntityByLoginID(ctx, organizationID, loginID)
@@ -262,7 +262,7 @@ func (r *appUserRepository) findAppUserByLoginID(ctx context.Context, organizati
 }
 
 func (r *appUserRepository) findAppUserEntityByLoginID(ctx context.Context, organizationID *domain.OrganizationID, loginID string) (*appUserEntity, error) {
-	_, span := tracer.Start(ctx, "appUserRepository.FindAppUserByLoginID")
+	_, span := tracer.Start(ctx, "appUserRepository.findAppUserEntityByLoginID")
 	defer span.End()
 
 	var appUser appUserEntity

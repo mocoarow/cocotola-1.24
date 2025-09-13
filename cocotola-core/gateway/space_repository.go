@@ -23,6 +23,7 @@ type SpaceEntity struct {
 	OwnerID        int
 	Key            string
 	Name           string
+	IsPublic       bool
 }
 
 func (e *SpaceEntity) TableName() string {
@@ -79,6 +80,8 @@ type spaceRepository struct {
 	db *gorm.DB
 }
 
+var _ service.SpaceRepository = (*spaceRepository)(nil)
+
 func NewSpaceRepository(db *gorm.DB) service.SpaceRepository {
 	return &spaceRepository{
 		db: db,
@@ -99,6 +102,7 @@ func (r *spaceRepository) AddSpace(ctx context.Context, operator mbuserservice.O
 		OwnerID:        operator.AppUserID().Int(),
 		Key:            param.Key,
 		Name:           param.Name,
+		IsPublic:       param.IsPublic,
 	}
 	if result := r.db.Create(&spaceE); result.Error != nil {
 		return nil, mbliberrors.Errorf("add space entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrSpaceAlreadyExists))
@@ -123,8 +127,9 @@ func (r *spaceRepository) UpdateSpace(ctx context.Context, operator service.Oper
 		Where("id = ?", spaceID.Int()).
 		Where("version = ?", version).
 		Updates(map[string]interface{}{
-			"version": gorm.Expr("version + 1"),
-			"name":    param.Name,
+			"version":   gorm.Expr("version + 1"),
+			"name":      param.Name,
+			"is_public": param.IsPublic,
 		}); result.Error != nil {
 		return mbliberrors.Errorf("spaceRepository.UpdateSpace: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrSpaceAlreadyExists))
 	}
@@ -132,8 +137,8 @@ func (r *spaceRepository) UpdateSpace(ctx context.Context, operator service.Oper
 	return nil
 }
 
-func (r *spaceRepository) FindSpaces(ctx context.Context, operator service.OperatorInterface) ([]*service.Space, error) {
-	_, span := tracer.Start(ctx, "spaceRepository.FindSpaces")
+func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator service.OperatorInterface) ([]*service.Space, error) {
+	_, span := tracer.Start(ctx, "spaceRepository.FindPublicSpaces")
 	defer span.End()
 
 	var spacesE []SpaceEntity
@@ -142,8 +147,9 @@ func (r *spaceRepository) FindSpaces(ctx context.Context, operator service.Opera
 	).
 		Where("organization_id = ?", uint(operator.OrganizationID().Value)).
 		Where("owner_id = ?", uint(operator.AppUserID().Value)).
+		Where("is_public = ?", true).
 		Find(&spacesE); result.Error != nil {
-		return nil, mbliberrors.Errorf("spaceRepository.FindSpaces: %w", result.Error)
+		return nil, mbliberrors.Errorf("spaceRepository.FindPublicSpaces: %w", result.Error)
 	}
 
 	spaces := make([]*service.Space, 0, len(spacesE))
@@ -156,6 +162,29 @@ func (r *spaceRepository) FindSpaces(ctx context.Context, operator service.Opera
 	}
 
 	return spaces, nil
+}
+func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, key string) (*service.Space, error) {
+	_, span := tracer.Start(ctx, "spaceRepository.FindPublicSpaceByKey")
+	defer span.End()
+
+	var spaceE SpaceEntity
+	if result := r.db.Model(&spaceE).
+		Where("key = ?", key).
+		Where("is_public = ?", true).
+		First(&spaceE); result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, service.ErrSpaceNotFound
+		}
+
+		return nil, mbliberrors.Errorf("spaceRepository.FindPublicSpaceByKey: %w", result.Error)
+	}
+
+	space, err := spaceE.toSpace()
+	if err != nil {
+		return nil, mbliberrors.Errorf("spaceE.toSpace: %w", err)
+	}
+
+	return space, nil
 }
 
 func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.OperatorInterface, spaceID *domain.SpaceID) (*service.Space, error) {

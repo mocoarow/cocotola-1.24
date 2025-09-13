@@ -10,7 +10,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -22,26 +21,26 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/usecase"
 )
 
-type systemOwnerByOrganizationName struct {
-}
+// type systemOwnerByOrganizationName struct {
+// }
 
-func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
-	mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-	if err != nil {
-		return nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-	}
-	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
-	if err != nil {
-		return nil, mbliberrors.Errorf("NewSystemAdmin: %w", err)
-	}
+// func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
+// 	mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
+// 	if err != nil {
+// 		return nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
+// 	}
+// 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
+// 	if err != nil {
+// 		return nil, mbliberrors.Errorf("NewSystemAdmin: %w", err)
+// 	}
 
-	systemOwner, err := systemAdmin.FindSystemOwnerByOrganizationName(ctx, organizationName)
-	if err != nil {
-		return nil, mbliberrors.Errorf("GetFindSystemOwnerByOrganizationNameUser: %w", err)
-	}
+// 	systemOwner, err := systemAdmin.FindSystemOwnerByOrganizationName(ctx, organizationName)
+// 	if err != nil {
+// 		return nil, mbliberrors.Errorf("GetFindSystemOwnerByOrganizationNameUser: %w", err)
+// 	}
 
-	return systemOwner, nil
-}
+// 	return systemOwner, nil
+// }
 
 func NewInitTestRouterFunc() libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
@@ -77,9 +76,12 @@ func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemTo
 	googleAuthClient := gateway.NewGoogleAuthClient(&httpClient, authConfig.GoogleClientID, authConfig.GoogleClientSecret, authConfig.GoogleCallbackURL)
 	googleUserUsecase := usecase.NewGoogleUser(systemToken, txManager, nonTxManager, authTokenManager, googleAuthClient)
 	// - authentication
-	authenticationUsecase := usecase.NewAuthentication(systemToken, txManager, authTokenManager, &systemOwnerByOrganizationName{})
+	authenticationUsecase := usecase.NewAuthentication(systemToken, txManager, authTokenManager)
+	// &systemOwnerByOrganizationName{})
 	// - password
 	passwordUsecase := usecase.NewPassword(systemToken, txManager, nonTxManager, authTokenManager)
+	// - guest
+	guestUsecase := usecase.NewGuest(systemToken, txManager, nonTxManager, authTokenManager)
 
 	// public router
 	return []libcontroller.InitRouterGroupFunc{
@@ -87,6 +89,7 @@ func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemTo
 		NewInitAuthRouterFunc(authenticationUsecase),
 		NewInitGoogleRouterFunc(googleUserUsecase),
 		NewInitPasswordRouterFunc(passwordUsecase),
+		NewInitGuestRouterFunc(guestUsecase),
 	}, nil
 }
 

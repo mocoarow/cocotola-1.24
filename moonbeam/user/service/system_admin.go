@@ -186,7 +186,7 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 	// 5. add policty to "owner" group
 	ownerGroup, err := userGroupRepo.FindUserGroupByKey(ctx, systemOwner, OwnerGroupKey)
 	if err != nil {
-		return nil, liberrors.Errorf("FindUserGroupByKey: %w", err)
+		return nil, liberrors.Errorf("find owner group(%s): %w", OwnerGroupKey, err)
 	}
 
 	rbacOwnerGroup := domain.NewRBACUserRole(organizationID, ownerGroup.UserGroupID())

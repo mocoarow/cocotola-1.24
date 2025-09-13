@@ -11,7 +11,7 @@ import (
 )
 
 type FolderID struct {
-	Value int `validate:"required,gte=1"`
+	Value int `validate:"gte=0"`
 }
 
 func NewFolderID(value int) (*FolderID, error) {
@@ -78,6 +78,12 @@ func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organization
 	}
 	if folderID == nil {
 		return nil, mbliberrors.Errorf("folderID is nil", mblibdomain.ErrInvalidArgument)
+	}
+	if templateID == nil {
+		return nil, mbliberrors.Errorf("templateID is nil", mblibdomain.ErrInvalidArgument)
+	}
+	if lang2 == nil {
+		return nil, mbliberrors.Errorf("lang2 is nil", mblibdomain.ErrInvalidArgument)
 	}
 	m := &DeckModel{
 		BaseModel:      baseModel,

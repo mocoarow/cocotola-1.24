@@ -10,6 +10,7 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
@@ -20,6 +21,7 @@ func NewAuthMiddleware(cocotolaAuthClient libapi.CocotolaAuthClient) gin.Handler
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		ctx, span := tracer.Start(ctx, "AuthMiddleware")
+
 		defer span.End()
 
 		authorization := c.GetHeader("Authorization")
@@ -37,8 +39,20 @@ func NewAuthMiddleware(cocotolaAuthClient libapi.CocotolaAuthClient) gin.Handler
 			return
 		}
 
+		logger.InfoContext(ctx, fmt.Sprintf("length of groups: %d", len(appUserInfo.UserGroups)))
+
+		for _, g := range appUserInfo.UserGroups {
+			logger.InfoContext(ctx, fmt.Sprintf("group: %s", g))
+		}
+
+		logger.InfoContext(ctx, fmt.Sprintf("AppUserID: %d", appUserInfo.AppUserID))
 		c.Set("AuthorizedUser", appUserInfo.AppUserID)
 		c.Set("OrganizationID", appUserInfo.OrganizationID)
+		if libdomain.IsGuestLoginID(appUserInfo.LoginID) {
+			c.Set("Role", "guest")
+		} else {
+			c.Set("Role", "student")
+		}
 
 		// logger.WarnContext(ctx, "authenticated", slog.Int("app_user_id", appUserInfo.AppUserID), slog.Int("organization_id", appUserInfo.OrganizationID))
 	}

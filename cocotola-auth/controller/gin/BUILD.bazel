@@ -6,6 +6,7 @@ go_library(
         "app_router.go",
         "auth_handler.go",
         "google_auth_handler.go",
+        "guest_auth_handler.go",
         "password_auth_handler.go",
         "rbac_handler.go",
         "user_handler.go",
