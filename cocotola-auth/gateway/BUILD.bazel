@@ -4,11 +4,13 @@ go_library(
     name = "gateway",
     srcs = [
         "auth_token_manager.go",
+        "cocotola_auth_callback_client.go",
         "cocotola_core_callback_client.go",
         "firebase_client.go",
         "google_auth_client.go",
         "init.go",
         "repository_factory.go",
+        "space_query_usecase.go",
         "state_repository.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-auth/gateway",

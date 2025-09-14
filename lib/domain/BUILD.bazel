@@ -7,6 +7,7 @@ go_library(
         "guest.go",
         "init.go",
         "lang.go",
+        "space.go",
         "strings.go",
         "system_token.go",
     ],

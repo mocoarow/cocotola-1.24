@@ -1,6 +1,6 @@
 //go:build small
 
-package controller_test
+package public_test
 
 import (
 	"bytes"
@@ -16,14 +16,14 @@ import (
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
-	controller "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin"
 	controllermock "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/mocks"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/public"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 )
 
-func initGoogleRouter(t *testing.T, ctx context.Context, googleUser controller.GoogleUserUsecase) *gin.Engine {
+func initGoogleRouter(t *testing.T, ctx context.Context, googleUser public.GoogleUserUsecase) *gin.Engine {
 	t.Helper()
-	fn := controller.NewInitGoogleRouterFunc(googleUser)
+	fn := public.NewInitGoogleRouterFunc(googleUser)
 
 	initPublicRouterFuncs := []libcontroller.InitRouterGroupFunc{fn}
 	// initPrivateRouterFuncs := []libcontroller.InitRouterGroupFunc{}

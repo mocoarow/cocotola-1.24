@@ -26,6 +26,13 @@ type CoreAPIClientConfig struct {
 	TimeoutSec int    `yaml:"timeoutSec" validate:"gte=1"`
 }
 
+type AuthAPIClientConfig struct {
+	Endpoint   string `yaml:"endpoint" validate:"required"`
+	Username   string `yaml:"username" validate:"required"`
+	Password   string `yaml:"password" validate:"required"`
+	TimeoutSec int    `yaml:"timeoutSec" validate:"gte=1"`
+}
+
 type AuthAPIServerConfig struct {
 	Username string `yaml:"username" validate:"required"`
 	Password string `yaml:"password" validate:"required"`
@@ -33,6 +40,7 @@ type AuthAPIServerConfig struct {
 
 type AuthConfig struct {
 	CoreAPIClient       *CoreAPIClientConfig `yaml:"coreApiClient" validate:"required"`
+	AuthAPIClient       *AuthAPIClientConfig `yaml:"authApiClient" validate:"required"`
 	AuthAPIServer       *AuthAPIServerConfig `yaml:"authApiServer" validate:"required"`
 	SigningKey          string               `yaml:"signingKey" validate:"required"`
 	AccessTokenTTLMin   int                  `yaml:"accessTokenTtlMin" validate:"gte=1"`

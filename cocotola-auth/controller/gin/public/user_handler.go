@@ -1,4 +1,4 @@
-package controller
+package public
 
 import (
 	"context"
@@ -38,7 +38,7 @@ func NewUserHandler(userUsecase UserUsecase) *UserHandler {
 }
 
 func (h *UserHandler) RegisterAppUser(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
+	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		var apiParam libapi.AppUserAddRequest
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))

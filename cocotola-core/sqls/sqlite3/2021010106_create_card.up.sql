@@ -10,9 +10,9 @@ create table `core_card` (
 ,`template_id` int not null
 ,`content` json not null
 ,`owner_id` int not null
-,foreign key(`created_by`) references `mb_app_user`(`id`) on delete cascade
-,foreign key(`updated_by`) references `mb_app_user`(`id`) on delete cascade
-,foreign key(`organization_id`) references `mb_organization`(`id`) on delete cascade
+-- ,foreign key(`created_by`) references `mb_app_user`(`id`) on delete cascade
+-- ,foreign key(`updated_by`) references `mb_app_user`(`id`) on delete cascade
+-- ,foreign key(`organization_id`) references `mb_organization`(`id`) on delete cascade
 ,foreign key(`deck_id`) references `core_deck`(`id`) on delete cascade
 ,foreign key(`template_id`) references `core_template`(`id`) on delete cascade
 );

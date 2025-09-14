@@ -178,6 +178,13 @@ func (r *userGroupRepository) AddOwnerGroup(ctx context.Context, operator servic
 	return r.addUserGroup(operator.AppUserID(), organizationID, service.OwnerGroupKey, service.OwnerGroupName)
 }
 
+func (r *userGroupRepository) AddPublicGroup(ctx context.Context, operator service.SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
+	_, span := tracer.Start(ctx, "userGroupRepository.AddPublicGroup")
+	defer span.End()
+
+	return r.addUserGroup(operator.AppUserID(), organizationID, service.PublicGroupKey, service.PublicGroupName)
+}
+
 func (r *userGroupRepository) AddUserGroup(ctx context.Context, operator service.OwnerModelInterface, parameter service.UserGroupAddParameterInterface) (*domain.UserGroupID, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.AddUserGroup")
 	defer span.End()

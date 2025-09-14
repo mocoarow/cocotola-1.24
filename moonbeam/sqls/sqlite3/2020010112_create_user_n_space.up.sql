@@ -1,4 +1,4 @@
-create table `core_user_n_space` (
+create table `mb_user_n_space` (
  `created_at` datetime not null default current_timestamp
 ,`created_by` int not null
 ,`organization_id` int not null
@@ -8,5 +8,5 @@ create table `core_user_n_space` (
 ,foreign key(`created_by`) references `mb_app_user`(`id`) on delete cascade
 ,foreign key(`organization_id`) references `mb_organization`(`id`) on delete cascade
 ,foreign key(`app_user_id`) references `mb_app_user`(`id`) on delete cascade
-,foreign key(`space_id`) references `core_space`(`id`) on delete cascade
+,foreign key(`space_id`) references `mb_space`(`id`) on delete cascade
 );

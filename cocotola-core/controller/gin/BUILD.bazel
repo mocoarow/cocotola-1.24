@@ -7,6 +7,7 @@ go_library(
         "callback_handler.go",
         "card_handler.go",
         "deck_handler.go",
+        "helper.go",
         "init.go",
         "profile_handler.go",
     ],

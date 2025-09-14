@@ -206,6 +206,26 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 		return nil, liberrors.Errorf("m.initFirstOwner. error: %w", err)
 	}
 
+	// 7. add public-group
+	if _, err := userGroupRepo.AddPublicGroup(ctx, systemOwner, organizationID); err != nil {
+		return nil, liberrors.Errorf("AddOwnerGroup: %w", err)
+	}
+
+	// 8. add policty to "public" group
+	if _, err := userGroupRepo.FindUserGroupByKey(ctx, systemOwner, PublicGroupKey); err != nil {
+		return nil, liberrors.Errorf("find public group(%s): %w", PublicGroupKey, err)
+	}
+
+	// 9. add public default space
+	spaceRepo := m.rf.NewSpaceRepository(ctx)
+	if _, err := spaceRepo.AddSpace(ctx, systemOwner, &SpaceAddParameter{
+		Key:      PublicDefaultSpaceKey,
+		Name:     PublicDefaultSpaceName,
+		IsPublic: true,
+	}); err != nil {
+		return nil, liberrors.Errorf("add public space(%s): %w", PublicDefaultSpaceKey, err)
+	}
+
 	m.logger.InfoContext(ctx, fmt.Sprintf("SystemOwnerID:%d, ownerID: %d", systemOwner.AppUserID().Int(), ownerID.Int()))
 
 	return organizationID, nil

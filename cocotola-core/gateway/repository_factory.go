@@ -39,11 +39,8 @@ func (f *RepositoryFactory) NewDeckRepository(_ context.Context) (service.DeckRe
 func (f *RepositoryFactory) NewCardRepository(_ context.Context) (service.CardRepository, error) {
 	return NewCardRepository(f.db), nil
 }
-func (f *RepositoryFactory) NewSpaceRepository(_ context.Context) (service.SpaceRepository, error) {
-	return NewSpaceRepository(f.db), nil
-}
-func (f *RepositoryFactory) NewPairOfUserAndSpaceRepository(ctx context.Context) (service.PairOfUserAndSpaceRepository, error) {
-	return NewPairOfUserAndSpaceRepository(ctx, f.dialect, f.db, f), nil
+func (f *RepositoryFactory) NewFolderRepository(_ context.Context) (service.FolderRepository, error) {
+	return NewFolderRepository(f.db), nil
 }
 
 type RepositoryFactoryFunc func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error)

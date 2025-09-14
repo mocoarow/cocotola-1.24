@@ -1,0 +1,125 @@
+package gateway
+
+import (
+	"context"
+
+	"gorm.io/gorm"
+
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
+	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
+)
+
+type FolderEntity struct {
+	mbusergateway.BaseModelEntity
+	ID             int
+	OrganizationID int
+	SpaceID        int
+	ParentID       int
+	Name           string
+	OwnerID        int
+}
+
+func (e *FolderEntity) TableName() string {
+	return "core_folder"
+}
+
+func (e *FolderEntity) ToModel() (*domain.FolderModel, error) {
+	baseModel, err := e.ToBaseModel()
+	if err != nil {
+		return nil, mbliberrors.Errorf("to base model: %w", err)
+	}
+
+	organizationID, err := mbuserdomain.NewOrganizationID(e.OrganizationID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new organization id(%d): %w", e.OrganizationID, err)
+	}
+
+	folderID, err := domain.NewFolderID(e.ID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new folder id(%d): %w", e.ID, err)
+	}
+
+	spaceID, err := mbuserdomain.NewSpaceID(e.ID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new space id(%d): %w", e.ID, err)
+	}
+
+	parentID, err := domain.NewFolderID(e.ParentID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new parent id(%d): %w", e.ParentID, err)
+	}
+
+	ownerID, err := mbuserdomain.NewAppUserID(e.OwnerID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
+	}
+
+	folderModel, err := domain.NewFolderModel(
+		baseModel,
+		folderID,
+		organizationID,
+		spaceID,
+		parentID,
+		e.Name,
+		ownerID,
+	)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new folder model: %w", err)
+	}
+
+	return folderModel, nil
+}
+
+func (e *FolderEntity) toFolder() (*service.Folder, error) {
+	folderModel, err := e.ToModel()
+	if err != nil {
+		return nil, mbliberrors.Errorf("to folder model: %w", err)
+	}
+	folder := &service.Folder{FolderModel: folderModel}
+
+	return folder, nil
+}
+
+type folderRepository struct {
+	db *gorm.DB
+}
+
+func NewFolderRepository(db *gorm.DB) service.FolderRepository {
+	return &folderRepository{
+		db: db,
+	}
+}
+
+func (r *folderRepository) AddFolder(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.FolderAddParameter) (*domain.FolderID, error) {
+	_, span := tracer.Start(ctx, "folderRepository.AddFolder")
+	defer span.End()
+
+	folderE := FolderEntity{ //nolint:exhaustruct
+		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
+			Version:   1,
+			CreatedBy: operator.AppUserID().Int(),
+			UpdatedBy: operator.AppUserID().Int(),
+		},
+		OrganizationID: operator.OrganizationID().Int(),
+		SpaceID:        param.SpaceID.Int(),
+		ParentID:       param.FolderID.Int(),
+		Name:           param.Name,
+		OwnerID:        operator.AppUserID().Int(),
+	}
+	if result := r.db.Create(&folderE); result.Error != nil {
+		return nil, mbliberrors.Errorf("add folder entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrFolderAlreadyExists))
+	}
+
+	folderID, err := domain.NewFolderID(folderE.ID)
+	if err != nil {
+		return nil, mbliberrors.Errorf("new folder id(%d): %w", folderE.ID, err)
+	}
+
+	return folderID, nil
+}

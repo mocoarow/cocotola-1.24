@@ -10,12 +10,15 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/config"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/middleware"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/private"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/public"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/usecase"
@@ -86,31 +89,36 @@ func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemTo
 	// public router
 	return []libcontroller.InitRouterGroupFunc{
 		NewInitTestRouterFunc(),
-		NewInitAuthRouterFunc(authenticationUsecase),
-		NewInitGoogleRouterFunc(googleUserUsecase),
-		NewInitPasswordRouterFunc(passwordUsecase),
-		NewInitGuestRouterFunc(guestUsecase),
+		public.NewInitAuthRouterFunc(authenticationUsecase),
+		public.NewInitGoogleRouterFunc(googleUserUsecase),
+		public.NewInitPasswordRouterFunc(passwordUsecase),
+		public.NewInitGuestRouterFunc(guestUsecase),
 	}, nil
 }
 
-func GetBasicPrivateRouterGroupFuncs(_ context.Context, txManager, nonTxManager service.TransactionManager) []libcontroller.InitRouterGroupFunc {
+func GetBasicPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) []libcontroller.InitRouterGroupFunc {
 	// - rbac
 	rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
+	// - callback
+	callbackUsecase := usecase.NewCallback(systemToken, txManager, nonTxManager, cocotolaCoreCallbackClient)
 
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
-		NewInitRBACRouterFunc(rbacUsecase),
+		private.NewInitRBACRouterFunc(rbacUsecase),
+		private.NewInitCallbackRouterFunc(callbackUsecase),
 	}
 }
-func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) []libcontroller.InitRouterGroupFunc {
+
+func GetBearerTokenRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager, mbrf mbuserservice.RepositoryFactory) []libcontroller.InitRouterGroupFunc {
 	// - rbac
 	// rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
 	// - user
 	userUsecase := usecase.NewUserUsecase(systemToken, txManager, nonTxManager, authTokenManager)
+	spaceUsecase := gateway.NewSpaceQueryUsecase(mbrf)
 
-	// private router
 	return []libcontroller.InitRouterGroupFunc{
-		NewInitUserRouterFunc(userUsecase),
+		public.NewInitUserRouterFunc(userUsecase),
+		private.NewInitSpaceRouterFunc(spaceUsecase),
 		// NewInitRBACRouterFunc(rbacUsecase),
 	}
 }

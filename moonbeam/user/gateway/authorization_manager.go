@@ -132,6 +132,16 @@ func (m *authorizationManager) AddPolicyToGroupBySystemAdmin(ctx context.Context
 	return nil
 }
 
+func (m *authorizationManager) AddObjectToObject(ctx context.Context, operator service.SystemOwnerInterface, child, parent domain.RBACObject) error {
+	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
+
+	if err := m.rbacRepo.AddObjectGroupingPolicy(ctx, rbacDomain, child, parent); err != nil {
+		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
+	}
+
+	return nil
+}
+
 func (m *authorizationManager) CheckAuthorization(ctx context.Context, operator service.AppUserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error) {
 	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
 

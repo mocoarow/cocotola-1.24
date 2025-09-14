@@ -28,6 +28,8 @@ go_library(
         "sqlite3/2020010110_create_user_group_details.up.sql",
         "sqlite3/2020010201_insert_organization.up.sql",
         "sqlite3/2020010202_insert_app_user.up.sql",
+        "sqlite3/2020010111_create_space.up.sql",
+        "sqlite3/2020010112_create_user_n_space.up.sql",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/sqls",
     visibility = ["//visibility:public"],

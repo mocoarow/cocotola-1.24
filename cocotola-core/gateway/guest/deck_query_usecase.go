@@ -3,8 +3,16 @@ package guest
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"gorm.io/gorm"
+
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
+	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+
+	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
@@ -12,21 +20,59 @@ import (
 )
 
 type DeckQueryUseCase struct {
-	db *gorm.DB
+	db         *gorm.DB
+	rbacClient libapi.CocotolaRBACClient
+	logger     *slog.Logger
 }
 
-func NewDeckQueryUsecase(db *gorm.DB) *DeckQueryUseCase {
+func NewDeckQueryUsecase(db *gorm.DB, rbacClient libapi.CocotolaRBACClient) *DeckQueryUseCase {
 	return &DeckQueryUseCase{
-		db: db,
+		db:         db,
+		rbacClient: rbacClient,
+		logger:     slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckQueryUseCase")),
 	}
 }
 
-func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*domain.DeckModel, error) {
+func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, spaceIDs []*mbuserdomain.SpaceID) ([]*mbuserdomain.SpaceID, error) {
+	filteredSpaceIDs := make([]*mbuserdomain.SpaceID, 0, len(spaceIDs))
+	for _, spaceID := range spaceIDs {
+		action := action
+		object := spaceID.GetRBACObject()
+		ok, err := u.rbacClient.CheckAuthorization(ctx, &libapi.AuthorizeRequest{
+			OrganizationID: operator.OrganizationID().Int(),
+			AppUserID:      operator.AppUserID().Int(),
+			Action:         action.Action(),
+			Object:         object.Object(),
+		})
+		if err != nil {
+			return nil, mbliberrors.Errorf("authorize: %w", err)
+		} else if !ok {
+			continue
+		}
+		filteredSpaceIDs = append(filteredSpaceIDs, spaceID)
+	}
+	return filteredSpaceIDs, nil
+}
+
+func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator service.OperatorInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error) {
 	_, span := tracer.Start(ctx, "DeckQueryUseCase.FindDecks")
 	defer span.End()
 
+	// Check RBAC
+	filterSpaceIDs, err := u.filterSpaces(ctx, operator, librbac.ListDecksAction, param.SpaceIDs)
+	if err != nil {
+		return nil, mbliberrors.Errorf("filterSpaces: %w", err)
+	}
+	if len(filterSpaceIDs) == 0 {
+		u.logger.InfoContext(ctx, "no accessible space")
+		return []*domain.DeckModel{}, nil
+	}
+
 	deckRepo := gateway.NewDeckRepository(u.db)
-	desks, err := deckRepo.FindDecksInPublicSpace(ctx, operator)
+	repoParam := service.FindDecksParameter{
+		SpaceIDs: filterSpaceIDs,
+	}
+	desks, err := deckRepo.FindDecks(ctx, operator, &repoParam)
 	if err != nil {
 		return nil, fmt.Errorf("deckRepo.FindDecksInPublicSpace. err: %w", err)
 	}

@@ -12,6 +12,7 @@ import (
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libapideck "github.com/mocoarow/cocotola-1.24/lib/api/deck"
@@ -24,7 +25,7 @@ import (
 )
 
 type GuestDeckQueryUsecase interface {
-	FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*domain.DeckModel, error)
+	FindDecks(ctx context.Context, operator service.OperatorInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error)
 
 	// RetrieveDeckByID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
 }
@@ -56,7 +57,7 @@ func NewDeckHandler(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQuer
 }
 
 func (h *DeckHandler) FindDecks(c *gin.Context) {
-	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
+	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
 		if operator.Role() == "guest" {
 			return h.findDecksAsGuest(ctx, c, operator)
 		} else if operator.Role() == "student" {
@@ -72,7 +73,28 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsGuest")
 	defer span.End()
 
-	result, err := h.guestDeckQueryUsecase.FindDecks(ctx, operator)
+	var apiReq libapideck.FindDecksRequest
+	if err := c.ShouldBindQuery(&apiReq); err != nil {
+		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
+		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+		return nil
+	}
+
+	spaceIDs := make([]*mbuserdomain.SpaceID, 0)
+	for _, id := range apiReq.SpaceID {
+		spaceID, err := mbuserdomain.NewSpaceID(id)
+		if err != nil {
+			h.logger.WarnContext(ctx, fmt.Sprintf("NewSpaceID: %+v", err))
+			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+			return nil
+		}
+		spaceIDs = append(spaceIDs, spaceID)
+	}
+
+	param := service.FindDecksParameter{SpaceIDs: spaceIDs}
+
+	h.logger.InfoContext(ctx, fmt.Sprintf("findDecksAsGuest: %+v", param.SpaceIDs.IDs()))
+	result, err := h.guestDeckQueryUsecase.FindDecks(ctx, operator, &param)
 	if err != nil {
 		return mbliberrors.Errorf("FindDecks: %w", err)
 	}
@@ -111,7 +133,7 @@ func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, op
 }
 
 func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
-	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
+	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
 		deckIDInt, err := helper.GetIntFromPath(c, "deckID")
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("GetIntFromPath. err: %+v", err))
@@ -137,7 +159,7 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 }
 
 func (h *DeckHandler) AddDeck(c *gin.Context) {
-	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
+	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
 		var apiParam libapi.DeckAddParameter
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
@@ -150,7 +172,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}
-		spaceID, err := domain.NewSpaceID(apiParam.SpaceID)
+		spaceID, err := mbuserdomain.NewSpaceID(apiParam.SpaceID)
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("NewSpaceID: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -184,7 +206,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 }
 
 func (h *DeckHandler) UpdateDeck(c *gin.Context) {
-	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
+	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
 		version, err := helper.GetIntFromQuery(c, "version")
 		if err != nil {
 			return mblibdomain.ErrInvalidArgument

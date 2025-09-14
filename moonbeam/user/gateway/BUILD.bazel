@@ -11,6 +11,7 @@ go_library(
         "pair_of_user_and_group_repository.go",
         "rbac_repository.go",
         "repository_factory.go",
+        "space_repository.go",
         "transaction_manager.go",
         "user_group_repository.go",
         "wrapped_db.go",

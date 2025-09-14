@@ -5,9 +5,8 @@ go_library(
     srcs = [
         "card.go",
         "deck.go",
+        "folder.go",
         "init.go",
-        "profile.go",
-        "space.go",
         "template.go",
         "workbook.go",
     ],

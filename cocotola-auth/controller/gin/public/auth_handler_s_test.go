@@ -1,6 +1,6 @@
 //go:build small
 
-package controller_test
+package public_test
 
 import (
 	"bytes"
@@ -22,8 +22,8 @@ import (
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/config"
-	controller "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin"
 	controllermock "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/mocks"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/public"
 )
 
 var (
@@ -62,9 +62,9 @@ func init() {
 	}
 }
 
-func initAuthRouter(t *testing.T, ctx context.Context, authentication controller.AuthenticationUsecase) *gin.Engine {
+func initAuthRouter(t *testing.T, ctx context.Context, authentication public.AuthenticationUsecase) *gin.Engine {
 	t.Helper()
-	fn := controller.NewInitAuthRouterFunc(authentication)
+	fn := public.NewInitAuthRouterFunc(authentication)
 
 	initPublicRouterFuncs := []libcontroller.InitRouterGroupFunc{fn}
 	// initPrivateRouterFuncs := []libcontroller.InitRouterGroupFunc{}

@@ -10,11 +10,11 @@ import (
 
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	liblibcontroller "github.com/mocoarow/cocotola-1.24/lib/controller"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
 type operator struct {
@@ -29,9 +29,9 @@ func (o *operator) OrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
 }
 
-func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator service.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
+func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator mbuserservice.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
 	ctx := c.Request.Context()
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleSecuredFunction"))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleAppUserFunction"))
 
 	organizationIDInt := c.GetInt("OrganizationID")
 	if organizationIDInt == 0 {

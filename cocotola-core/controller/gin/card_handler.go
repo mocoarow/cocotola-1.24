@@ -22,7 +22,7 @@ import (
 )
 
 type CardQueryUsecase interface {
-	FindCards(ctx context.Context, operator service.OperatorInterface) ([]*domain.CardModel, error)
+	FindCardsByDeckID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error)
 }
 
 type CardHandler struct {
@@ -38,8 +38,13 @@ func NewCardHandler(cardQueryUsecase CardQueryUsecase) *CardHandler {
 }
 
 func (h *CardHandler) FindCards(c *gin.Context) {
-	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
-		cards, err := h.cardQueryUsecase.FindCards(ctx, operator)
+	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
+		deckID, ok := getDeckIDFromQuery(c)
+		if !ok {
+			return nil
+		}
+
+		cards, err := h.cardQueryUsecase.FindCardsByDeckID(ctx, operator, deckID)
 		if err != nil {
 			return mbliberrors.Errorf("FindDecks: %w", err)
 		}
@@ -59,7 +64,6 @@ func (h *CardHandler) FindCards(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, response)
-
 		return nil
 	}, h.errorHandle)
 }

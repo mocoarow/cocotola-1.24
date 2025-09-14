@@ -2,16 +2,13 @@ package guest
 
 import (
 	"context"
-	"encoding/json"
-	"time"
+	"fmt"
 
 	"gorm.io/gorm"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
-	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
-	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
-	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
 type CardQueryUseCase struct {
@@ -24,75 +21,24 @@ func NewCardQueryUsecase(db *gorm.DB) *CardQueryUseCase {
 	}
 }
 
-func (u *CardQueryUseCase) FindCards(ctx context.Context, _ service.OperatorInterface) ([]*domain.CardModel, error) {
+func (u *CardQueryUseCase) FindCardsByDeckID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error) {
 	_, span := tracer.Start(ctx, "CardQueryUseCase.FindDecks")
 	defer span.End()
-	cards := make([]*domain.CardModel, 0)
 
-	type BlankAnswer struct {
-		Answer string
-		Hint   string
-	}
-	type WordProblem struct {
-		Japanese  string
-		English   string
-		CEFRLevel string
-		Blanks    []BlankAnswer
-	}
-	wordProblems := []WordProblem{
-		{
-			Japanese:  "私は昨日映画を見ました。",
-			English:   "I ___ a movie yesterday.",
-			CEFRLevel: "A2",
-			Blanks: []BlankAnswer{
-				{
-					Answer: "watched",
-					Hint:   "「見る」の過去形です。",
-				},
-			},
-		},
-	}
-	organizationID, err := mbuserdomain.NewOrganizationID(1)
+	// check RBAC
+
+	cardRepo := gateway.NewCardRepository(u.db)
+	desks, err := cardRepo.FindCardsByDeckID(ctx, operator, deckID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("libdomain.NewBaseModel. err: %w", err)
-	}
-	deckID, err := domain.NewDeckID(1)
-	if err != nil {
-		return nil, mbliberrors.Errorf("libdomain.NewBaseModel. err: %w", err)
+		return nil, fmt.Errorf("cardRepo.FindCardsByDeckID. err: %w", err)
 	}
 
-	templateID, err := domain.NewTemplateID(1)
-	if err != nil {
-		return nil, mbliberrors.Errorf("libdomain.NewBaseModel. err: %w", err)
+	cardModels := make([]*domain.CardModel, 0, len(desks))
+	for _, d := range desks {
+		cardModels = append(cardModels, d.CardModel)
 	}
 
-	ownerID, err := mbuserdomain.NewAppUserID(1)
-	if err != nil {
-		return nil, mbliberrors.Errorf("libdomain.NewBaseModel. err: %w", err)
-	}
-
-	for i, wp := range wordProblems {
-		base, err := mblibdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
-		if err != nil {
-			return nil, mbliberrors.Errorf("libdomain.NewBaseModel. err: %w", err)
-		}
-		cardID, err := domain.NewCardID(i + 1)
-		if err != nil {
-			return nil, mbliberrors.Errorf("domain.NewCardID. err: %w", err)
-		}
-
-		content, err := json.Marshal(wp)
-		if err != nil {
-			return nil, mbliberrors.Errorf("json.Marshal. err: %w", err)
-		}
-		card, err := domain.NewCardModel(base, cardID, organizationID, deckID, templateID, string(content), ownerID)
-		if err != nil {
-			return nil, mbliberrors.Errorf("domain.NewCardModel. err: %w", err)
-		}
-		cards = append(cards, card)
-	}
-
-	return cards, nil
+	return cardModels, nil
 }
 
 /*

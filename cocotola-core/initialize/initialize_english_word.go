@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"context"
+	"encoding/json"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
@@ -79,17 +80,9 @@ func getEnglishBlankDecks() []englishBlankDeck {
 		},
 	}
 }
-func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckRepo service.DeckRepository, cardRepo service.CardRepository, defaultPublicSpace *service.Space, nameToDecks map[string]*service.Deck) error {
-	folderID, err := domain.NewFolderID(0)
-	if err != nil {
-		return mbliberrors.Errorf("new folder id(0). err: %w", err)
-	}
 
-	templateID, err := domain.NewTemplateID(1)
-	if err != nil {
-		return mbliberrors.Errorf("new template id(1). err: %w", err)
-	}
-
+func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckRepo service.DeckRepository, cardRepo service.CardRepository, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID, nameToDecks map[string]*service.Deck) ([]*domain.DeckID, error) {
+	deckIDs := make([]*domain.DeckID, 0)
 	for _, englishBlankDeck := range getEnglishBlankDecks() {
 		name := englishBlankDeck.Name
 		if _, exists := nameToDecks[name]; exists {
@@ -97,64 +90,60 @@ func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorIn
 		}
 
 		deckAddParam := service.DeckAddParameter{
-			SpaceID:     defaultPublicSpace.SpaceID,
-			FolderID:    folderID,
+			SpaceID:     publicDefaultSpaceID,
+			FolderID:    rootFolderID,
 			Name:        name,
-			TemplateID:  templateID,
+			TemplateID:  service.TEMPLATE_ID_ENGLISH_BLANK,
 			Lang2:       libdomain.Lang2JA,
 			Description: "",
 		}
 
 		deckID, err := deckRepo.AddDeck(ctx, operator, &deckAddParam)
 		if err != nil {
-			return mbliberrors.Errorf("add deck: %w", err)
+			return nil, mbliberrors.Errorf("add deck: %w", err)
 		}
 
 		for _, englishBlankCard := range englishBlankDeck.Cards {
+			content, err := json.Marshal(englishBlankCard)
+			if err != nil {
+				return nil, mbliberrors.Errorf("json.Marshal (%+v): %w", err)
+			}
+
 			addCardParam := service.AddCardParameter{
 				DeckID:     deckID,
-				TemplateID: templateID,
-				Content:    englishBlankCard.EnglishText,
+				TemplateID: service.TEMPLATE_ID_ENGLISH_BLANK,
+				Content:    string(content),
 			}
 			if _, err := cardRepo.AddCard(ctx, operator, &addCardParam); err != nil {
-				return mbliberrors.Errorf("add card: %w", err)
+				return nil, mbliberrors.Errorf("add card: %w", err)
 			}
 		}
+		deckIDs = append(deckIDs, deckID)
 	}
 
-	return nil
+	return deckIDs, nil
 }
 
-func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID) error {
+func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID) ([]*domain.DeckID, error) {
 	operator := &operator{
 		organizationID: organizationID,
 		appUserID:      mbuserservice.SystemAdminID,
 	}
 
-	fn := func(rf service.RepositoryFactory) error {
-		spaceRepo, err := rf.NewSpaceRepository(ctx)
-		if err != nil {
-			return mbliberrors.Errorf("NewSpaceRepository: %w", err)
-		}
-
-		defaultPublicSpace, err := spaceRepo.FindPublicSpaceByKey(ctx, "default-public")
-		if err != nil {
-			return mbliberrors.Errorf("FindPublicSpaceByKey: %w", err)
-		}
-
+	fn := func(rf service.RepositoryFactory) ([]*domain.DeckID, error) {
 		deckRepo, err := rf.NewDeckRepository(ctx)
 		if err != nil {
-			return mbliberrors.Errorf("NewDeckRepository: %w", err)
+			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
 		}
 
 		decks, err := deckRepo.FindDecksByOwner(ctx, operator)
 		if err != nil {
-			return mbliberrors.Errorf("FindDecksByOwner: %w", err)
+			return nil, mbliberrors.Errorf("FindDecksByOwner: %w", err)
 		}
 
 		cardRepo, err := rf.NewCardRepository(ctx)
 		if err != nil {
-			return mbliberrors.Errorf("NewDeckRepository: %w", err)
+			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
 		}
 
 		nameToDecks := make(map[string]*service.Deck, len(decks))
@@ -162,16 +151,18 @@ func initEnglishWord(ctx context.Context, txManager service.TransactionManager, 
 			nameToDecks[deck.Name] = deck
 		}
 
-		if err := initEnglishBlankDeck(ctx, operator, deckRepo, cardRepo, defaultPublicSpace, nameToDecks); err != nil {
-			return mbliberrors.Errorf("initEnglishBlankDeck: %w", err)
+		deckIDs, err := initEnglishBlankDeck(ctx, operator, deckRepo, cardRepo, publicDefaultSpaceID, rootFolderID, nameToDecks)
+		if err != nil {
+			return nil, mbliberrors.Errorf("initEnglishBlankDeck: %w", err)
 		}
 
-		return nil
+		return deckIDs, nil
 	}
 
-	if err := mblibservice.Do0(ctx, txManager, fn); err != nil {
-		return err //nolint:wrapcheck
+	deckIDs, err := mblibservice.Do1(ctx, txManager, fn)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
 	}
 
-	return nil
+	return deckIDs, nil
 }

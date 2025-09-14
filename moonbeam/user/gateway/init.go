@@ -11,6 +11,7 @@ var (
 	AppUserTableName            = "mb_app_user"
 	PairOfUserAndGroupTableName = "mb_user_n_group"
 	UserGroupTableName          = "mb_user_group"
+	SpaceTableName              = "mb_space"
 
 	// SystemStudentLoginID = "system-student"
 	// GuestLoginID         = "guest"

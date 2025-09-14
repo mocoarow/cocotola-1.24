@@ -78,24 +78,40 @@ func main() {
 	}
 	var organizationID *mbuserdomain.OrganizationID
 	var guestID *mbuserdomain.AppUserID
+	var publicDefaultSpaceID *mbuserdomain.SpaceID
 	// auth
 	{
 		auth := router.Group("auth")
-		orgIDTmp, guestIDTmp, err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth)
+		orgIDTmp, guestIDTmp, publicDefaultSpaceIDTmp, err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth)
 		if err != nil {
 			libdomain.CheckError(err)
 		}
 		organizationID = orgIDTmp
 		guestID = guestIDTmp
+		publicDefaultSpaceID = publicDefaultSpaceIDTmp
 	}
+	var rootFolderID mbuserdomain.RBACObject
+	deckIDs := make([]mbuserdomain.RBACObject, 0)
 	// core (<- auth)
 	{
 		core := router.Group("core")
 		authInitParam := coreinit.AuthInitParameter{
-			OrganizationID: organizationID,
-			GuestID:        guestID,
+			OrganizationID:       organizationID,
+			GuestID:              guestID,
+			PublicDefaultSpaceID: publicDefaultSpaceID,
 		}
-		if err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Core, &authInitParam); err != nil {
+		rootFolderIDTmp, deckIDsTmp, err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Core, &authInitParam)
+		if err != nil {
+			libdomain.CheckError(err)
+		}
+		rootFolderID = rootFolderIDTmp.GetRBACObject()
+		for _, deckID := range deckIDsTmp {
+			deckIDs = append(deckIDs, deckID.GetRBACObject())
+		}
+	}
+	// auth
+	{
+		if err := authinit.Initialize2(ctx, systemToken, dialect, cfg.DB.DriverName, db, organizationID, rootFolderID, deckIDs); err != nil {
 			libdomain.CheckError(err)
 		}
 	}

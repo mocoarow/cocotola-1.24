@@ -64,7 +64,7 @@ func main() {
 
 	// TODO: fetch organizationID from auth API
 	var authInitParam initialize.AuthInitParameter
-	if err := initialize.Initialize(ctx, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App, &authInitParam); err != nil {
+	if _, _, err := initialize.Initialize(ctx, router, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App, &authInitParam); err != nil {
 		libdomain.CheckError(err)
 	}
 

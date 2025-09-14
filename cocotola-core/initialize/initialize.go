@@ -2,8 +2,6 @@ package initialize
 
 import (
 	"context"
-	"errors"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -15,10 +13,7 @@ import (
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
-	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
@@ -44,27 +39,47 @@ func (o *operator) OrganizationID() *mbuserdomain.OrganizationID {
 }
 
 type AuthInitParameter struct {
-	OrganizationID *mbuserdomain.OrganizationID
-	GuestID        *mbuserdomain.AppUserID
+	OrganizationID       *mbuserdomain.OrganizationID
+	GuestID              *mbuserdomain.AppUserID
+	PublicDefaultSpaceID *mbuserdomain.SpaceID
 }
 
-func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig, authInitParam *AuthInitParameter) error {
+func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig, authInitParam *AuthInitParameter) (*domain.FolderID, []*domain.DeckID, error) {
+	txManager, err := initApp(ctx, parent, dialect, driverName, db, logConfig, coreConfig, authInitParam)
+	if err != nil {
+		return nil, nil, mbliberrors.Errorf("initApp: %w", err)
+	}
+
+	rootFolderID, err := initRootFolder(ctx, txManager, authInitParam.OrganizationID, authInitParam.PublicDefaultSpaceID)
+	if err != nil {
+		return nil, nil, mbliberrors.Errorf("initApp2: %w", err)
+	}
+
+	deckIDs, err := initEnglishWord(ctx, txManager, authInitParam.OrganizationID, authInitParam.PublicDefaultSpaceID, rootFolderID)
+	if err != nil {
+		return nil, nil, mbliberrors.Errorf("initEnglishWord: %w", err)
+	}
+
+	return rootFolderID, deckIDs, nil
+}
+
+func initApp(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig, authInitParam *AuthInitParameter) (service.TransactionManager, error) {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC)
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
-		return mbliberrors.Errorf("rff: %w", err)
+		return nil, mbliberrors.Errorf("rff: %w", err)
 	}
 	// init transaction manager
 	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
 	if err != nil {
-		return mbliberrors.Errorf("NewTransactionManagerT: %w", err)
+		return nil, mbliberrors.Errorf("NewTransactionManagerT: %w", err)
 	}
 	// init non transaction manager
 	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
 	if err != nil {
-		return mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
+		return nil, mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
 	}
 
 	// - rbacClient
@@ -74,14 +89,14 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	}
 	authEndpoint, err := url.Parse(coreConfig.AuthAPIClient.Endpoint)
 	if err != nil {
-		return mbliberrors.Errorf("Parse: %w", err)
+		return nil, mbliberrors.Errorf("Parse: %w", err)
 	}
 	rbacClient := libgateway.NewCocotolaRBACClient(&httpClient, authEndpoint, coreConfig.AuthAPIClient.Username, coreConfig.AuthAPIClient.Password)
 
 	// init auth middleware
 	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(coreConfig.AuthAPIClient)
 	if err != nil {
-		return mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
+		return nil, mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
 	}
 
 	// init guest middleware
@@ -97,12 +112,12 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 
 	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, db, txManager, nonTxManager, rbacClient)
 	if err != nil {
-		return mbliberrors.Errorf("GetBearerTokenPrivateRouterGroupFuncs: %w", err)
+		return nil, mbliberrors.Errorf("GetBearerTokenPrivateRouterGroupFuncs: %w", err)
 	}
 
 	basicPrivateRouterGroupFuncs, err := controller.GetBasicPrivateRouterGroupFuncs(ctx, txManager, nonTxManager, rbacClient)
 	if err != nil {
-		return mbliberrors.Errorf("GetBasicPrivateRouterGroupFuncs: %w", err)
+		return nil, mbliberrors.Errorf("GetBasicPrivateRouterGroupFuncs: %w", err)
 	}
 
 	// api
@@ -119,110 +134,56 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
 
-	if err := initApp(ctx, txManager, authInitParam); err != nil {
-		return mbliberrors.Errorf("initApp: %w", err)
-	}
-
-	return nil
+	return txManager, nil
 }
 
-func initApp(ctx context.Context, txManager service.TransactionManager, authInitParam *AuthInitParameter) error {
-	spaceID, err := initApp1(ctx, txManager, authInitParam)
-	if err != nil {
-		return mbliberrors.Errorf("initApp1: %w", err)
-	}
+// func initAppX(ctx context.Context, txManager service.TransactionManager, authInitParam *AuthInitParameter) error {
+// 	// spaceID, err := initApp1(ctx, txManager, authInitParam)
+// 	// if err != nil {
+// 	// 	return mbliberrors.Errorf("initApp1: %w", err)
+// 	// }
 
-	if err := initApp2(ctx, txManager, authInitParam, spaceID); err != nil {
-		return mbliberrors.Errorf("initApp2: %w", err)
-	}
+// 	// if err := initApp2(ctx, txManager, authInitParam, spaceID); err != nil {
+// 	// 	return mbliberrors.Errorf("initApp2: %w", err)
+// 	// }
+// 	return nil
+// }
 
-	if err := initEnglishWord(ctx, txManager, authInitParam.OrganizationID); err != nil {
-		return mbliberrors.Errorf("initEnglishWord: %w", err)
-	}
+// func initApp2(ctx context.Context, txManager service.TransactionManager, authInitParam *AuthInitParameter, spaceID *domain.SpaceID) error {
+// 	operator := &operator{
+// 		organizationID: authInitParam.OrganizationID,
+// 		appUserID:      mbuserservice.SystemAdminID,
+// 	}
+// 	fn := func(rf service.RepositoryFactory) error {
+// 		pairOfUserAndSpaceRepo, err := rf.NewPairOfUserAndSpaceRepository(ctx)
+// 		if err != nil {
+// 			return mbliberrors.Errorf("NewPairOfUserAndSpaceRepository: %w", err)
+// 		}
 
-	return nil
-}
+// 		spaces, err := pairOfUserAndSpaceRepo.FindSpacesByUserID(ctx, operator, authInitParam.GuestID)
+// 		if err != nil {
+// 			return mbliberrors.Errorf("FindSpacesByUserID: %w", err)
+// 		}
 
-func initApp1(ctx context.Context, txManager service.TransactionManager, authInitParam *AuthInitParameter) (*domain.SpaceID, error) {
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
+// 		for _, s := range spaces {
+// 			if s.SpaceID.Int() == spaceID.Int() {
+// 				// already exists
+// 				return nil
+// 			}
+// 		}
 
-	operator := &operator{
-		organizationID: authInitParam.OrganizationID,
-		appUserID:      mbuserservice.SystemAdminID,
-	}
-	fn := func(rf service.RepositoryFactory) (*domain.SpaceID, error) {
-		spaceRepo, err := rf.NewSpaceRepository(ctx)
-		if err != nil {
-			return nil, mbliberrors.Errorf("NewSpaceRepository: %w", err)
-		}
+// 		if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, operator, authInitParam.GuestID, spaceID); err != nil {
+// 			return mbliberrors.Errorf("AddPairOfUserAndSpace: %w", err)
+// 		}
+// 		return nil
+// 	}
 
-		// check default-public space
-		space, err := spaceRepo.FindPublicSpaceByKey(ctx, "default-public")
-		if err == nil {
-			logger.Info("default-public space already exists", slog.Int("spaceID", space.SpaceID.Int()))
-			return space.SpaceID, nil
-		}
+// 	if err := mblibservice.Do0(ctx, txManager, fn); err != nil {
+// 		return err //nolint:wrapcheck
+// 	}
 
-		if errors.Is(err, service.ErrSpaceNotFound) {
-			spaceID, err := spaceRepo.AddSpace(ctx, operator, &service.SpaceAddParameter{
-				Name:     "Default Public Space",
-				Key:      "default-public",
-				IsPublic: true,
-			})
-			if err != nil {
-				return nil, mbliberrors.Errorf("AddSpace: %w", err)
-			}
-			logger.Info("default-public space created", slog.Int("spaceID", spaceID.Int()))
-
-			return spaceID, nil
-		}
-
-		return nil, mbliberrors.Errorf("FindPublicSpaceByKey: %w", err)
-	}
-
-	spaceID, err := mblibservice.Do1(ctx, txManager, fn)
-	if err != nil {
-		return nil, err //nolint:wrapcheck
-	}
-
-	return spaceID, nil
-}
-
-func initApp2(ctx context.Context, txManager service.TransactionManager, authInitParam *AuthInitParameter, spaceID *domain.SpaceID) error {
-	operator := &operator{
-		organizationID: authInitParam.OrganizationID,
-		appUserID:      mbuserservice.SystemAdminID,
-	}
-	fn := func(rf service.RepositoryFactory) error {
-		pairOfUserAndSpaceRepo, err := rf.NewPairOfUserAndSpaceRepository(ctx)
-		if err != nil {
-			return mbliberrors.Errorf("NewPairOfUserAndSpaceRepository: %w", err)
-		}
-
-		spaces, err := pairOfUserAndSpaceRepo.FindSpacesByUserID(ctx, operator, authInitParam.GuestID)
-		if err != nil {
-			return mbliberrors.Errorf("FindSpacesByUserID: %w", err)
-		}
-
-		for _, s := range spaces {
-			if s.SpaceID.Int() == spaceID.Int() {
-				// already exists
-				return nil
-			}
-		}
-
-		if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, operator, authInitParam.GuestID, spaceID); err != nil {
-			return mbliberrors.Errorf("AddPairOfUserAndSpace: %w", err)
-		}
-		return nil
-	}
-
-	if err := mblibservice.Do0(ctx, txManager, fn); err != nil {
-		return err //nolint:wrapcheck
-	}
-
-	return nil
-}
+// 	return nil
+// }
 
 // func initApp3(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID) error {
 // 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp2"))

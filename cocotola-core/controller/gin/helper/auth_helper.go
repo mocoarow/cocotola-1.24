@@ -8,9 +8,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	liblibcontroller "github.com/mocoarow/cocotola-1.24/lib/controller"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+
+	liblibcontroller "github.com/mocoarow/cocotola-1.24/lib/controller"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -32,35 +33,31 @@ func (o *operator) Role() string {
 	return o.role
 }
 
-func HandleSecuredFunction(c *gin.Context, fn func(ctx context.Context, operator service.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
+func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator service.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
 	ctx := c.Request.Context()
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleSecuredFunction"))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleAppUserFunction"))
 
 	organizationIDInt := c.GetInt("OrganizationID")
 	if organizationIDInt == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
-
 		return
 	}
 
 	organizationID, err := mbuserdomain.NewOrganizationID(organizationIDInt)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
-
 		return
 	}
 
 	appUserID := c.GetInt("AuthorizedUser")
 	if appUserID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
-
 		return
 	}
 
 	operatorID, err := mbuserdomain.NewAppUserID(appUserID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
-
 		return
 	}
 

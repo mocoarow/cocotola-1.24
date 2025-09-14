@@ -89,7 +89,7 @@ func RandString(n int) string {
 func testDB(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testService)) {
 	t.Helper()
 	ctx := context.Background()
-	var resourceEventHandlerFuncs libservice.ResourceEventHandlerFuncs
+	var resourceEventHandlers map[domain.ResourceKey]libservice.ResourceEventHandler
 	for dialect, db := range testlibgateway.ListDB() {
 		dialect := dialect
 		db := db
@@ -99,7 +99,7 @@ func testDB(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testServ
 			require.NoError(t, err)
 			defer sqlDB.Close()
 
-			rf, err := gateway.NewRepositoryFactory(ctx, dialect, dialect.Name(), db, loc, resourceEventHandlerFuncs)
+			rf, err := gateway.NewRepositoryFactory(ctx, dialect, dialect.Name(), db, loc, resourceEventHandlers)
 			require.NoError(t, err)
 			testService := testService{dialect: dialect, db: db, rf: rf}
 

@@ -1,5 +1,9 @@
 package card
 
+type FindDecksRequest struct {
+	SpaceID []int `form:"spaceId"`
+}
+
 // FindDecksResponse
 type FindDecksResponse struct {
 	TotalCount int                     `json:"totalCount"`

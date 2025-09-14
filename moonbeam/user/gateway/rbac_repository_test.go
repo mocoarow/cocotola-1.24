@@ -204,6 +204,29 @@ func TestC(t *testing.T) {
 	testDB(t, fn)
 }
 
+// func TestD(t *testing.T) {
+// 	t.Parallel()
+
+// 	fn := func(t *testing.T, ctx context.Context, ts testService) {
+// 		t.Helper()
+// 		defer teardownCasbin(t, ts)
+
+// 		rbacRepo, err := gateway.NewRBACRepository(ctx, ts.db)
+// 		require.NoError(t, err)
+// 		e := rbacRepo.GetEnforcer()
+
+// 		addPolicy(t, ctx, rbacRepo, "domain1", "alice", "read", "domain:1,data:1", true)
+// 		addPolicy(t, ctx, rbacRepo, "domain1", "bob", "write", "domain:1,data:2", true)
+
+//			s1 := e.GetPermissionsForUserInDomain("alice", "domain1")
+//			require.NoError(t, err)
+//			for _, s2 := range s1 {
+//				t.Log(s2)
+//			}
+//			t.Fail()
+//		}
+//		testDB(t, fn)
+//	}
 func teardownCasbin(t *testing.T, ts testService) {
 	t.Helper()
 	// delete all organizations

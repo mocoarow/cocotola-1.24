@@ -3,13 +3,14 @@ package domain
 import (
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
 type ProfileModel struct {
-	PrivateSpaceID *SpaceID
+	PrivateSpaceID *mbuserdomain.SpaceID
 }
 
-func NewProfileModel(privateSpaceID *SpaceID) (*ProfileModel, error) {
+func NewProfileModel(privateSpaceID *mbuserdomain.SpaceID) (*ProfileModel, error) {
 	m := &ProfileModel{
 		PrivateSpaceID: privateSpaceID,
 	}

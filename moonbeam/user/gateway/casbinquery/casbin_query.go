@@ -1,6 +1,7 @@
 package casbinquery
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -47,7 +48,7 @@ AND tp.v2 = ?
 AND tp.v1 LIKE ?
 `
 
-func QueryObject(db *gorm.DB, driverName, objectPrefix, columnName, subject, action string) (*gorm.DB, error) {
+func QueryObject(ctx context.Context, db *gorm.DB, driverName, objectPrefix, columnName, subject, action string) (*gorm.DB, error) {
 	if db == nil {
 		return nil, errors.New("invalid argument")
 	}
@@ -66,7 +67,7 @@ func QueryObject(db *gorm.DB, driverName, objectPrefix, columnName, subject, act
 
 	sql := fmt.Sprintf(objectSelectSQL, columnName, columnName)
 
-	return db.Raw(sql, subject, action, objectgKeyword, subject, action, objectgKeyword), nil
+	return db.WithContext(ctx).Raw(sql, subject, action, objectgKeyword, subject, action, objectgKeyword), nil
 }
 
 const mysqlObjectFindSQL = `

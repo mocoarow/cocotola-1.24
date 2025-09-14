@@ -12,28 +12,29 @@ import (
 
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
 type repositoryFactory struct {
-	dialect              libgateway.DialectRDBMS
-	driverName           string
-	db                   *gorm.DB
-	location             *time.Location
-	apppUserEventHandler mblibservice.ResourceEventHandler
+	dialect                libgateway.DialectRDBMS
+	driverName             string
+	db                     *gorm.DB
+	location               *time.Location
+	rersourceEventHandlers map[domain.ResourceKey]mblibservice.ResourceEventHandler
 }
 
-func NewRepositoryFactory(_ context.Context, dialect libgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location, apppUserEventHandler mblibservice.ResourceEventHandler) (service.RepositoryFactory, error) {
+func NewRepositoryFactory(_ context.Context, dialect libgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location, rersourceEventHandlers map[domain.ResourceKey]mblibservice.ResourceEventHandler) (service.RepositoryFactory, error) {
 	if db == nil {
 		return nil, liberrors.Errorf("db is nil. err: %w", libdomain.ErrInvalidArgument)
 	}
 
 	return &repositoryFactory{
-		dialect:              dialect,
-		driverName:           driverName,
-		db:                   db,
-		location:             location,
-		apppUserEventHandler: apppUserEventHandler,
+		dialect:                dialect,
+		driverName:             driverName,
+		db:                     db,
+		location:               location,
+		rersourceEventHandlers: rersourceEventHandlers,
 	}, nil
 }
 
@@ -49,6 +50,10 @@ func (f *repositoryFactory) NewUserGroupRepository(ctx context.Context) service.
 	return NewUserGroupRepository(ctx, f.dialect, f.db)
 }
 
+func (f *repositoryFactory) NewSpaceRepository(ctx context.Context) service.SpaceRepository {
+	return NewSpaceRepository(ctx, f.dialect, f.db)
+}
+
 // func (f *repositoryFactory) NewPairOfUserAndGroupRepository(ctx context.Context) service.PairOfUserAndGroupRepository {
 // 	return NewPairOfUserAndGroupRepository(ctx, f.db, f)
 // }
@@ -62,7 +67,10 @@ func (f *repositoryFactory) NewAuthorizationManager(ctx context.Context) (servic
 }
 
 func (f *repositoryFactory) NewAppUserEventHandler(_ context.Context) mblibservice.ResourceEventHandler {
-	return f.apppUserEventHandler
+	return f.rersourceEventHandlers[domain.ResourceAppUser]
+}
+func (f *repositoryFactory) NewSpaceEventHandler(_ context.Context) mblibservice.ResourceEventHandler {
+	return f.rersourceEventHandlers[domain.RecourceSpace]
 }
 
 type RepositoryFactoryFunc func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error)
