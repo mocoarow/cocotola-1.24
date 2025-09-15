@@ -14,35 +14,35 @@ var ErrAppUserAlreadyExists = errors.New("AppUser already exists")
 
 var ErrSystemOwnerNotFound = errors.New("SystemOwner not found")
 
-type AppUserAddParameterInterface interface {
-	LoginID() string
-	Username() string
-	Password() string
-	Provider() string
-	ProviderLoginID() string
-	ProviderAuthToken() string
-	ProviderRefreshToken() string
+// type AppUserAddParameterInterface interface {
+// 	LoginID() string
+// 	Username() string
+// 	Password() string
+// 	Provider() string
+// 	ProviderLoginID() string
+// 	ProviderAuthToken() string
+// 	ProviderRefreshToken() string
+// }
+
+type AddAppUserParameter struct {
+	LoginID              string
+	Username             string
+	Password             string
+	Provider             string
+	ProviderLoginID      string
+	ProviderAuthToken    string
+	providerRefreshToken string
 }
 
-type AppUserAddParameter struct {
-	LoginIDInternal              string
-	UsernameInternal             string
-	PasswordInternal             string
-	ProviderInternal             string
-	ProviderLoginIDInternal      string
-	ProviderAuthTokenInternal    string
-	providerRefreshTokenInternal string
-}
-
-func NewAppUserAddParameter(loginID, username, password, provider, providerLoginID, providerAuthToken, providerRefreshToken string) (*AppUserAddParameter, error) {
-	m := &AppUserAddParameter{
-		LoginIDInternal:              loginID,
-		UsernameInternal:             username,
-		PasswordInternal:             password,
-		ProviderInternal:             provider,
-		ProviderLoginIDInternal:      providerLoginID,
-		ProviderAuthTokenInternal:    providerAuthToken,
-		providerRefreshTokenInternal: providerRefreshToken,
+func NewAppUserAddParameter(loginID, username, password, provider, providerLoginID, providerAuthToken, providerRefreshToken string) (*AddAppUserParameter, error) {
+	m := &AddAppUserParameter{
+		LoginID:              loginID,
+		Username:             username,
+		Password:             password,
+		Provider:             provider,
+		ProviderLoginID:      providerLoginID,
+		ProviderAuthToken:    providerAuthToken,
+		providerRefreshToken: providerRefreshToken,
 	}
 	if err := libdomain.Validator.Struct(m); err != nil {
 		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
@@ -51,27 +51,27 @@ func NewAppUserAddParameter(loginID, username, password, provider, providerLogin
 	return m, nil
 }
 
-func (p *AppUserAddParameter) LoginID() string {
-	return p.LoginIDInternal
-}
-func (p *AppUserAddParameter) Username() string {
-	return p.UsernameInternal
-}
-func (p *AppUserAddParameter) Password() string {
-	return p.PasswordInternal
-}
-func (p *AppUserAddParameter) Provider() string {
-	return p.ProviderInternal
-}
-func (p *AppUserAddParameter) ProviderLoginID() string {
-	return p.ProviderLoginIDInternal
-}
-func (p *AppUserAddParameter) ProviderAuthToken() string {
-	return p.ProviderAuthTokenInternal
-}
-func (p *AppUserAddParameter) ProviderRefreshToken() string {
-	return p.providerRefreshTokenInternal
-}
+// func (p *AppUserAddParameter) LoginID() string {
+// 	return p.LoginID
+// }
+// func (p *AppUserAddParameter) Username() string {
+// 	return p.Username
+// }
+// func (p *AppUserAddParameter) Password() string {
+// 	return p.Password
+// }
+// func (p *AppUserAddParameter) Provider() string {
+// 	return p.Provider
+// }
+// func (p *AppUserAddParameter) ProviderLoginID() string {
+// 	return p.ProviderLoginID
+// }
+// func (p *AppUserAddParameter) ProviderAuthToken() string {
+// 	return p.ProviderAuthToken
+// }
+// func (p *AppUserAddParameter) ProviderRefreshToken() string {
+// 	return p.providerRefreshToken
+// }
 
 type Option string
 
@@ -88,7 +88,7 @@ type AppUserRepository interface {
 
 	FindOwnerByLoginID(ctx context.Context, operator SystemOwnerInterface, loginID string) (*Owner, error)
 
-	AddAppUser(ctx context.Context, operator OwnerModelInterface, param AppUserAddParameterInterface) (*domain.AppUserID, error)
+	AddAppUser(ctx context.Context, operator OwnerModelInterface, param *AddAppUserParameter) (*domain.AppUserID, error)
 
 	AddSystemOwner(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.AppUserID, error)
 

@@ -13,7 +13,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-func registerAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createAppUserParameterFunc func() (*mbuserservice.AppUserAddParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.AppUserModel, error) {
+func registerAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createAppUserParameterFunc func() (*mbuserservice.AddAppUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.AppUserModel, error) {
 	action, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
 		service.WithOrganizationByID(organizationID),
 	)
@@ -35,7 +35,7 @@ func registerAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf 
 	return action.Organization.OrganizationModel, appUser, nil
 }
 
-func findOrRegisterAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createAppUserParameterFunc func() (*mbuserservice.AppUserAddParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.AppUserModel, error) {
+func findOrRegisterAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createAppUserParameterFunc func() (*mbuserservice.AddAppUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.AppUserModel, error) {
 	action, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
 		service.WithOrganizationByID(organizationID),
 	)
@@ -58,7 +58,7 @@ func findOrRegisterAppUser(ctx context.Context, systemToken libdomain.SystemToke
 	return action.Organization.OrganizationModel, appUser, nil
 }
 
-func registerAppUserWithSystemOwnerAction(ctx context.Context, systemOwnerAction *service.SystemOwnerAction, createAppUserParameterFunc func() (*mbuserservice.AppUserAddParameter, error)) (*mbuserdomain.AppUserModel, error) {
+func registerAppUserWithSystemOwnerAction(ctx context.Context, systemOwnerAction *service.SystemOwnerAction, createAppUserParameterFunc func() (*mbuserservice.AddAppUserParameter, error)) (*mbuserdomain.AppUserModel, error) {
 	parameter, err := createAppUserParameterFunc()
 	if err != nil {
 		return nil, mbliberrors.Errorf("invalid AppUserAddParameter. err: %w", err)

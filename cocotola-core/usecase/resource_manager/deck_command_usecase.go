@@ -31,24 +31,34 @@ func NewDeckCommandUsecase(txManager, nonTxManager service.TransactionManager, r
 	}
 }
 
-func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.OperatorInterface, param *service.DeckAddParameter) (*domain.DeckID, error) {
-	// check RBAC
+func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
+	// Check RBAC
+	// Can "operator" "createDeck" in "space" ?
 	action := librbac.CreateDeckAction
 	object := param.SpaceID.GetRBACObject()
 	ok, err := u.rbacClient.CheckAuthorization(ctx, &libapiauth.AuthorizeRequest{
-		OrganizationID: operator.OrganizationID().Int(),
-		AppUserID:      operator.AppUserID().Int(),
+		OrganizationID: operator.GetOrganizationID().Int(),
+		AppUserID:      operator.GetAppUserID().Int(),
 		Action:         action.Action(),
 		Object:         object.Object(),
 	})
 	if err != nil {
-		return nil, mbliberrors.Errorf("authorize: %w", err)
+		return nil, mbliberrors.Errorf("check authorization: %w", err)
 	} else if !ok {
 		return nil, mbliberrors.Errorf("permission denied. space(%d): %w", param.SpaceID.Int(), mblibdomain.ErrPermissionDenied)
 	}
 
 	//
 	deckID, err := mblibservice.Do1(ctx, u.txManager, func(rf service.RepositoryFactory) (*domain.DeckID, error) {
+		folderRepo, err := rf.NewFolderRepository(ctx)
+		if err != nil {
+			return nil, mbliberrors.Errorf("NewFolderRepository:%w", err)
+		}
+		folder, err := folderRepo.RetrieveRooFolderBySpaceID(ctx, operator, param.SpaceID)
+		if err != nil {
+			return nil, mbliberrors.Errorf("retrieve root folder by space id(%d): %w", param.SpaceID.Int(), err)
+		}
+		param.FolderID = folder.FolderID
 		deckRepo, err := rf.NewDeckRepository(ctx)
 		if err != nil {
 			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
@@ -62,10 +72,10 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 
 	// RBAC
 	deckObject := deckID.GetRBACObject()
-	// - "operator "can" "ListObject" "deck"
+	// - "operator "can" "ListCards" for "deck"
 	if err := u.rbacClient.AddPolicyToUser(ctx, &libapiauth.AddPolicyToUserParameter{
-		OrganizationID: operator.OrganizationID().Int(),
-		AppUserID:      operator.AppUserID().Int(),
+		OrganizationID: operator.GetOrganizationID().Int(),
+		AppUserID:      operator.GetAppUserID().Int(),
 		ListOfActionObjectEffect: []libapiauth.ActionObjectEffect{
 			{
 				Action: mbuserdomain.NewRBACAction("ListCards").Action(),
@@ -95,18 +105,21 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 	return deckID, nil
 }
 
-func (u *DeckCommandUseCase) UpdateDeck(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID, version int, param *service.DeckUpdateParameter) error {
-	//
+func (u *DeckCommandUseCase) UpdateDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error {
 	err := mblibservice.Do0(ctx, u.txManager, func(rf service.RepositoryFactory) error {
 		deckRepo, err := rf.NewDeckRepository(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("NewDeckRepository: %w", err)
 		}
 
-		return deckRepo.UpdateDeck(ctx, operator, deckID, version, param)
+		if err := deckRepo.UpdateDeck(ctx, operator, deckID, version, param); err != nil {
+			return mbliberrors.Errorf("update deck: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
-		return mbliberrors.Errorf("add deck: %w", err)
+		return nil //nolint:wrapcheck
 	}
 
 	return nil

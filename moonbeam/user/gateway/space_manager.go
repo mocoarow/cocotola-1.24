@@ -30,14 +30,14 @@ func NewSpaceManager(_ context.Context, dialect libgateway.DialectRDBMS, db *gor
 func (m *spaceManager) AddPublicDefaultSpace(ctx context.Context, operator service.OperatorInterface) (*domain.SpaceID, error) {
 	appUserRepo := m.rf.NewAppUserRepository(ctx)
 
-	appUser, err := appUserRepo.FindAppUserByID(ctx, operator, operator.AppUserID())
+	appUser, err := appUserRepo.FindAppUserByID(ctx, operator, operator.GetAppUserID())
 	if err != nil {
 		return nil, liberrors.Errorf("FindAppUserByID: %w", err)
 	}
 
 	spaceRepo := m.rf.NewSpaceRepository(ctx)
-	addSpaceParam := service.SpaceAddParameter{
-		KeyName:   service.PublicDefaultSpaceKey,
+	addSpaceParam := service.AddSpaceParameter{
+		Key:       service.PublicDefaultSpaceKey,
 		Name:      service.PublicDefaultSpaceName,
 		SpaceType: "public",
 	}
@@ -48,7 +48,7 @@ func (m *spaceManager) AddPublicDefaultSpace(ctx context.Context, operator servi
 	}
 
 	pairOfUserAndSpaceRepo := NewPairOfUserAndSpaceRepository(ctx, m.dialect, m.db)
-	if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, appUser, appUser.AppUserID(), spaceID); err != nil {
+	if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, appUser, appUser.GetAppUserID(), spaceID); err != nil {
 		return nil, liberrors.Errorf("AddPairOfUserAndSpace: %w", err)
 	}
 	return spaceID, nil
@@ -63,8 +63,8 @@ func (m *spaceManager) AddPersonalSpace(ctx context.Context, operator service.Op
 	}
 
 	spaceRepo := m.rf.NewSpaceRepository(ctx)
-	addSpaceParam := service.SpaceAddParameter{
-		KeyName:   param.KeyName,
+	addSpaceParam := service.AddSpaceParameter{
+		Key:       param.KeyName,
 		Name:      param.Name,
 		SpaceType: "personal",
 	}
@@ -75,7 +75,7 @@ func (m *spaceManager) AddPersonalSpace(ctx context.Context, operator service.Op
 	}
 
 	pairOfUserAndSpaceRepo := NewPairOfUserAndSpaceRepository(ctx, m.dialect, m.db)
-	if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, appUser, appUser.AppUserID(), spaceID); err != nil {
+	if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, appUser, appUser.GetAppUserID(), spaceID); err != nil {
 		return nil, liberrors.Errorf("AddPairOfUserAndSpace: %w", err)
 	}
 	return spaceID, nil

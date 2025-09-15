@@ -160,7 +160,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 		return nil, mbliberrors.Errorf("get tokens and user info err: %w", err)
 	}
 
-	createAppUserParameterFunc := func() (*mbuserservice.AppUserAddParameter, error) {
+	createAppUserParameterFunc := func() (*mbuserservice.AddAppUserParameter, error) {
 		return mbuserservice.NewAppUserAddParameter(
 			info.Email, //googleUserInfo.Email,
 			info.Name,  //googleUserInfo.Name,
@@ -184,7 +184,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 		if err != nil {
 			return mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
 		}
-		organizationID := action.Organization.OrganizationID()
+		organizationID := action.Organization.OrganizationID
 
 		tmpOrganization, tmpAppUser, err := findOrRegisterAppUser(ctx, u.systemToken, rf, organizationID, info.Email, createAppUserParameterFunc)
 		if err != nil && !errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {

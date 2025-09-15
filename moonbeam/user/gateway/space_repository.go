@@ -136,19 +136,19 @@ func NewSpaceRepository(_ context.Context, dialect libgateway.DialectRDBMS, db *
 	}
 }
 
-func (r *spaceRepository) AddSpace(ctx context.Context, operator service.OperatorInterface, param *service.SpaceAddParameter) (*domain.SpaceID, error) {
+func (r *spaceRepository) AddSpace(ctx context.Context, operator service.OperatorInterface, param *service.AddSpaceParameter) (*domain.SpaceID, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.AddSpace")
 	defer span.End()
 
 	spaceE := spaceEntity{ //nolint:exhaustruct
 		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.AppUserID().Int(),
-			UpdatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
+			UpdatedBy: operator.GetAppUserID().Int(),
 		},
-		OrganizationID: operator.OrganizationID().Int(),
-		OwnerID:        operator.AppUserID().Int(),
-		KeyName:        param.KeyName,
+		OrganizationID: operator.GetOrganizationID().Int(),
+		OwnerID:        operator.GetAppUserID().Int(),
+		KeyName:        param.Key,
 		Name:           param.Name,
 		SpaceType:      param.SpaceType,
 	}
@@ -164,26 +164,26 @@ func (r *spaceRepository) AddSpace(ctx context.Context, operator service.Operato
 	return spaceID, nil
 }
 
-func (r *spaceRepository) UpdateSpace(ctx context.Context, operator service.OperatorInterface, spaceID *domain.SpaceID, version int, param *service.SpaceUpdateParameter) error {
-	_, span := tracer.Start(ctx, "spaceRepository.UpdateSpace")
-	defer span.End()
+// func (r *spaceRepository) UpdateSpace(ctx context.Context, operator service.OperatorInterface, spaceID *domain.SpaceID, version int, param *service.SpaceUpdateParameter) error {
+// 	_, span := tracer.Start(ctx, "spaceRepository.UpdateSpace")
+// 	defer span.End()
 
-	if result := r.db.Model(
-		&spaceEntity{}, //nolint:exhaustruct
-	).
-		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
-		Where("id = ?", spaceID.Int()).
-		Where("version = ?", version).
-		Updates(map[string]interface{}{
-			"version":   gorm.Expr("version + 1"),
-			"name":      param.Name,
-			"is_public": param.IsPublic,
-		}); result.Error != nil {
-		return liberrors.Errorf("spaceRepository.UpdateSpace: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrSpaceAlreadyExists))
-	}
+// 	if result := r.db.Model(
+// 		&spaceEntity{}, //nolint:exhaustruct
+// 	).
+// 		Where("organization_id = ?", uint(operator.GetOrganizationID().Int())).
+// 		Where("id = ?", spaceID.Int()).
+// 		Where("version = ?", version).
+// 		Updates(map[string]interface{}{
+// 			"version":   gorm.Expr("version + 1"),
+// 			"name":      param.Name,
+// 			"is_public": param.IsPublic,
+// 		}); result.Error != nil {
+// 		return liberrors.Errorf("spaceRepository.UpdateSpace: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrSpaceAlreadyExists))
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator service.OperatorInterface) ([]*service.Space, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.FindPublicSpaces")
@@ -193,7 +193,7 @@ func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator service
 	if result := r.db.WithContext(ctx).Model(
 		&spaceEntity{}, //nolint:exhaustruct
 	).
-		Where("organization_id = ?", uint(operator.OrganizationID().Value)).
+		Where("organization_id = ?", uint(operator.GetOrganizationID().Value)).
 		Where("space_type = ?", "public").
 		Find(&spacesE); result.Error != nil {
 		return nil, liberrors.Errorf("spaceRepository.FindPublicSpaces: %w", result.Error)
@@ -238,8 +238,8 @@ func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.Ope
 	if result := r.db.Model(
 		&spaceEntity{}, //nolint:exhaustruct
 	).
-		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
-		Where("owner_id = ?", uint(operator.AppUserID().Int())).
+		Where("organization_id = ?", uint(operator.GetOrganizationID().Int())).
+		Where("owner_id = ?", uint(operator.GetAppUserID().Int())).
 		Where("id = ?", spaceID.Int()).First(&spaceE); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrSpaceNotFound

@@ -10,21 +10,21 @@ import (
 var ErrSpaceAlreadyExists = errors.New("space already exists")
 var ErrSpaceNotFound = errors.New("space not found")
 
-type SpaceAddParameter struct {
-	KeyName   string
+type AddSpaceParameter struct {
+	Key       string
 	Name      string
 	SpaceType string
 }
 
-type SpaceUpdateParameter struct {
-	Name     string
-	IsPublic bool
-}
+// type SpaceUpdateParameter struct {
+// 	Name     string
+// 	IsPublic bool
+// }
 
 type SpaceRepository interface {
-	AddSpace(ctx context.Context, operator OperatorInterface, param *SpaceAddParameter) (*domain.SpaceID, error)
+	AddSpace(ctx context.Context, operator OperatorInterface, param *AddSpaceParameter) (*domain.SpaceID, error)
 
-	UpdateSpace(ctx context.Context, operator OperatorInterface, deckID *domain.SpaceID, version int, param *SpaceUpdateParameter) error
+	// UpdateSpace(ctx context.Context, operator OperatorInterface, deckID *domain.SpaceID, version int, param *SpaceUpdateParameter) error
 
 	FindPublicSpaces(ctx context.Context, operator OperatorInterface) ([]*Space, error)
 

@@ -30,4 +30,5 @@ type AddFolderParameter struct {
 
 type FolderRepository interface {
 	AddFolder(ctx context.Context, operator mbuserservice.OperatorInterface, param *AddFolderParameter) (*domain.FolderID, error)
+	RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserservice.OperatorInterface, spaceID *mbuserdomain.SpaceID) (*Folder, error)
 }

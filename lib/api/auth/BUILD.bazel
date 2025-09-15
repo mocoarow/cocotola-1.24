@@ -13,7 +13,7 @@ go_library(
         "auth.go",
         "callback.go",
         "profile.go",
-        "rback.go",
+        "rbac.go",
         "space.go",
         "user.go",
     ],

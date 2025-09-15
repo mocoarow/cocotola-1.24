@@ -9,23 +9,23 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
-type UserGroupAddParameterInterface interface {
-	Key() string
-	Name() string
-	Description() string
+// type UserGroupAddParameterInterface interface {
+// 	Key() string
+// 	Name() string
+// 	Description() string
+// }
+
+type AddUserGroupParameter struct {
+	Key         string
+	Name        string
+	Description string
 }
 
-type UserGroupAddParameter struct {
-	KeyInternal         string
-	NameInternal        string
-	DescriptionInternal string
-}
-
-func NewUserGroupAddParameter(key, name, description string) (*UserGroupAddParameter, error) {
-	m := &UserGroupAddParameter{
-		KeyInternal:         key,
-		NameInternal:        name,
-		DescriptionInternal: description,
+func NewUserGroupAddParameter(key, name, description string) (*AddUserGroupParameter, error) {
+	m := &AddUserGroupParameter{
+		Key:         key,
+		Name:        name,
+		Description: description,
 	}
 	if err := libdomain.Validator.Struct(m); err != nil {
 		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
@@ -34,15 +34,15 @@ func NewUserGroupAddParameter(key, name, description string) (*UserGroupAddParam
 	return m, nil
 }
 
-func (p *UserGroupAddParameter) Key() string {
-	return p.KeyInternal
-}
-func (p *UserGroupAddParameter) Name() string {
-	return p.NameInternal
-}
-func (p *UserGroupAddParameter) Description() string {
-	return p.DescriptionInternal
-}
+// func (p *UserGroupAddParameter) Key() string {
+// 	return p.KeyInternal
+// }
+// func (p *UserGroupAddParameter) Name() string {
+// 	return p.NameInternal
+// }
+// func (p *UserGroupAddParameter) Description() string {
+// 	return p.DescriptionInternal
+// }
 
 type UserGroupRepository interface {
 	FindAllUserGroups(ctx context.Context, operator AppUserInterface) ([]*domain.UserGroupModel, error)
@@ -56,5 +56,5 @@ type UserGroupRepository interface {
 
 	AddSystemOwnerGroup(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
 
-	AddUserGroup(ctx context.Context, operator OwnerModelInterface, parameter UserGroupAddParameterInterface) (*domain.UserGroupID, error)
+	AddUserGroup(ctx context.Context, operator OwnerModelInterface, parameter *AddUserGroupParameter) (*domain.UserGroupID, error)
 }

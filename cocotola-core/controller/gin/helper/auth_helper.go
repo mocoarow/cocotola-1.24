@@ -10,6 +10,7 @@ import (
 
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	liblibcontroller "github.com/mocoarow/cocotola-1.24/lib/controller"
 
@@ -17,23 +18,23 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-type operator struct {
+type roleUser struct {
 	appUserID      *mbuserdomain.AppUserID
 	organizationID *mbuserdomain.OrganizationID
 	role           string
 }
 
-func (o *operator) AppUserID() *mbuserdomain.AppUserID {
+func (o *roleUser) GetAppUserID() *mbuserdomain.AppUserID {
 	return o.appUserID
 }
-func (o *operator) OrganizationID() *mbuserdomain.OrganizationID {
+func (o *roleUser) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
 }
-func (o *operator) Role() string {
+func (o *roleUser) GetRole() string {
 	return o.role
 }
 
-func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator service.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
+func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operator service.RoleUserInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
 	ctx := c.Request.Context()
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleAppUserFunction"))
 
@@ -63,10 +64,61 @@ func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator
 
 	// logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
 
-	operator := &operator{
+	operator := &roleUser{
 		appUserID:      operatorID,
 		organizationID: organizationID,
 		role:           c.GetString("Role"),
+	}
+
+	if newCtx, err := liblibcontroller.AddBaggageMembers(ctx, map[string]string{
+		"operator_id":     strconv.Itoa(operatorID.Int()),
+		"organization_id": strconv.Itoa(organizationID.Int()),
+	}); err == nil {
+		ctx = newCtx
+	}
+
+	logger.InfoContext(ctx, "xxxxxxxx")
+
+	if err := fn(ctx, operator); err != nil {
+		if handled := errorHandle(ctx, c, err); !handled {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
+		}
+	}
+}
+
+func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator mbuserservice.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
+	ctx := c.Request.Context()
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleAppUserFunction"))
+
+	organizationIDInt := c.GetInt("OrganizationID")
+	if organizationIDInt == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+		return
+	}
+
+	organizationID, err := mbuserdomain.NewOrganizationID(organizationIDInt)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+		return
+	}
+
+	appUserID := c.GetInt("AuthorizedUser")
+	if appUserID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+		return
+	}
+
+	operatorID, err := mbuserdomain.NewAppUserID(appUserID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+		return
+	}
+
+	// logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
+
+	operator := &roleUser{
+		appUserID:      operatorID,
+		organizationID: organizationID,
 	}
 
 	if newCtx, err := liblibcontroller.AddBaggageMembers(ctx, map[string]string{

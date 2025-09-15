@@ -101,14 +101,14 @@ func (r *cardRepository) AddCard(ctx context.Context, operator mbuserservice.Ope
 	cardE := CardEntity{ //nolint:exhaustruct
 		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.AppUserID().Int(),
-			UpdatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
+			UpdatedBy: operator.GetAppUserID().Int(),
 		},
-		OrganizationID: operator.OrganizationID().Int(),
+		OrganizationID: operator.GetOrganizationID().Int(),
 		DeckID:         param.DeckID.Int(),
 		TemplateID:     param.TemplateID.Int(),
 		Content:        param.Content,
-		OwnerID:        operator.AppUserID().Int(),
+		OwnerID:        operator.GetAppUserID().Int(),
 	}
 	if result := r.db.Create(&cardE); result.Error != nil {
 		return nil, mbliberrors.Errorf("add card entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrDeckAlreadyExists))
@@ -129,7 +129,7 @@ func (r *cardRepository) FindCardsByDeckID(ctx context.Context, operator mbusers
 	var cardsE []CardEntity
 	if result := r.db.
 		Model(&CardEntity{}). //nolint:exhaustruct
-		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
+		Where("organization_id = ?", uint(operator.GetOrganizationID().Int())).
 		Where("deck_id = ?", uint(deckID.Int())).
 		Find(&cardsE); result.Error != nil {
 		return nil, mbliberrors.Errorf("cardRepository.FindCardsByDeckID: %w", result.Error)

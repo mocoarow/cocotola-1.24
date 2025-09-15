@@ -19,18 +19,18 @@ type FindDecksResponseDeck struct {
 	Description string `json:"description" binding:"required"`
 }
 
-// Find
-type DeckFindParameter struct {
-	PageNo   int
-	PageSize int
-}
+// // Find
+// type DeckFindParameter struct {
+// 	PageNo   int
+// 	PageSize int
+// }
 
-type DeckFindDeckModel struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
+// type DeckFindDeckModel struct {
+// 	ID   int    `json:"id"`
+// 	Name string `json:"name"`
+// }
 
-type DeckUpdateParameter struct {
+type UpdateDeckRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
 }
@@ -45,7 +45,8 @@ type DeckRetrieveResult struct {
 	Description string `json:"description"`
 }
 
-type DeckAddParameter struct {
+// AddDeckRequest
+type AddDeckRequest struct {
 	SpaceID     int    `json:"spaceId" binding:"required"`
 	Name        string `json:"name" binding:"required"`
 	TemplateID  int    `json:"templateId" binding:"required"`

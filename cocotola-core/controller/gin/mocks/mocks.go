@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 	mock "github.com/stretchr/testify/mock"
 )
 

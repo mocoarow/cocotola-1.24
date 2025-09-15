@@ -61,8 +61,8 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 		}
 		param := mbuserservice.AddPersonalSpaceParameter{
 			AppUserID: appUserID,
-			KeyName:   libdomain.NewPersonalSpaceKey(appUser.AppUserID().Int()),
-			Name:      libdomain.NewPersonalSpaceName(appUser.LoginID()),
+			KeyName:   libdomain.NewPersonalSpaceKey(appUser.GetAppUserID().Int()),
+			Name:      libdomain.NewPersonalSpaceName(appUser.LoginID),
 		}
 		spaceID, err := spaceManager.AddPersonalSpace(ctx, action.SystemOwner, &param)
 		if err != nil {

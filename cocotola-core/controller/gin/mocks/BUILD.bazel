@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cocotola-core/domain",
-        "//cocotola-core/service",
+        "//moonbeam/user/service",
         "@com_github_stretchr_testify//mock",
     ],
 )

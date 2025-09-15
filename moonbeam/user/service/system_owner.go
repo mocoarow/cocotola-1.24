@@ -68,18 +68,21 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 
 	return m, nil
 }
-func (m *SystemOwner) AppUserID() *domain.AppUserID {
+
+func (m *SystemOwner) GetAppUserID() *domain.AppUserID {
 	return m.AppUserModel.AppUserID
 }
-func (m *SystemOwner) OrganizationID() *domain.OrganizationID {
+func (m *SystemOwner) GetOrganizationID() *domain.OrganizationID {
 	return m.AppUserModel.OrganizationID
 }
-func (m *SystemOwner) LoginID() string {
-	return m.AppUserModel.LoginID
-}
-func (m *SystemOwner) Username() string {
-	return m.AppUserModel.Username
-}
+
+//	func (m *SystemOwner) LoginID() string {
+//		return m.AppUserModel.LoginID
+//	}
+//
+//	func (m *SystemOwner) Username() string {
+//		return m.AppUserModel.Username
+//	}
 func (m *SystemOwner) IsOwner() bool {
 	return true
 }
@@ -123,9 +126,9 @@ func (m *SystemOwner) FindAppUserByLoginID(ctx context.Context, loginID string) 
 	return appUser, nil
 }
 
-func (m *SystemOwner) AddFirstOwner(ctx context.Context, param AppUserAddParameterInterface) (*domain.AppUserID, error) {
+func (m *SystemOwner) AddFirstOwner(ctx context.Context, param *AddAppUserParameter) (*domain.AppUserID, error) {
 	// rbacAppUser := NewRBACAppUser(m.GetOrganizationID(), m.GetAppUserID())
-	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(m.OrganizationID())
+	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(m.GetOrganizationID())
 
 	// Can "the operator" "set" "all-user-roles" ?
 	ok, err := m.authorizationManager.CheckAuthorization(ctx, m, RBACSetAction, rbacAllUserRolesObject)
@@ -147,7 +150,7 @@ func (m *SystemOwner) AddFirstOwner(ctx context.Context, param AppUserAddParamet
 	}
 
 	// add owner to owner-group
-	if err := m.authorizationManager.AddUserToGroup(ctx, m, firstOwnerID, ownerGroup.UserGroupID()); err != nil {
+	if err := m.authorizationManager.AddUserToGroup(ctx, m, firstOwnerID, ownerGroup.UserGroupID); err != nil {
 		return nil, liberrors.Errorf("AddUserToGroup: %w", err)
 	}
 
@@ -171,7 +174,7 @@ func (m *SystemOwner) AddFirstOwner(ctx context.Context, param AppUserAddParamet
 	return firstOwnerID, nil
 }
 
-func (m *SystemOwner) AddAppUser(ctx context.Context, param AppUserAddParameterInterface) (*domain.AppUserID, error) {
+func (m *SystemOwner) AddAppUser(ctx context.Context, param *AddAppUserParameter) (*domain.AppUserID, error) {
 	m.logger.InfoContext(ctx, "AddStudent")
 	appUserID, err := m.appUserRepo.AddAppUser(ctx, m, param)
 	if err != nil {
@@ -179,22 +182,21 @@ func (m *SystemOwner) AddAppUser(ctx context.Context, param AppUserAddParameterI
 	}
 
 	go m.appUserEventHandler.OnAdd(context.Background(), map[string]int{
-		"organizationId": m.OrganizationID().Int(),
+		"organizationId": m.GetOrganizationID().Int(),
 		"appUserId":      appUserID.Int(),
 	})
 
 	return appUserID, nil
 }
 
-func (m *SystemOwner) AddSpace(ctx context.Context, param *SpaceAddParameter) (*domain.SpaceID, error) {
-	m.logger.InfoContext(ctx, "AddSpace")
+func (m *SystemOwner) AddSpace(ctx context.Context, param *AddSpaceParameter) (*domain.SpaceID, error) {
 	spaceID, err := m.spaceRepo.AddSpace(ctx, m, param)
 	if err != nil {
-		return nil, liberrors.Errorf("m.appUserRepo.AddAppUser. err: %w", err)
+		return nil, liberrors.Errorf("spaceRepo.AddSpace. err: %w", err)
 	}
 
 	go m.spaceEventHandler.OnAdd(context.Background(), map[string]int{
-		"organizationId": m.OrganizationID().Int(),
+		"organizationId": m.GetOrganizationID().Int(),
 		"spaceId":        spaceID.Int(),
 	})
 

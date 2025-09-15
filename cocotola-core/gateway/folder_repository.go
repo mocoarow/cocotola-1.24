@@ -29,7 +29,7 @@ func (e *FolderEntity) TableName() string {
 	return "core_folder"
 }
 
-func (e *FolderEntity) ToModel() (*domain.FolderModel, error) { //nolint:dupl
+func (e *FolderEntity) toModel() (*domain.FolderModel, error) { //nolint:dupl
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, mbliberrors.Errorf("to base model: %w", err)
@@ -76,15 +76,15 @@ func (e *FolderEntity) ToModel() (*domain.FolderModel, error) { //nolint:dupl
 	return folderModel, nil
 }
 
-// func (e *FolderEntity) toFolder() (*service.Folder, error) {
-// 	folderModel, err := e.ToModel()
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf("to folder model: %w", err)
-// 	}
-// 	folder := &service.Folder{FolderModel: folderModel}
+func (e *FolderEntity) toFolder() (*service.Folder, error) {
+	folderModel, err := e.toModel()
+	if err != nil {
+		return nil, mbliberrors.Errorf("to folder model: %w", err)
+	}
+	folder := &service.Folder{FolderModel: folderModel}
 
-// 	return folder, nil
-// }
+	return folder, nil
+}
 
 type folderRepository struct {
 	db *gorm.DB
@@ -96,6 +96,30 @@ func NewFolderRepository(db *gorm.DB) service.FolderRepository {
 	}
 }
 
+func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserservice.OperatorInterface, spaceID *mbuserdomain.SpaceID) (*service.Folder, error) { //nolint:dupl
+	_, span := tracer.Start(ctx, "folderRepository.FindRooFolderBySpaceID")
+	defer span.End()
+
+	var folderE FolderEntity
+	if result := r.db.WithContext(ctx).
+		Where("organization_id = ?", operator.GetOrganizationID().Int()).
+		Where("space_id = ? ", spaceID.Int()).
+		Where("parent_id = 0").
+		First(&folderE); result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, service.ErrFolderNotFound
+		}
+		return nil, mbliberrors.Errorf("find folder entity by id(%d): %w", spaceID.Int())
+	}
+
+	folder, err := folderE.toFolder()
+	if err != nil {
+		return nil, mbliberrors.Errorf("to folder: %w", err)
+	}
+
+	return folder, nil
+}
+
 func (r *folderRepository) AddFolder(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddFolderParameter) (*domain.FolderID, error) { //nolint:dupl
 	_, span := tracer.Start(ctx, "folderRepository.AddFolder")
 	defer span.End()
@@ -103,14 +127,14 @@ func (r *folderRepository) AddFolder(ctx context.Context, operator mbuserservice
 	folderE := FolderEntity{ //nolint:exhaustruct
 		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.AppUserID().Int(),
-			UpdatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
+			UpdatedBy: operator.GetAppUserID().Int(),
 		},
-		OrganizationID: operator.OrganizationID().Int(),
+		OrganizationID: operator.GetOrganizationID().Int(),
 		SpaceID:        param.SpaceID.Int(),
 		ParentID:       param.FolderID.Int(),
 		Name:           param.Name,
-		OwnerID:        operator.AppUserID().Int(),
+		OwnerID:        operator.GetAppUserID().Int(),
 	}
 	if result := r.db.Create(&folderE); result.Error != nil {
 		return nil, mbliberrors.Errorf("add folder entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrFolderAlreadyExists))

@@ -36,7 +36,7 @@ func Test_organizationRepository_GetOrganization(t *testing.T) {
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			require.NoError(t, err)
-			assert.Len(t, org.Name(), orgNameLength)
+			assert.Len(t, org.Name, orgNameLength)
 		}
 
 		// get organization unregistered
@@ -76,15 +76,15 @@ func Test_organizationRepository_FindOrganizationByName(t *testing.T) {
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			require.NoError(t, err)
-			assert.Len(t, org.Name(), orgNameLength)
-			orgName = org.Name()
+			assert.Len(t, org.Name, orgNameLength)
+			orgName = org.Name
 		}
 
 		// find organization registered by name
 		{
 			org, err := orgRepo.FindOrganizationByName(ctx, sysAd, orgName)
 			require.NoError(t, err)
-			assert.Equal(t, orgName, org.Name())
+			assert.Equal(t, orgName, org.Name)
 		}
 
 		// find organization unregistered by name
@@ -119,14 +119,14 @@ func Test_organizationRepository_FindOrganizationByID(t *testing.T) {
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			require.NoError(t, err)
-			assert.Len(t, org.Name(), orgNameLength)
+			assert.Len(t, org.Name, orgNameLength)
 		}
 
 		// find organization registered by ID
 		{
 			org, err := orgRepo.FindOrganizationByID(ctx, sysAd, orgID)
 			require.NoError(t, err)
-			assert.Equal(t, orgID.Int(), org.OrganizationID().Int())
+			assert.Equal(t, orgID.Int(), org.OrganizationID.Int())
 		}
 
 		// find organization unregistered by ID

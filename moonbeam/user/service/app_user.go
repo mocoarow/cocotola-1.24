@@ -9,13 +9,13 @@ import (
 )
 
 type OperatorInterface interface {
-	AppUserID() *domain.AppUserID
-	OrganizationID() *domain.OrganizationID
+	GetAppUserID() *domain.AppUserID
+	GetOrganizationID() *domain.OrganizationID
 }
 
 type AppUserInterface interface {
-	AppUserID() *domain.AppUserID
-	OrganizationID() *domain.OrganizationID
+	GetAppUserID() *domain.AppUserID
+	GetOrganizationID() *domain.OrganizationID
 	// LoginID() string
 	// Username() string
 	// GetUserGroups() []domain.UserGroupModel
@@ -44,15 +44,16 @@ func NewAppUser(_ context.Context, rf RepositoryFactory, appUserModel *domain.Ap
 	return m, nil
 }
 
-func (m *AppUser) AppUserID() *domain.AppUserID {
+func (m *AppUser) GetAppUserID() *domain.AppUserID {
 	return m.AppUserModel.AppUserID
 }
-func (m *AppUser) OrganizationID() *domain.OrganizationID {
+func (m *AppUser) GetOrganizationID() *domain.OrganizationID {
 	return m.AppUserModel.OrganizationID
 }
-func (m *AppUser) LoginID() string {
-	return m.AppUserModel.LoginID
-}
-func (m *AppUser) Username() string {
-	return m.AppUserModel.Username
-}
+
+// func (m *AppUser) LoginID() string {
+// 	return m.AppUserModel.LoginID
+// }
+// func (m *AppUser) Username() string {
+// 	return m.AppUserModel.Username
+// }

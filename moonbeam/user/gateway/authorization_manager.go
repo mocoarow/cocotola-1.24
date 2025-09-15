@@ -68,7 +68,7 @@ func (m *authorizationManager) AddUserToGroup(ctx context.Context, operator serv
 		return liberrors.Errorf("AddPairOfUserAndGroup: %w", err)
 	}
 
-	organizationID := operator.OrganizationID()
+	organizationID := operator.GetOrganizationID()
 
 	rbacAppUser := domain.NewRBACAppUser(appUserID)
 	rbacUserRole := domain.NewRBACUserRole(organizationID, userGroupID)
@@ -83,7 +83,7 @@ func (m *authorizationManager) AddUserToGroup(ctx context.Context, operator serv
 }
 
 func (m *authorizationManager) AddPolicyToUser(ctx context.Context, operator service.AppUserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
-	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
+	rbacDomain := domain.NewRBACOrganization(operator.GetOrganizationID())
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
 		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
@@ -102,7 +102,7 @@ func (m *authorizationManager) AddPolicyToUserBySystemAdmin(ctx context.Context,
 	return nil
 }
 func (m *authorizationManager) AddPolicyToUserBySystemOwner(ctx context.Context, operator service.SystemOwnerInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
-	organizationID := operator.OrganizationID()
+	organizationID := operator.GetOrganizationID()
 	rbacDomain := domain.NewRBACOrganization(organizationID)
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
@@ -113,7 +113,7 @@ func (m *authorizationManager) AddPolicyToUserBySystemOwner(ctx context.Context,
 }
 
 func (m *authorizationManager) AddPolicyToGroup(ctx context.Context, operator service.AppUserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
-	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
+	rbacDomain := domain.NewRBACOrganization(operator.GetOrganizationID())
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
 		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
@@ -133,7 +133,7 @@ func (m *authorizationManager) AddPolicyToGroupBySystemAdmin(ctx context.Context
 }
 
 func (m *authorizationManager) AddObjectToObject(ctx context.Context, operator service.SystemOwnerInterface, child, parent domain.RBACObject) error {
-	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
+	rbacDomain := domain.NewRBACOrganization(operator.GetOrganizationID())
 
 	if err := m.rbacRepo.AddObjectGroupingPolicy(ctx, rbacDomain, child, parent); err != nil {
 		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
@@ -143,7 +143,7 @@ func (m *authorizationManager) AddObjectToObject(ctx context.Context, operator s
 }
 
 func (m *authorizationManager) CheckAuthorization(ctx context.Context, operator service.AppUserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error) {
-	rbacDomain := domain.NewRBACOrganization(operator.OrganizationID())
+	rbacDomain := domain.NewRBACOrganization(operator.GetOrganizationID())
 
 	userGroupRepo := m.rf.NewUserGroupRepository(ctx)
 	userGroups, err := userGroupRepo.FindAllUserGroups(ctx, operator)
@@ -153,10 +153,10 @@ func (m *authorizationManager) CheckAuthorization(ctx context.Context, operator 
 
 	rbacRoles := make([]domain.RBACRole, 0)
 	for _, userGroup := range userGroups {
-		rbacRoles = append(rbacRoles, domain.NewRBACUserRole(operator.OrganizationID(), userGroup.UserGroupID))
+		rbacRoles = append(rbacRoles, domain.NewRBACUserRole(operator.GetOrganizationID(), userGroup.UserGroupID))
 	}
 
-	rbacOperator := domain.NewRBACAppUser(operator.AppUserID())
+	rbacOperator := domain.NewRBACAppUser(operator.GetAppUserID())
 	e, err := m.rbacRepo.NewEnforcerWithGroupsAndUsers(ctx, rbacRoles, []domain.RBACUser{rbacOperator})
 	if err != nil {
 		return false, liberrors.Errorf("NewEnforcerWithGroupsAndUsers: %w", err)

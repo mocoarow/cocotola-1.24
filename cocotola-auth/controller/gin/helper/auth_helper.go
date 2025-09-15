@@ -22,10 +22,10 @@ type operator struct {
 	organizationID *mbuserdomain.OrganizationID
 }
 
-func (o *operator) AppUserID() *mbuserdomain.AppUserID {
+func (o *operator) GetAppUserID() *mbuserdomain.AppUserID {
 	return o.appUserID
 }
-func (o *operator) OrganizationID() *mbuserdomain.OrganizationID {
+func (o *operator) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
 }
 

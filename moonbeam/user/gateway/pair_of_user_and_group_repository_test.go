@@ -31,19 +31,19 @@ func Test_pairOfUserAndGroupRepository_FindUserGroupsByUserID(t *testing.T) {
 
 		// - user1 belongs to group1, group2, group3
 		for _, group := range []*service.UserGroup{group1, group2, group3} {
-			err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user1.AppUserID(), group.UserGroupID())
+			err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user1.GetAppUserID(), group.UserGroupID)
 			require.NoError(t, err)
 		}
 		// - user2 belongs to group1
 		for _, group := range []*service.UserGroup{group1} {
-			err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user2.AppUserID(), group.UserGroupID())
+			err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user2.GetAppUserID(), group.UserGroupID)
 			require.NoError(t, err)
 		}
 
 		// when
-		groupModels1, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, owner, user1.AppUserID())
+		groupModels1, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, owner, user1.GetAppUserID())
 		require.NoError(t, err)
-		groupModels2, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, owner, user2.AppUserID())
+		groupModels2, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, owner, user2.GetAppUserID())
 		require.NoError(t, err)
 		groups1 := testNewUserGroups(groupModels1)
 		groups2 := testNewUserGroups(groupModels2)
@@ -79,16 +79,16 @@ func Test_pairOfUserAndGroupRepository_RemovePairOfUserAndGroup(t *testing.T) {
 		ownerGroup, err := userGroupRepo.FindUserGroupByKey(ctx, owner, service.OwnerGroupKey)
 		require.NoError(t, err)
 
-		err = pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user1.AppUserID(), ownerGroup.UserGroupID())
+		err = pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user1.GetAppUserID(), ownerGroup.UserGroupID)
 		require.NoError(t, err)
 		{
-			userGroups1, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, user1, user1.AppUserID())
+			userGroups1, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, user1, user1.GetAppUserID())
 			require.NoError(t, err)
 			assert.Len(t, userGroups1, 1)
 		}
 
 		// when
-		err = pairOfUserAndGroupRepo.RemovePairOfUserAndGroup(ctx, owner, user1.AppUserID(), ownerGroup.UserGroupID())
+		err = pairOfUserAndGroupRepo.RemovePairOfUserAndGroup(ctx, owner, user1.GetAppUserID(), ownerGroup.UserGroupID)
 		require.NoError(t, err)
 
 		// then

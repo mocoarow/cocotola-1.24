@@ -23,9 +23,9 @@ func NewOrganization(organizationModel *domain.OrganizationModel) (*Organization
 	return m, nil
 }
 
-func (m *Organization) OrganizationID() *domain.OrganizationID {
-	return m.OrganizationModel.OrganizationID
-}
-func (m *Organization) Name() string {
-	return m.OrganizationModel.Name
-}
+//	func (m *Organization) OrganizationID() *domain.OrganizationID {
+//		return m.OrganizationModel.OrganizationID
+//	}
+// func (m *Organization) Name() string {
+// 	return m.OrganizationModel.Name
+// }

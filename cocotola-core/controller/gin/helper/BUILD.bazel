@@ -16,6 +16,7 @@ go_library(
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "//moonbeam/user/domain",
+        "//moonbeam/user/service",
         "@com_github_gin_gonic_gin//:gin",
     ],
 )
