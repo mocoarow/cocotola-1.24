@@ -44,7 +44,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroupBySystemAdmin(ctx co
 
 	pairOfUserAndGroup := pairOfUserAndGroupEntity{
 		JunctionModelEntity: JunctionModelEntity{ //nolint:exhaustruct
-			CreatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
 		},
 		OrganizationID: organizationID.Int(),
 		AppUserID:      appUserID.Int(),
@@ -69,9 +69,9 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context
 
 	pairOfUserAndGroup := pairOfUserAndGroupEntity{
 		JunctionModelEntity: JunctionModelEntity{ //nolint:exhaustruct
-			CreatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
 		},
-		OrganizationID: operator.OrganizationID().Int(),
+		OrganizationID: operator.GetOrganizationID().Int(),
 		AppUserID:      appUserID.Int(),
 		UserGroupID:    userGroupID.Int(),
 	}
@@ -136,7 +136,7 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 	_, span := tracer.Start(ctx, "pairOfUserAndGroupRepository.RemovePairOfUserAndGroup")
 	defer span.End()
 
-	wrappedDB := wrappedDB{dialect: r.dialect, db: r.db, organizationID: operator.OrganizationID()}
+	wrappedDB := wrappedDB{dialect: r.dialect, db: r.db, organizationID: operator.GetOrganizationID()}
 	db := wrappedDB.
 		WherePairOfUserAndGroup().
 		Where("app_user_id = ?", appUserID.Int()).
@@ -240,9 +240,9 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator service.AppUserInterface, appUserID *domain.AppUserID) ([]*domain.UserGroupModel, error) {
 	userGroups := []userGroupEntity{}
 	if result := r.db.WithContext(ctx).Table(UserGroupTableName).Select(UserGroupTableName+".*").
-		Where(UserGroupTableName+".organization_id = ?", operator.OrganizationID().Int()).
+		Where(UserGroupTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
 		Where(UserGroupTableName+".deleted = ?", r.dialect.BoolDefaultValue()).
-		Where(AppUserTableName+".organization_id = ?", operator.OrganizationID().Int()).
+		Where(AppUserTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
 		Where(AppUserTableName+".id = ? and "+AppUserTableName+".deleted = ?", appUserID.Int(), r.dialect.BoolDefaultValue()).
 		Joins("inner join " + PairOfUserAndGroupTableName + " on " + UserGroupTableName + ".id = " + PairOfUserAndGroupTableName + ".user_group_id").
 		Joins("inner join " + AppUserTableName + " on " + PairOfUserAndGroupTableName + ".app_user_id = " + AppUserTableName + ".id").

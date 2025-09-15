@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
@@ -27,16 +28,16 @@ type WorkbookUpdateParameter struct {
 	Content     string
 }
 
-type OperatorInterface interface {
-	AppUserID() *mbuserdomain.AppUserID
-	OrganizationID() *mbuserdomain.OrganizationID
-	Role() string
+type RoleUserInterface interface {
+	GetAppUserID() *mbuserdomain.AppUserID
+	GetOrganizationID() *mbuserdomain.OrganizationID
+	GetRole() string
 	// LoginID() string
 	// Username() string
 }
 
 type WorkbookRepository interface {
-	AddWorkbook(ctx context.Context, operator OperatorInterface, param *WorkbookAddParameter) (*domain.WorkbookID, error)
+	AddWorkbook(ctx context.Context, operator mbuserservice.OperatorInterface, param *WorkbookAddParameter) (*domain.WorkbookID, error)
 
-	UpdateWorkbook(ctx context.Context, operator OperatorInterface, workbookID *domain.WorkbookID, version int, param *WorkbookUpdateParameter) error
+	UpdateWorkbook(ctx context.Context, operator mbuserservice.OperatorInterface, workbookID *domain.WorkbookID, version int, param *WorkbookUpdateParameter) error
 }

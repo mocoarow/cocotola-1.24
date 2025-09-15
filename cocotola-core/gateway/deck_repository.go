@@ -36,7 +36,7 @@ func (e *DeckEntity) TableName() string {
 	return "core_deck"
 }
 
-func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
+func (e *DeckEntity) toModel() (*domain.DeckModel, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, mbliberrors.Errorf("to base model: %w", err)
@@ -98,7 +98,7 @@ func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 }
 
 func (e *DeckEntity) toDeck() (*service.Deck, error) {
-	deckModel, err := e.ToModel()
+	deckModel, err := e.toModel()
 	if err != nil {
 		return nil, mbliberrors.Errorf("to deck model: %w", err)
 	}
@@ -132,7 +132,7 @@ func NewDeckRepository(db *gorm.DB) service.DeckRepository {
 	}
 }
 
-func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.DeckAddParameter) (*domain.DeckID, error) {
+func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
 	_, span := tracer.Start(ctx, "deckRepository.AddDeck")
 	defer span.End()
 
@@ -144,17 +144,17 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 	deckE := DeckEntity{ //nolint:exhaustruct
 		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.AppUserID().Int(),
-			UpdatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
+			UpdatedBy: operator.GetAppUserID().Int(),
 		},
-		OrganizationID: operator.OrganizationID().Int(),
+		OrganizationID: operator.GetOrganizationID().Int(),
 		SpaceID:        param.SpaceID.Int(),
 		FolderID:       folderID,
 		TemplateID:     param.TemplateID.Int(),
 		Name:           param.Name,
 		Lang2:          param.Lang2.String(),
 		Description:    param.Description,
-		OwnerID:        operator.AppUserID().Int(),
+		OwnerID:        operator.GetAppUserID().Int(),
 	}
 	if result := r.db.Create(&deckE); result.Error != nil {
 		return nil, mbliberrors.Errorf("add deck entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrDeckAlreadyExists))
@@ -168,14 +168,14 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 	return deckID, nil
 }
 
-func (r *deckRepository) UpdateDeck(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID, version int, param *service.DeckUpdateParameter) error {
+func (r *deckRepository) UpdateDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error {
 	_, span := tracer.Start(ctx, "deckRepository.UpdateDeck")
 	defer span.End()
 
 	if result := r.db.Model(
 		&DeckEntity{}, //nolint:exhaustruct
 	).
-		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
+		Where("organization_id = ?", uint(operator.GetOrganizationID().Int())).
 		Where("id = ?", deckID.Int()).
 		Where("version = ?", version).
 		Updates(map[string]interface{}{
@@ -189,11 +189,11 @@ func (r *deckRepository) UpdateDeck(ctx context.Context, operator service.Operat
 	return nil
 }
 
-func (r *deckRepository) FindDecks(ctx context.Context, operator service.OperatorInterface, param *service.FindDecksParameter) ([]*service.Deck, error) {
+func (r *deckRepository) FindDecks(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.FindDecksParameter) ([]*service.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.FindDecks")
 	defer span.End()
 
-	organizationID := uint(operator.OrganizationID().Int())
+	organizationID := uint(operator.GetOrganizationID().Int())
 
 	var decksE DeckEntities
 	if result := r.db.
@@ -219,8 +219,8 @@ func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserse
 	var decksE DeckEntities
 	if result := r.db.
 		Model(&DeckEntity{}). //nolint:exhaustruct
-		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
-		Where("owner_id = ?", uint(operator.AppUserID().Int())).
+		Where("organization_id = ?", uint(operator.GetOrganizationID().Int())).
+		Where("owner_id = ?", uint(operator.GetAppUserID().Int())).
 		Find(&decksE); result.Error != nil {
 		return nil, mbliberrors.Errorf("deckRepository.FindDecksByOwner: %w", result.Error)
 	}
@@ -233,14 +233,16 @@ func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserse
 	return decks, nil
 }
 
-func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) (*service.Deck, error) {
+func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) (*service.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.RetrieveDeckByID")
 	defer span.End()
 
 	var deckE DeckEntity
-	if result := r.db.Model(&DeckEntity{}). //nolint:exhaustruct
-						Where("organization_id = ?", uint(operator.OrganizationID().Int())).Where("id = ?", deckID.Int()).
-						First(&deckE); result.Error != nil {
+	if result := r.db.WithContext(ctx).
+		Model(&DeckEntity{}). //nolint:exhaustruct
+		Where("organization_id = ?", uint(operator.GetOrganizationID().Int())).
+		Where("id = ?", deckID.Int()).
+		First(&deckE); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrDeckNotFound
 		}

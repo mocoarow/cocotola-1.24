@@ -9,9 +9,9 @@ type Operator struct {
 	organizationID *mbuserdomain.OrganizationID
 }
 
-func (o *Operator) AppUserID() *mbuserdomain.AppUserID {
+func (o *Operator) GetAppUserID() *mbuserdomain.AppUserID {
 	return o.appUserID
 }
-func (o *Operator) OrganizationID() *mbuserdomain.OrganizationID {
+func (o *Operator) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
 }

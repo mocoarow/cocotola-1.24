@@ -28,18 +28,18 @@ func NewUserGroup(userGroupModel *domain.UserGroupModel) (*UserGroup, error) {
 	return m, nil
 }
 
-func (m *UserGroup) UserGroupID() *domain.UserGroupID {
-	return m.UserGroupModel.UserGroupID
-}
-func (m *UserGroup) OrganizationID() *domain.OrganizationID {
-	return m.UserGroupModel.OrganizationID
-}
-func (m *UserGroup) Key() string {
-	return m.UserGroupModel.Key
-}
-func (m *UserGroup) Name() string {
-	return m.UserGroupModel.Name
-}
-func (m *UserGroup) Description() string {
-	return m.UserGroupModel.Description
-}
+// func (m *UserGroup) UserGroupID() *domain.UserGroupID {
+// 	return m.UserGroupModel.UserGroupID
+// }
+// func (m *UserGroup) OrganizationID() *domain.OrganizationID {
+// 	return m.UserGroupModel.OrganizationID
+// }
+// func (m *UserGroup) Key() string {
+// 	return m.UserGroupModel.Key
+// }
+// func (m *UserGroup) Name() string {
+// 	return m.UserGroupModel.Name
+// }
+// func (m *UserGroup) Description() string {
+// 	return m.UserGroupModel.Description
+// }

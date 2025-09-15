@@ -38,9 +38,9 @@ func (h *SpaceHandler) FindSpaces(c *gin.Context) {
 		spaces := make([]libapiauth.FindSpacesResponseSpace, 0, len(result))
 		for _, s := range result {
 			spaces = append(spaces, libapiauth.FindSpacesResponseSpace{
-				ID:      s.SpaceID.Int(),
-				KeyName: s.KeyName,
-				Name:    s.Name,
+				ID:   s.SpaceID.Int(),
+				Key:  s.KeyName,
+				Name: s.Name,
 			})
 		}
 		apiResp := libapiauth.FindSpacesResponse{

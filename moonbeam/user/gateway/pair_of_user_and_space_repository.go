@@ -41,9 +41,9 @@ func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context
 
 	pairOfUserAndGroup := pairOfUserAndSpaceEntity{
 		JunctionModelEntity: JunctionModelEntity{ //nolint:exhaustruct
-			CreatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
 		},
-		OrganizationID: operator.OrganizationID().Int(),
+		OrganizationID: operator.GetOrganizationID().Int(),
 		AppUserID:      appUserID.Int(),
 		SpaceID:        spaceID.Int(),
 	}
@@ -57,10 +57,10 @@ func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context
 func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operator service.AppUserInterface) ([]*service.Space, error) {
 	spacesE := []spaceEntity{}
 	if result := r.db.WithContext(ctx).Table(SpaceTableName).Select(SpaceTableName+".*").
-		Where(SpaceTableName+".organization_id = ?", operator.OrganizationID().Int()).
+		Where(SpaceTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
 		Where(SpaceTableName+".deleted = ?", r.dialect.BoolDefaultValue()).
-		Where(AppUserTableName+".organization_id = ?", operator.OrganizationID().Int()).
-		Where(AppUserTableName+".id = ?", operator.AppUserID().Int()).
+		Where(AppUserTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
+		Where(AppUserTableName+".id = ?", operator.GetAppUserID().Int()).
 		Where(AppUserTableName+".deleted = ?", r.dialect.BoolDefaultValue()).
 		Joins("inner join " + PairOfUserAndSpaceTableName + " on " + SpaceTableName + ".id = " + PairOfUserAndSpaceTableName + ".space_id").
 		Joins("inner join " + AppUserTableName + " on " + PairOfUserAndSpaceTableName + ".app_user_id = " + AppUserTableName + ".id").

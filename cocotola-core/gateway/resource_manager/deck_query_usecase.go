@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
@@ -22,7 +23,7 @@ func NewDeckQueryUsecase(db *gorm.DB) *DeckQueryUseCase {
 	}
 }
 
-func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*domain.DeckModel, error) {
+func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserservice.OperatorInterface) ([]*domain.DeckModel, error) {
 	// TODO: filter by spaceIDs
 	decks, err := gateway.NewDeckRepository(u.db).FindDecks(ctx, operator, &service.FindDecksParameter{}) //nolint:exhaustruct
 	if err != nil {
@@ -36,7 +37,7 @@ func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator service.Opera
 	return deckModels, nil
 }
 
-func (u *DeckQueryUseCase) RetrieveDeckByID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) (*domain.DeckModel, error) {
+func (u *DeckQueryUseCase) RetrieveDeckByID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) (*domain.DeckModel, error) {
 	deck, err := gateway.NewDeckRepository(u.db).RetrieveDeckByID(ctx, operator, deckID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)

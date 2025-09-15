@@ -35,7 +35,7 @@ func NewUserUsecase(systemToken libdomain.SystemToken, txManager, nonTxManager s
 	}
 }
 
-func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator service.OperatorInterface, param *mbuserservice.AppUserAddParameter) (*domain.AuthTokenSet, error) {
+func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator mbuserservice.OperatorInterface, param *mbuserservice.AddAppUserParameter) (*domain.AuthTokenSet, error) {
 	action := mbuserdomain.NewRBACAction("CreateAppUser")
 	object := mbuserdomain.NewRBACObject("*")
 	ok, err := service.CheckAuthorization(ctx, operator, action, object, u.nonTxManager)
@@ -47,14 +47,14 @@ func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator service.Oper
 		return nil, domain.ErrUnauthenticated
 	}
 
-	createAppUserParameterFunc := func() (*mbuserservice.AppUserAddParameter, error) {
+	createAppUserParameterFunc := func() (*mbuserservice.AddAppUserParameter, error) {
 		return param, nil
 	}
 
 	var targetOorganization *organization
 	var targetAppUser *appUser
 	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
-		tmpOrganization, tmpAppUser, err := registerAppUser(ctx, u.systemToken, rf, operator.OrganizationID(), param.LoginID(), createAppUserParameterFunc)
+		tmpOrganization, tmpAppUser, err := registerAppUser(ctx, u.systemToken, rf, operator.GetOrganizationID(), param.LoginID, createAppUserParameterFunc)
 		if err != nil && !errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
 			return mbliberrors.Errorf("register app user: %w", err)
 		} else if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {

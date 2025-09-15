@@ -6,9 +6,10 @@ import (
 
 	"gorm.io/gorm"
 
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
 type CardQueryUseCase struct {
@@ -21,7 +22,7 @@ func NewCardQueryUsecase(db *gorm.DB) *CardQueryUseCase {
 	}
 }
 
-func (u *CardQueryUseCase) FindCardsByDeckID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error) {
+func (u *CardQueryUseCase) FindCardsByDeckID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error) {
 	_, span := tracer.Start(ctx, "CardQueryUseCase.FindDecks")
 	defer span.End()
 

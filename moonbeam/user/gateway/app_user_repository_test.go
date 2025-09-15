@@ -27,7 +27,7 @@ func Test_appUserRepository_FindSystemOwnerByOrganizationID_shouldReturnSystemOw
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, service.SystemOwnerLoginID, testSysOwner.LoginID())
+		assert.Equal(t, service.SystemOwnerLoginID, testSysOwner.LoginID)
 	}
 	testOrganization(t, fn)
 }
@@ -60,11 +60,11 @@ func Test_appUserRepository_FindSystemOwnerByOrganizationName_shouldReturnSystem
 		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
-		testSysOwner, err := appUserRepo.FindSystemOwnerByOrganizationName(ctx, sysAd, org.Name())
+		testSysOwner, err := appUserRepo.FindSystemOwnerByOrganizationName(ctx, sysAd, org.Name)
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, service.SystemOwnerLoginID, testSysOwner.LoginID())
+		assert.Equal(t, service.SystemOwnerLoginID, testSysOwner.LoginID)
 	}
 	testOrganization(t, fn)
 }
@@ -97,12 +97,12 @@ func Test_appUserRepository_FindAppUserByID_shouldReturnAppUser_whenExistingIDIs
 		newAppUser := testAddAppUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
 
 		// when
-		appUser, err := appUserRepo.FindAppUserByID(ctx, owner, newAppUser.AppUserID())
+		appUser, err := appUserRepo.FindAppUserByID(ctx, owner, newAppUser.GetAppUserID())
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, "LOGIN_ID", appUser.LoginID(), "loginID should be 'LOGIN_ID'")
-		assert.Equal(t, "USERNAME", appUser.Username(), "username should be 'USERNAME'")
+		assert.Equal(t, "LOGIN_ID", appUser.LoginID, "loginID should be 'LOGIN_ID'")
+		assert.Equal(t, "USERNAME", appUser.Username, "username should be 'USERNAME'")
 	}
 	testOrganization(t, fn)
 }
@@ -133,8 +133,8 @@ func Test_appUserRepository_FindAppUserByLoginID_shouldReturnAppUser_whenExistin
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, "LOGIN_ID", appUser.LoginID(), "loginID should be 'LOGIN_ID'")
-		assert.Equal(t, "USERNAME", appUser.Username(), "username should be 'USERNAME'")
+		assert.Equal(t, "LOGIN_ID", appUser.LoginID, "loginID should be 'LOGIN_ID'")
+		assert.Equal(t, "USERNAME", appUser.Username, "username should be 'USERNAME'")
 	}
 	testOrganization(t, fn)
 }
@@ -158,18 +158,18 @@ func Test_appUserRepository_FindOwnerByLoginID_shouldReturnOwner_whenExistingOwn
 	t.Parallel()
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *service.SystemOwner, owner *service.Owner) {
 		t.Helper()
-		require.Equal(t, "OWNER_ID", owner.LoginID())
-		require.Equal(t, "OWNER_NAME", owner.Username())
+		require.Equal(t, "OWNER_ID", owner.LoginID)
+		require.Equal(t, "OWNER_NAME", owner.Username)
 
 		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
-		appUser, err := appUserRepo.FindOwnerByLoginID(ctx, sysOwner, owner.LoginID())
+		appUser, err := appUserRepo.FindOwnerByLoginID(ctx, sysOwner, owner.LoginID)
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, "OWNER_ID", appUser.LoginID())
-		assert.Equal(t, "OWNER_NAME", appUser.Username())
+		assert.Equal(t, "OWNER_ID", appUser.LoginID)
+		assert.Equal(t, "OWNER_NAME", appUser.Username)
 	}
 	testOrganization(t, fn)
 }
@@ -178,8 +178,8 @@ func Test_appUserRepository_FindOwnerByLoginID_shouldReturnError_whenNotOwnerLog
 	t.Parallel()
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *service.SystemOwner, owner *service.Owner) {
 		t.Helper()
-		require.Equal(t, "OWNER_ID", owner.LoginID())
-		require.Equal(t, "OWNER_NAME", owner.Username())
+		require.Equal(t, "OWNER_ID", owner.LoginID)
+		require.Equal(t, "OWNER_NAME", owner.Username)
 
 		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 

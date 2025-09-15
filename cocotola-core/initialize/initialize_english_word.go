@@ -89,7 +89,7 @@ func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorIn
 			continue
 		}
 
-		deckAddParam := service.DeckAddParameter{
+		deckAddParam := service.AddDeckParameter{
 			SpaceID:     publicDefaultSpaceID,
 			FolderID:    rootFolderID,
 			Name:        name,

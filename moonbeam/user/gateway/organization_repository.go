@@ -62,7 +62,7 @@ func (r *organizationRepository) GetOrganization(ctx context.Context, operator s
 
 	var organization organizationEntity
 	if result := r.db.Where(organizationEntity{ //nolint:exhaustruct
-		ID: operator.OrganizationID().Int(),
+		ID: operator.GetOrganizationID().Int(),
 	}).First(&organization); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrOrganizationNotFound
@@ -110,17 +110,17 @@ func (r *organizationRepository) FindOrganizationByID(ctx context.Context, _ ser
 	return organization.toModel()
 }
 
-func (r *organizationRepository) AddOrganization(ctx context.Context, operator service.SystemAdminInterface, param service.OrganizationAddParameterInterface) (*domain.OrganizationID, error) {
+func (r *organizationRepository) AddOrganization(ctx context.Context, operator service.SystemAdminInterface, param *service.AddOrganizationParameter) (*domain.OrganizationID, error) {
 	_, span := tracer.Start(ctx, "organizationRepository.AddOrganization")
 	defer span.End()
 
 	organization := organizationEntity{ //nolint:exhaustruct
 		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.AppUserID().Int(),
-			UpdatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
+			UpdatedBy: operator.GetAppUserID().Int(),
 		},
-		Name: param.Name(),
+		Name: param.Name,
 	}
 
 	if result := r.db.Create(&organization); result.Error != nil {

@@ -28,7 +28,7 @@ func NewOwner(rf RepositoryFactory, ownerModel *domain.OwnerModel) *Owner {
 	return m
 }
 
-func (m *Owner) AddAppUser(ctx context.Context, param AppUserAddParameterInterface) (*domain.AppUserID, error) {
+func (m *Owner) AddAppUser(ctx context.Context, param *AddAppUserParameter) (*domain.AppUserID, error) {
 	appUserRepo := m.rf.NewAppUserRepository(ctx)
 	appUserID, err := appUserRepo.AddAppUser(ctx, m, param)
 	if err != nil {
@@ -38,18 +38,20 @@ func (m *Owner) AddAppUser(ctx context.Context, param AppUserAddParameterInterfa
 	return appUserID, nil
 }
 
-func (m *Owner) AppUserID() *domain.AppUserID {
+func (m *Owner) GetAppUserID() *domain.AppUserID {
 	return m.AppUserModel.AppUserID
 }
-func (m *Owner) OrganizationID() *domain.OrganizationID {
+func (m *Owner) GetOrganizationID() *domain.OrganizationID {
 	return m.AppUserModel.OrganizationID
 }
-func (m *Owner) LoginID() string {
-	return m.AppUserModel.LoginID
-}
-func (m *Owner) Username() string {
-	return m.AppUserModel.Username
-}
+
+//	func (m *Owner) LoginID() string {
+//		return m.AppUserModel.LoginID
+//	}
+//
+//	func (m *Owner) Username() string {
+//		return m.AppUserModel.Username
+//	}
 func (m *Owner) IsOwner() bool {
 	return true
 }

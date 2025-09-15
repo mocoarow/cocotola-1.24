@@ -31,8 +31,8 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 		// 1. check whether the guest user already exists
 		guest, err := systemOwnerAction.SystemOwner.FindAppUserByLoginID(ctx, guestLoginID)
 		if err == nil {
-			logger.InfoContext(ctx, fmt.Sprintf("guest already exists. id: %d", guest.AppUserID().Int()))
-			return guest.AppUserID(), nil
+			logger.InfoContext(ctx, fmt.Sprintf("guest already exists. id: %d", guest.GetAppUserID().Int()))
+			return guest.GetAppUserID(), nil
 		} else if !errors.Is(err, mbuserservice.ErrAppUserNotFound) {
 			return nil, mbliberrors.Errorf("find app user by login id(%s): %w", guestLoginID, err)
 		}
@@ -55,7 +55,7 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 
 		authorizationManager := initAuthorizationManager(ctx, mbrf)
 
-		if err := authorizationManager.AddUserToGroup(ctx, systemOwnerAction.SystemOwner, guestID, publicGroup.UserGroupID()); err != nil {
+		if err := authorizationManager.AddUserToGroup(ctx, systemOwnerAction.SystemOwner, guestID, publicGroup.UserGroupID); err != nil {
 			return nil, mbliberrors.Errorf("AddUserToGroup: %w", err)
 		}
 

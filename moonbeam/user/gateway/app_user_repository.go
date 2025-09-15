@@ -186,7 +186,7 @@ func (r *appUserRepository) FindSystemOwnerByOrganizationName(ctx context.Contex
 	for _, option := range options {
 		if option == service.IncludeGroups {
 			pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, r.dialect, r.db, r.rf)
-			userGroupsTmp, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, appUser, appUser.AppUserID())
+			userGroupsTmp, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, appUser, appUser.GetAppUserID())
 			if err != nil {
 				return nil, liberrors.Errorf("FindUserGroupsByUserID: %w", err)
 			}
@@ -202,7 +202,7 @@ func (r *appUserRepository) FindAppUserByID(ctx context.Context, operator servic
 	_, span := tracer.Start(ctx, "appUserRepository.FindAppUserByID")
 	defer span.End()
 
-	return r.findAppUserByID(ctx, operator.OrganizationID(), id, options...)
+	return r.findAppUserByID(ctx, operator.GetOrganizationID(), id, options...)
 }
 
 func (r *appUserRepository) findAppUserByID(ctx context.Context, organizationID *domain.OrganizationID, id *domain.AppUserID, options ...service.Option) (*service.AppUser, error) {
@@ -230,7 +230,7 @@ func (r *appUserRepository) findAppUserByID(ctx context.Context, organizationID 
 	for _, option := range options {
 		if option == service.IncludeGroups {
 			pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, r.dialect, r.db, r.rf)
-			userGroupsTmp, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, appUser, appUser.AppUserID())
+			userGroupsTmp, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, appUser, appUser.GetAppUserID())
 			if err != nil {
 				return nil, liberrors.Errorf("FindUserGroupsByUserID: %w", err)
 			}
@@ -246,7 +246,7 @@ func (r *appUserRepository) FindAppUserByLoginID(ctx context.Context, operator s
 	_, span := tracer.Start(ctx, "appUserRepository.FindAppUserByLoginID")
 	defer span.End()
 
-	return r.findAppUserByLoginID(ctx, operator.OrganizationID(), loginID)
+	return r.findAppUserByLoginID(ctx, operator.GetOrganizationID(), loginID)
 }
 
 func (r *appUserRepository) findAppUserByLoginID(ctx context.Context, organizationID *domain.OrganizationID, loginID string) (*service.AppUser, error) {
@@ -284,7 +284,7 @@ func (r *appUserRepository) FindOwnerByLoginID(ctx context.Context, operator ser
 	defer span.End()
 
 	var appUser appUserEntity
-	wrappedDB := wrappedDB{dialect: r.dialect, db: r.db, organizationID: operator.OrganizationID()}
+	wrappedDB := wrappedDB{dialect: r.dialect, db: r.db, organizationID: operator.GetOrganizationID()}
 	db := wrappedDB.Table(AppUserTableName).Select(AppUserTableName+".*").
 		WherePairOfUserAndGroup().
 		WhereUserGroup().
@@ -319,13 +319,13 @@ func (r *appUserRepository) addAppUser(_ context.Context, appUserEntity *appUser
 	return appUserID, nil
 }
 
-func (r *appUserRepository) AddAppUser(ctx context.Context, operator service.OwnerModelInterface, param service.AppUserAddParameterInterface) (*domain.AppUserID, error) {
+func (r *appUserRepository) AddAppUser(ctx context.Context, operator service.OwnerModelInterface, param *service.AddAppUserParameter) (*domain.AppUserID, error) {
 	_, span := tracer.Start(ctx, "appUserRepository.AddAppUser")
 	defer span.End()
 
 	hashedPassword := ""
-	if len(param.Password()) != 0 {
-		hashedPasswordTmp, err := libgateway.HashPassword(param.Password())
+	if len(param.Password) != 0 {
+		hashedPasswordTmp, err := libgateway.HashPassword(param.Password)
 		if err != nil {
 			return nil, liberrors.Errorf("libgateway.HashPassword. err: %w", err)
 		}
@@ -336,12 +336,12 @@ func (r *appUserRepository) AddAppUser(ctx context.Context, operator service.Own
 	appUserEntity := appUserEntity{ //nolint:exhaustruct
 		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.AppUserID().Int(),
-			UpdatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
+			UpdatedBy: operator.GetAppUserID().Int(),
 		},
-		OrganizationID: operator.OrganizationID().Int(),
-		LoginID:        param.LoginID(),
-		Username:       param.Username(),
+		OrganizationID: operator.GetOrganizationID().Int(),
+		LoginID:        param.LoginID,
+		Username:       param.Username,
 		HashedPassword: hashedPassword,
 	}
 
@@ -360,8 +360,8 @@ func (r *appUserRepository) AddSystemOwner(ctx context.Context, operator service
 	appUserEntity := appUserEntity{ //nolint:exhaustruct
 		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.AppUserID().Int(),
-			UpdatedBy: operator.AppUserID().Int(),
+			CreatedBy: operator.GetAppUserID().Int(),
+			UpdatedBy: operator.GetAppUserID().Int(),
 		},
 		OrganizationID: organizationID.Int(),
 		LoginID:        service.SystemOwnerLoginID,
@@ -377,7 +377,7 @@ func (r *appUserRepository) AddSystemOwner(ctx context.Context, operator service
 }
 
 func (r *appUserRepository) VerifyPassword(ctx context.Context, operator service.SystemOwnerInterface, loginID, password string) (bool, error) {
-	organizationID := operator.OrganizationID()
+	organizationID := operator.GetOrganizationID()
 	appUserEntity, err := r.findAppUserEntityByLoginID(ctx, organizationID, loginID)
 	if err != nil {
 		return false, err

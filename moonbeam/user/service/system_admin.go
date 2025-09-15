@@ -14,7 +14,7 @@ import (
 var _ SystemAdminInterface = (*SystemAdmin)(nil)
 
 type SystemAdminInterface interface {
-	AppUserID() *domain.AppUserID
+	GetAppUserID() *domain.AppUserID
 	IsSystemAdmin() bool
 	// GetUserGroups() []domain.UserGroupModel
 }
@@ -45,7 +45,7 @@ func NewSystemAdmin(ctx context.Context, rf RepositoryFactory) (*SystemAdmin, er
 	return m, nil
 }
 
-func (m *SystemAdmin) AppUserID() *domain.AppUserID {
+func (m *SystemAdmin) GetAppUserID() *domain.AppUserID {
 	return m.SystemAdminModel.AppUserID
 }
 func (m *SystemAdmin) IsSystemAdmin() bool {
@@ -100,7 +100,7 @@ func (m *SystemAdmin) addSystemOwnerToOrganization(ctx context.Context, authoriz
 	}
 
 	// 3. add policy to "system-owner" user
-	rbacSystemOwner := systemOwner.AppUserID().GetRBACSubject()
+	rbacSystemOwner := systemOwner.GetAppUserID().GetRBACSubject()
 	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(organizationID)
 	// - "system-owner" user "can" "set" "all-user-roles"
 	if err := authorizationManager.AddPolicyToUserBySystemAdmin(ctx, m, organizationID, rbacSystemOwner, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
@@ -115,7 +115,7 @@ func (m *SystemAdmin) addSystemOwnerToOrganization(ctx context.Context, authoriz
 	return systemOwner, nil
 }
 
-func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAddParameterInterface) (*domain.OrganizationID, error) {
+func (m *SystemAdmin) AddOrganization(ctx context.Context, param *AddOrganizationParameter) (*domain.OrganizationID, error) {
 	// 1. add organization
 	organizationID, err := m.orgRepo.AddOrganization(ctx, m, param)
 	if err != nil {
@@ -137,7 +137,7 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 
 	// 2. add "system-owner" user
 	// 3. add policy to "system-owner" user
-	systemOwner, err := m.addSystemOwnerToOrganization(ctx, authorizationManager, organizationID, param.Name())
+	systemOwner, err := m.addSystemOwnerToOrganization(ctx, authorizationManager, organizationID, param.Name)
 	if err != nil {
 		return nil, liberrors.Errorf("failed to addSystemOwnertoOrganization. error: %w", err)
 	}
@@ -190,7 +190,7 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 	}
 
 	// 6. add first owner
-	ownerID, err := systemOwner.AddFirstOwner(ctx, param.FirstOwner())
+	ownerID, err := systemOwner.AddFirstOwner(ctx, param.FirstOwner)
 	if err != nil {
 		return nil, liberrors.Errorf("m.initFirstOwner. error: %w", err)
 	}
@@ -209,7 +209,7 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 		return nil, liberrors.Errorf("add public space(%s): %w", PublicDefaultSpaceKey, err)
 	}
 
-	m.logger.InfoContext(ctx, fmt.Sprintf("SystemOwnerID:%d, ownerID: %d", systemOwner.AppUserID().Int(), ownerID.Int()))
+	m.logger.InfoContext(ctx, fmt.Sprintf("SystemOwnerID:%d, ownerID: %d", systemOwner.GetAppUserID().Int(), ownerID.Int()))
 
 	return organizationID, nil
 }

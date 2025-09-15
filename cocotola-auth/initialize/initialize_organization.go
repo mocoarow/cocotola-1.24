@@ -25,7 +25,7 @@ func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, _,
 		// 1. check whether the organization already exists
 		organization, err := systemAdminAction.SystemAdmin.FindOrganizationByName(ctx, organizationName)
 		if err == nil {
-			logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID().Int()))
+			logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID.Int()))
 
 			systemOwnerAction := newSystemOwnerAction(ctx, systemToken, rf, organizationName)
 
@@ -33,7 +33,7 @@ func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, _,
 			if err != nil {
 				return nil, nil, mbliberrors.Errorf("GetPublidDefaultSpace: %w", err)
 			}
-			return organization.OrganizationID(), publicDefaultSpace.SpaceID, nil
+			return organization.OrganizationID, publicDefaultSpace.SpaceID, nil
 		} else if !errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
 			return nil, nil, mbliberrors.Errorf("find organization by name(%s): %w", organizationName, err)
 		}
@@ -53,10 +53,10 @@ func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, _,
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("FindAppUserByLoginID: %w", err)
 		}
-		logger.InfoContext(ctx, fmt.Sprintf("firstOwner: %d", firstOwner.AppUserID().Int()))
+		logger.InfoContext(ctx, fmt.Sprintf("firstOwner: %d", firstOwner.GetAppUserID().Int()))
 
 		// first owner can create app users
-		subject := firstOwner.AppUserID().GetRBACSubject()
+		subject := firstOwner.GetAppUserID().GetRBACSubject()
 		action := mbuserdomain.NewRBACAction("CreateAppUser")
 		object := mbuserdomain.NewRBACObject("*")
 		effect := mbuserservice.RBACAllowEffect

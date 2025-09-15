@@ -13,20 +13,20 @@ import (
 var ErrOrganizationNotFound = errors.New("organization not found")
 var ErrOrganizationAlreadyExists = errors.New("organization already exists")
 
-type OrganizationAddParameterInterface interface {
-	Name() string
-	FirstOwner() AppUserAddParameterInterface
+// type OrganizationAddParameterInterface interface {
+// 	Name() string
+// 	FirstOwner() *AddAppUserParameter
+// }
+
+type AddOrganizationParameter struct {
+	Name       string `validate:"required"`
+	FirstOwner *AddAppUserParameter
 }
 
-type OrganizationAddParameter struct {
-	NameInternal       string `validate:"required"`
-	FirstOwnerInternal AppUserAddParameterInterface
-}
-
-func NewOrganizationAddParameter(name string, firstOwner AppUserAddParameterInterface) (*OrganizationAddParameter, error) {
-	m := &OrganizationAddParameter{
-		NameInternal:       name,
-		FirstOwnerInternal: firstOwner,
+func NewOrganizationAddParameter(name string, firstOwner *AddAppUserParameter) (*AddOrganizationParameter, error) {
+	m := &AddOrganizationParameter{
+		Name:       name,
+		FirstOwner: firstOwner,
 	}
 	if err := libdomain.Validator.Struct(m); err != nil {
 		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
@@ -35,12 +35,12 @@ func NewOrganizationAddParameter(name string, firstOwner AppUserAddParameterInte
 	return m, nil
 }
 
-func (p *OrganizationAddParameter) Name() string {
-	return p.NameInternal
-}
-func (p *OrganizationAddParameter) FirstOwner() AppUserAddParameterInterface {
-	return p.FirstOwnerInternal
-}
+// func (p *AddOrganizationParameter) Name() string {
+// 	return p.NameInternal
+// }
+// func (p *OrganizationAddParameter) FirstOwner() *AddAppUserParameter {
+// 	return p.FirstOwnerInternal
+// }
 
 type OrganizationRepository interface {
 	GetOrganization(ctx context.Context, operator AppUserInterface) (*Organization, error)
@@ -49,7 +49,7 @@ type OrganizationRepository interface {
 
 	FindOrganizationByID(ctx context.Context, operator SystemAdminInterface, id *domain.OrganizationID) (*Organization, error)
 
-	AddOrganization(ctx context.Context, operator SystemAdminInterface, param OrganizationAddParameterInterface) (*domain.OrganizationID, error)
+	AddOrganization(ctx context.Context, operator SystemAdminInterface, param *AddOrganizationParameter) (*domain.OrganizationID, error)
 
 	// FindOrganizationByName(ctx context.Context, operator SystemAdmin, name string) (Organization, error)
 	// FindOrganization(ctx context.Context, operator AppUser) (Organization, error)
