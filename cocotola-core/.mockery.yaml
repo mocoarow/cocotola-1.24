@@ -1,20 +1,19 @@
 ---
-with-expecter: true
-
-mockname: "{{.InterfaceName}}"
-outpkg: mocks
-filename: "{{.MockName}}.go"
+all: false
+dir: '{{.InterfaceDir}}'
+filename: mocks.go
+force-file-write: true
+formatter: goimports
+log-level: info
+structname: '{{.Mock}}{{.InterfaceName}}'
+pkgname: mocks
+recursive: false
+require-template-schema-exists: true
+template: testify
+template-schema: '{{.Template}}.schema.json'
 packages:
   github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin:
     config:
       dir: controller/gin/mocks
     interfaces:
-      WorkbookQueryUsecase:
-      WorkbookCommandUsecase:
-  github.com/mocoarow/cocotola-1.24/cocotola-core/service:
-    config:
-      dir: service/mocks
-    interfaces:
-      CocotolaAuthClient:
-issue-845-fix: True
-resolve-type-alias: False
+      CardQueryUsecase:

@@ -4,16 +4,23 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 
+	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/helper"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
 type ProfileUsecase interface {
-	// GetMyProfile(ctx context.Context, operator service.OperatorInterface) (*domain.ProfileModel, error)
+	GetMyProfile(ctx context.Context, operator service.OperatorInterface) (*domain.ProfileModel, error)
 }
 
 type ProfileHandler struct {
@@ -22,19 +29,19 @@ type ProfileHandler struct {
 }
 
 func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
-	// helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
-	// 	result, err := h.profileUsecase.GetMyProfile(ctx, operator)
-	// 	if err != nil {
-	// 		return mbliberrors.Errorf("GetMyProfile: %w", err)
-	// 	}
+	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
+		result, err := h.profileUsecase.GetMyProfile(ctx, operator)
+		if err != nil {
+			return mbliberrors.Errorf("GetMyProfile: %w", err)
+		}
 
-	// 	apiResp := libapi.ProfileResponse{
-	// 		PrivateSpaceID: result.PrivateSpaceID.Int(),
-	// 	}
-	// 	c.JSON(http.StatusOK, apiResp)
+		apiResp := libapicore.ProfileResponse{
+			PrivateSpaceID: result.PrivateSpaceID.Int(),
+		}
+		c.JSON(http.StatusOK, apiResp)
 
-	// 	return nil
-	// }, h.errorHandle)
+		return nil
+	}, h.errorHandle)
 }
 
 func NewProfileHandler(profileUsecase ProfileUsecase) *ProfileHandler {

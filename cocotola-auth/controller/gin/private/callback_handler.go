@@ -11,7 +11,7 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 )
 
@@ -33,7 +33,7 @@ func NewCallbackHandler(callbackUsecase CallbackUsecase) *CallbackHandler {
 
 func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 	ctx := c.Request.Context()
-	var apiReq libapi.CallbackOnAddAppUserRequest
+	var apiReq libapiauth.CallbackOnAddAppUserRequest
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})

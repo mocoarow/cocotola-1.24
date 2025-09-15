@@ -13,7 +13,7 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/helper"
@@ -39,7 +39,7 @@ func NewUserHandler(userUsecase UserUsecase) *UserHandler {
 
 func (h *UserHandler) RegisterAppUser(c *gin.Context) {
 	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
-		var apiParam libapi.AppUserAddRequest
+		var apiParam libapiauth.AppUserAddRequest
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -78,7 +78,7 @@ func (h *UserHandler) RegisterAppUser(c *gin.Context) {
 
 		h.logger.InfoContext(ctx, fmt.Sprintf("registered app user: %s", authResult.AccessToken))
 
-		c.JSON(http.StatusOK, libapi.AuthResponse{
+		c.JSON(http.StatusOK, libapiauth.AuthResponse{
 			AccessToken:  &authResult.AccessToken,
 			RefreshToken: &authResult.RefreshToken,
 		})

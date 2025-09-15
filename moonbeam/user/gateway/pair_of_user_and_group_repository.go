@@ -237,13 +237,13 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 // 	return false, nil
 // }
 
-func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(_ context.Context, operator service.AppUserInterface, appUserID *domain.AppUserID) ([]*domain.UserGroupModel, error) {
+func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator service.AppUserInterface, appUserID *domain.AppUserID) ([]*domain.UserGroupModel, error) {
 	userGroups := []userGroupEntity{}
-	if result := r.db.Table(UserGroupTableName).Select(UserGroupTableName+".*").
+	if result := r.db.WithContext(ctx).Table(UserGroupTableName).Select(UserGroupTableName+".*").
 		Where(UserGroupTableName+".organization_id = ?", operator.OrganizationID().Int()).
-		Where(UserGroupTableName+".removed = ?", r.dialect.BoolDefaultValue()).
+		Where(UserGroupTableName+".deleted = ?", r.dialect.BoolDefaultValue()).
 		Where(AppUserTableName+".organization_id = ?", operator.OrganizationID().Int()).
-		Where(AppUserTableName+".id = ? and "+AppUserTableName+".removed = ?", appUserID.Int(), r.dialect.BoolDefaultValue()).
+		Where(AppUserTableName+".id = ? and "+AppUserTableName+".deleted = ?", appUserID.Int(), r.dialect.BoolDefaultValue()).
 		Joins("inner join " + PairOfUserAndGroupTableName + " on " + UserGroupTableName + ".id = " + PairOfUserAndGroupTableName + ".user_group_id").
 		Joins("inner join " + AppUserTableName + " on " + PairOfUserAndGroupTableName + ".app_user_id = " + AppUserTableName + ".id").
 		Order(UserGroupTableName + ".key_name").

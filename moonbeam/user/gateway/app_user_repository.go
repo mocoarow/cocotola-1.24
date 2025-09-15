@@ -31,7 +31,7 @@ type appUserEntity struct {
 	ProviderID           string
 	ProviderAccessToken  string
 	ProviderRefreshToken string
-	Removed              bool
+	Deleted              bool
 }
 
 func (e *appUserEntity) TableName() string {
@@ -166,7 +166,7 @@ func (r *appUserRepository) FindSystemOwnerByOrganizationName(ctx context.Contex
 
 	var appUserE appUserEntity
 	if result := r.db.Table(OrganizationTableName).Select(AppUserTableName+".*").
-		Where(OrganizationTableName+".name = ? and "+AppUserTableName+".removed = ?", organizationName, r.dialect.BoolDefaultValue()).
+		Where(OrganizationTableName+".name = ? and "+AppUserTableName+".deleted = ?", organizationName, r.dialect.BoolDefaultValue()).
 		Where("login_id = ?", service.SystemOwnerLoginID).
 		Joins("inner join " + AppUserTableName + " on " + OrganizationTableName + ".id = " + AppUserTableName + ".organization_id").
 		First(&appUserE); result.Error != nil {

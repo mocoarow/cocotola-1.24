@@ -1,8 +1,10 @@
 package domain
 
-func NewPrivateSpaceKey(loginID string) string {
-	return "__private_space@@" + loginID
+import "strconv"
+
+func NewPersonalSpaceKey(appUserID int) string {
+	return "__personal_space@@" + strconv.Itoa(appUserID)
 }
-func NewPrivateSpaceName(loginID string) string {
-	return "Private Space(" + loginID + ")"
+func NewPersonalSpaceName(loginID string) string {
+	return "Personal Space(" + loginID + ")"
 }

@@ -9,6 +9,7 @@ go_library(
         "firebase_client.go",
         "google_auth_client.go",
         "init.go",
+        "profile_usecase.go",
         "repository_factory.go",
         "space_query_usecase.go",
         "state_repository.go",
@@ -18,7 +19,8 @@ go_library(
     deps = [
         "//cocotola-auth/domain",
         "//cocotola-auth/service",
-        "//lib/api",
+        "//lib/api/auth",
+        "//lib/api/core",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",

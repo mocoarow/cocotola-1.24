@@ -1,4 +1,4 @@
-package card
+package core
 
 // FindCardsResponse
 type FindCardsResponse struct {

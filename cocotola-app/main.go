@@ -26,7 +26,8 @@ import (
 	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
 
 	authinit "github.com/mocoarow/cocotola-1.24/cocotola-auth/initialize"
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
+
+	coredomain "github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	coreinit "github.com/mocoarow/cocotola-1.24/cocotola-core/initialize"
 	coresqls "github.com/mocoarow/cocotola-1.24/cocotola-core/sqls"
 
@@ -62,7 +63,7 @@ func main() {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
 	// init db
-	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, cfg.Log, domain.AppName, mbsqls.SQL, coresqls.SQL)
+	dialect, db, sqlDB, err := mblibconfig.InitDB(ctx, cfg.DB, cfg.Log, coredomain.AppName, mbsqls.SQL, coresqls.SQL)
 	libdomain.CheckError(err)
 
 	defer sqlDB.Close()
@@ -111,7 +112,20 @@ func main() {
 	}
 	// auth
 	{
-		if err := authinit.Initialize2(ctx, systemToken, dialect, cfg.DB.DriverName, db, organizationID, rootFolderID, deckIDs); err != nil {
+		parentAhdChildLinks := make([]*authinit.ParentAndChildLink, 0)
+
+		// public default space - root folder - decks
+		parentAhdChildLinks = append(parentAhdChildLinks, &authinit.ParentAndChildLink{
+			Parent: publicDefaultSpaceID.GetRBACObject(),
+			Child:  rootFolderID,
+		})
+		for _, deckID := range deckIDs {
+			parentAhdChildLinks = append(parentAhdChildLinks, &authinit.ParentAndChildLink{
+				Parent: rootFolderID,
+				Child:  deckID,
+			})
+		}
+		if err := authinit.Initialize2(ctx, systemToken, dialect, cfg.DB.DriverName, db, organizationID, parentAhdChildLinks); err != nil {
 			libdomain.CheckError(err)
 		}
 	}

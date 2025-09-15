@@ -15,6 +15,7 @@ go_library(
         "rbac_repository.go",
         "repository_factory.go",
         "space.go",
+        "space_manager.go",
         "space_repository.go",
         "system_admin.go",
         "system_owner.go",

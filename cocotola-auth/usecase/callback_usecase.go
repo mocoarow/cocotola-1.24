@@ -44,7 +44,7 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 			return mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
 		}
 
-		// Create private space for the new user
+		// Create personal space for the new user
 		mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
@@ -55,14 +55,16 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 			return mbliberrors.Errorf("FindAppUserByID: %w", err)
 		}
 
-		spaceRepo := mbrf.NewSpaceRepository(ctx)
-		addSpaceParam := mbuserservice.SpaceAddParameter{
-			Key:      libdomain.NewPrivateSpaceKey(appUser.LoginID()),
-			Name:     libdomain.NewPrivateSpaceName(appUser.LoginID()),
-			IsPublic: false,
+		spaceManager, err := mbrf.NewSpaceManager(ctx)
+		if err != nil {
+			return mbliberrors.Errorf("NewSpaceManager: %w", err)
 		}
-
-		spaceID, err := spaceRepo.AddSpace(ctx, action.SystemOwner, &addSpaceParam)
+		param := mbuserservice.AddPersonalSpaceParameter{
+			AppUserID: appUserID,
+			KeyName:   libdomain.NewPersonalSpaceKey(appUser.AppUserID().Int()),
+			Name:      libdomain.NewPersonalSpaceName(appUser.LoginID()),
+		}
+		spaceID, err := spaceManager.AddPersonalSpace(ctx, action.SystemOwner, &param)
 		if err != nil {
 			return mbliberrors.Errorf("AddSpace: %w", err)
 		}

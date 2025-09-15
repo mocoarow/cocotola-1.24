@@ -3,7 +3,7 @@ package service
 import "github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 
 var (
-	TEMPLATE_ID_ENGLISH_BLANK *domain.TemplateID
+	TemplateIDEnglishBlank *domain.TemplateID
 )
 
 func init() {
@@ -11,5 +11,5 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	TEMPLATE_ID_ENGLISH_BLANK = templateIDEnglishBlank
+	TemplateIDEnglishBlank = templateIDEnglishBlank
 }

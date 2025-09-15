@@ -22,8 +22,8 @@ import (
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/config"
-	controllermock "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/mocks"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/public"
+	controllermock "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/public/mocks"
 )
 
 var (

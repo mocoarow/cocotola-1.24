@@ -11,7 +11,7 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
@@ -54,7 +54,7 @@ func (h *AuthHandler) SignInWithIDToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, libapi.AuthResponse{
+	c.JSON(http.StatusOK, libapiauth.AuthResponse{
 		AccessToken:  &tokenSet.AccessToken,
 		RefreshToken: &tokenSet.RefreshToken,
 	})
@@ -86,7 +86,7 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	for _, g := range appUserInfo.UserGroups {
 		groups = append(groups, g.Name)
 	}
-	c.JSON(http.StatusOK, libapi.AppUserInfoResponse{
+	c.JSON(http.StatusOK, libapiauth.AppUserInfoResponse{
 		AppUserID:      appUserInfo.AppUserID.Int(),
 		OrganizationID: appUserInfo.OrganizationID.Int(),
 		LoginID:        appUserInfo.LoginID,
@@ -100,7 +100,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	h.logger.InfoContext(ctx, "Authorize")
-	var refreshTokenParameter libapi.RefreshTokenParameter
+	var refreshTokenParameter libapiauth.RefreshTokenParameter
 	if err := c.ShouldBindJSON(&refreshTokenParameter); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
@@ -114,7 +114,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, libapi.AuthResponse{ //nolint:exhaustruct
+	c.JSON(http.StatusOK, libapiauth.AuthResponse{ //nolint:exhaustruct
 		AccessToken: &accessToken,
 	})
 }

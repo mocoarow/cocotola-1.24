@@ -15,7 +15,7 @@ go_library(
         "//cocotola-auth/controller/gin/helper",
         "//cocotola-auth/domain",
         "//cocotola-auth/service",
-        "//lib/api",
+        "//lib/api/auth",
         "//lib/controller/gin",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/log",
@@ -35,7 +35,7 @@ go_test(
     deps = [
         ":public",
         "//cocotola-auth/config",
-        "//cocotola-auth/controller/gin/mocks",
+        "//cocotola-auth/controller/gin/public/mocks",
         "//cocotola-auth/domain",
         "//lib/config",
         "//lib/controller/gin",
@@ -50,7 +50,6 @@ go_test(
     ],
 )
 
-
 go_test(
     name = "public_s_test",
     size = "small",
@@ -63,7 +62,7 @@ go_test(
     deps = [
         ":public",
         "//cocotola-auth/config",
-        "//cocotola-auth/controller/gin/mocks",
+        "//cocotola-auth/controller/gin/public/mocks",
         "//cocotola-auth/domain",
         "//lib/config",
         "//lib/controller/gin",

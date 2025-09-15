@@ -23,7 +23,7 @@ func initRootFolder(ctx context.Context, txManager service.TransactionManager, o
 		if err != nil {
 			return nil, mbliberrors.Errorf("NewFolderRepository: %w", err)
 		}
-		folderID, err := foldeRepo.AddFolder(ctx, operator, &service.FolderAddParameter{
+		folderID, err := foldeRepo.AddFolder(ctx, operator, &service.AddFolderParameter{
 			SpaceID:  publicDefaultSpaceID,
 			FolderID: domain.EmptyFolderID,
 			Name:     "Root",
@@ -31,6 +31,7 @@ func initRootFolder(ctx context.Context, txManager service.TransactionManager, o
 		if err != nil {
 			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
 		}
+
 		return folderID, nil
 	}
 

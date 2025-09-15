@@ -45,7 +45,7 @@ type AuthInitParameter struct {
 }
 
 func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig, authInitParam *AuthInitParameter) (*domain.FolderID, []*domain.DeckID, error) {
-	txManager, err := initApp(ctx, parent, dialect, driverName, db, logConfig, coreConfig, authInitParam)
+	txManager, err := initApp(ctx, parent, dialect, driverName, db, logConfig, coreConfig)
 	if err != nil {
 		return nil, nil, mbliberrors.Errorf("initApp: %w", err)
 	}
@@ -63,7 +63,7 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 	return rootFolderID, deckIDs, nil
 }
 
-func initApp(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig, authInitParam *AuthInitParameter) (service.TransactionManager, error) {
+func initApp(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig) (service.TransactionManager, error) {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC)
 	}

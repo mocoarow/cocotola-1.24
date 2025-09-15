@@ -43,18 +43,20 @@ type SpaceModel struct {
 	SpaceID        *SpaceID        `validate:"required"`
 	OrganizationID *OrganizationID `validate:"required"`
 	OwnerID        *AppUserID      `validate:"required"`
-	Key            string          `validate:"required"`
+	KeyName        string          `validate:"required"`
 	Name           string          `validate:"required"`
+	SpaceType      string          `validate:"required,oneof=personal private public"`
 }
 
-func NewSpaceModel(baseModel *libdomain.BaseModel, spaceID *SpaceID, organizationID *OrganizationID, owernID *AppUserID, key, name string) (*SpaceModel, error) {
+func NewSpaceModel(baseModel *libdomain.BaseModel, spaceID *SpaceID, organizationID *OrganizationID, owernID *AppUserID, keyName, name string, spaceType string) (*SpaceModel, error) {
 	m := &SpaceModel{
 		BaseModel:      baseModel,
 		SpaceID:        spaceID,
 		OrganizationID: organizationID,
 		OwnerID:        owernID,
-		Key:            key,
+		KeyName:        keyName,
 		Name:           name,
+		SpaceType:      spaceType,
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {
@@ -63,7 +65,6 @@ func NewSpaceModel(baseModel *libdomain.BaseModel, spaceID *SpaceID, organizatio
 
 	return m, nil
 }
-
 func (m *SpaceModel) IsPrivate() bool {
-	return m.Key == "private"
+	return m.SpaceType == "private"
 }

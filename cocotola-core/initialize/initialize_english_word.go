@@ -93,7 +93,7 @@ func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorIn
 			SpaceID:     publicDefaultSpaceID,
 			FolderID:    rootFolderID,
 			Name:        name,
-			TemplateID:  service.TEMPLATE_ID_ENGLISH_BLANK,
+			TemplateID:  service.TemplateIDEnglishBlank,
 			Lang2:       libdomain.Lang2JA,
 			Description: "",
 		}
@@ -111,7 +111,7 @@ func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorIn
 
 			addCardParam := service.AddCardParameter{
 				DeckID:     deckID,
-				TemplateID: service.TEMPLATE_ID_ENGLISH_BLANK,
+				TemplateID: service.TemplateIDEnglishBlank,
 				Content:    string(content),
 			}
 			if _, err := cardRepo.AddCard(ctx, operator, &addCardParam); err != nil {

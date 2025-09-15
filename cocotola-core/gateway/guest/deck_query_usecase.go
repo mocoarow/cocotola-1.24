@@ -12,6 +12,7 @@ import (
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
@@ -38,7 +39,7 @@ func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator service.Op
 	for _, spaceID := range spaceIDs {
 		action := action
 		object := spaceID.GetRBACObject()
-		ok, err := u.rbacClient.CheckAuthorization(ctx, &libapi.AuthorizeRequest{
+		ok, err := u.rbacClient.CheckAuthorization(ctx, &libapiauth.AuthorizeRequest{
 			OrganizationID: operator.OrganizationID().Int(),
 			AppUserID:      operator.AppUserID().Int(),
 			Action:         action.Action(),

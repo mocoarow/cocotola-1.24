@@ -17,9 +17,10 @@ type spaceEntity struct {
 	ID             int
 	OrganizationID int
 	OwnerID        int
-	Key            string
+	KeyName        string
 	Name           string
-	IsPublic       bool
+	SpaceType      string
+	Deleted        bool
 }
 
 func (e *spaceEntity) TableName() string {
@@ -52,8 +53,9 @@ func (e *spaceEntity) ToModel() (*domain.SpaceModel, error) {
 		spaceID,
 		organizationID,
 		ownerID,
-		e.Key,
+		e.KeyName,
 		e.Name,
+		e.SpaceType,
 	)
 	if err != nil {
 		return nil, liberrors.Errorf("new space model: %w", err)
@@ -75,6 +77,35 @@ func (e *spaceEntity) toSpace() (*service.Space, error) {
 
 	return space, nil
 }
+
+// func (e *spaceEntity) toSpaceModel() (*domain.SpaceModel, error) {
+// 	baseModel, err := e.ToBaseModel()
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("e.toModel. err: %w", err)
+// 	}
+
+// 	spaceID, err := domain.NewSpaceID(e.ID)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("new space id(%d). err: %w", e.ID, err)
+// 	}
+
+// 	ownerID, err := domain.NewAppUserID(e.OwnerID)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("domain.NewAppUserModel. err: %w", err)
+// 	}
+
+// 	organizationID, err := domain.NewOrganizationID(e.OrganizationID)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("domain.NewOrganizationID. err: %w", err)
+// 	}
+
+// 	appUserModel, err := domain.NewSpaceModel(baseModel, spaceID, organizationID, ownerID, e.KeyName, e.Name, e.SpaceType)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("domain.NewAppUserModel. err: %w", err)
+// 	}
+
+// 	return appUserModel, nil
+// }
 
 type spaceEntities []spaceEntity
 
@@ -117,9 +148,9 @@ func (r *spaceRepository) AddSpace(ctx context.Context, operator service.Operato
 		},
 		OrganizationID: operator.OrganizationID().Int(),
 		OwnerID:        operator.AppUserID().Int(),
-		Key:            param.Key,
+		KeyName:        param.KeyName,
 		Name:           param.Name,
-		IsPublic:       param.IsPublic,
+		SpaceType:      param.SpaceType,
 	}
 	if result := r.db.Create(&spaceE); result.Error != nil {
 		return nil, liberrors.Errorf("add space entity: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrSpaceAlreadyExists))
@@ -163,7 +194,7 @@ func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator service
 		&spaceEntity{}, //nolint:exhaustruct
 	).
 		Where("organization_id = ?", uint(operator.OrganizationID().Value)).
-		Where("is_public = ?", true).
+		Where("space_type = ?", "public").
 		Find(&spacesE); result.Error != nil {
 		return nil, liberrors.Errorf("spaceRepository.FindPublicSpaces: %w", result.Error)
 	}
@@ -175,14 +206,14 @@ func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator service
 	return spaces, nil
 }
 
-func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, key string) (*service.Space, error) {
+func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, keyName string) (*service.Space, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.FindPublicSpaceByKey")
 	defer span.End()
 
 	var spaceE spaceEntity
 	if result := r.db.Model(&spaceE).
-		Where("key = ?", key).
-		Where("is_public = ?", true).
+		Where("key_name = ?", keyName).
+		Where("space_type = ?", "public").
 		First(&spaceE); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrSpaceNotFound

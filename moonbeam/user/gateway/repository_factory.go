@@ -62,6 +62,10 @@ func (f *repositoryFactory) NewSpaceRepository(ctx context.Context) service.Spac
 // 	return NewRBACRepository(ctx, f.db)
 // }
 
+func (f *repositoryFactory) NewSpaceManager(ctx context.Context) (service.SpaceManager, error) {
+	return NewSpaceManager(ctx, f.dialect, f.db, f)
+}
+
 func (f *repositoryFactory) NewAuthorizationManager(ctx context.Context) (service.AuthorizationManager, error) {
 	return NewAuthorizationManager(ctx, f.dialect, f.db, f)
 }

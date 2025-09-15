@@ -41,7 +41,7 @@ tasks:
   gen-code:
     cmds:
       - for:
-          - cocotola-app
+          # - cocotola-app
           - cocotola-auth
           - cocotola-core
           # - cocotola-import

@@ -14,8 +14,7 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
-	libapideck "github.com/mocoarow/cocotola-1.24/lib/api/deck"
+	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
@@ -73,7 +72,7 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsGuest")
 	defer span.End()
 
-	var apiReq libapideck.FindDecksRequest
+	var apiReq libapicore.FindDecksRequest
 	if err := c.ShouldBindQuery(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -99,9 +98,9 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 		return mbliberrors.Errorf("FindDecks: %w", err)
 	}
 
-	decks := make([]libapideck.FindDecksResponseDeck, 0, len(result))
+	decks := make([]libapicore.FindDecksResponseDeck, 0, len(result))
 	for _, d := range result {
-		decks = append(decks, libapideck.FindDecksResponseDeck{
+		decks = append(decks, libapicore.FindDecksResponseDeck{
 			ID:          d.DeckID.Int(),
 			Version:     d.Version,
 			Name:        d.Name,
@@ -110,7 +109,7 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 			Description: d.Description,
 		})
 	}
-	apiResp := libapideck.FindDecksResponse{
+	apiResp := libapicore.FindDecksResponse{
 		TotalCount: len(result),
 		Results:    decks,
 	}
@@ -160,7 +159,7 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 
 func (h *DeckHandler) AddDeck(c *gin.Context) {
 	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
-		var apiParam libapi.DeckAddParameter
+		var apiParam libapicore.DeckAddParameter
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -219,7 +218,7 @@ func (h *DeckHandler) UpdateDeck(c *gin.Context) {
 			return nil
 		}
 
-		var apiParam libapi.DeckUpdateParameter
+		var apiParam libapicore.DeckUpdateParameter
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("ShouldBindJSON: %+v", err))
 			c.Status(http.StatusBadRequest)
@@ -269,7 +268,6 @@ func NewInitDeckRouterFunc(guestDeckQueryUsecase GuestDeckQueryUsecase, studentD
 		// deck.POST(":deckID", privateDeckHandler.FindDecks)
 		// deck.GET(":deckID", privateDeckHandler.FindDeckByID)
 		deck.PUT(":deckID", deckHandler.UpdateDeck)
-		// deck.DELETE(":deckID", privateDeckHandler.RemoveDeck)
 		deck.POST("", deckHandler.AddDeck)
 	}
 }

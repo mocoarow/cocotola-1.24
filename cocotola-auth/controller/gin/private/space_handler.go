@@ -13,7 +13,7 @@ import (
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
-	libapispace "github.com/mocoarow/cocotola-1.24/lib/api/space"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/helper"
@@ -35,15 +35,15 @@ func (h *SpaceHandler) FindSpaces(c *gin.Context) {
 			return mbliberrors.Errorf("FindPublicSpaces: %w", err)
 		}
 
-		spaces := make([]libapispace.FindSpacesResponseSpace, 0, len(result))
+		spaces := make([]libapiauth.FindSpacesResponseSpace, 0, len(result))
 		for _, s := range result {
-			spaces = append(spaces, libapispace.FindSpacesResponseSpace{
-				ID:   s.SpaceID.Int(),
-				Key:  s.Key,
-				Name: s.Name,
+			spaces = append(spaces, libapiauth.FindSpacesResponseSpace{
+				ID:      s.SpaceID.Int(),
+				KeyName: s.KeyName,
+				Name:    s.Name,
 			})
 		}
-		apiResp := libapispace.FindSpacesResponse{
+		apiResp := libapiauth.FindSpacesResponse{
 			Results: spaces,
 		}
 		c.JSON(http.StatusOK, apiResp)

@@ -7,7 +7,7 @@ import (
 
 const (
 	// loggerKey = liblog.CoreGatewayLoggerContextKey
-	DeckTableName               = "core_deck"
+	DeckTableName = "core_deck"
 )
 
 var (

@@ -12,31 +12,30 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/helper"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-type ProfileUsecase interface {
-	GetMyProfile(ctx context.Context, mbuserservice service.OperatorInterface) (*domain.ProfileModel, error)
+type ProfileQueryUsecase interface {
+	GetMyProfile(ctx context.Context, operator mbuserservice.OperatorInterface) (*domain.ProfileModel, error)
 }
 
 type ProfileHandler struct {
-	profileUsecase ProfileUsecase
-	logger         *slog.Logger
+	profileQueryUsecase ProfileQueryUsecase
+	logger              *slog.Logger
 }
 
 func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
 	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
-		result, err := h.profileUsecase.GetMyProfile(ctx, operator)
+		result, err := h.profileQueryUsecase.GetMyProfile(ctx, operator)
 		if err != nil {
 			return mbliberrors.Errorf("GetMyProfile: %w", err)
 		}
 
-		apiResp := libapi.ProfileResponse{
+		apiResp := libapiauth.ProfileResponse{
 			PrivateSpaceID: result.PrivateSpaceID.Int(),
 		}
 		c.JSON(http.StatusOK, apiResp)
@@ -45,10 +44,10 @@ func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
 	}, h.errorHandle)
 }
 
-func NewProfileHandler(profileUsecase ProfileUsecase) *ProfileHandler {
+func NewProfileHandler(profileQueryUsecase ProfileQueryUsecase) *ProfileHandler {
 	return &ProfileHandler{
-		profileUsecase: profileUsecase,
-		logger:         slog.Default().With(slog.String(mbliblog.LoggerNameKey, "ProfileHandler")),
+		profileQueryUsecase: profileQueryUsecase,
+		logger:              slog.Default().With(slog.String(mbliblog.LoggerNameKey, "ProfileHandler")),
 	}
 }
 
@@ -58,13 +57,13 @@ func (h *ProfileHandler) errorHandle(ctx context.Context, _ *gin.Context, err er
 	return false
 }
 
-func NewInitProfileRouterFunc(profileUsecase ProfileUsecase) libcontroller.InitRouterGroupFunc {
+func NewInitProfileRouterFunc(profileQueryUsecase ProfileQueryUsecase) libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
 		profile := parentRouterGroup.Group("profile")
 		for _, m := range middleware {
 			profile.Use(m)
 		}
-		profileHandler := NewProfileHandler(profileUsecase)
+		profileHandler := NewProfileHandler(profileQueryUsecase)
 		profile.GET("me", profileHandler.GetMyProfile)
 	}
 }

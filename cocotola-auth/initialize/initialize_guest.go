@@ -23,13 +23,7 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp2"))
 
 	fn := func(rf service.RepositoryFactory) (*mbuserdomain.AppUserID, error) {
-		systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
-			service.WithOrganizationByName(organizationName),
-			service.WithAuthorizationManager(),
-		)
-		if err != nil {
-			return nil, mbliberrors.Errorf("new system owner action: %w", err)
-		}
+		systemOwnerAction := newSystemOwnerAction(ctx, systemToken, rf, organizationName)
 
 		guestLoginID := libdomain.NewGuestLoginID(organizationName)
 		guestUserName := libdomain.NewGuestUserName(organizationName)
@@ -44,15 +38,7 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 		}
 
 		// 2. add guest user
-		appUserAddParam, err := mbuserservice.NewAppUserAddParameter(guestLoginID, guestUserName, "", "", "", "", "")
-		if err != nil {
-			return nil, mbliberrors.Errorf("new AppUserAddParameter: %w", err)
-		}
-
-		guestID, err := systemOwnerAction.SystemOwner.AddAppUser(ctx, appUserAddParam)
-		if err != nil {
-			return nil, mbliberrors.Errorf("FindAppUserByLoginID: %w", err)
-		}
+		guestID := addGuestUser(ctx, guestLoginID, guestUserName, systemOwnerAction)
 
 		mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 		if err != nil {
@@ -67,10 +53,7 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 			return nil, mbliberrors.Errorf("find public group(%s): %w", mbuserservice.PublicGroupKey, err)
 		}
 
-		authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
-		if err != nil {
-			return nil, mbliberrors.Errorf("NewAuthorizationManager: %w", err)
-		}
+		authorizationManager := initAuthorizationManager(ctx, mbrf)
 
 		if err := authorizationManager.AddUserToGroup(ctx, systemOwnerAction.SystemOwner, guestID, publicGroup.UserGroupID()); err != nil {
 			return nil, mbliberrors.Errorf("AddUserToGroup: %w", err)
@@ -110,4 +93,26 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 	}
 
 	return guestID, nil
+}
+
+func addGuestUser(ctx context.Context, guestLoginID, guestUserName string, systemOwnerAction *service.SystemOwnerAction) *mbuserdomain.AppUserID {
+	appUserAddParam, err := mbuserservice.NewAppUserAddParameter(guestLoginID, guestUserName, "", "", "", "", "")
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+
+	guestID, err := systemOwnerAction.SystemOwner.AddAppUser(ctx, appUserAddParam)
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+
+	return guestID
+}
+
+func initAuthorizationManager(ctx context.Context, mbrf mbuserservice.RepositoryFactory) mbuserservice.AuthorizationManager {
+	authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+	return authorizationManager
 }

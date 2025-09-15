@@ -56,13 +56,10 @@ func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txMan
 	// - workbookCommandUsecase
 	deckCommandUsecase := resourcemanager.NewDeckCommandUsecase(txManager, nonTxManager, rbacClient)
 
-	// - profileUsecase
-	profileUsecase := usecase.NewProfileUsecase(nonTxManager)
-
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
 		NewInitDeckRouterFunc(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase),
-		NewInitProfileRouterFunc(profileUsecase),
+		// NewInitProfileRouterFunc(profileUsecase),
 	}, nil
 }
 

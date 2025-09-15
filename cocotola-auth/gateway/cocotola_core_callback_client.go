@@ -11,7 +11,7 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
@@ -39,9 +39,10 @@ func (c *cocotolaCoreCallbackClient) OnAddAppUserSpace(ctx context.Context, orga
 	u := *c.coreEndpoint
 	u.Path = path.Join(u.Path, "api", "v1", "callback", "on-add-user-space")
 
-	apiReq := libapi.CallbackOnAddAppUserRequest{
+	apiReq := libapicore.CallbackOnAddAppUserSpaceRequest{
 		OrganizationID: organizationID.Int(),
 		AppUserID:      appUserID.Int(),
+		SpaceID:        spaceID.Int(),
 	}
 	jsonReq, err := json.Marshal(apiReq)
 	if err != nil {

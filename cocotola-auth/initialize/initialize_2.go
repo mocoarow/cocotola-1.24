@@ -16,7 +16,12 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-func Initialize2(ctx context.Context, systemToken libdomain.SystemToken, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, organizationID *mbuserdomain.OrganizationID, parentObject mbuserdomain.RBACObject, childObjects []mbuserdomain.RBACObject) error {
+type ParentAndChildLink struct {
+	Parent mbuserdomain.RBACObject
+	Child  mbuserdomain.RBACObject
+}
+
+func Initialize2(ctx context.Context, systemToken libdomain.SystemToken, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, organizationID *mbuserdomain.OrganizationID, parentAndChildLink []*ParentAndChildLink) error {
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		resouceEventHandlers := map[mbuserdomain.ResourceKey]mblibservice.ResourceEventHandler{}
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, resouceEventHandlers)
@@ -41,8 +46,10 @@ func Initialize2(ctx context.Context, systemToken libdomain.SystemToken, dialect
 		if err != nil {
 			return mbliberrors.Errorf("new authorization manager: %w", err)
 		}
-		for _, child := range childObjects {
-			authorizationManager.AddObjectToObject(ctx, systemOwnerAction.SystemOwner, child, parentObject)
+		for _, po := range parentAndChildLink {
+			if err := authorizationManager.AddObjectToObject(ctx, systemOwnerAction.SystemOwner, po.Child, po.Parent); err != nil {
+				return mbliberrors.Errorf("AddObjectToObject: %w", err)
+			}
 		}
 
 		return nil

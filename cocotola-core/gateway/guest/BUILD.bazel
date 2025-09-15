@@ -14,6 +14,7 @@ go_library(
         "//cocotola-core/gateway",
         "//cocotola-core/service",
         "//lib/api",
+        "//lib/api/auth",
         "//lib/rbac",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",

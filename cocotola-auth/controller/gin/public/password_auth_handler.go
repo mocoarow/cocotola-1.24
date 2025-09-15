@@ -12,7 +12,7 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
@@ -37,7 +37,7 @@ func NewPasswordAuthHandler(passwordUsecase PasswordUsecaseInterface) *PasswordA
 func (h *PasswordAuthHandler) Authorize(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var passwordAuthParameter libapi.PasswordAuthParameter
+	var passwordAuthParameter libapiauth.PasswordAuthParameter
 	if err := c.ShouldBindJSON(&passwordAuthParameter); err != nil {
 		h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -66,7 +66,7 @@ func (h *PasswordAuthHandler) Authorize(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, libapi.AuthResponse{
+	c.JSON(http.StatusOK, libapiauth.AuthResponse{
 		AccessToken:  &authResult.AccessToken,
 		RefreshToken: &authResult.RefreshToken,
 	})

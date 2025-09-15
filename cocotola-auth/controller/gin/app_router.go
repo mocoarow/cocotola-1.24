@@ -115,10 +115,11 @@ func GetBearerTokenRouterGroupFuncs(_ context.Context, systemToken libdomain.Sys
 	// - user
 	userUsecase := usecase.NewUserUsecase(systemToken, txManager, nonTxManager, authTokenManager)
 	spaceUsecase := gateway.NewSpaceQueryUsecase(mbrf)
-
+	profileQueryUsecase := gateway.NewProfileQueryUsecase(nonTxManager)
 	return []libcontroller.InitRouterGroupFunc{
 		public.NewInitUserRouterFunc(userUsecase),
 		private.NewInitSpaceRouterFunc(spaceUsecase),
+		private.NewInitProfileRouterFunc(profileQueryUsecase),
 		// NewInitRBACRouterFunc(rbacUsecase),
 	}
 }

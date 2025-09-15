@@ -20,22 +20,14 @@ func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, _,
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
 
 	fn := func(rf service.RepositoryFactory) (*mbuserdomain.OrganizationID, *mbuserdomain.SpaceID, error) {
-		systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
-		if err != nil {
-			return nil, nil, mbliberrors.Errorf("new system admin action: %w", err)
-		}
+		systemAdminAction := newSystemAdminAction(ctx, systemToken, rf)
+
 		// 1. check whether the organization already exists
 		organization, err := systemAdminAction.SystemAdmin.FindOrganizationByName(ctx, organizationName)
 		if err == nil {
 			logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID().Int()))
 
-			systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
-				service.WithOrganizationByName(organizationName),
-				service.WithAuthorizationManager(),
-			)
-			if err != nil {
-				return nil, nil, mbliberrors.Errorf("new system owner action: %w", err)
-			}
+			systemOwnerAction := newSystemOwnerAction(ctx, systemToken, rf, organizationName)
 
 			publicDefaultSpace, err := systemOwnerAction.SystemOwner.GetPublidDefaultSpace(ctx)
 			if err != nil {
@@ -53,13 +45,7 @@ func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, _,
 		}
 		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
 
-		systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
-			service.WithOrganizationByName(organizationName),
-			service.WithAuthorizationManager(),
-		)
-		if err != nil {
-			return nil, nil, mbliberrors.Errorf("new system owner action: %w", err)
-		}
+		systemOwnerAction := newSystemOwnerAction(ctx, systemToken, rf, organizationName)
 
 		// 3. add policy to "first-owner" user
 
@@ -115,4 +101,22 @@ func addOrganization(ctx context.Context, systemAdminAction *service.SystemAdmin
 	}
 
 	return organizationID, nil
+}
+func newSystemAdminAction(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory) *service.SystemAdminAction {
+	systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+	return systemAdminAction
+}
+
+func newSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationName string) *service.SystemOwnerAction {
+	systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
+		service.WithOrganizationByName(organizationName),
+		service.WithAuthorizationManager(),
+	)
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+	return systemOwnerAction
 }

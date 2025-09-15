@@ -12,6 +12,8 @@ type RepositoryFactory interface {
 	NewUserGroupRepository(ctx context.Context) UserGroupRepository
 	NewSpaceRepository(ctx context.Context) SpaceRepository
 
+	NewSpaceManager(ctx context.Context) (SpaceManager, error)
+
 	// NewPairOfUserAndSpaceRepository(ctx context.Context) (PairOfUserAndSpaceRepository, error)
 
 	// NewPairOfUserAndGroupRepository(ctx context.Context) PairOfUserAndGroupRepository

@@ -9,5 +9,5 @@ import (
 type PairOfUserAndSpaceRepository interface {
 	AddPairOfUserAndSpace(ctx context.Context, operator AppUserInterface, appUserID *domain.AppUserID, spaceID *domain.SpaceID) error
 
-	FindSpacesByUserID(ctx context.Context, operator AppUserInterface, appUserID *domain.AppUserID) ([]*Space, error)
+	FindMySpaces(ctx context.Context, operator AppUserInterface) ([]*Space, error)
 }

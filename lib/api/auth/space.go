@@ -1,0 +1,11 @@
+package auth
+
+type FindSpacesResponseSpace struct {
+	ID      int    `json:"id" binding:"required"`
+	KeyName string `json:"key" binding:"required"`
+	Name    string `json:"name" binding:"required"`
+}
+
+type FindSpacesResponse struct {
+	Results []FindSpacesResponseSpace `json:"results"`
+}

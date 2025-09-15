@@ -29,7 +29,7 @@ func (e *FolderEntity) TableName() string {
 	return "core_folder"
 }
 
-func (e *FolderEntity) ToModel() (*domain.FolderModel, error) {
+func (e *FolderEntity) ToModel() (*domain.FolderModel, error) { //nolint:dupl
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, mbliberrors.Errorf("to base model: %w", err)
@@ -76,15 +76,15 @@ func (e *FolderEntity) ToModel() (*domain.FolderModel, error) {
 	return folderModel, nil
 }
 
-func (e *FolderEntity) toFolder() (*service.Folder, error) {
-	folderModel, err := e.ToModel()
-	if err != nil {
-		return nil, mbliberrors.Errorf("to folder model: %w", err)
-	}
-	folder := &service.Folder{FolderModel: folderModel}
+// func (e *FolderEntity) toFolder() (*service.Folder, error) {
+// 	folderModel, err := e.ToModel()
+// 	if err != nil {
+// 		return nil, mbliberrors.Errorf("to folder model: %w", err)
+// 	}
+// 	folder := &service.Folder{FolderModel: folderModel}
 
-	return folder, nil
-}
+// 	return folder, nil
+// }
 
 type folderRepository struct {
 	db *gorm.DB
@@ -96,7 +96,7 @@ func NewFolderRepository(db *gorm.DB) service.FolderRepository {
 	}
 }
 
-func (r *folderRepository) AddFolder(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.FolderAddParameter) (*domain.FolderID, error) {
+func (r *folderRepository) AddFolder(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddFolderParameter) (*domain.FolderID, error) { //nolint:dupl
 	_, span := tracer.Start(ctx, "folderRepository.AddFolder")
 	defer span.End()
 

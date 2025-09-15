@@ -11,9 +11,9 @@ var ErrSpaceAlreadyExists = errors.New("space already exists")
 var ErrSpaceNotFound = errors.New("space not found")
 
 type SpaceAddParameter struct {
-	Key      string
-	Name     string
-	IsPublic bool
+	KeyName   string
+	Name      string
+	SpaceType string
 }
 
 type SpaceUpdateParameter struct {

@@ -29,7 +29,7 @@ func (e *CardEntity) TableName() string {
 	return "core_card"
 }
 
-func (e *CardEntity) ToModel() (*domain.CardModel, error) {
+func (e *CardEntity) ToModel() (*domain.CardModel, error) { //nolint:dupl
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, mbliberrors.Errorf("to base model: %w", err)
@@ -94,7 +94,7 @@ func NewCardRepository(db *gorm.DB) service.CardRepository {
 		db: db,
 	}
 }
-func (r *cardRepository) AddCard(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddCardParameter) (*domain.CardID, error) {
+func (r *cardRepository) AddCard(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddCardParameter) (*domain.CardID, error) { //nolint:dupl
 	_, span := tracer.Start(ctx, "cardRepository.AddCard")
 	defer span.End()
 

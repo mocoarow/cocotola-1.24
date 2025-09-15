@@ -11,7 +11,7 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
@@ -58,7 +58,7 @@ func NewRBACHandler(rbacUsecase RBACUsecase) *RBACHandler {
 
 func (h *RBACHandler) AddPolicyToUser(c *gin.Context) {
 	ctx := c.Request.Context()
-	var apiParam libapi.AddPolicyToUserParameter
+	var apiParam libapiauth.AddPolicyToUserParameter
 	if err := c.ShouldBindJSON(&apiParam); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
@@ -103,7 +103,7 @@ func (h *RBACHandler) AddPolicyToGroup(_ *gin.Context) {
 
 func (h *RBACHandler) CheckAuthorization(c *gin.Context) {
 	ctx := c.Request.Context()
-	var apiParam libapi.AuthorizeRequest
+	var apiParam libapiauth.AuthorizeRequest
 	if err := c.ShouldBindJSON(&apiParam); err != nil {
 		h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -137,7 +137,7 @@ func (h *RBACHandler) CheckAuthorization(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, libapi.AuthorizeResponse{
+	c.JSON(http.StatusOK, libapiauth.AuthorizeResponse{
 		Authorized: ok,
 	})
 }
