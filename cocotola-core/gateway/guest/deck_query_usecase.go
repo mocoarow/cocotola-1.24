@@ -3,8 +3,17 @@ package guest
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"gorm.io/gorm"
+
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
+	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+
+	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
+	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
@@ -12,21 +21,59 @@ import (
 )
 
 type DeckQueryUseCase struct {
-	db *gorm.DB
+	db         *gorm.DB
+	rbacClient libapi.CocotolaRBACClient
+	logger     *slog.Logger
 }
 
-func NewDeckQueryUsecase(db *gorm.DB) *DeckQueryUseCase {
+func NewDeckQueryUsecase(db *gorm.DB, rbacClient libapi.CocotolaRBACClient) *DeckQueryUseCase {
 	return &DeckQueryUseCase{
-		db: db,
+		db:         db,
+		rbacClient: rbacClient,
+		logger:     slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckQueryUseCase")),
 	}
 }
 
-func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*domain.DeckModel, error) {
+func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, spaceIDs []*mbuserdomain.SpaceID) ([]*mbuserdomain.SpaceID, error) {
+	filteredSpaceIDs := make([]*mbuserdomain.SpaceID, 0, len(spaceIDs))
+	for _, spaceID := range spaceIDs {
+		action := action
+		object := spaceID.GetRBACObject()
+		ok, err := u.rbacClient.CheckAuthorization(ctx, &libapiauth.AuthorizeRequest{
+			OrganizationID: operator.OrganizationID().Int(),
+			AppUserID:      operator.AppUserID().Int(),
+			Action:         action.Action(),
+			Object:         object.Object(),
+		})
+		if err != nil {
+			return nil, mbliberrors.Errorf("authorize: %w", err)
+		} else if !ok {
+			continue
+		}
+		filteredSpaceIDs = append(filteredSpaceIDs, spaceID)
+	}
+	return filteredSpaceIDs, nil
+}
+
+func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator service.OperatorInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error) {
 	_, span := tracer.Start(ctx, "DeckQueryUseCase.FindDecks")
 	defer span.End()
 
+	// Check RBAC
+	filterSpaceIDs, err := u.filterSpaces(ctx, operator, librbac.ListDecksAction, param.SpaceIDs)
+	if err != nil {
+		return nil, mbliberrors.Errorf("filterSpaces: %w", err)
+	}
+	if len(filterSpaceIDs) == 0 {
+		u.logger.InfoContext(ctx, "no accessible space")
+		return []*domain.DeckModel{}, nil
+	}
+
 	deckRepo := gateway.NewDeckRepository(u.db)
-	desks, err := deckRepo.FindDecksInPublicSpace(ctx, operator)
+	repoParam := service.FindDecksParameter{
+		SpaceIDs: filterSpaceIDs,
+	}
+	desks, err := deckRepo.FindDecks(ctx, operator, &repoParam)
 	if err != nil {
 		return nil, fmt.Errorf("deckRepo.FindDecksInPublicSpace. err: %w", err)
 	}
@@ -37,60 +84,6 @@ func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator service.Opera
 	}
 
 	return deckModels, nil
-
-	// decks := make([]*domain.DeckModel, 0)
-
-	// organizationID, err := mbuserdomain.NewOrganizationID(1)
-	// if err != nil {
-	// 	return nil, mbliberrors.Errorf("new organization id(1). err: %w", err)
-	// }
-	// deckID, err := domain.NewDeckID(1)
-	// if err != nil {
-	// 	return nil, mbliberrors.Errorf("new deck id(1). err: %w", err)
-	// }
-	// spaceID, err := domain.NewSpaceID(1)
-	// if err != nil {
-	// 	return nil, mbliberrors.Errorf("new space id(1). err: %w", err)
-	// }
-	// folderID, err := domain.NewFolderID(0)
-	// if err != nil {
-	// 	return nil, mbliberrors.Errorf("new folder id(0). err: %w", err)
-	// }
-
-	// templateID, err := domain.NewTemplateID(1)
-	// if err != nil {
-	// 	return nil, mbliberrors.Errorf("new template id(1). err: %w", err)
-	// }
-
-	// ownerID, err := mbuserdomain.NewAppUserID(1)
-	// if err != nil {
-	// 	return nil, mbliberrors.Errorf("new app user id(1). err: %w", err)
-	// }
-
-	// {
-	// 	base, err := mblibdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
-	// 	if err != nil {
-	// 		return nil, mbliberrors.Errorf("libdomain.NewBaseModel. err: %w", err)
-	// 	}
-	// 	deck, err := domain.NewDeckModel(base, deckID, organizationID, spaceID, folderID, "初心者向け基本文法", templateID, libdomain.Lang2JA, "", ownerID)
-	// 	if err != nil {
-	// 		return nil, mbliberrors.Errorf("domain.NewCardModel. err: %w", err)
-	// 	}
-	// 	decks = append(decks, deck)
-	// }
-	// {
-	// 	base, err := mblibdomain.NewBaseModel(2, time.Now(), time.Now(), 1, 1)
-	// 	if err != nil {
-	// 		return nil, mbliberrors.Errorf("libdomain.NewBaseModel. err: %w", err)
-	// 	}
-	// 	deck, err := domain.NewDeckModel(base, deckID, organizationID, spaceID, folderID, "中級文法チャレンジ", templateID, libdomain.Lang2JA, "", ownerID)
-	// 	if err != nil {
-	// 		return nil, mbliberrors.Errorf("domain.NewCardModel. err: %w", err)
-	// 	}
-	// 	decks = append(decks, deck)
-	// }
-
-	// return decks, nil
 }
 
 /*

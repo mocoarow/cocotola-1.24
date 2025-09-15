@@ -12,6 +12,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//lib/api",
+        "//lib/api/auth",
         "//lib/controller",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",

@@ -6,6 +6,11 @@ app:
       username: ${APP_CORE_USERNAME}
       password: ${APP_CORE_PASSWORD}
       timeoutSec: ${APP_CORE_TIMEOUT_SEC:-5}
+    authApiClient:
+      endpoint: ${APP_AUTH_ENDPOINT:-http://localhost:8000/auth}
+      username: ${APP_AUTH_USERNAME}
+      password: ${APP_AUTH_PASSWORD}
+      timeoutSec: ${APP_AUTH_TIMEOUT_SEC:-5}
     authApiServer:
       username: ${APP_AUTH_USERNAME}
       password: ${APP_AUTH_PASSWORD}

@@ -9,4 +9,5 @@ go_library(
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/lib/api",
     visibility = ["//visibility:public"],
+    deps = ["//lib/api/auth"],
 )

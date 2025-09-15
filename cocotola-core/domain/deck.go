@@ -10,26 +10,6 @@ import (
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 )
 
-type FolderID struct {
-	Value int `validate:"gte=0"`
-}
-
-func NewFolderID(value int) (*FolderID, error) {
-	return &FolderID{
-		Value: value,
-	}, nil
-}
-
-func (v *FolderID) Int() int {
-	return v.Value
-}
-func (v *FolderID) IsFolderID() bool {
-	return true
-}
-func (v *FolderID) GetRBACObject() mbuserdomain.RBACObject {
-	return mbuserdomain.NewRBACObject("folder:" + fmt.Sprint(v.Value))
-}
-
 type DeckID struct {
 	Value int `validate:"required,gte=1"`
 }
@@ -54,7 +34,7 @@ type DeckModel struct {
 	*mblibdomain.BaseModel `validate:"required"`
 	DeckID                 *DeckID                      `validate:"required"`
 	OrganizationID         *mbuserdomain.OrganizationID `validate:"required"`
-	SpaceID                *SpaceID                     `validate:"required"`
+	SpaceID                *mbuserdomain.SpaceID        `validate:"required"`
 	FolderID               *FolderID                    `validate:"required"`
 	Name                   string                       `validate:"required"`
 	TemplateID             *TemplateID                  `validate:"required"`
@@ -63,7 +43,7 @@ type DeckModel struct {
 	OwnerID                *mbuserdomain.AppUserID `validate:"required"`
 }
 
-func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *SpaceID, folderID *FolderID, name string, templateID *TemplateID, lang2 *libdomain.Lang2, description string, owernID *mbuserdomain.AppUserID) (*DeckModel, error) {
+func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, folderID *FolderID, name string, templateID *TemplateID, lang2 *libdomain.Lang2, description string, owernID *mbuserdomain.AppUserID) (*DeckModel, error) {
 	if baseModel == nil {
 		return nil, mbliberrors.Errorf("baseModel is nil", mblibdomain.ErrInvalidArgument)
 	}

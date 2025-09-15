@@ -51,18 +51,15 @@ func GetPublicRouterGroupFuncs(_ context.Context, db *gorm.DB) []libcontroller.I
 
 func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient libapi.CocotolaRBACClient) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - workbookQueryUsecase
-	guestDeckQueryUsecase := guestgatgeway.NewDeckQueryUsecase(db)
+	guestDeckQueryUsecase := guestgatgeway.NewDeckQueryUsecase(db, rbacClient)
 	studentDeckQueryUsecase := resourcemanagergateway.NewDeckQueryUsecase(db)
 	// - workbookCommandUsecase
 	deckCommandUsecase := resourcemanager.NewDeckCommandUsecase(txManager, nonTxManager, rbacClient)
 
-	// - profileUsecase
-	profileUsecase := usecase.NewProfileUsecase(nonTxManager)
-
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
 		NewInitDeckRouterFunc(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase),
-		NewInitProfileRouterFunc(profileUsecase),
+		// NewInitProfileRouterFunc(profileUsecase),
 	}, nil
 }
 

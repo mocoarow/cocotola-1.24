@@ -7,9 +7,7 @@ import (
 
 const (
 	// loggerKey = liblog.CoreGatewayLoggerContextKey
-	SpaceTableName              = "core_space"
-	PairOfUserAndSpaceTableName = "core_user_n_space"
-	DeckTableName               = "core_deck"
+	DeckTableName = "core_deck"
 )
 
 var (

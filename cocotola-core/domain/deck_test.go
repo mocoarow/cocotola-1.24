@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
-	userdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
@@ -25,13 +25,13 @@ func TestNewDeckModel_Valid(t *testing.T) {
 	deckID, err := domain.NewDeckID(1)
 	require.NoError(t, err)
 
-	organizationID, err := userdomain.NewOrganizationID(1)
+	organizationID, err := mbuserdomain.NewOrganizationID(1)
 	require.NoError(t, err)
 
-	spaceID, err := domain.NewSpaceID(1)
+	spaceID, err := mbuserdomain.NewSpaceID(1)
 	require.NoError(t, err)
 
-	ownerID, err := userdomain.NewAppUserID(1)
+	ownerID, err := mbuserdomain.NewAppUserID(1)
 	require.NoError(t, err)
 
 	folderID, err := domain.NewFolderID(1)
@@ -73,10 +73,10 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 	deckID, err := domain.NewDeckID(1)
 	require.NoError(t, err)
 
-	organizationID, err := userdomain.NewOrganizationID(1)
+	organizationID, err := mbuserdomain.NewOrganizationID(1)
 	require.NoError(t, err)
 
-	spaceID, err := domain.NewSpaceID(1)
+	spaceID, err := mbuserdomain.NewSpaceID(1)
 	require.NoError(t, err)
 
 	folderID, err := domain.NewFolderID(1)
@@ -88,20 +88,20 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 	lang2, err := libdomain.NewLang2("en")
 	require.NoError(t, err)
 
-	ownerID, err := userdomain.NewAppUserID(1)
+	ownerID, err := mbuserdomain.NewAppUserID(1)
 	require.NoError(t, err)
 
 	tests := []struct {
 		name           string
 		baseModel      *mblibdomain.BaseModel
 		deckID         *domain.DeckID
-		organizationID *userdomain.OrganizationID
-		spaceID        *domain.SpaceID
+		organizationID *mbuserdomain.OrganizationID
+		spaceID        *mbuserdomain.SpaceID
 		folderID       *domain.FolderID
 		deckName       string
 		templateID     *domain.TemplateID
 		lang2          *libdomain.Lang2
-		ownerID        *userdomain.AppUserID
+		ownerID        *mbuserdomain.AppUserID
 	}{
 		{
 			name:           "empty name",

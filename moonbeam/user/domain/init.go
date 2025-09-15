@@ -1,6 +1,13 @@
 package domain
 
-var SystemAdminID *AppUserID
+type ResourceKey string
+
+var (
+	SystemAdminID *AppUserID
+
+	ResourceAppUser = ResourceKey("app_user")
+	RecourceSpace   = ResourceKey("space")
+)
 
 func init() {
 	systemAdminID := 1

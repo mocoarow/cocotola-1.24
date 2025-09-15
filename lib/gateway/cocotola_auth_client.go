@@ -10,6 +10,7 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 
 	"github.com/mocoarow/cocotola-1.24/lib/api"
+	apiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 )
 
 type cocotolaAuthClient struct {
@@ -24,7 +25,7 @@ func NewCocotolaAuthClient(httpClient HTTPClient, authEndpoint *url.URL) api.Coc
 	}
 }
 
-func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken string) (*api.AppUserInfoResponse, error) {
+func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken string) (*apiauth.AppUserInfoResponse, error) {
 	ctx, span := tracer.Start(ctx, "cocotolaAuthClient.RetrieveUserInfo")
 	defer span.End()
 
@@ -44,7 +45,7 @@ func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken s
 	}
 	defer resp.Body.Close()
 
-	var response api.AppUserInfoResponse
+	var response apiauth.AppUserInfoResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, mbliberrors.Errorf("json.NewDecoder: %w", err)
 	}

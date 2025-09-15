@@ -4,6 +4,7 @@ go_library(
     name = "usecase",
     srcs = [
         "authentication_usecase.go",
+        "callback_usecase.go",
         "google_user_usecase.go",
         "guest_usecase.go",
         "init.go",
@@ -18,6 +19,7 @@ go_library(
         "//cocotola-auth/domain",
         "//cocotola-auth/service",
         "//lib/domain",
+        "//lib/rbac",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "//moonbeam/lib/service",

@@ -13,11 +13,11 @@ create table `core_deck` (
 ,`lang2` varchar(2) not null
 ,`description` text
 ,`owner_id` int not null
-,foreign key(`created_by`) references `mb_app_user`(`id`) on delete cascade
-,foreign key(`updated_by`) references `mb_app_user`(`id`) on delete cascade
-,foreign key(`organization_id`) references `mb_organization`(`id`) on delete cascade
-,foreign key(`space_id`) references `core_space`(`id`) on delete cascade
-,foreign key(`owner_id`) references `mb_app_user`(`id`) on delete cascade
+-- ,foreign key(`created_by`) references `mb_app_user`(`id`) on delete cascade
+-- ,foreign key(`updated_by`) references `mb_app_user`(`id`) on delete cascade
+-- ,foreign key(`organization_id`) references `mb_organization`(`id`) on delete cascade
+-- ,foreign key(`space_id`) references `core_space`(`id`) on delete cascade
+-- ,foreign key(`owner_id`) references `mb_app_user`(`id`) on delete cascade
 ,foreign key(`folder_id`) references `core_folder`(`id`) on delete cascade
 ,foreign key(`template_id`) references `core_template`(`id`) on delete cascade
 );

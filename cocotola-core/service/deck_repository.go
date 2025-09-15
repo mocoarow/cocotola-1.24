@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -15,7 +16,7 @@ var ErrDeckAlreadyExists = errors.New("deck already exists")
 var ErrDeckNotFound = errors.New("deck not found")
 
 type DeckAddParameter struct {
-	SpaceID     *domain.SpaceID
+	SpaceID     *mbuserdomain.SpaceID
 	FolderID    *domain.FolderID
 	TemplateID  *domain.TemplateID
 	Name        string
@@ -29,7 +30,7 @@ type DeckUpdateParameter struct {
 }
 
 type FindDecksParameter struct {
-	SpaceIDs domain.SpaceIDs
+	SpaceIDs mbuserdomain.SpaceIDs
 }
 
 type DeckRepository interface {
@@ -40,8 +41,6 @@ type DeckRepository interface {
 	FindDecks(ctx context.Context, operator OperatorInterface, param *FindDecksParameter) ([]*Deck, error)
 
 	FindDecksByOwner(ctx context.Context, operator mbuserservice.OperatorInterface) ([]*Deck, error)
-
-	FindDecksInPublicSpace(ctx context.Context, operator OperatorInterface) ([]*Deck, error)
 
 	RetrieveDeckByID(ctx context.Context, operator OperatorInterface, deckID *domain.DeckID) (*Deck, error)
 }

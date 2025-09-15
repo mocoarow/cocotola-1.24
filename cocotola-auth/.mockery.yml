@@ -12,9 +12,9 @@ require-template-schema-exists: true
 template: testify
 template-schema: '{{.Template}}.schema.json'
 packages:
-  github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin:
+  github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/public:
     config:
-      dir: controller/gin/mocks
+      dir: controller/gin/public/mocks
     interfaces:
       AuthenticationUsecase:
       GoogleUserUsecase:

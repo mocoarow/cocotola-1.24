@@ -49,18 +49,18 @@ func (x *wrappedDB) WhereOrganizationID(table HasTableName, organizationID *doma
 	return x
 }
 
-func (x *wrappedDB) WhereNotRemoved(table HasTableName) *wrappedDB {
-	x.db = x.db.Where(fmt.Sprintf("%s.removed = ?", table.TableName()), x.dialect.BoolDefaultValue())
+func (x *wrappedDB) WhereNotDeleted(table HasTableName) *wrappedDB {
+	x.db = x.db.Where(fmt.Sprintf("%s.deleted = ?", table.TableName()), x.dialect.BoolDefaultValue())
 
 	return x
 }
 
 func (x *wrappedDB) WhereAppUser() *wrappedDB {
-	return x.WhereOrganizationID(&appUserEntity{}, x.organizationID).WhereNotRemoved(&appUserEntity{}) //nolint:exhaustruct
+	return x.WhereOrganizationID(&appUserEntity{}, x.organizationID).WhereNotDeleted(&appUserEntity{}) //nolint:exhaustruct
 }
 
 func (x *wrappedDB) WhereUserGroup() *wrappedDB {
-	return x.WhereOrganizationID(&userGroupEntity{}, x.organizationID).WhereNotRemoved(&userGroupEntity{}) //nolint:exhaustruct
+	return x.WhereOrganizationID(&userGroupEntity{}, x.organizationID).WhereNotDeleted(&userGroupEntity{}) //nolint:exhaustruct
 }
 
 func (x *wrappedDB) WherePairOfUserAndGroup() *wrappedDB {

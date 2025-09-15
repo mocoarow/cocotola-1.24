@@ -10,6 +10,7 @@ import (
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
@@ -34,7 +35,7 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 	// check RBAC
 	action := librbac.CreateDeckAction
 	object := param.SpaceID.GetRBACObject()
-	ok, err := u.rbacClient.CheckAuthorization(ctx, &libapi.AuthorizeRequest{
+	ok, err := u.rbacClient.CheckAuthorization(ctx, &libapiauth.AuthorizeRequest{
 		OrganizationID: operator.OrganizationID().Int(),
 		AppUserID:      operator.AppUserID().Int(),
 		Action:         action.Action(),
@@ -62,10 +63,10 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator service.Opera
 	// RBAC
 	deckObject := deckID.GetRBACObject()
 	// - "operator "can" "ListObject" "deck"
-	if err := u.rbacClient.AddPolicyToUser(ctx, &libapi.AddPolicyToUserParameter{
+	if err := u.rbacClient.AddPolicyToUser(ctx, &libapiauth.AddPolicyToUserParameter{
 		OrganizationID: operator.OrganizationID().Int(),
 		AppUserID:      operator.AppUserID().Int(),
-		ListOfActionObjectEffect: []libapi.ActionObjectEffect{
+		ListOfActionObjectEffect: []libapiauth.ActionObjectEffect{
 			{
 				Action: mbuserdomain.NewRBACAction("ListCards").Action(),
 				Object: deckObject.Object(),

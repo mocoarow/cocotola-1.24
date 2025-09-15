@@ -27,10 +27,10 @@ func (v *AppUserID) GetRBACSubject() RBACSubject {
 
 type AppUserModel struct {
 	*libdomain.BaseModel
-	AppUserID      *AppUserID
-	OrganizationID *OrganizationID
-	LoginID        string `validate:"required"`
-	Username       string `validate:"required"`
+	AppUserID      *AppUserID      `validate:"required"`
+	OrganizationID *OrganizationID `validate:"required"`
+	LoginID        string          `validate:"required"`
+	Username       string          `validate:"required"`
 	UserGroups     []*UserGroupModel
 }
 

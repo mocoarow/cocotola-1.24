@@ -13,7 +13,7 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 
-	libapicard "github.com/mocoarow/cocotola-1.24/lib/api/card"
+	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/helper"
@@ -22,7 +22,7 @@ import (
 )
 
 type CardQueryUsecase interface {
-	FindCards(ctx context.Context, operator service.OperatorInterface) ([]*domain.CardModel, error)
+	FindCardsByDeckID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error)
 }
 
 type CardHandler struct {
@@ -38,28 +38,32 @@ func NewCardHandler(cardQueryUsecase CardQueryUsecase) *CardHandler {
 }
 
 func (h *CardHandler) FindCards(c *gin.Context) {
-	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
-		cards, err := h.cardQueryUsecase.FindCards(ctx, operator)
+	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
+		deckID, ok := getDeckIDFromQuery(c)
+		if !ok {
+			return nil
+		}
+
+		cards, err := h.cardQueryUsecase.FindCardsByDeckID(ctx, operator, deckID)
 		if err != nil {
 			return mbliberrors.Errorf("FindDecks: %w", err)
 		}
 
-		results := make([]libapicard.FindCardsResponseCard, len(cards))
+		results := make([]libapicore.FindCardsResponseCard, len(cards))
 		for i, card := range cards {
-			results[i] = libapicard.FindCardsResponseCard{
+			results[i] = libapicore.FindCardsResponseCard{
 				ID:         card.CardID.Int(),
 				Version:    card.Version,
 				TemplateID: card.TemplateID.Int(),
 				Content:    card.Content,
 			}
 		}
-		response := libapicard.FindCardsResponse{
+		response := libapicore.FindCardsResponse{
 			TotalCount: len(results),
 			Results:    results,
 		}
 
 		c.JSON(http.StatusOK, response)
-
 		return nil
 	}, h.errorHandle)
 }

@@ -23,7 +23,8 @@ func NewDeckQueryUsecase(db *gorm.DB) *DeckQueryUseCase {
 }
 
 func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator service.OperatorInterface) ([]*domain.DeckModel, error) {
-	decks, err := gateway.NewDeckRepository(u.db).FindDecks(ctx, operator, &service.FindDecksParameter{})
+	// TODO: filter by spaceIDs
+	decks, err := gateway.NewDeckRepository(u.db).FindDecks(ctx, operator, &service.FindDecksParameter{}) //nolint:exhaustruct
 	if err != nil {
 		return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
 	}

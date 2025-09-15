@@ -11,12 +11,12 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 )
 
 type CallbackUsecase interface {
-	OnAddAppUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID) error
+	OnAddAppUserSpace(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID, spaceID *mbuserdomain.SpaceID) error
 }
 
 type CallbackHandler struct {
@@ -31,13 +31,46 @@ func NewCallbackHandler(callbackUsecase CallbackUsecase) *CallbackHandler {
 	}
 }
 
-func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
+// func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
+// 	ctx := c.Request.Context()
+// 	var apiReq libapicore.CallbackOnAddAppUserRequest
+// 	if err := c.ShouldBindJSON(&apiReq); err != nil {
+// 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
+// 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
+// 		return
+// 	}
+
+// 	organizationID, err := mbuserdomain.NewOrganizationID(apiReq.OrganizationID)
+// 	if err != nil {
+// 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
+// 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
+// 		return
+// 	}
+
+// 	appUserID, err := mbuserdomain.NewAppUserID(apiReq.AppUserID)
+// 	if err != nil {
+// 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
+// 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
+// 		return
+// 	}
+
+// 	h.logger.Info("OnAddAppUser", slog.Int("appUserID", appUserID.Int()))
+// 	if err := h.callbackUsecase.OnAddAppUser(ctx, organizationID, appUserID); err != nil {
+// 		h.logger.ErrorContext(ctx, fmt.Sprintf("on add app user: %+v", err))
+// 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+
+//			return
+//		}
+//	}
+func (h *CallbackHandler) OnAddAppUserSpace(c *gin.Context) {
 	ctx := c.Request.Context()
-	var apiReq libapi.CallbackOnAddAppUserRequest
+	var apiReq libapicore.CallbackOnAddAppUserSpaceRequest
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 		return
 	}
 
@@ -45,7 +78,6 @@ func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 	if err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 		return
 	}
 
@@ -53,19 +85,24 @@ func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 	if err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 		return
 	}
 
-	h.logger.Info("OnAddAppUser", slog.Int("appUserID", appUserID.Int()))
-	if err := h.callbackUsecase.OnAddAppUser(ctx, organizationID, appUserID); err != nil {
+	spaceID, err := mbuserdomain.NewSpaceID(apiReq.SpaceID)
+	if err != nil {
+		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
+		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+		return
+	}
+
+	h.logger.Info("OnAddAppUserSpace", slog.Int("appUserID", appUserID.Int()))
+	if err := h.callbackUsecase.OnAddAppUserSpace(ctx, organizationID, appUserID, spaceID); err != nil {
 		h.logger.ErrorContext(ctx, fmt.Sprintf("on add app user: %+v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
 		return
 	}
 }
-
 func NewInitCallbackRouterFunc(callbackUsecase CallbackUsecase) libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
 		callback := parentRouterGroup.Group("callback")
@@ -73,6 +110,7 @@ func NewInitCallbackRouterFunc(callbackUsecase CallbackUsecase) libcontroller.In
 		for _, m := range middleware {
 			callback.Use(m)
 		}
-		callback.POST("on-add-user", callbackHandler.OnAddAppUser)
+		// callback.POST("on-add-user", callbackHandler.OnAddAppUser)
+		callback.POST("on-add-user-space", callbackHandler.OnAddAppUserSpace)
 	}
 }

@@ -11,11 +11,11 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 
-	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
+	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/helper"
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
@@ -29,13 +29,13 @@ type ProfileHandler struct {
 }
 
 func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
-	helper.HandleSecuredFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
+	helper.HandleAppUserFunction(c, func(ctx context.Context, operator service.OperatorInterface) error {
 		result, err := h.profileUsecase.GetMyProfile(ctx, operator)
 		if err != nil {
 			return mbliberrors.Errorf("GetMyProfile: %w", err)
 		}
 
-		apiResp := libapi.ProfileResponse{
+		apiResp := libapicore.ProfileResponse{
 			PrivateSpaceID: result.PrivateSpaceID.Int(),
 		}
 		c.JSON(http.StatusOK, apiResp)

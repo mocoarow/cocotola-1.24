@@ -179,25 +179,14 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 	// }
 
 	// 4. add owner-group
-	if _, err := userGroupRepo.AddOwnerGroup(ctx, systemOwner, organizationID); err != nil {
+	ownerGroupID, err := userGroupRepo.AddOwnerGroup(ctx, systemOwner, organizationID)
+	if err != nil {
 		return nil, liberrors.Errorf("AddOwnerGroup: %w", err)
 	}
 
 	// 5. add policty to "owner" group
-	ownerGroup, err := userGroupRepo.FindUserGroupByKey(ctx, systemOwner, OwnerGroupKey)
-	if err != nil {
-		return nil, liberrors.Errorf("find owner group(%s): %w", OwnerGroupKey, err)
-	}
-
-	rbacOwnerGroup := domain.NewRBACUserRole(organizationID, ownerGroup.UserGroupID())
-	// - "owner" group "can" "set" "all-user-roles"
-	if err := authorizationManager.AddPolicyToGroupBySystemAdmin(ctx, m, organizationID, rbacOwnerGroup, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
-		return nil, liberrors.Errorf("AddPolicyToGroupBySystemAdmin: %w", err)
-	}
-
-	// - "owner" group "can" "unset" "all-user-roles"
-	if err := authorizationManager.AddPolicyToGroupBySystemAdmin(ctx, m, organizationID, rbacOwnerGroup, RBACUnsetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
-		return nil, liberrors.Errorf("AddPolicyToGroupBySystemAdmin: %w", err)
+	if err := m.addPolicytToOwnerGroup(ctx, authorizationManager, organizationID, ownerGroupID, rbacAllUserRolesObject); err != nil {
+		return nil, liberrors.Errorf("addPolicytToOwnerGroup: %w", err)
 	}
 
 	// 6. add first owner
@@ -206,9 +195,38 @@ func (m *SystemAdmin) AddOrganization(ctx context.Context, param OrganizationAdd
 		return nil, liberrors.Errorf("m.initFirstOwner. error: %w", err)
 	}
 
+	// 7. add public-group
+	if _, err := userGroupRepo.AddPublicGroup(ctx, systemOwner, organizationID); err != nil {
+		return nil, liberrors.Errorf("AddOwnerGroup: %w", err)
+	}
+
+	// 9. add public default space
+	spaceManager, err := m.rf.NewSpaceManager(ctx)
+	if err != nil {
+		return nil, liberrors.Errorf("NewSpaceManager: %w", err)
+	}
+	if _, err := spaceManager.AddPublicDefaultSpace(ctx, systemOwner); err != nil {
+		return nil, liberrors.Errorf("add public space(%s): %w", PublicDefaultSpaceKey, err)
+	}
+
 	m.logger.InfoContext(ctx, fmt.Sprintf("SystemOwnerID:%d, ownerID: %d", systemOwner.AppUserID().Int(), ownerID.Int()))
 
 	return organizationID, nil
+}
+
+func (m *SystemAdmin) addPolicytToOwnerGroup(ctx context.Context, authorizationManager AuthorizationManager, organizationID *domain.OrganizationID, ownerGroupID *domain.UserGroupID, rbacAllUserRolesObject domain.RBACObject) error {
+	rbacOwnerGroup := domain.NewRBACUserRole(organizationID, ownerGroupID)
+	// - "owner" group "can" "set" "all-user-roles"
+	if err := authorizationManager.AddPolicyToGroupBySystemAdmin(ctx, m, organizationID, rbacOwnerGroup, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
+		return liberrors.Errorf("AddPolicyToGroupBySystemAdmin: %w", err)
+	}
+
+	// - "owner" group "can" "unset" "all-user-roles"
+	if err := authorizationManager.AddPolicyToGroupBySystemAdmin(ctx, m, organizationID, rbacOwnerGroup, RBACUnsetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
+		return liberrors.Errorf("AddPolicyToGroupBySystemAdmin: %w", err)
+	}
+
+	return nil
 }
 
 //	func NewRBACUserRole(userRoleID domain.UserGroupID) domain.RBACRole {

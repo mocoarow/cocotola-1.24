@@ -52,6 +52,7 @@ type UserGroupRepository interface {
 	FindUserGroupByKey(ctx context.Context, operator AppUserInterface, key string) (*UserGroup, error)
 	FindUserGroupByID(ctx context.Context, operator AppUserInterface, userGroupID *domain.UserGroupID) (*UserGroup, error)
 	AddOwnerGroup(ctx context.Context, operator SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
+	AddPublicGroup(ctx context.Context, operator SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
 
 	AddSystemOwnerGroup(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
 

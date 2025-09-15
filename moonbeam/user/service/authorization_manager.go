@@ -16,6 +16,7 @@ type AuthorizationManager interface {
 	// RemoveUserFromGroup()
 
 	// AddGroupToGroup(ctx context.Context, operator domain.AppUserModel, src domain.UserGroupID, dst domain.UserGroupID) error
+	AddObjectToObject(ctx context.Context, operator SystemOwnerInterface, child, parent domain.RBACObject) error
 
 	// RemoveGroupFromGroup()
 

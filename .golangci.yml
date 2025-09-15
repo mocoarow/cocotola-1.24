@@ -96,6 +96,7 @@ linters:
         - range
         - assign
         - decl
+        - return
   exclusions:
     generated: lax
     presets:

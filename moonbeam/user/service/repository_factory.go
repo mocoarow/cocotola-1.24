@@ -10,6 +10,11 @@ type RepositoryFactory interface {
 	NewOrganizationRepository(ctx context.Context) OrganizationRepository
 	NewAppUserRepository(ctx context.Context) AppUserRepository
 	NewUserGroupRepository(ctx context.Context) UserGroupRepository
+	NewSpaceRepository(ctx context.Context) SpaceRepository
+
+	NewSpaceManager(ctx context.Context) (SpaceManager, error)
+
+	// NewPairOfUserAndSpaceRepository(ctx context.Context) (PairOfUserAndSpaceRepository, error)
 
 	// NewPairOfUserAndGroupRepository(ctx context.Context) PairOfUserAndGroupRepository
 
@@ -17,6 +22,7 @@ type RepositoryFactory interface {
 
 	NewAuthorizationManager(ctx context.Context) (AuthorizationManager, error)
 	NewAppUserEventHandler(ctx context.Context) mblibservice.ResourceEventHandler
+	NewSpaceEventHandler(ctx context.Context) mblibservice.ResourceEventHandler
 }
 
 type TransactionManager mblibservice.TransactionManagerT[RepositoryFactory]

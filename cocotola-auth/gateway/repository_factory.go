@@ -10,6 +10,7 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
@@ -17,29 +18,29 @@ import (
 )
 
 type RepositoryFactory struct {
-	dialect             mblibgateway.DialectRDBMS
-	driverName          string
-	db                  *gorm.DB
-	location            *time.Location
-	appUserEventHandler mblibservice.ResourceEventHandler
+	dialect               mblibgateway.DialectRDBMS
+	driverName            string
+	db                    *gorm.DB
+	location              *time.Location
+	resourceEventHandlers map[mbuserdomain.ResourceKey]mblibservice.ResourceEventHandler
 }
 
-func NewRepositoryFactory(_ context.Context, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location, appUserEventHandler mblibservice.ResourceEventHandler) (*RepositoryFactory, error) {
+func NewRepositoryFactory(_ context.Context, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, location *time.Location, resourceEventHandlers map[mbuserdomain.ResourceKey]mblibservice.ResourceEventHandler) (*RepositoryFactory, error) {
 	if db == nil {
 		return nil, mbliberrors.Errorf("db is nil. err: %w", mblibdomain.ErrInvalidArgument)
 	}
 
 	return &RepositoryFactory{
-		dialect:             dialect,
-		driverName:          driverName,
-		db:                  db,
-		location:            location,
-		appUserEventHandler: appUserEventHandler,
+		dialect:               dialect,
+		driverName:            driverName,
+		db:                    db,
+		location:              location,
+		resourceEventHandlers: resourceEventHandlers,
 	}, nil
 }
 
 func (f *RepositoryFactory) NewMoonBeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error) {
-	rf, err := mbusergateway.NewRepositoryFactory(ctx, f.dialect, f.driverName, f.db, f.location, f.appUserEventHandler)
+	rf, err := mbusergateway.NewRepositoryFactory(ctx, f.dialect, f.driverName, f.db, f.location, f.resourceEventHandlers)
 	if err != nil {
 		return nil, mbliberrors.Errorf("mbusergateway.NewRepositoryFactory: %w", err)
 	}

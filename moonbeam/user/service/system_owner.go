@@ -25,10 +25,12 @@ type SystemOwner struct {
 	orgRepo       OrganizationRepository
 	appUserRepo   AppUserRepository
 	userGroupRepo UserGroupRepository
+	spaceRepo     SpaceRepository
 	// pairOfUserAndGroup PairOfUserAndGroupRepository
 	// rbacRepo             RBACRepository
 	authorizationManager AuthorizationManager
 	appUserEventHandler  libservice.ResourceEventHandler
+	spaceEventHandler    libservice.ResourceEventHandler
 	logger               *slog.Logger
 }
 
@@ -36,6 +38,7 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 	orgRepo := rf.NewOrganizationRepository(ctx)
 	appUserRepo := rf.NewAppUserRepository(ctx)
 	userGroupRepo := rf.NewUserGroupRepository(ctx)
+	spaceRepo := rf.NewSpaceRepository(ctx)
 	// pairOfUserAndGroup := rf.NewPairOfUserAndGroupRepository(ctx)
 	// rbacRepo := rf.NewRBACRepository(ctx)
 	authorizationManager, err := rf.NewAuthorizationManager(ctx)
@@ -43,16 +46,19 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 		return nil, liberrors.Errorf("NewAuthorizationManager: %w", err)
 	}
 	appUserEventHandler := rf.NewAppUserEventHandler(ctx)
+	spaceEventHandler := rf.NewSpaceEventHandler(ctx)
 
 	m := &SystemOwner{
 		SystemOwnerModel: systemOwnerModel,
 		orgRepo:          orgRepo,
 		appUserRepo:      appUserRepo,
 		userGroupRepo:    userGroupRepo,
+		spaceRepo:        spaceRepo,
 		// pairOfUserAndGroup:   pairOfUserAndGroup,
 		// rbacRepo:             rbacRepo,
 		authorizationManager: authorizationManager,
 		appUserEventHandler:  appUserEventHandler,
+		spaceEventHandler:    spaceEventHandler,
 		logger:               slog.Default().With(slog.String(liblog.LoggerNameKey, "SystemOwner")),
 	}
 
@@ -88,6 +94,15 @@ func (m *SystemOwner) GetOrganization(ctx context.Context) (*Organization, error
 	}
 
 	return org, nil
+}
+
+func (m *SystemOwner) GetPublidDefaultSpace(ctx context.Context) (*Space, error) {
+	space, err := m.spaceRepo.FindPublicSpaceByKey(ctx, PublicDefaultSpaceKey)
+	if err != nil {
+		return nil, liberrors.Errorf("m.spaceRepo.FindPublicSpaceByKey. err: %w", err)
+	}
+
+	return space, nil
 }
 
 func (m *SystemOwner) FindAppUserByID(ctx context.Context, id *domain.AppUserID) (*AppUser, error) {
@@ -171,6 +186,20 @@ func (m *SystemOwner) AddAppUser(ctx context.Context, param AppUserAddParameterI
 	return appUserID, nil
 }
 
+func (m *SystemOwner) AddSpace(ctx context.Context, param *SpaceAddParameter) (*domain.SpaceID, error) {
+	m.logger.InfoContext(ctx, "AddSpace")
+	spaceID, err := m.spaceRepo.AddSpace(ctx, m, param)
+	if err != nil {
+		return nil, liberrors.Errorf("m.appUserRepo.AddAppUser. err: %w", err)
+	}
+
+	go m.spaceEventHandler.OnAdd(context.Background(), map[string]int{
+		"organizationId": m.OrganizationID().Int(),
+		"spaceId":        spaceID.Int(),
+	})
+
+	return spaceID, nil
+}
 func (m *SystemOwner) VerifyPassword(ctx context.Context, loginID, password string) (bool, error) {
 	ok, err := m.appUserRepo.VerifyPassword(ctx, m, loginID, password)
 	if err != nil {

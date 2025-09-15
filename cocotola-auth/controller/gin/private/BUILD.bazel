@@ -1,0 +1,25 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "private",
+    srcs = [
+        "callback_handler.go",
+        "profile_handler.go",
+        "rbac_handler.go",
+        "space_handler.go",
+    ],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-auth/controller/gin/private",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cocotola-auth/controller/gin/helper",
+        "//cocotola-auth/domain",
+        "//cocotola-auth/service",
+        "//lib/api/auth",
+        "//lib/controller/gin",
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/log",
+        "//moonbeam/user/domain",
+        "//moonbeam/user/service",
+        "@com_github_gin_gonic_gin//:gin",
+    ],
+)

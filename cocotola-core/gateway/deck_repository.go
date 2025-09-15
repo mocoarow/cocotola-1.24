@@ -52,7 +52,7 @@ func (e *DeckEntity) ToModel() (*domain.DeckModel, error) {
 		return nil, mbliberrors.Errorf("new deck id(%d): %w", e.ID, err)
 	}
 
-	spaceID, err := domain.NewSpaceID(e.ID)
+	spaceID, err := mbuserdomain.NewSpaceID(e.ID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("new space id(%d): %w", e.ID, err)
 	}
@@ -105,6 +105,21 @@ func (e *DeckEntity) toDeck() (*service.Deck, error) {
 	deck := &service.Deck{DeckModel: deckModel}
 
 	return deck, nil
+}
+
+type DeckEntities []DeckEntity
+
+func (e DeckEntities) toDecks() ([]*service.Deck, error) {
+	decks := make([]*service.Deck, len(e))
+	for i, deckE := range e {
+		deck, err := deckE.toDeck()
+		if err != nil {
+			return nil, mbliberrors.Errorf("to deck: %w", err)
+		}
+		decks[i] = deck
+	}
+
+	return decks, nil
 }
 
 type deckRepository struct {
@@ -178,33 +193,20 @@ func (r *deckRepository) FindDecks(ctx context.Context, operator service.Operato
 	_, span := tracer.Start(ctx, "deckRepository.FindDecks")
 	defer span.End()
 
-	spaceIDs := make([]int, 0, len(param.SpaceIDs))
-	for i, id := range param.SpaceIDs {
-		spaceIDs[i] = id.Int()
-	}
-
 	organizationID := uint(operator.OrganizationID().Int())
 
-	var decksE []DeckEntity
+	var decksE DeckEntities
 	if result := r.db.
 		Table(DeckTableName).Select(DeckTableName+".*").
-		Joins("inner join "+SpaceTableName+" on "+DeckTableName+".space_id = "+SpaceTableName+".id").
-		Joins("inner join "+PairOfUserAndSpaceTableName+" on "+SpaceTableName+".id = "+PairOfUserAndSpaceTableName+".space_id").
 		Where(DeckTableName+".organization_id = ?", organizationID).
-		Where(SpaceTableName+".organization_id = ?", organizationID).
 		Where("space_id IN ?", param.SpaceIDs.IDs()).
-		Where(PairOfUserAndSpaceTableName+".app_user_id = ?", operator.AppUserID().Int()).
 		Find(&decksE); result.Error != nil {
 		return nil, mbliberrors.Errorf("deckRepository.FindDecks: %w", result.Error)
 	}
 
-	decks := make([]*service.Deck, 0, len(decksE))
-	for i, deckE := range decksE {
-		deck, err := deckE.toDeck()
-		if err != nil {
-			return nil, err
-		}
-		decks[i] = deck
+	decks, err := decksE.toDecks()
+	if err != nil {
+		return nil, mbliberrors.Errorf("decksE.toDecks: %w", err)
 	}
 
 	return decks, nil
@@ -214,7 +216,7 @@ func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserse
 	_, span := tracer.Start(ctx, "deckRepository.FindDecksByOwner")
 	defer span.End()
 
-	var decksE []DeckEntity
+	var decksE DeckEntities
 	if result := r.db.
 		Model(&DeckEntity{}). //nolint:exhaustruct
 		Where("organization_id = ?", uint(operator.OrganizationID().Int())).
@@ -223,44 +225,9 @@ func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserse
 		return nil, mbliberrors.Errorf("deckRepository.FindDecksByOwner: %w", result.Error)
 	}
 
-	decks := make([]*service.Deck, 0, len(decksE))
-	for _, deckE := range decksE {
-		deck, err := deckE.toDeck()
-		if err != nil {
-			return nil, err
-		}
-		decks = append(decks, deck)
-	}
-
-	return decks, nil
-}
-
-func (r *deckRepository) FindDecksInPublicSpace(ctx context.Context, operator service.OperatorInterface) ([]*service.Deck, error) {
-	_, span := tracer.Start(ctx, "deckRepository.FindDecks")
-	defer span.End()
-
-	organizationID := uint(operator.OrganizationID().Int())
-
-	var decksE []DeckEntity
-	if result := r.db.WithContext(ctx).
-		Table(DeckTableName).Select(DeckTableName+".*").
-		Joins("inner join "+SpaceTableName+" on "+DeckTableName+".space_id = "+SpaceTableName+".id").
-		Joins("inner join "+PairOfUserAndSpaceTableName+" on "+SpaceTableName+".id = "+PairOfUserAndSpaceTableName+".space_id").
-		Where(DeckTableName+".organization_id = ?", organizationID).
-		Where(SpaceTableName+".organization_id = ?", organizationID).
-		Where(PairOfUserAndSpaceTableName+".organization_id = ?", organizationID).
-		Where(PairOfUserAndSpaceTableName+".app_user_id = ?", operator.AppUserID().Int()).
-		Find(&decksE); result.Error != nil {
-		return nil, mbliberrors.Errorf("deckRepository.FindDecks: %w", result.Error)
-	}
-
-	decks := make([]*service.Deck, 0, len(decksE))
-	for _, deckE := range decksE {
-		deck, err := deckE.toDeck()
-		if err != nil {
-			return nil, err
-		}
-		decks = append(decks, deck)
+	decks, err := decksE.toDecks()
+	if err != nil {
+		return nil, mbliberrors.Errorf("decksE.toDecks: %w", err)
 	}
 
 	return decks, nil

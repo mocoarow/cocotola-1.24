@@ -18,7 +18,7 @@ type userGroupEntity struct {
 	KeyName        string
 	Name           string
 	Description    string
-	Removed        bool
+	Deleted        bool
 }
 
 func (e *userGroupEntity) TableName() string {
@@ -119,7 +119,7 @@ func (r *userGroupRepository) FindUserGroupByID(ctx context.Context, operator se
 
 	var userGroup userGroupEntity
 	if result := r.db.Where("organization_id = ?", operator.OrganizationID().Int()).
-		Where("id = ? and removed = ?", userGroupID.Int(), r.dialect.BoolDefaultValue()).
+		Where("id = ? and deleted = ?", userGroupID.Int(), r.dialect.BoolDefaultValue()).
 		First(&userGroup); result.Error != nil {
 		return nil, result.Error
 	}
@@ -133,7 +133,7 @@ func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator s
 
 	var userGroup userGroupEntity
 	if result := r.db.Where("organization_id = ?", operator.OrganizationID().Int()).
-		Where("key_name = ? and removed = ?", key, r.dialect.BoolDefaultValue()).
+		Where("key_name = ? and deleted = ?", key, r.dialect.BoolDefaultValue()).
 		First(&userGroup); result.Error != nil {
 		return nil, result.Error
 	}
@@ -176,6 +176,13 @@ func (r *userGroupRepository) AddOwnerGroup(ctx context.Context, operator servic
 	defer span.End()
 
 	return r.addUserGroup(operator.AppUserID(), organizationID, service.OwnerGroupKey, service.OwnerGroupName)
+}
+
+func (r *userGroupRepository) AddPublicGroup(ctx context.Context, operator service.SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
+	_, span := tracer.Start(ctx, "userGroupRepository.AddPublicGroup")
+	defer span.End()
+
+	return r.addUserGroup(operator.AppUserID(), organizationID, service.PublicGroupKey, service.PublicGroupName)
 }
 
 func (r *userGroupRepository) AddUserGroup(ctx context.Context, operator service.OwnerModelInterface, parameter service.UserGroupAddParameterInterface) (*domain.UserGroupID, error) {

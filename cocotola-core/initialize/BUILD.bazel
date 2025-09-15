@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "initialize.go",
         "initialize_english_word.go",
+        "initialize_root_folder.go",
+        "initialize_space.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/initialize",
     visibility = ["//visibility:public"],
@@ -21,7 +23,6 @@ go_library(
         "//moonbeam/lib/config",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",
-        "//moonbeam/lib/log",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
         "//moonbeam/user/service",

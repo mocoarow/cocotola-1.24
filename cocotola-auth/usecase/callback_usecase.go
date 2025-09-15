@@ -1,0 +1,102 @@
+package usecase
+
+import (
+	"context"
+	"log/slog"
+
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
+	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
+	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
+
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
+)
+
+type Callback struct {
+	systemToken                libdomain.SystemToken
+	txManager                  service.TransactionManager
+	nonTxManager               service.TransactionManager
+	cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient
+	logger                     *slog.Logger
+}
+
+func NewCallback(systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) *Callback {
+	return &Callback{
+		systemToken:                systemToken,
+		txManager:                  txManager,
+		nonTxManager:               nonTxManager,
+		cocotolaCoreCallbackClient: cocotolaCoreCallbackClient,
+		logger:                     slog.Default().With(slog.String(mbliblog.LoggerNameKey, "CallbackUsecase"))}
+}
+
+func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID) error {
+	u.logger.InfoContext(ctx, "OnAddAppUser", slog.Int("app_user_id", appUserID.Int()))
+
+	fn := func(rf service.RepositoryFactory) error {
+		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
+			service.WithOrganizationByID(organizationID),
+		)
+		if err != nil {
+			return mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
+		}
+
+		// Create personal space for the new user
+		mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
+		if err != nil {
+			return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
+		}
+
+		appUser, err := action.SystemOwner.FindAppUserByID(ctx, appUserID)
+		if err != nil {
+			return mbliberrors.Errorf("FindAppUserByID: %w", err)
+		}
+
+		spaceManager, err := mbrf.NewSpaceManager(ctx)
+		if err != nil {
+			return mbliberrors.Errorf("NewSpaceManager: %w", err)
+		}
+		param := mbuserservice.AddPersonalSpaceParameter{
+			AppUserID: appUserID,
+			KeyName:   libdomain.NewPersonalSpaceKey(appUser.AppUserID().Int()),
+			Name:      libdomain.NewPersonalSpaceName(appUser.LoginID()),
+		}
+		spaceID, err := spaceManager.AddPersonalSpace(ctx, action.SystemOwner, &param)
+		if err != nil {
+			return mbliberrors.Errorf("AddSpace: %w", err)
+		}
+
+		authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
+		if err != nil {
+			return mbliberrors.Errorf("NewAuthorizationManager: %w", err)
+		}
+
+		subject := appUserID.GetRBACSubject()
+		actions := []mbuserdomain.RBACAction{
+			librbac.CreateDeckAction,
+			librbac.ListDecksAction,
+		}
+		object := spaceID.GetRBACObject()
+		effect := mbuserservice.RBACAllowEffect
+		for _, a := range actions {
+			if err := authorizationManager.AddPolicyToUser(ctx, action.SystemOwner, subject, a, object, effect); err != nil {
+				return mbliberrors.Errorf("add policy to user. space(%d), action(%s): %w", spaceID.Int(), a, err)
+			}
+		}
+
+		// if err := u.cocotolaCoreCallbackClient.OnAddAppUserSpace(ctx, organizationID, appUserID, spaceID); err != nil {
+		// 	return mbliberrors.Errorf("cocotolaCoreCallbackClient.OnAddAppUserSpace: %w", err)
+		// }
+
+		return nil
+	}
+
+	if err := mblibservice.Do0(ctx, u.nonTxManager, fn); err != nil {
+		return err //nolint:wrapcheck
+	}
+
+	return nil
+}
