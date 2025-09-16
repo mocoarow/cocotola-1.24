@@ -41,7 +41,7 @@ func (c *cocotolaCoreCallbackClient) OnAddUserSpace(ctx context.Context, organiz
 
 	apiReq := libapicore.CallbackOnAddUserSpaceRequest{
 		OrganizationID: organizationID.Int(),
-		UserID:      userID.Int(),
+		UserID:         userID.Int(),
 		SpaceID:        spaceID.Int(),
 	}
 	jsonReq, err := json.Marshal(apiReq)

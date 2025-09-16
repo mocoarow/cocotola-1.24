@@ -145,7 +145,7 @@ func TestAuthHandler_GetUserInfo_shouldReturn200_whenAuthorizationHeaderIsValid(
 
 	// given
 	userInfo := &mbuserdomain.UserModel{
-		UserID:      userID(t, 123),
+		UserID:         userID(t, 123),
 		OrganizationID: organizationID(t, 456),
 		LoginID:        "LOGIN_ID",
 		Username:       "USERNAME",

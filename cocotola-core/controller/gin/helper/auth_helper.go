@@ -19,7 +19,7 @@ import (
 )
 
 type roleUser struct {
-	userID      *mbuserdomain.UserID
+	userID         *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	role           string
 }
@@ -32,6 +32,18 @@ func (o *roleUser) GetOrganizationID() *mbuserdomain.OrganizationID {
 }
 func (o *roleUser) GetRole() string {
 	return o.role
+}
+
+type operator struct {
+	userID         *mbuserdomain.UserID
+	organizationID *mbuserdomain.OrganizationID
+}
+
+func (o *operator) GetUserID() *mbuserdomain.UserID {
+	return o.userID
+}
+func (o *operator) GetOrganizationID() *mbuserdomain.OrganizationID {
+	return o.organizationID
 }
 
 func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operator service.RoleUserInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
@@ -65,7 +77,7 @@ func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operato
 	// logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
 
 	operator := &roleUser{
-		userID:      operatorID,
+		userID:         operatorID,
 		organizationID: organizationID,
 		role:           c.GetString("Role"),
 	}
@@ -116,8 +128,8 @@ func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mb
 
 	// logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
 
-	operator := &roleUser{
-		userID:      operatorID,
+	operator := &operator{
+		userID:         operatorID,
 		organizationID: organizationID,
 	}
 

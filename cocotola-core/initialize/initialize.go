@@ -27,7 +27,7 @@ import (
 )
 
 type operator struct {
-	userID      *mbuserdomain.UserID
+	userID         *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 }
 

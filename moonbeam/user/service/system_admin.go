@@ -21,10 +21,10 @@ type SystemAdminInterface interface {
 
 type SystemAdmin struct {
 	*domain.SystemAdminModel
-	rf          RepositoryFactory
-	orgRepo     OrganizationRepository
+	rf       RepositoryFactory
+	orgRepo  OrganizationRepository
 	userRepo UserRepository
-	logger      *slog.Logger
+	logger   *slog.Logger
 }
 
 func NewSystemAdmin(ctx context.Context, rf RepositoryFactory) (*SystemAdmin, error) {
@@ -38,7 +38,7 @@ func NewSystemAdmin(ctx context.Context, rf RepositoryFactory) (*SystemAdmin, er
 		SystemAdminModel: domain.NewSystemAdminModel(),
 		rf:               rf,
 		orgRepo:          orgRepo,
-		userRepo:      userRepo,
+		userRepo:         userRepo,
 		logger:           slog.Default().With(slog.String(liblog.LoggerNameKey, "SystemAdmin")),
 	}
 
@@ -46,7 +46,7 @@ func NewSystemAdmin(ctx context.Context, rf RepositoryFactory) (*SystemAdmin, er
 }
 
 func (m *SystemAdmin) GetUserID() *domain.UserID {
-	return m.SystemAdminModel.UserID
+	return m.UserID
 }
 func (m *SystemAdmin) IsSystemAdmin() bool {
 	return true

@@ -35,7 +35,7 @@ type CardModel struct {
 	DeckID                 *DeckID                      `validate:"required"`
 	TemplateID             *TemplateID                  `validate:"required"`
 	Content                string                       `validate:"required"`
-	OwnerID                *mbuserdomain.UserID      `validate:"required"`
+	OwnerID                *mbuserdomain.UserID         `validate:"required"`
 }
 
 func NewCardModel(baseModel *mblibdomain.BaseModel, cardID *CardID, organizationID *mbuserdomain.OrganizationID, deckID *DeckID, templateID *TemplateID, content string, owernID *mbuserdomain.UserID) (*CardModel, error) {

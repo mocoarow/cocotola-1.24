@@ -16,7 +16,7 @@ import (
 
 type UserClaims struct {
 	LoginID          string `json:"loginId"`
-	UserID        int    `json:"userId"`
+	UserID           int    `json:"userId"`
 	Username         string `json:"username"`
 	OrganizationID   int    `json:"organizationId"`
 	OrganizationName string `json:"organizationName"`

@@ -42,7 +42,7 @@ type SpaceModel struct {
 	*libdomain.BaseModel
 	SpaceID        *SpaceID        `validate:"required"`
 	OrganizationID *OrganizationID `validate:"required"`
-	OwnerID        *UserID      `validate:"required"`
+	OwnerID        *UserID         `validate:"required"`
 	KeyName        string          `validate:"required"`
 	Name           string          `validate:"required"`
 	SpaceType      string          `validate:"required,oneof=personal private public"`

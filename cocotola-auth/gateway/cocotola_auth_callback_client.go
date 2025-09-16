@@ -41,7 +41,7 @@ func (c *cocotolaAuthCallbackClient) OnAddUser(ctx context.Context, organization
 
 	apiReq := libapiauth.CallbackOnAddUserRequest{
 		OrganizationID: organizationID.Int(),
-		UserID:      userID.Int(),
+		UserID:         userID.Int(),
 	}
 	jsonReq, err := json.Marshal(apiReq)
 	if err != nil {

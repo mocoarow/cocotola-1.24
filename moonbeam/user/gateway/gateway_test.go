@@ -239,7 +239,7 @@ type testSystemAdmin struct {
 }
 
 func (m *testSystemAdmin) GetUserID() *domain.UserID {
-	return m.SystemAdminModel.UserID
+	return m.UserID
 }
 func (m *testSystemAdmin) IsSystemAdmin() bool {
 	return true
@@ -255,17 +255,19 @@ type testUserModel struct {
 }
 
 func (m *testUserModel) GetUserID() *domain.UserID {
-	return m.UserModel.UserID
+	return m.UserID
 }
 func (m *testUserModel) GetOrganizationID() *domain.OrganizationID {
-	return m.UserModel.OrganizationID
+	return m.OrganizationID
 }
-func (m *testUserModel) LoginID() string {
-	return m.UserModel.LoginID
-}
-func (m *testUserModel) Username() string {
-	return m.UserModel.Username
-}
+
+//	func (m *testUserModel) LoginID() string {
+//		return m.UserModel.LoginID
+//	}
+//
+//	func (m *testUserModel) Username() string {
+//		return m.UserModel.Username
+//	}
 func testNewUser(userModel *domain.UserModel) *testUserModel {
 	return &testUserModel{
 		userModel,

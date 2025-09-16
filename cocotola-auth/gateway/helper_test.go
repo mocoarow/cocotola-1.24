@@ -20,7 +20,7 @@ func (m *organization) Name() string {
 }
 
 type user struct {
-	userID      *mbuserdomain.UserID
+	userID         *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	loginID        string
 	username       string

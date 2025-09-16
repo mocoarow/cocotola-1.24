@@ -65,7 +65,7 @@ func (u *UserUsecase) RegisterUser(ctx context.Context, operator mbuserservice.O
 		u.logger.InfoContext(ctx, fmt.Sprintf("tmpUser: %d", tmpUser.UserID))
 
 		targetUser = &user{
-			userID:      tmpUser.UserID,
+			userID:         tmpUser.UserID,
 			organizationID: tmpUser.OrganizationID,
 			loginID:        tmpUser.LoginID,
 			username:       tmpUser.Username,

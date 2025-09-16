@@ -18,7 +18,7 @@ var (
 	loc = time.UTC
 )
 var (
-	invalidOrgID     *domain.OrganizationID
+	invalidOrgID  *domain.OrganizationID
 	invalidUserID *domain.UserID
 )
 

@@ -50,15 +50,15 @@ func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string)
 		}
 
 		targetOorganization := &organization{
-			organizationID: action.Organization.OrganizationModel.OrganizationID,
-			name:           action.Organization.OrganizationModel.Name,
+			organizationID: action.Organization.OrganizationID,
+			name:           action.Organization.Name,
 		}
 
 		targetUser := &user{
-			userID:      tmpUser.UserModel.UserID,
-			organizationID: tmpUser.UserModel.OrganizationID,
-			loginID:        tmpUser.UserModel.LoginID,
-			username:       tmpUser.UserModel.Username,
+			userID:         tmpUser.UserID,
+			organizationID: tmpUser.OrganizationID,
+			loginID:        tmpUser.LoginID,
+			username:       tmpUser.Username,
 		}
 
 		return targetOorganization, targetUser, nil

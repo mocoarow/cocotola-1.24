@@ -31,7 +31,7 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 		RefreshTimeout time.Duration
 	}
 	type args struct {
-		user      service.UserInterface
+		user         service.UserInterface
 		organization service.OrganizationInterface
 	}
 	tests := []struct {
@@ -48,7 +48,7 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 			},
 			args: args{
 				user: &user{
-					userID:      userID,
+					userID:         userID,
 					organizationID: organizationID,
 					loginID:        "LOGIN_ID",
 					username:       "USERNAME",
@@ -68,7 +68,7 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 			},
 			args: args{
 				user: &user{
-					userID:      userID,
+					userID:         userID,
 					organizationID: organizationID,
 					loginID:        "LOGIN_ID",
 					username:       "USERNAME",
@@ -108,7 +108,7 @@ func TestAuthTokenManager_GetUserInfo(t *testing.T) {
 	organizationID := organizationID(t, 123)
 	userID := userID(t, 456)
 	user := &user{
-		userID:      userID,
+		userID:         userID,
 		organizationID: organizationID,
 		loginID:        "LOGIN_ID",
 		username:       "USERNAME",

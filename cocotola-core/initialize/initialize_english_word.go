@@ -127,7 +127,7 @@ func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorIn
 func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID) ([]*domain.DeckID, error) {
 	operator := &operator{
 		organizationID: organizationID,
-		userID:      mbuserservice.SystemAdminID,
+		userID:         mbuserservice.SystemAdminID,
 	}
 
 	fn := func(rf service.RepositoryFactory) ([]*domain.DeckID, error) {

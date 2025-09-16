@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
@@ -96,7 +97,7 @@ func NewFolderRepository(db *gorm.DB) service.FolderRepository {
 	}
 }
 
-func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserservice.OperatorInterface, spaceID *mbuserdomain.SpaceID) (*service.Folder, error) { //nolint:dupl
+func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserservice.OperatorInterface, spaceID *mbuserdomain.SpaceID) (*service.Folder, error) {
 	_, span := tracer.Start(ctx, "folderRepository.FindRooFolderBySpaceID")
 	defer span.End()
 
@@ -106,7 +107,7 @@ func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, opera
 		Where("space_id = ? ", spaceID.Int()).
 		Where("parent_id = 0").
 		First(&folderE); result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrFolderNotFound
 		}
 		return nil, mbliberrors.Errorf("find folder entity by id(%d): %w", spaceID.Int())

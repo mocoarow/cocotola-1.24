@@ -18,7 +18,7 @@ import (
 )
 
 type operator struct {
-	userID      *mbuserdomain.UserID
+	userID         *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 }
 
@@ -64,7 +64,7 @@ func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mb
 	// logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
 
 	operator := &operator{
-		userID:      operatorID,
+		userID:         operatorID,
 		organizationID: organizationID,
 	}
 

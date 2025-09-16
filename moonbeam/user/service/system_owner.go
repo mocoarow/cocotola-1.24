@@ -23,13 +23,13 @@ type SystemOwnerInterface interface {
 type SystemOwner struct {
 	*domain.SystemOwnerModel
 	orgRepo       OrganizationRepository
-	userRepo   UserRepository
+	userRepo      UserRepository
 	userGroupRepo UserGroupRepository
 	spaceRepo     SpaceRepository
 	// pairOfUserAndGroup PairOfUserAndGroupRepository
 	// rbacRepo             RBACRepository
 	authorizationManager AuthorizationManager
-	userEventHandler  libservice.ResourceEventHandler
+	userEventHandler     libservice.ResourceEventHandler
 	spaceEventHandler    libservice.ResourceEventHandler
 	logger               *slog.Logger
 }
@@ -51,13 +51,13 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 	m := &SystemOwner{
 		SystemOwnerModel: systemOwnerModel,
 		orgRepo:          orgRepo,
-		userRepo:      userRepo,
+		userRepo:         userRepo,
 		userGroupRepo:    userGroupRepo,
 		spaceRepo:        spaceRepo,
 		// pairOfUserAndGroup:   pairOfUserAndGroup,
 		// rbacRepo:             rbacRepo,
 		authorizationManager: authorizationManager,
-		userEventHandler:  userEventHandler,
+		userEventHandler:     userEventHandler,
 		spaceEventHandler:    spaceEventHandler,
 		logger:               slog.Default().With(slog.String(liblog.LoggerNameKey, "SystemOwner")),
 	}
@@ -70,10 +70,10 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 }
 
 func (m *SystemOwner) GetUserID() *domain.UserID {
-	return m.UserModel.UserID
+	return m.UserID
 }
 func (m *SystemOwner) GetOrganizationID() *domain.OrganizationID {
-	return m.UserModel.OrganizationID
+	return m.OrganizationID
 }
 
 //	func (m *SystemOwner) LoginID() string {
@@ -183,7 +183,7 @@ func (m *SystemOwner) AddUser(ctx context.Context, param *AddUserParameter) (*do
 
 	go m.userEventHandler.OnAdd(context.Background(), map[string]int{
 		"organizationId": m.GetOrganizationID().Int(),
-		"userId":      userID.Int(),
+		"userId":         userID.Int(),
 	})
 
 	return userID, nil

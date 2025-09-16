@@ -45,10 +45,10 @@ func NewUser(_ context.Context, rf RepositoryFactory, userModel *domain.UserMode
 }
 
 func (m *User) GetUserID() *domain.UserID {
-	return m.UserModel.UserID
+	return m.UserID
 }
 func (m *User) GetOrganizationID() *domain.OrganizationID {
-	return m.UserModel.OrganizationID
+	return m.OrganizationID
 }
 
 // func (m *User) LoginID() string {

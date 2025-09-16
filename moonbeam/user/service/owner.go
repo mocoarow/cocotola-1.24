@@ -39,10 +39,10 @@ func (m *Owner) AddUser(ctx context.Context, param *AddUserParameter) (*domain.U
 }
 
 func (m *Owner) GetUserID() *domain.UserID {
-	return m.UserModel.UserID
+	return m.UserID
 }
 func (m *Owner) GetOrganizationID() *domain.OrganizationID {
-	return m.UserModel.OrganizationID
+	return m.OrganizationID
 }
 
 //	func (m *Owner) LoginID() string {

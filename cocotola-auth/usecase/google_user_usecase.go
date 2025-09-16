@@ -29,7 +29,7 @@ func (m *organization) Name() string {
 }
 
 type user struct {
-	userID      *mbuserdomain.UserID
+	userID         *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	loginID        string
 	username       string
@@ -192,7 +192,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 		}
 
 		targetUser = &user{
-			userID:      tmpUser.UserID,
+			userID:         tmpUser.UserID,
 			organizationID: tmpUser.OrganizationID,
 			loginID:        tmpUser.LoginID,
 			username:       tmpUser.Username,
