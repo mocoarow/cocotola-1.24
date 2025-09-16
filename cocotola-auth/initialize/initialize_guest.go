@@ -34,7 +34,7 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 			logger.InfoContext(ctx, fmt.Sprintf("guest already exists. id: %d", guest.GetUserID().Int()))
 			return guest.GetUserID(), nil
 		} else if !errors.Is(err, mbuserservice.ErrUserNotFound) {
-			return nil, mbliberrors.Errorf("find app user by login id(%s): %w", guestLoginID, err)
+			return nil, mbliberrors.Errorf("find user by login id(%s): %w", guestLoginID, err)
 		}
 
 		// 2. add guest user
@@ -96,12 +96,12 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 }
 
 func addGuestUser(ctx context.Context, guestLoginID, guestUserName string, systemOwnerAction *service.SystemOwnerAction) *mbuserdomain.UserID {
-	appUserAddParam, err := mbuserservice.NewUserAddParameter(guestLoginID, guestUserName, "", "", "", "", "")
+	userAddParam, err := mbuserservice.NewUserAddParameter(guestLoginID, guestUserName, "", "", "", "", "")
 	if err != nil {
 		libdomain.CheckError(err)
 	}
 
-	guestID, err := systemOwnerAction.SystemOwner.AddUser(ctx, appUserAddParam)
+	guestID, err := systemOwnerAction.SystemOwner.AddUser(ctx, userAddParam)
 	if err != nil {
 		libdomain.CheckError(err)
 	}

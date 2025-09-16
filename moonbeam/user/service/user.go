@@ -25,16 +25,16 @@ type User struct {
 	*domain.UserModel
 }
 
-func NewUser(_ context.Context, rf RepositoryFactory, appUserModel *domain.UserModel) (*User, error) {
+func NewUser(_ context.Context, rf RepositoryFactory, userModel *domain.UserModel) (*User, error) {
 	if rf == nil {
 		return nil, liberrors.Errorf("rf is nil. err: %w", libdomain.ErrInvalidArgument)
 	}
-	if appUserModel == nil {
-		return nil, liberrors.Errorf("appUserModel is nil. err: %w", libdomain.ErrInvalidArgument)
+	if userModel == nil {
+		return nil, liberrors.Errorf("userModel is nil. err: %w", libdomain.ErrInvalidArgument)
 	}
 
 	m := &User{
-		UserModel: appUserModel,
+		UserModel: userModel,
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {

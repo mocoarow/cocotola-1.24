@@ -29,8 +29,8 @@ func Test_organizationRepository_GetOrganization(t *testing.T) {
 		// get organization registered
 		baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 		require.NoError(t, err)
-		appUserID, _ := domain.NewUserID(1)
-		userModel, err := domain.NewUserModel(baseModel, appUserID, orgID, "login_id", "username", nil)
+		userID, _ := domain.NewUserID(1)
+		userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
 		require.NoError(t, err)
 		user := testNewUser(userModel)
 		{
@@ -40,7 +40,7 @@ func Test_organizationRepository_GetOrganization(t *testing.T) {
 		}
 
 		// get organization unregistered
-		otherUserModel, err := domain.NewUserModel(baseModel, appUserID, invalidOrgID, "login_id", "username", nil)
+		otherUserModel, err := domain.NewUserModel(baseModel, userID, invalidOrgID, "login_id", "username", nil)
 		require.NoError(t, err)
 		otherUser := testNewUser(otherUserModel)
 		{
@@ -67,10 +67,10 @@ func Test_organizationRepository_FindOrganizationByName(t *testing.T) {
 		// get organization registered
 		baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 		require.NoError(t, err)
-		appUserID, err := domain.NewUserID(1)
+		userID, err := domain.NewUserID(1)
 		require.NoError(t, err)
 
-		userModel, err := domain.NewUserModel(baseModel, appUserID, orgID, "login_id", "username", nil)
+		userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
 		require.NoError(t, err)
 		user := testNewUser(userModel)
 		{
@@ -110,10 +110,10 @@ func Test_organizationRepository_FindOrganizationByID(t *testing.T) {
 		// get organization registered
 		baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 		require.NoError(t, err)
-		appUserID, err := domain.NewUserID(1)
+		userID, err := domain.NewUserID(1)
 		require.NoError(t, err)
 
-		userModel, err := domain.NewUserModel(baseModel, appUserID, orgID, "login_id", "username", nil)
+		userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
 		require.NoError(t, err)
 		user := testNewUser(userModel)
 		{

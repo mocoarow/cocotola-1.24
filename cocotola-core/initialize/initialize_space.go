@@ -37,7 +37,7 @@ package initialize
 
 // 	operator := &operator{
 // 		organizationID: authInitParam.OrganizationID,
-// 		appUserID:      mbuserservice.SystemAdminID,
+// 		userID:      mbuserservice.SystemAdminID,
 // 	}
 // 	fn := func(rf service.RepositoryFactory) (*domain.SpaceID, error) {
 // 		spaceRepo, err := rf.NewSpaceRepository(ctx)

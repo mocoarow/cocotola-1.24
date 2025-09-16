@@ -32,28 +32,28 @@ func NewAuthMiddleware(cocotolaAuthClient libapi.CocotolaAuthClient) gin.Handler
 		}
 
 		bearerToken := authorization[len("Bearer "):]
-		appUserInfo, err := cocotolaAuthClient.RetrieveUserInfo(ctx, bearerToken)
+		userInfo, err := cocotolaAuthClient.RetrieveUserInfo(ctx, bearerToken)
 		if err != nil {
 			logger.WarnContext(ctx, fmt.Sprintf("getUserInfo: %v", err))
 
 			return
 		}
 
-		logger.InfoContext(ctx, fmt.Sprintf("length of groups: %d", len(appUserInfo.UserGroups)))
+		logger.InfoContext(ctx, fmt.Sprintf("length of groups: %d", len(userInfo.UserGroups)))
 
-		for _, g := range appUserInfo.UserGroups {
+		for _, g := range userInfo.UserGroups {
 			logger.InfoContext(ctx, fmt.Sprintf("group: %s", g))
 		}
 
-		logger.InfoContext(ctx, fmt.Sprintf("UserID: %d", appUserInfo.UserID))
-		c.Set("AuthorizedUser", appUserInfo.UserID)
-		c.Set("OrganizationID", appUserInfo.OrganizationID)
-		if libdomain.IsGuestLoginID(appUserInfo.LoginID) {
+		logger.InfoContext(ctx, fmt.Sprintf("UserID: %d", userInfo.UserID))
+		c.Set("AuthorizedUser", userInfo.UserID)
+		c.Set("OrganizationID", userInfo.OrganizationID)
+		if libdomain.IsGuestLoginID(userInfo.LoginID) {
 			c.Set("Role", "guest")
 		} else {
 			c.Set("Role", "student")
 		}
 
-		// logger.WarnContext(ctx, "authenticated", slog.Int("app_user_id", appUserInfo.UserID), slog.Int("organization_id", appUserInfo.OrganizationID))
+		// logger.WarnContext(ctx, "authenticated", slog.Int("user_id", userInfo.UserID), slog.Int("organization_id", userInfo.OrganizationID))
 	}
 }

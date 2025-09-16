@@ -9,9 +9,9 @@ import (
 type AuthorizationManager interface {
 	// Init(ctx context.Context) error
 
-	AddUserToGroup(ctx context.Context, operator UserInterface, appUserID *domain.UserID, userGroupID *domain.UserGroupID) error
+	AddUserToGroup(ctx context.Context, operator UserInterface, userID *domain.UserID, userGroupID *domain.UserGroupID) error
 
-	AddUserToGroupBySystemAdmin(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, appUserID *domain.UserID, userGroupID *domain.UserGroupID) error
+	AddUserToGroupBySystemAdmin(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, userID *domain.UserID, userGroupID *domain.UserGroupID) error
 
 	// RemoveUserFromGroup()
 

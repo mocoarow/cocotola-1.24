@@ -1,7 +1,7 @@
 package auth
 
 type UserInfoResponse struct {
-	UserID      int      `json:"appUserId"`
+	UserID      int      `json:"userId"`
 	OrganizationID int      `json:"organizationId"`
 	LoginID        string   `json:"loginId"`
 	Username       string   `json:"username"`

@@ -30,8 +30,8 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 		logger:       slog.Default().With(slog.String(mbliblog.LoggerNameKey, "CallbackUsecase"))}
 }
 
-// func (u *Callback) OnAddUser(ctx context.Context, _ *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID) error {
-// 	u.logger.InfoContext(ctx, "OnAddUser", slog.Int("app_user_id", appUserID.Int()))
+// func (u *Callback) OnAddUser(ctx context.Context, _ *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
+// 	u.logger.InfoContext(ctx, "OnAddUser", slog.Int("user_id", userID.Int()))
 
 // 	fn := func(_ service.RepositoryFactory) error {
 // 		spaceRepo, err := rf.NewSpaceRepository(ctx)
@@ -45,7 +45,7 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 
 // 		operator := Operator{
 // 			organizationID: organizationID,
-// 			appUserID:      appUserID,
+// 			userID:      userID,
 // 		}
 
 // 		param := service.SpaceAddParameter{
@@ -75,7 +75,7 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 // 			return mbliberrors.Errorf("add policy to user. space(%d): %w", spaceID.Int(), err)
 // 		}
 
-// 		if err := pairOfUserAndSpaceRep.AddPairOfUserAndSpace(ctx, &operator, appUserID, spaceID); err != nil {
+// 		if err := pairOfUserAndSpaceRep.AddPairOfUserAndSpace(ctx, &operator, userID, spaceID); err != nil {
 // 			return mbliberrors.Errorf("AddPairOfUserAndSpace: %w", err)
 // 		}
 
@@ -90,12 +90,12 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 // 	return nil
 // }
 
-func (u *Callback) OnAddUserSpace(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID, spaceID *mbuserdomain.SpaceID) error {
-	u.logger.InfoContext(ctx, "OnAddUser", slog.Int("app_user_id", appUserID.Int()))
+func (u *Callback) OnAddUserSpace(ctx context.Context, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID, spaceID *mbuserdomain.SpaceID) error {
+	u.logger.InfoContext(ctx, "OnAddUserSpace", slog.Int("user_id", userID.Int()))
 
 	operator := Operator{
 		organizationID: organizationID,
-		appUserID:      appUserID,
+		userID:         userID,
 	}
 
 	fn := func(rf service.RepositoryFactory) error {

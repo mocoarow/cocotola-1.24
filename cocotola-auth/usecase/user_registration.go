@@ -27,12 +27,12 @@ func registerUser(ctx context.Context, systemToken libdomain.SystemToken, rf ser
 		return nil, nil, mbliberrors.Errorf("systemOwner.FindUserByLoginID. err: %w", err)
 	}
 
-	appUser, err := registerUserWithSystemOwnerAction(ctx, action, createUserParameterFunc)
+	user, err := registerUserWithSystemOwnerAction(ctx, action, createUserParameterFunc)
 	if err != nil {
-		return nil, nil, mbliberrors.Errorf("find or register app user: %w", err)
+		return nil, nil, mbliberrors.Errorf("find or register user: %w", err)
 	}
 
-	return action.Organization.OrganizationModel, appUser, nil
+	return action.Organization.OrganizationModel, user, nil
 }
 
 func findOrRegisterUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createUserParameterFunc func() (*mbuserservice.AddUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.UserModel, error) {
@@ -43,19 +43,19 @@ func findOrRegisterUser(ctx context.Context, systemToken libdomain.SystemToken, 
 		return nil, nil, mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
 	}
 
-	appUser1, err := action.SystemOwner.FindUserByLoginID(ctx, loginID)
+	user1, err := action.SystemOwner.FindUserByLoginID(ctx, loginID)
 	if err == nil {
-		return action.Organization.OrganizationModel, appUser1.UserModel, nil
+		return action.Organization.OrganizationModel, user1.UserModel, nil
 	} else if !errors.Is(err, mbuserservice.ErrUserNotFound) {
 		return nil, nil, mbliberrors.Errorf("systemOwner.FindUserByLoginID. err: %w", err)
 	}
 
-	appUser, err := registerUserWithSystemOwnerAction(ctx, action, createUserParameterFunc)
+	user, err := registerUserWithSystemOwnerAction(ctx, action, createUserParameterFunc)
 	if err != nil {
-		return nil, nil, mbliberrors.Errorf("find or register app user: %w", err)
+		return nil, nil, mbliberrors.Errorf("find or register user: %w", err)
 	}
 
-	return action.Organization.OrganizationModel, appUser, nil
+	return action.Organization.OrganizationModel, user, nil
 }
 
 func registerUserWithSystemOwnerAction(ctx context.Context, systemOwnerAction *service.SystemOwnerAction, createUserParameterFunc func() (*mbuserservice.AddUserParameter, error)) (*mbuserdomain.UserModel, error) {
@@ -69,10 +69,10 @@ func registerUserWithSystemOwnerAction(ctx context.Context, systemOwnerAction *s
 		return nil, mbliberrors.Errorf("failed to AddStudent. err: %w", err)
 	}
 
-	appUser2, err := systemOwnerAction.SystemOwner.FindUserByID(ctx, studentID)
+	user2, err := systemOwnerAction.SystemOwner.FindUserByID(ctx, studentID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("failed to FindStudentByID. err: %w", err)
 	}
 
-	return appUser2.UserModel, nil
+	return user2.UserModel, nil
 }

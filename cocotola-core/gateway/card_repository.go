@@ -56,7 +56,7 @@ func (e *CardEntity) ToModel() (*domain.CardModel, error) { //nolint:dupl
 
 	ownerID, err := mbuserdomain.NewUserID(e.OwnerID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
+		return nil, mbliberrors.Errorf("new user id(%d): %w", e.OwnerID, err)
 	}
 
 	cardModel, err := domain.NewCardModel(

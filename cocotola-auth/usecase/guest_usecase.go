@@ -33,7 +33,7 @@ func NewGuest(systemToken libdomain.SystemToken, txManager, nonTxManager service
 func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string) (*domain.AuthTokenSet, error) {
 	var tokenSet *domain.AuthTokenSet
 
-	targetOorganization, targetUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *appUser, error) {
+	targetOorganization, targetUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *user, error) {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
 			service.WithOrganizationByName(organizationName),
 		)
@@ -46,7 +46,7 @@ func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string)
 		guestLoginID := libdomain.NewGuestLoginID(organizationName)
 		tmpUser, err := action.SystemOwner.FindUserByLoginID(ctx, guestLoginID)
 		if err != nil {
-			return nil, nil, mbliberrors.Errorf("find app user by login id: %w", err)
+			return nil, nil, mbliberrors.Errorf("find user by login id: %w", err)
 		}
 
 		targetOorganization := &organization{
@@ -54,8 +54,8 @@ func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string)
 			name:           action.Organization.OrganizationModel.Name,
 		}
 
-		targetUser := &appUser{
-			appUserID:      tmpUser.UserModel.UserID,
+		targetUser := &user{
+			userID:      tmpUser.UserModel.UserID,
 			organizationID: tmpUser.UserModel.OrganizationID,
 			loginID:        tmpUser.UserModel.LoginID,
 			username:       tmpUser.UserModel.Username,
@@ -65,7 +65,7 @@ func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string)
 	})
 	if err != nil {
 		if errors.Is(err, mbuserservice.ErrUserNotFound) {
-			return nil, mbliberrors.Errorf("app user not found: %w", domain.ErrUnauthenticated)
+			return nil, mbliberrors.Errorf("user not found: %w", domain.ErrUnauthenticated)
 		}
 
 		return nil, mbliberrors.Errorf("authenticate: %w", err)

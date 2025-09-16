@@ -55,7 +55,7 @@ func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, _,
 		}
 		logger.InfoContext(ctx, fmt.Sprintf("firstOwner: %d", firstOwner.GetUserID().Int()))
 
-		// first owner can create app users
+		// first owner can create users
 		subject := firstOwner.GetUserID().GetRBACSubject()
 		action := mbuserdomain.NewRBACAction("CreateUser")
 		object := mbuserdomain.NewRBACObject("*")

@@ -141,12 +141,12 @@ func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator s
 	return userGroup.toUserGroup()
 }
 
-func (r *userGroupRepository) addUserGroup(appUserID *domain.UserID, organizationID *domain.OrganizationID, key, name string) (*domain.UserGroupID, error) {
+func (r *userGroupRepository) addUserGroup(userID *domain.UserID, organizationID *domain.OrganizationID, key, name string) (*domain.UserGroupID, error) {
 	userGroup := userGroupEntity{ //nolint:exhaustruct
 		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: appUserID.Int(),
-			UpdatedBy: appUserID.Int(),
+			CreatedBy: userID.Int(),
+			UpdatedBy: userID.Int(),
 		},
 		OrganizationID: organizationID.Int(),
 		KeyName:        key,

@@ -50,20 +50,20 @@ func newCallbackOnAddUser(cocotolaAuthCallbackClient service.CocotolaAuthCallbac
 			return
 		}
 
-		appUserIDInt, ok := param["appUserId"]
+		userIDInt, ok := param["userId"]
 		if !ok {
-			logger.ErrorContext(ctx, fmt.Sprintf("invalid appuserId type: %T", param["appuserId"]))
+			logger.ErrorContext(ctx, fmt.Sprintf("invalid userId type: %T", param["userId"]))
 			return
 		}
 
-		appUserID, err := mbuserdomain.NewUserID(appUserIDInt)
+		userID, err := mbuserdomain.NewUserID(userIDInt)
 		if err != nil {
-			logger.ErrorContext(ctx, fmt.Sprintf("invalid appuserId: %v", err))
+			logger.ErrorContext(ctx, fmt.Sprintf("invalid userId: %v", err))
 			return
 		}
 
-		logger.InfoContext(ctx, fmt.Sprintf("OnAddUser: organizationID=%d, appUserID=%d", organizationID.Int(), appUserID.Int()))
-		if err := cocotolaAuthCallbackClient.OnAddUser(ctx, organizationID, appUserID); err != nil {
+		logger.InfoContext(ctx, fmt.Sprintf("OnAddUser: organizationID=%d, userID=%d", organizationID.Int(), userID.Int()))
+		if err := cocotolaAuthCallbackClient.OnAddUser(ctx, organizationID, userID); err != nil {
 			logger.ErrorContext(ctx, fmt.Sprintf("OnAddUser: %v", err))
 			return
 		}
@@ -90,15 +90,15 @@ func newCallbackOnAddUserSpace(cocotolaCoreCallbackClient service.CocotolaCoreCa
 			return
 		}
 
-		appUserIDInt, ok := param["appUserId"]
+		userIDInt, ok := param["userId"]
 		if !ok {
-			logger.ErrorContext(ctx, fmt.Sprintf("invalid appuserId type: %T", param["appuserId"]))
+			logger.ErrorContext(ctx, fmt.Sprintf("invalid userId type: %T", param["userId"]))
 			return
 		}
 
-		appUserID, err := mbuserdomain.NewUserID(appUserIDInt)
+		userID, err := mbuserdomain.NewUserID(userIDInt)
 		if err != nil {
-			logger.ErrorContext(ctx, fmt.Sprintf("invalid appuserId: %v", err))
+			logger.ErrorContext(ctx, fmt.Sprintf("invalid userId: %v", err))
 			return
 		}
 
@@ -114,8 +114,8 @@ func newCallbackOnAddUserSpace(cocotolaCoreCallbackClient service.CocotolaCoreCa
 			return
 		}
 
-		logger.InfoContext(ctx, fmt.Sprintf("OnAddUserSpace: organizationID=%d, appUserID=%d, spaceID:%d", organizationID.Int(), appUserID.Int(), spaceID.Int()))
-		if err := cocotolaCoreCallbackClient.OnAddUserSpace(ctx, organizationID, appUserID, spaceID); err != nil {
+		logger.InfoContext(ctx, fmt.Sprintf("OnAddUserSpace: organizationID=%d, userID=%d, spaceID:%d", organizationID.Int(), userID.Int(), spaceID.Int()))
+		if err := cocotolaCoreCallbackClient.OnAddUserSpace(ctx, organizationID, userID, spaceID); err != nil {
 			logger.ErrorContext(ctx, fmt.Sprintf("OnAddUser: %v", err))
 			return
 		}
@@ -147,15 +147,15 @@ func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.
 	cocotolaAuthCallbackClient := initCocotolaAuthCallbackClient(authConfig)
 	cocotolaCoreCallbackClient := initCocotolaCoreCallbackClient(authConfig.CoreAPIClient)
 
-	appUserEventHandler := mblibservice.ResourceEventHandlerFuncs{ //nolint:exhaustruct
+	userEventHandler := mblibservice.ResourceEventHandlerFuncs{ //nolint:exhaustruct
 		AddFunc: newCallbackOnAddUser(cocotolaAuthCallbackClient, logger),
 	}
 	spaceEventHandler := mblibservice.ResourceEventHandlerFuncs{ //nolint:exhaustruct
 		AddFunc: newCallbackOnAddUserSpace(cocotolaCoreCallbackClient, logger),
 	}
 	resouceEventHandlers := map[mbuserdomain.ResourceKey]mblibservice.ResourceEventHandler{
-		mbuserdomain.ResourceUser: appUserEventHandler,
-		mbuserdomain.RecourceSpace:   spaceEventHandler,
+		mbuserdomain.ResourceUser:  userEventHandler,
+		mbuserdomain.RecourceSpace: spaceEventHandler,
 	}
 
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {

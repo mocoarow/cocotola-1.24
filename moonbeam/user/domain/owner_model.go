@@ -4,9 +4,9 @@ type OwnerModel struct {
 	*UserModel
 }
 
-func NewOwnerModel(appUser *UserModel) (*OwnerModel, error) {
+func NewOwnerModel(user *UserModel) (*OwnerModel, error) {
 	return &OwnerModel{
-		UserModel: appUser,
+		UserModel: user,
 	}, nil
 }
 

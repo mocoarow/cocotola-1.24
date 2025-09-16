@@ -5,12 +5,12 @@ import (
 )
 
 type Operator struct {
-	appUserID      *mbuserdomain.UserID
+	userID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 }
 
 func (o *Operator) GetUserID() *mbuserdomain.UserID {
-	return o.appUserID
+	return o.userID
 }
 func (o *Operator) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID

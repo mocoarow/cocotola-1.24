@@ -42,7 +42,7 @@ func (u *UserUsecase) RegisterUser(ctx context.Context, operator mbuserservice.O
 	if err != nil {
 		return nil, mbliberrors.Errorf("authorize: %w", err)
 	} else if !ok {
-		u.logger.InfoContext(ctx, "operator is not authorized to create app user")
+		u.logger.InfoContext(ctx, "operator is not authorized to create user")
 
 		return nil, domain.ErrUnauthenticated
 	}
@@ -52,11 +52,11 @@ func (u *UserUsecase) RegisterUser(ctx context.Context, operator mbuserservice.O
 	}
 
 	var targetOorganization *organization
-	var targetUser *appUser
+	var targetUser *user
 	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
 		tmpOrganization, tmpUser, err := registerUser(ctx, u.systemToken, rf, operator.GetOrganizationID(), param.LoginID, createUserParameterFunc)
 		if err != nil && !errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
-			return mbliberrors.Errorf("register app user: %w", err)
+			return mbliberrors.Errorf("register user: %w", err)
 		} else if errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
 			return mbuserservice.ErrUserAlreadyExists
 		}
@@ -64,8 +64,8 @@ func (u *UserUsecase) RegisterUser(ctx context.Context, operator mbuserservice.O
 		u.logger.InfoContext(ctx, fmt.Sprintf("tmpOrganization: %d", tmpOrganization.OrganizationID))
 		u.logger.InfoContext(ctx, fmt.Sprintf("tmpUser: %d", tmpUser.UserID))
 
-		targetUser = &appUser{
-			appUserID:      tmpUser.UserID,
+		targetUser = &user{
+			userID:      tmpUser.UserID,
 			organizationID: tmpUser.OrganizationID,
 			loginID:        tmpUser.LoginID,
 			username:       tmpUser.Username,

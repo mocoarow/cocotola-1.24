@@ -20,7 +20,7 @@ import (
 type UserClaims struct {
 	LoginID string `json:"loginId"`
 	// TODO: Check if UserID is needed in the token
-	UserID        int    `json:"appUserId"`
+	UserID        int    `json:"userId"`
 	Username         string `json:"username"`
 	OrganizationID   int    `json:"organizationId"`
 	OrganizationName string `json:"organizationName"`
@@ -41,23 +41,23 @@ func (m *organization) Name() string {
 	return m.name
 }
 
-type appUser struct {
-	// appUserID      *mbuserdomain.UserID
+type user struct {
+	// userID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	loginID        string
 	username       string
 }
 
-//	func (m *appUser) UserID() *mbuserdomain.UserID {
-//		return m.appUserID
+//	func (m *user) UserID() *mbuserdomain.UserID {
+//		return m.userID
 //	}
-func (m *appUser) OrganizationID() *mbuserdomain.OrganizationID {
+func (m *user) OrganizationID() *mbuserdomain.OrganizationID {
 	return m.organizationID
 }
-func (m *appUser) Username() string {
+func (m *user) Username() string {
 	return m.username
 }
-func (m *appUser) LoginID() string {
+func (m *user) LoginID() string {
 	return m.loginID
 }
 
@@ -102,7 +102,7 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 		return nil, mbliberrors.Errorf("mbuserdomain.NewOrganizationID. err: %w", err)
 	}
 
-	appUser := appUser{
+	user := user{
 		// UserID:        userRecord.UserID,
 		loginID:        loginID,
 		username:       username,
@@ -114,7 +114,7 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 		name:           "cocotola",
 	}
 
-	tokenSet, err := m.CreateTokenSet(ctx, &appUser, &organization)
+	tokenSet, err := m.CreateTokenSet(ctx, &user, &organization)
 	if err != nil {
 		return nil, mbliberrors.Errorf("m.CreateTokenSet. err: %w", err)
 	}
@@ -122,16 +122,16 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 	return tokenSet, nil
 }
 
-func (m *AuthTokenManager) CreateTokenSet(ctx context.Context, appUser service.UserInterface, organization service.OrganizationInterface) (*domain.AuthTokenSet, error) {
-	if appUser == nil {
-		return nil, mbliberrors.Errorf("appUser is nil. err: %w", mblibdomain.ErrInvalidArgument)
+func (m *AuthTokenManager) CreateTokenSet(ctx context.Context, user service.UserInterface, organization service.OrganizationInterface) (*domain.AuthTokenSet, error) {
+	if user == nil {
+		return nil, mbliberrors.Errorf("user is nil. err: %w", mblibdomain.ErrInvalidArgument)
 	}
-	accessToken, err := m.createJWT(ctx, appUser, organization, m.TokenTimeout, "access")
+	accessToken, err := m.createJWT(ctx, user, organization, m.TokenTimeout, "access")
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := m.createJWT(ctx, appUser, organization, m.RefreshTimeout, "refresh")
+	refreshToken, err := m.createJWT(ctx, user, organization, m.RefreshTimeout, "refresh")
 	if err != nil {
 		return nil, err
 	}
@@ -142,16 +142,16 @@ func (m *AuthTokenManager) CreateTokenSet(ctx context.Context, appUser service.U
 	}, nil
 }
 
-func (m *AuthTokenManager) createJWT(ctx context.Context, appUser service.UserInterface, organization service.OrganizationInterface, duration time.Duration, tokenType string) (string, error) {
+func (m *AuthTokenManager) createJWT(ctx context.Context, user service.UserInterface, organization service.OrganizationInterface, duration time.Duration, tokenType string) (string, error) {
 	if len(m.SigningKey) == 0 {
 		return "", mbliberrors.Errorf("m.SigningKey is not set")
 	}
 
 	now := time.Now()
 	claims := UserClaims{ //nolint:exhaustruct
-		// UserID:        appUser.UserID().Int(),
-		LoginID:          appUser.LoginID(),
-		Username:         appUser.Username(),
+		// UserID:        user.UserID().Int(),
+		LoginID:          user.LoginID(),
+		Username:         user.Username(),
 		OrganizationID:   organization.OrganizationID().Int(),
 		OrganizationName: organization.Name(),
 		TokenType:        tokenType,
@@ -225,14 +225,14 @@ func (m *AuthTokenManager) RefreshToken(ctx context.Context, tokenString string)
 		return "", fmt.Errorf("invalid token type. err: %w", domain.ErrUnauthenticated)
 	}
 
-	// appUserID, err := mbuserdomain.NewUserID(currentClaims.UserID)
+	// userID, err := mbuserdomain.NewUserID(currentClaims.UserID)
 	// if err != nil {
 	// 	return "", err
 	// }
 
 	// TODO: check
-	appUser := &appUser{ //nolint:exhaustruct
-		// appUserID: appUserID,
+	user := &user{ //nolint:exhaustruct
+		// userID: userID,
 		loginID:  currentClaims.LoginID,
 		username: currentClaims.Username,
 	}
@@ -247,7 +247,7 @@ func (m *AuthTokenManager) RefreshToken(ctx context.Context, tokenString string)
 		name:           currentClaims.OrganizationName,
 	}
 
-	accessToken, err := m.createJWT(ctx, appUser, organization, m.TokenTimeout, "access")
+	accessToken, err := m.createJWT(ctx, user, organization, m.TokenTimeout, "access")
 	if err != nil {
 		return "", mbliberrors.Errorf("m.createJWT. err: %w", err)
 	}

@@ -32,7 +32,7 @@ func NewCocotolaCoreCallbackClient(httpClient HTTPClient, coreEndpoint *url.URL,
 	}
 }
 
-func (c *cocotolaCoreCallbackClient) OnAddUserSpace(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID, spaceID *mbuserdomain.SpaceID) error {
+func (c *cocotolaCoreCallbackClient) OnAddUserSpace(ctx context.Context, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID, spaceID *mbuserdomain.SpaceID) error {
 	ctx, span := tracer.Start(ctx, "cocotolaCoreCallbackClient.OnAddUserSpace")
 	defer span.End()
 
@@ -41,7 +41,7 @@ func (c *cocotolaCoreCallbackClient) OnAddUserSpace(ctx context.Context, organiz
 
 	apiReq := libapicore.CallbackOnAddUserSpaceRequest{
 		OrganizationID: organizationID.Int(),
-		UserID:      appUserID.Int(),
+		UserID:      userID.Int(),
 		SpaceID:        spaceID.Int(),
 	}
 	jsonReq, err := json.Marshal(apiReq)

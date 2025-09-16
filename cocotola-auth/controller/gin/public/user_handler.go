@@ -61,17 +61,17 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 				return nil
 			}
 			if errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
-				h.logger.InfoContext(ctx, fmt.Sprintf("app user already exists: %v", err))
+				h.logger.InfoContext(ctx, fmt.Sprintf("user already exists: %v", err))
 				c.JSON(http.StatusConflict, gin.H{"message": http.StatusText(http.StatusConflict)})
 				return nil
 			}
 
-			h.logger.ErrorContext(ctx, fmt.Sprintf("register app user: %+v", err))
+			h.logger.ErrorContext(ctx, fmt.Sprintf("register user: %+v", err))
 			c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
 			return nil
 		}
 
-		h.logger.InfoContext(ctx, fmt.Sprintf("registered app user: %s", authResult.AccessToken))
+		h.logger.InfoContext(ctx, fmt.Sprintf("registered user: %s", authResult.AccessToken))
 
 		c.JSON(http.StatusOK, libapiauth.AuthResponse{
 			AccessToken:  &authResult.AccessToken,

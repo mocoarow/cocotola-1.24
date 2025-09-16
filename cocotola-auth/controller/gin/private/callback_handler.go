@@ -16,7 +16,7 @@ import (
 )
 
 type CallbackUsecase interface {
-	OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID) error
+	OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error
 }
 
 type CallbackHandler struct {
@@ -49,7 +49,7 @@ func (h *CallbackHandler) OnAddUser(c *gin.Context) {
 		return
 	}
 
-	appUserID, err := mbuserdomain.NewUserID(apiReq.UserID)
+	userID, err := mbuserdomain.NewUserID(apiReq.UserID)
 	if err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -57,9 +57,9 @@ func (h *CallbackHandler) OnAddUser(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("OnAddUser", slog.Int("appUserID", appUserID.Int()))
-	if err := h.callbackUsecase.OnAddUser(ctx, organizationID, appUserID); err != nil {
-		h.logger.ErrorContext(ctx, fmt.Sprintf("on add app user: %+v", err))
+	h.logger.Info("OnAddUser", slog.Int("userID", userID.Int()))
+	if err := h.callbackUsecase.OnAddUser(ctx, organizationID, userID); err != nil {
+		h.logger.ErrorContext(ctx, fmt.Sprintf("on add user: %+v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
 		return

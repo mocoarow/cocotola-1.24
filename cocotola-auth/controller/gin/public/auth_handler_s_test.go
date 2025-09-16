@@ -144,14 +144,14 @@ func TestAuthHandler_GetUserInfo_shouldReturn200_whenAuthorizationHeaderIsValid(
 	ctx := context.Background()
 
 	// given
-	appUserInfo := &mbuserdomain.UserModel{
-		UserID:      appUserID(t, 123),
+	userInfo := &mbuserdomain.UserModel{
+		UserID:      userID(t, 123),
 		OrganizationID: organizationID(t, 456),
 		LoginID:        "LOGIN_ID",
 		Username:       "USERNAME",
 	}
 	authenticationUsecase := new(controllermock.MockAuthenticationUsecase)
-	authenticationUsecase.On("GetUserInfo", anyOfCtx, "VALID_TOKEN").Return(appUserInfo, nil)
+	authenticationUsecase.On("GetUserInfo", anyOfCtx, "VALID_TOKEN").Return(userInfo, nil)
 
 	r := initAuthRouter(t, ctx, authenticationUsecase)
 	w := httptest.NewRecorder()
@@ -168,9 +168,9 @@ func TestAuthHandler_GetUserInfo_shouldReturn200_whenAuthorizationHeaderIsValid(
 
 	jsonObj := parseJSON(t, respBytes)
 
-	appUserIDExpr := parseExpr(t, "$.appUserId")
-	appUserID := appUserIDExpr.Get(jsonObj)
-	assert.Equal(t, int64(123), appUserID[0])
+	userIDExpr := parseExpr(t, "$.userId")
+	userID := userIDExpr.Get(jsonObj)
+	assert.Equal(t, int64(123), userID[0])
 
 	organizationIDExpr := parseExpr(t, "$.organizationId")
 	organizationID := organizationIDExpr.Get(jsonObj)

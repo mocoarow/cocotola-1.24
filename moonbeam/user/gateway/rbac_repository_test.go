@@ -233,6 +233,6 @@ func teardownCasbin(t *testing.T, ts testService) {
 	// ts.db.Exec("delete from space where organization_id = ?", orgID.Int())
 	ts.db.Exec("delete from casbin_rule")
 	// db.Where("true").Delete(&spaceEntity{})
-	// db.Where("true").Delete(&appUserEntity{})
+	// db.Where("true").Delete(&userEntity{})
 	// db.Where("true").Delete(&organizationEntity{})
 }

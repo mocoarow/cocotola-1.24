@@ -34,10 +34,10 @@ type UserModel struct {
 	UserGroups     []*UserGroupModel
 }
 
-func NewUserModel(baseModel *libdomain.BaseModel, appUserID *UserID, organizationID *OrganizationID, loginID, username string, userGroups []*UserGroupModel) (*UserModel, error) {
+func NewUserModel(baseModel *libdomain.BaseModel, userID *UserID, organizationID *OrganizationID, loginID, username string, userGroups []*UserGroupModel) (*UserModel, error) {
 	m := &UserModel{
 		BaseModel:      baseModel,
-		UserID:         appUserID,
+		UserID:         userID,
 		OrganizationID: organizationID,
 		LoginID:        loginID,
 		Username:       username,
@@ -45,7 +45,7 @@ func NewUserModel(baseModel *libdomain.BaseModel, appUserID *UserID, organizatio
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("validate app user model: %w", err)
+		return nil, liberrors.Errorf("validate user model: %w", err)
 	}
 
 	return m, nil

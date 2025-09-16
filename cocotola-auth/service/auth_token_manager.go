@@ -33,6 +33,6 @@ type AuthTokenManager interface {
 	SignInWithIDToken(ctx context.Context, idToken string) (*domain.AuthTokenSet, error)
 	GetUserInfo(ctx context.Context, tokenString string) (*UserInfo, error)
 
-	CreateTokenSet(ctx context.Context, appUser UserInterface, organizationUsecase OrganizationInterface) (*domain.AuthTokenSet, error)
+	CreateTokenSet(ctx context.Context, user UserInterface, organizationUsecase OrganizationInterface) (*domain.AuthTokenSet, error)
 	RefreshToken(ctx context.Context, accessToken string) (string, error)
 }

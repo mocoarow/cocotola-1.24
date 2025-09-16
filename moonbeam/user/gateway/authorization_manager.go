@@ -42,14 +42,14 @@ func NewAuthorizationManager(ctx context.Context, dialect libgateway.DialectRDBM
 // 	return m.rbacRepo.Init()
 // }
 
-func (m *authorizationManager) AddUserToGroupBySystemAdmin(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, appUserID *domain.UserID, userGroupID *domain.UserGroupID) error {
+func (m *authorizationManager) AddUserToGroupBySystemAdmin(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
 	pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, m.dialect, m.db, m.rf)
 
-	if err := pairOfUserAndGroupRepo.AddPairOfUserAndGroupBySystemAdmin(ctx, operator, organizationID, appUserID, userGroupID); err != nil {
+	if err := pairOfUserAndGroupRepo.AddPairOfUserAndGroupBySystemAdmin(ctx, operator, organizationID, userID, userGroupID); err != nil {
 		return liberrors.Errorf("AddPairOfUserAndGroupBySystemAdmin: %w", err)
 	}
 
-	rbacUser := domain.NewRBACUserFromUser(appUserID)
+	rbacUser := domain.NewRBACUserFromUser(userID)
 	rbacUserRole := domain.NewRBACRoleFromGroup(organizationID, userGroupID)
 	rbacDomain := domain.NewRBACDomainFromOrganization(organizationID)
 
@@ -61,16 +61,16 @@ func (m *authorizationManager) AddUserToGroupBySystemAdmin(ctx context.Context, 
 	return nil
 }
 
-func (m *authorizationManager) AddUserToGroup(ctx context.Context, operator service.UserInterface, appUserID *domain.UserID, userGroupID *domain.UserGroupID) error {
+func (m *authorizationManager) AddUserToGroup(ctx context.Context, operator service.UserInterface, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
 	pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, m.dialect, m.db, m.rf)
 
-	if err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, operator, appUserID, userGroupID); err != nil {
+	if err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, operator, userID, userGroupID); err != nil {
 		return liberrors.Errorf("AddPairOfUserAndGroup: %w", err)
 	}
 
 	organizationID := operator.GetOrganizationID()
 
-	rbacUser := domain.NewRBACUserFromUser(appUserID)
+	rbacUser := domain.NewRBACUserFromUser(userID)
 	rbacUserRole := domain.NewRBACRoleFromGroup(organizationID, userGroupID)
 	rbacDomain := domain.NewRBACDomainFromOrganization(organizationID)
 

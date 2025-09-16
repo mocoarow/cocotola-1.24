@@ -57,7 +57,7 @@ func (e *FolderEntity) toModel() (*domain.FolderModel, error) { //nolint:dupl
 
 	ownerID, err := mbuserdomain.NewUserID(e.OwnerID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
+		return nil, mbliberrors.Errorf("new user id(%d): %w", e.OwnerID, err)
 	}
 
 	folderModel, err := domain.NewFolderModel(

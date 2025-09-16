@@ -16,7 +16,7 @@ import (
 
 type UserClaims struct {
 	LoginID          string `json:"loginId"`
-	UserID        int    `json:"appUserId"`
+	UserID        int    `json:"userId"`
 	Username         string `json:"username"`
 	OrganizationID   int    `json:"organizationId"`
 	OrganizationName string `json:"organizationName"`
@@ -53,12 +53,12 @@ func (u *Authentication) SignInWithIDToken(ctx context.Context, idToken string) 
 }
 
 func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.UserModel, error) {
-	appUserModel, err := service.GetUserInfo(ctx, u.systemToken, u.authTokenManager, u.transactionManager, bearerToken)
+	userModel, err := service.GetUserInfo(ctx, u.systemToken, u.authTokenManager, u.transactionManager, bearerToken)
 	if err != nil {
 		return nil, mbliberrors.Errorf("GetUserInfo: %w", err)
 	}
 
-	return appUserModel, nil
+	return userModel, nil
 }
 
 func (u *Authentication) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
@@ -99,23 +99,23 @@ func (u *Authentication) RefreshToken(ctx context.Context, refreshToken string) 
 // 		return nil, err
 // 	}
 
-// 	appUserID, err := mbuserdomain.NewUserID(claims.UserID)
+// 	userID, err := mbuserdomain.NewUserID(claims.UserID)
 // 	if err != nil {
 // 		return nil, err
 // 	}
 
 // 	// # TODO Check whether the token is registered in the Database
 
-// 	appUserRepo := u.rf.NewUserRepository(ctx)
-// 	systemOwner, err := appUserRepo.FindSystemOwnerByOrganizationID(ctx, systemAdmin, organizationID)
+// 	userRepo := u.rf.NewUserRepository(ctx)
+// 	systemOwner, err := userRepo.FindSystemOwnerByOrganizationID(ctx, systemAdmin, organizationID)
 // 	if err != nil {
 // 		return nil, err
 // 	}
 
-// 	appUser, err := systemOwner.FindUserByID(ctx, appUserID)
+// 	user, err := systemOwner.FindUserByID(ctx, userID)
 // 	if err != nil {
 // 		return nil, err
 // 	}
 
-// 	return appUser.UserModel, nil
+// 	return user.UserModel, nil
 // }

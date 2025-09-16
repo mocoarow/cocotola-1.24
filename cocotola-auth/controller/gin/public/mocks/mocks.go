@@ -86,8 +86,8 @@ func (_c *MockAuthenticationUsecase_GetUserInfo_Call) Run(run func(ctx context.C
 	return _c
 }
 
-func (_c *MockAuthenticationUsecase_GetUserInfo_Call) Return(appUserModel *domain.UserModel, err error) *MockAuthenticationUsecase_GetUserInfo_Call {
-	_c.Call.Return(appUserModel, err)
+func (_c *MockAuthenticationUsecase_GetUserInfo_Call) Return(userModel *domain.UserModel, err error) *MockAuthenticationUsecase_GetUserInfo_Call {
+	_c.Call.Return(userModel, err)
 	return _c
 }
 

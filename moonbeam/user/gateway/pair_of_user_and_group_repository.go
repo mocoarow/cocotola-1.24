@@ -22,7 +22,7 @@ type pairOfUserAndGroupRepository struct {
 type pairOfUserAndGroupEntity struct {
 	JunctionModelEntity
 	OrganizationID int
-	UserID      int
+	UserID         int
 	UserGroupID    int
 }
 
@@ -38,7 +38,7 @@ func NewPairOfUserAndGroupRepository(_ context.Context, dialect libgateway.Diale
 	}
 }
 
-func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroupBySystemAdmin(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, appUserID *domain.UserID, userGroupID *domain.UserGroupID) error {
+func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroupBySystemAdmin(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
 	_, span := tracer.Start(ctx, "pairOfUserAndGroupRepository.AddPairOfUserAndGroupToSystemOwner")
 	defer span.End()
 
@@ -47,7 +47,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroupBySystemAdmin(ctx co
 			CreatedBy: operator.GetUserID().Int(),
 		},
 		OrganizationID: organizationID.Int(),
-		UserID:      appUserID.Int(),
+		UserID:         userID.Int(),
 		UserGroupID:    userGroupID.Int(),
 	}
 	if result := r.db.Create(&pairOfUserAndGroup); result.Error != nil {
@@ -63,7 +63,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroupBySystemAdmin(ctx co
 	return nil
 }
 
-func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context, operator service.UserInterface, appUserID *domain.UserID, userGroupID *domain.UserGroupID) error {
+func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context, operator service.UserInterface, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
 	_, span := tracer.Start(ctx, "pairOfUserAndGroupRepository.AddPairOfUserAndGroup")
 	defer span.End()
 
@@ -72,7 +72,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context
 			CreatedBy: operator.GetUserID().Int(),
 		},
 		OrganizationID: operator.GetOrganizationID().Int(),
-		UserID:      appUserID.Int(),
+		UserID:         userID.Int(),
 		UserGroupID:    userGroupID.Int(),
 	}
 	if result := r.db.Create(&pairOfUserAndGroup); result.Error != nil {
@@ -95,7 +95,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context
 	// // 	return err
 	// // }
 
-	// if err := r.add(ctx, operator.GetUserID(), operator.GetOrganizationID(), appUserID, userGroupID,
+	// if err := r.add(ctx, operator.GetUserID(), operator.GetOrganizationID(), userID, userGroupID,
 	// /*userGroup.GetKey()*/
 	// ); err != nil {
 	// 	return err
@@ -103,7 +103,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context
 	return nil
 }
 
-// func (r *pairOfUserAndGroupRepository) add(ctx context.Context, operatorID domain.UserID, organizationID domain.OrganizationID, appUserID domain.UserID, userGroupID domain.UserGroupID,
+// func (r *pairOfUserAndGroupRepository) add(ctx context.Context, operatorID domain.UserID, organizationID domain.OrganizationID, userID domain.UserID, userGroupID domain.UserGroupID,
 // 	/*userGroupKey string*/
 // 	) error {
 // 	// add pairOfOuserAndRole
@@ -112,7 +112,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context
 // 			CreatedBy: operatorID.Int(),
 // 		},
 // 		OrganizationID: organizationID.Int(),
-// 		UserID:      appUserID.Int(),
+// 		UserID:      userID.Int(),
 // 		UserGroupID:    userGroupID.Int(),
 // 	}
 // 	if result := r.db.Create(&pairOfUserAndGroup); result.Error != nil {
@@ -120,7 +120,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context
 // 	}
 
 // 	rbacRepo := r.rf.NewRBACRepository(ctx)
-// 	rbacUser := service.NewRBACUser(organizationID, appUserID)
+// 	rbacUser := service.NewRBACUser(organizationID, userID)
 // 	rbacUserRole := service.NewRBACUserRole(organizationID, userGroupID)
 // 	rbacDomain := service.NewRBACDomainFromOrganization(organizationID)
 
@@ -132,14 +132,14 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context
 // 	return nil
 // }
 
-func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Context, operator service.UserInterface, appUserID *domain.UserID, userGroupID *domain.UserGroupID) error {
+func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Context, operator service.UserInterface, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
 	_, span := tracer.Start(ctx, "pairOfUserAndGroupRepository.RemovePairOfUserAndGroup")
 	defer span.End()
 
 	wrappedDB := wrappedDB{dialect: r.dialect, db: r.db, organizationID: operator.GetOrganizationID()}
 	db := wrappedDB.
 		WherePairOfUserAndGroup().
-		Where("app_user_id = ?", appUserID.Int()).
+		Where("user_id = ?", userID.Int()).
 		Where("user_group_id = ?", userGroupID.Int()).
 		db
 	result := db.Delete(&pairOfUserAndGroupEntity{}) //nolint:exhaustruct
@@ -166,14 +166,14 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 	// // 	return err
 	// // }
 
-	// if err := r.remove(ctx, operator.GetUserID(), operator.GetOrganizationID(), appUserID, userGroupID,
+	// if err := r.remove(ctx, operator.GetUserID(), operator.GetOrganizationID(), userID, userGroupID,
 	// /*userGroup.GetKey()*/); err != nil {
 	// 	return err
 	// }
 	return nil
 }
 
-// func (r *pairOfUserAndGroupRepository) remove(ctx context.Context, operatorID domain.UserID, organizationID domain.OrganizationID, appUserID domain.UserID, userGroupID domain.UserGroupID,
+// func (r *pairOfUserAndGroupRepository) remove(ctx context.Context, operatorID domain.UserID, organizationID domain.OrganizationID, userID domain.UserID, userGroupID domain.UserGroupID,
 
 // /* userGroupKey string*/
 // ) error {
@@ -181,7 +181,7 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 // 	wrappedDB := wrappedDB{dialect: r.dialect,db: r.db, organizationID: organizationID}
 // 	db := wrappedDB.
 // 		WherePairOfUserAndGroup().
-// 		Where("`app_user_id` = ?", appUserID.Int()).
+// 		Where("`user_id` = ?", userID.Int()).
 // 		Where("`user_group_id` = ?", userGroupID.Int()).
 // 		db
 // 	result := db.Delete(&pairOfUserAndGroupEntity{})
@@ -193,7 +193,7 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 // 	}
 
 // 	rbacRepo := r.rf.NewRBACRepository(ctx)
-// 	rbacUser := service.NewRBACUser(organizationID, appUserID)
+// 	rbacUser := service.NewRBACUser(organizationID, userID)
 // 	rbacUserRole := service.NewRBACUserRole(organizationID, userGroupID)
 // 	rbacDomain := service.NewRBACDomainFromOrganization(organizationID)
 
@@ -237,15 +237,15 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 // 	return false, nil
 // }
 
-func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator service.UserInterface, appUserID *domain.UserID) ([]*domain.UserGroupModel, error) {
+func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator service.UserInterface, userID *domain.UserID) ([]*domain.UserGroupModel, error) {
 	userGroups := []userGroupEntity{}
 	if result := r.db.WithContext(ctx).Table(UserGroupTableName).Select(UserGroupTableName+".*").
 		Where(UserGroupTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
 		Where(UserGroupTableName+".deleted = ?", r.dialect.BoolDefaultValue()).
 		Where(UserTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
-		Where(UserTableName+".id = ? and "+UserTableName+".deleted = ?", appUserID.Int(), r.dialect.BoolDefaultValue()).
+		Where(UserTableName+".id = ? and "+UserTableName+".deleted = ?", userID.Int(), r.dialect.BoolDefaultValue()).
 		Joins("inner join " + PairOfUserAndGroupTableName + " on " + UserGroupTableName + ".id = " + PairOfUserAndGroupTableName + ".user_group_id").
-		Joins("inner join " + UserTableName + " on " + PairOfUserAndGroupTableName + ".app_user_id = " + UserTableName + ".id").
+		Joins("inner join " + UserTableName + " on " + PairOfUserAndGroupTableName + ".user_id = " + UserTableName + ".id").
 		Order(UserGroupTableName + ".key_name").
 		Find(&userGroups); result.Error != nil {
 		return nil, result.Error

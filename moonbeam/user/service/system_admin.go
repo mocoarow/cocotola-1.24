@@ -23,7 +23,7 @@ type SystemAdmin struct {
 	*domain.SystemAdminModel
 	rf          RepositoryFactory
 	orgRepo     OrganizationRepository
-	appUserRepo UserRepository
+	userRepo UserRepository
 	logger      *slog.Logger
 }
 
@@ -32,13 +32,13 @@ func NewSystemAdmin(ctx context.Context, rf RepositoryFactory) (*SystemAdmin, er
 		return nil, fmt.Errorf("new system admin. argument 'rf' is nil: %w", libdomain.ErrInvalidArgument)
 	}
 	orgRepo := rf.NewOrganizationRepository(ctx)
-	appUserRepo := rf.NewUserRepository(ctx)
+	userRepo := rf.NewUserRepository(ctx)
 
 	m := &SystemAdmin{
 		SystemAdminModel: domain.NewSystemAdminModel(),
 		rf:               rf,
 		orgRepo:          orgRepo,
-		appUserRepo:      appUserRepo,
+		userRepo:      userRepo,
 		logger:           slog.Default().With(slog.String(liblog.LoggerNameKey, "SystemAdmin")),
 	}
 
@@ -53,16 +53,16 @@ func (m *SystemAdmin) IsSystemAdmin() bool {
 }
 
 func (m *SystemAdmin) FindSystemOwnerByOrganizationID(ctx context.Context, organizationID *domain.OrganizationID) (*SystemOwner, error) {
-	sysOwner, err := m.appUserRepo.FindSystemOwnerByOrganizationID(ctx, m, organizationID)
+	sysOwner, err := m.userRepo.FindSystemOwnerByOrganizationID(ctx, m, organizationID)
 	if err != nil {
-		return nil, liberrors.Errorf("m.appUserRepo.FindSystemOwnerByOrganizationID. error: %w", err)
+		return nil, liberrors.Errorf("m.userRepo.FindSystemOwnerByOrganizationID. error: %w", err)
 	}
 
 	return sysOwner, nil
 }
 
 func (m *SystemAdmin) FindSystemOwnerByOrganizationName(ctx context.Context, organizationName string) (*SystemOwner, error) {
-	sysOwner, err := m.appUserRepo.FindSystemOwnerByOrganizationName(ctx, m, organizationName)
+	sysOwner, err := m.userRepo.FindSystemOwnerByOrganizationName(ctx, m, organizationName)
 	if err != nil {
 		return nil, liberrors.Errorf("find system owner by organization name: %w", err)
 	}
@@ -89,12 +89,12 @@ func (m *SystemAdmin) FindOrganizationByName(ctx context.Context, name string) (
 }
 
 func (m *SystemAdmin) addSystemOwnerToOrganization(ctx context.Context, authorizationManager AuthorizationManager, organizationID *domain.OrganizationID, organizationName string) (*SystemOwner, error) {
-	_, err := m.appUserRepo.AddSystemOwner(ctx, m, organizationID)
+	_, err := m.userRepo.AddSystemOwner(ctx, m, organizationID)
 	if err != nil {
 		return nil, liberrors.Errorf("AddSystemOwner: %w", err)
 	}
 
-	systemOwner, err := m.appUserRepo.FindSystemOwnerByOrganizationName(ctx, m, organizationName)
+	systemOwner, err := m.userRepo.FindSystemOwnerByOrganizationName(ctx, m, organizationName)
 	if err != nil {
 		return nil, liberrors.Errorf("FindSystemOwnerByOrganizationName: %w", err)
 	}

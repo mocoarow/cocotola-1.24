@@ -20,7 +20,7 @@ type pairOfUserAndSpaceRepository struct {
 type pairOfUserAndSpaceEntity struct {
 	JunctionModelEntity
 	OrganizationID int
-	UserID      int
+	UserID         int
 	SpaceID        int
 }
 
@@ -35,7 +35,7 @@ func NewPairOfUserAndSpaceRepository(_ context.Context, dialect libgateway.Diale
 	}
 }
 
-func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context, operator service.UserInterface, appUserID *domain.UserID, spaceID *domain.SpaceID) error {
+func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context, operator service.UserInterface, userID *domain.UserID, spaceID *domain.SpaceID) error {
 	_, span := tracer.Start(ctx, "pairOfUserAndSpaceRepository.AddPairOfUserAndSpace")
 	defer span.End()
 
@@ -44,7 +44,7 @@ func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context
 			CreatedBy: operator.GetUserID().Int(),
 		},
 		OrganizationID: operator.GetOrganizationID().Int(),
-		UserID:      appUserID.Int(),
+		UserID:         userID.Int(),
 		SpaceID:        spaceID.Int(),
 	}
 	if result := r.db.Create(&pairOfUserAndGroup); result.Error != nil {
@@ -63,7 +63,7 @@ func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operato
 		Where(UserTableName+".id = ?", operator.GetUserID().Int()).
 		Where(UserTableName+".deleted = ?", r.dialect.BoolDefaultValue()).
 		Joins("inner join " + PairOfUserAndSpaceTableName + " on " + SpaceTableName + ".id = " + PairOfUserAndSpaceTableName + ".space_id").
-		Joins("inner join " + UserTableName + " on " + PairOfUserAndSpaceTableName + ".app_user_id = " + UserTableName + ".id").
+		Joins("inner join " + UserTableName + " on " + PairOfUserAndSpaceTableName + ".user_id = " + UserTableName + ".id").
 		Order(SpaceTableName + ".key_name").
 		Find(&spacesE); result.Error != nil {
 		return nil, result.Error

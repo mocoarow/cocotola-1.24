@@ -19,13 +19,13 @@ import (
 )
 
 type roleUser struct {
-	appUserID      *mbuserdomain.UserID
+	userID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	role           string
 }
 
 func (o *roleUser) GetUserID() *mbuserdomain.UserID {
-	return o.appUserID
+	return o.userID
 }
 func (o *roleUser) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
@@ -50,13 +50,13 @@ func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operato
 		return
 	}
 
-	appUserID := c.GetInt("AuthorizedUser")
-	if appUserID == 0 {
+	userID := c.GetInt("AuthorizedUser")
+	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 		return
 	}
 
-	operatorID, err := mbuserdomain.NewUserID(appUserID)
+	operatorID, err := mbuserdomain.NewUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 		return
@@ -65,7 +65,7 @@ func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operato
 	// logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
 
 	operator := &roleUser{
-		appUserID:      operatorID,
+		userID:      operatorID,
 		organizationID: organizationID,
 		role:           c.GetString("Role"),
 	}
@@ -102,13 +102,13 @@ func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mb
 		return
 	}
 
-	appUserID := c.GetInt("AuthorizedUser")
-	if appUserID == 0 {
+	userID := c.GetInt("AuthorizedUser")
+	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 		return
 	}
 
-	operatorID, err := mbuserdomain.NewUserID(appUserID)
+	operatorID, err := mbuserdomain.NewUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 		return
@@ -117,7 +117,7 @@ func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mb
 	// logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
 
 	operator := &roleUser{
-		appUserID:      operatorID,
+		userID:      operatorID,
 		organizationID: organizationID,
 	}
 

@@ -74,7 +74,7 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	}
 
 	bearerToken := authorization[len("Bearer "):]
-	appUserInfo, err := h.authenticationUsecase.GetUserInfo(ctx, bearerToken)
+	userInfo, err := h.authenticationUsecase.GetUserInfo(ctx, bearerToken)
 	if err != nil {
 		h.logger.InfoContext(ctx, "GetUserInfo", slog.Any("err", (err)))
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
@@ -82,15 +82,15 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 		return
 	}
 
-	groups := make([]string, 0, len(appUserInfo.UserGroups))
-	for _, g := range appUserInfo.UserGroups {
+	groups := make([]string, 0, len(userInfo.UserGroups))
+	for _, g := range userInfo.UserGroups {
 		groups = append(groups, g.Name)
 	}
 	c.JSON(http.StatusOK, libapiauth.UserInfoResponse{
-		UserID:      appUserInfo.UserID.Int(),
-		OrganizationID: appUserInfo.OrganizationID.Int(),
-		LoginID:        appUserInfo.LoginID,
-		Username:       appUserInfo.Username,
+		UserID:         userInfo.UserID.Int(),
+		OrganizationID: userInfo.OrganizationID.Int(),
+		LoginID:        userInfo.LoginID,
+		Username:       userInfo.Username,
 		UserGroups:     groups,
 	})
 	// TODO: check if the token is registered

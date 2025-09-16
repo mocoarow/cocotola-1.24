@@ -32,7 +32,7 @@ func NewCocotolaAuthCallbackClient(httpClient HTTPClient, authEndpoint *url.URL,
 	}
 }
 
-func (c *cocotolaAuthCallbackClient) OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID) error {
+func (c *cocotolaAuthCallbackClient) OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
 	ctx, span := tracer.Start(ctx, "cocotolaAuthCallbackClient.OnAddUser")
 	defer span.End()
 
@@ -41,7 +41,7 @@ func (c *cocotolaAuthCallbackClient) OnAddUser(ctx context.Context, organization
 
 	apiReq := libapiauth.CallbackOnAddUserRequest{
 		OrganizationID: organizationID.Int(),
-		UserID:      appUserID.Int(),
+		UserID:      userID.Int(),
 	}
 	jsonReq, err := json.Marshal(apiReq)
 	if err != nil {

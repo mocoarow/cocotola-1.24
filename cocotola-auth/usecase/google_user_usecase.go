@@ -28,23 +28,23 @@ func (m *organization) Name() string {
 	return m.name
 }
 
-type appUser struct {
-	appUserID      *mbuserdomain.UserID
+type user struct {
+	userID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	loginID        string
 	username       string
 }
 
-func (m *appUser) UserID() *mbuserdomain.UserID {
-	return m.appUserID
+func (m *user) UserID() *mbuserdomain.UserID {
+	return m.userID
 }
-func (m *appUser) OrganizationID() *mbuserdomain.OrganizationID {
+func (m *user) OrganizationID() *mbuserdomain.OrganizationID {
 	return m.organizationID
 }
-func (m *appUser) Username() string {
+func (m *user) Username() string {
 	return m.username
 }
-func (m *appUser) LoginID() string {
+func (m *user) LoginID() string {
 	return m.loginID
 }
 
@@ -174,7 +174,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 
 	var tokenSet *domain.AuthTokenSet
 	var targetOorganization *organization
-	var targetUser *appUser
+	var targetUser *user
 	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
 			// service.WithOrganizationRepository(),
@@ -191,8 +191,8 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 			return mbliberrors.Errorf("s.findOrRegisterUser. err: %w", err)
 		}
 
-		targetUser = &appUser{
-			appUserID:      tmpUser.UserID,
+		targetUser = &user{
+			userID:      tmpUser.UserID,
 			organizationID: tmpUser.OrganizationID,
 			loginID:        tmpUser.LoginID,
 			username:       tmpUser.Username,
@@ -238,15 +238,15 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 // 	var tokenSet *domain.AuthTokenSet
 
 // 	var targetOorganization *organization
-// 	var targetUser *appUser
+// 	var targetUser *user
 // 	if err := u.transactionManager.Do(ctx, func(rf service.RepositoryFactory) error {
 // 		tmpOrganization, tmpUser, err := u.registerUser(ctx, rf, organizationName, googleUserInfo.Email, googleUserInfo.Name, googleUserInfo.Email, googleAuthResponse.AccessToken, googleAuthResponse.RefreshToken)
 // 		if err != nil && !errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
 // 			return mbliberrors.Errorf("s.registerUser. err: %w", err)
 // 		}
 
-// 		targetUser = &appUser{
-// 			appUserID:      tmpUser.UserID,
+// 		targetUser = &user{
+// 			userID:      tmpUser.UserID,
 // 			organizationID: tmpUser.OrganizationID,
 // 			loginID:        tmpUser.LoginID,
 // 			username:       tmpUser.Username,
@@ -261,7 +261,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 // 		return nil, mbliberrors.Errorf("RegisterUser. err: %w", err)
 // 	}
 
-// 	// if err := s.registerUserCallback(ctx, organizationName, appUser); err != nil {
+// 	// if err := s.registerUserCallback(ctx, organizationName, user); err != nil {
 // 	// 	return nil, mbliberrors.Errorf("registerStudentCallback. err: %w", err)
 // 	// }
 // 	tokenSetTmp, err := u.authTokenManager.CreateTokenSet(ctx, targetUser, targetOorganization)

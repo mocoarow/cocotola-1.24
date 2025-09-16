@@ -5,8 +5,8 @@ type ResourceKey string
 var (
 	SystemAdminID *UserID
 
-	ResourceUser = ResourceKey("app_user")
-	RecourceSpace   = ResourceKey("space")
+	ResourceUser  = ResourceKey("user")
+	RecourceSpace = ResourceKey("space")
 )
 
 func init() {

@@ -29,13 +29,13 @@ func NewOwner(rf RepositoryFactory, ownerModel *domain.OwnerModel) *Owner {
 }
 
 func (m *Owner) AddUser(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
-	appUserRepo := m.rf.NewUserRepository(ctx)
-	appUserID, err := appUserRepo.AddUser(ctx, m, param)
+	userRepo := m.rf.NewUserRepository(ctx)
+	userID, err := userRepo.AddUser(ctx, m, param)
 	if err != nil {
-		return nil, liberrors.Errorf("m.appUserRepo.AddUser. err: %w", err)
+		return nil, liberrors.Errorf("m.userRepo.AddUser. err: %w", err)
 	}
 
-	return appUserID, nil
+	return userID, nil
 }
 
 func (m *Owner) GetUserID() *domain.UserID {

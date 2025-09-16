@@ -27,12 +27,12 @@ import (
 )
 
 type operator struct {
-	appUserID      *mbuserdomain.UserID
+	userID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 }
 
 func (o *operator) GetUserID() *mbuserdomain.UserID {
-	return o.appUserID
+	return o.userID
 }
 func (o *operator) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
@@ -152,7 +152,7 @@ func initApp(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Diale
 // func initApp2(ctx context.Context, txManager service.TransactionManager, authInitParam *AuthInitParameter, spaceID *domain.SpaceID) error {
 // 	operator := &operator{
 // 		organizationID: authInitParam.OrganizationID,
-// 		appUserID:      mbuserservice.SystemAdminID,
+// 		userID:      mbuserservice.SystemAdminID,
 // 	}
 // 	fn := func(rf service.RepositoryFactory) error {
 // 		pairOfUserAndSpaceRepo, err := rf.NewPairOfUserAndSpaceRepository(ctx)
@@ -190,7 +190,7 @@ func initApp(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Diale
 
 // 	operator := &operator{
 // 		organizationID: organizationID,
-// 		appUserID:      mbuserservice.SystemAdminID,
+// 		userID:      mbuserservice.SystemAdminID,
 // 	}
 // 	fn := func(rf service.RepositoryFactory) error {
 // 		spaceRepo, err := rf.NewSpaceRepository(ctx)

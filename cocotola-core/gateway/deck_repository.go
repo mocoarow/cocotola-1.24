@@ -75,7 +75,7 @@ func (e *DeckEntity) toModel() (*domain.DeckModel, error) {
 
 	ownerID, err := mbuserdomain.NewUserID(e.OwnerID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
+		return nil, mbliberrors.Errorf("new user id(%d): %w", e.OwnerID, err)
 	}
 
 	deckModel, err := domain.NewDeckModel(

@@ -33,8 +33,8 @@ func NewCallback(systemToken libdomain.SystemToken, txManager, nonTxManager serv
 		logger:                     slog.Default().With(slog.String(mbliblog.LoggerNameKey, "CallbackUsecase"))}
 }
 
-func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID) error {
-	u.logger.InfoContext(ctx, "OnAddUser", slog.Int("app_user_id", appUserID.Int()))
+func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
+	u.logger.InfoContext(ctx, "OnAddUser", slog.Int("user_id", userID.Int()))
 
 	fn := func(rf service.RepositoryFactory) error {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
@@ -50,7 +50,7 @@ func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.O
 			return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
 		}
 
-		appUser, err := action.SystemOwner.FindUserByID(ctx, appUserID)
+		user, err := action.SystemOwner.FindUserByID(ctx, userID)
 		if err != nil {
 			return mbliberrors.Errorf("FindUserByID: %w", err)
 		}
@@ -60,9 +60,9 @@ func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.O
 			return mbliberrors.Errorf("NewSpaceManager: %w", err)
 		}
 		param := mbuserservice.AddPersonalSpaceParameter{
-			UserID: appUserID,
-			KeyName:   libdomain.NewPersonalSpaceKey(appUser.GetUserID().Int()),
-			Name:      libdomain.NewPersonalSpaceName(appUser.LoginID),
+			UserID:  userID,
+			KeyName: libdomain.NewPersonalSpaceKey(user.GetUserID().Int()),
+			Name:    libdomain.NewPersonalSpaceName(user.LoginID),
 		}
 		spaceID, err := spaceManager.AddPersonalSpace(ctx, action.SystemOwner, &param)
 		if err != nil {
@@ -74,7 +74,7 @@ func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.O
 			return mbliberrors.Errorf("NewAuthorizationManager: %w", err)
 		}
 
-		subject := appUserID.GetRBACSubject()
+		subject := userID.GetRBACSubject()
 		actions := []mbuserdomain.RBACAction{
 			librbac.CreateDeckAction,
 			librbac.ListDecksAction,
@@ -87,9 +87,9 @@ func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.O
 			}
 		}
 
-		// if err := u.cocotolaCoreCallbackClient.OnAddUserSpace(ctx, organizationID, appUserID, spaceID); err != nil {
-		// 	return mbliberrors.Errorf("cocotolaCoreCallbackClient.OnAddUserSpace: %w", err)
-		// }
+		if err := u.cocotolaCoreCallbackClient.OnAddUserSpace(ctx, organizationID, userID, spaceID); err != nil {
+			return mbliberrors.Errorf("cocotolaCoreCallbackClient.OnAddUserSpace: %w", err)
+		}
 
 		return nil
 	}

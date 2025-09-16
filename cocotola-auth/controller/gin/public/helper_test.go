@@ -19,9 +19,9 @@ func organizationID(t *testing.T, organizationID int) *mbuserdomain.Organization
 	return id
 }
 
-func appUserID(t *testing.T, appUserID int) *mbuserdomain.UserID {
+func userID(t *testing.T, userID int) *mbuserdomain.UserID {
 	t.Helper()
-	id, err := mbuserdomain.NewUserID(appUserID)
+	id, err := mbuserdomain.NewUserID(userID)
 	require.NoError(t, err)
 	return id
 }
