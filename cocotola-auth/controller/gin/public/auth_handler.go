@@ -19,7 +19,7 @@ import (
 
 type AuthenticationUsecase interface {
 	SignInWithIDToken(ctx context.Context, idToken string) (*domain.AuthTokenSet, error)
-	GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.AppUserModel, error)
+	GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.UserModel, error)
 	RefreshToken(ctx context.Context, refreshToken string) (string, error)
 }
 
@@ -86,8 +86,8 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	for _, g := range appUserInfo.UserGroups {
 		groups = append(groups, g.Name)
 	}
-	c.JSON(http.StatusOK, libapiauth.AppUserInfoResponse{
-		AppUserID:      appUserInfo.AppUserID.Int(),
+	c.JSON(http.StatusOK, libapiauth.UserInfoResponse{
+		UserID:      appUserInfo.UserID.Int(),
 		OrganizationID: appUserInfo.OrganizationID.Int(),
 		LoginID:        appUserInfo.LoginID,
 		Username:       appUserInfo.Username,

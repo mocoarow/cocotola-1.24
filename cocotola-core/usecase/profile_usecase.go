@@ -26,7 +26,7 @@ func NewProfileUsecase(nonTxManager service.TransactionManager) *ProfileUsecase 
 // 	if err != nil {
 // 		return nil, mbliberrors.Errorf("NewPairOfUserAndSpaceRepository: %w", err)
 // 	}
-// 	spaces, err := pairofUserAndSpaceRepo.FindSpacesByUserID(ctx, operator, operator.AppUserID())
+// 	spaces, err := pairofUserAndSpaceRepo.FindSpacesByUserID(ctx, operator, operator.UserID())
 // 	if err != nil {
 // 		return nil, mbliberrors.Errorf("FindSpacesByUserID: %w", err)
 // 	}

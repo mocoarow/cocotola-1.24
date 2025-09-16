@@ -20,7 +20,7 @@ func Test_appUserRepository_FindSystemOwnerByOrganizationID_shouldReturnSystemOw
 		t.Helper()
 		sysAdModel := domain.NewSystemAdminModel()
 		sysAd := testNewSystemAdmin(sysAdModel)
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
 		testSysOwner, err := appUserRepo.FindSystemOwnerByOrganizationID(ctx, sysAd, orgID)
@@ -38,7 +38,7 @@ func Test_appUserRepository_FindSystemOwnerByOrganizationID_shouldReturnError_wh
 		t.Helper()
 		sysAdModel := domain.NewSystemAdminModel()
 		sysAd := testNewSystemAdmin(sysAdModel)
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
 		_, err := appUserRepo.FindSystemOwnerByOrganizationID(ctx, sysAd, invalidOrgID)
@@ -57,7 +57,7 @@ func Test_appUserRepository_FindSystemOwnerByOrganizationName_shouldReturnSystem
 		sysAdModel := domain.NewSystemAdminModel()
 		sysAd := testNewSystemAdmin(sysAdModel)
 
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
 		testSysOwner, err := appUserRepo.FindSystemOwnerByOrganizationName(ctx, sysAd, org.Name)
@@ -76,7 +76,7 @@ func Test_appUserRepository_FindSystemOwnerByOrganizationName_shouldReturnError_
 		sysAdModel := domain.NewSystemAdminModel()
 		sysAd := testNewSystemAdmin(sysAdModel)
 
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
 		_, err := appUserRepo.FindSystemOwnerByOrganizationName(ctx, sysAd, "NOT_FOUND")
@@ -87,17 +87,17 @@ func Test_appUserRepository_FindSystemOwnerByOrganizationName_shouldReturnError_
 	testOrganization(t, fn)
 }
 
-func Test_appUserRepository_FindAppUserByID_shouldReturnAppUser_whenExistingIDIsSpecified(t *testing.T) {
+func Test_appUserRepository_FindUserByID_shouldReturnUser_whenExistingIDIsSpecified(t *testing.T) {
 	t.Parallel()
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *service.SystemOwner, owner *service.Owner) {
 		t.Helper()
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// given
-		newAppUser := testAddAppUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
+		newUser := testAddUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
 
 		// when
-		appUser, err := appUserRepo.FindAppUserByID(ctx, owner, newAppUser.GetAppUserID())
+		appUser, err := appUserRepo.FindUserByID(ctx, owner, newUser.GetUserID())
 
 		// then
 		require.NoError(t, err)
@@ -107,29 +107,29 @@ func Test_appUserRepository_FindAppUserByID_shouldReturnAppUser_whenExistingIDIs
 	testOrganization(t, fn)
 }
 
-func Test_appUserRepository_FindAppUserByID_shouldReturnError_whenInvaildIDIsSpecified(t *testing.T) {
+func Test_appUserRepository_FindUserByID_shouldReturnError_whenInvaildIDIsSpecified(t *testing.T) {
 	t.Parallel()
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *service.SystemOwner, owner *service.Owner) {
 		t.Helper()
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
-		_, err := appUserRepo.FindAppUserByID(ctx, owner, invalidAppUserID)
-		assert.ErrorIs(t, err, service.ErrAppUserNotFound)
+		_, err := appUserRepo.FindUserByID(ctx, owner, invalidUserID)
+		assert.ErrorIs(t, err, service.ErrUserNotFound)
 	}
 	testOrganization(t, fn)
 }
 
-func Test_appUserRepository_FindAppUserByLoginID_shouldReturnAppUser_whenExistingLoginIDIsSpecified(t *testing.T) {
+func Test_appUserRepository_FindUserByLoginID_shouldReturnUser_whenExistingLoginIDIsSpecified(t *testing.T) {
 	t.Parallel()
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *service.SystemOwner, owner *service.Owner) {
 		t.Helper()
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// given
-		_ = testAddAppUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
+		_ = testAddUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
 
 		// when
-		appUser, err := appUserRepo.FindAppUserByLoginID(ctx, owner, "LOGIN_ID")
+		appUser, err := appUserRepo.FindUserByLoginID(ctx, owner, "LOGIN_ID")
 
 		// then
 		require.NoError(t, err)
@@ -139,17 +139,17 @@ func Test_appUserRepository_FindAppUserByLoginID_shouldReturnAppUser_whenExistin
 	testOrganization(t, fn)
 }
 
-func Test_appUserRepository_FindAppUserByLoginID_shouldReturnError_whenInvalidLoginIDIsSpecified(t *testing.T) {
+func Test_appUserRepository_FindUserByLoginID_shouldReturnError_whenInvalidLoginIDIsSpecified(t *testing.T) {
 	t.Parallel()
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *service.SystemOwner, owner *service.Owner) {
 		t.Helper()
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
-		_, err := appUserRepo.FindAppUserByLoginID(ctx, owner, "NOT_FOUND")
+		_, err := appUserRepo.FindUserByLoginID(ctx, owner, "NOT_FOUND")
 
 		// then
-		assert.ErrorIs(t, err, service.ErrAppUserNotFound)
+		assert.ErrorIs(t, err, service.ErrUserNotFound)
 	}
 	testOrganization(t, fn)
 }
@@ -161,7 +161,7 @@ func Test_appUserRepository_FindOwnerByLoginID_shouldReturnOwner_whenExistingOwn
 		require.Equal(t, "OWNER_ID", owner.LoginID)
 		require.Equal(t, "OWNER_NAME", owner.Username)
 
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
 		appUser, err := appUserRepo.FindOwnerByLoginID(ctx, sysOwner, owner.LoginID)
@@ -181,16 +181,16 @@ func Test_appUserRepository_FindOwnerByLoginID_shouldReturnError_whenNotOwnerLog
 		require.Equal(t, "OWNER_ID", owner.LoginID)
 		require.Equal(t, "OWNER_NAME", owner.Username)
 
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// given
-		_ = testAddAppUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
+		_ = testAddUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
 
 		// when
 		_, err := appUserRepo.FindOwnerByLoginID(ctx, sysOwner, "LOGIN_ID")
 
 		// then
-		assert.ErrorIs(t, err, service.ErrAppUserNotFound)
+		assert.ErrorIs(t, err, service.ErrUserNotFound)
 	}
 	testOrganization(t, fn)
 }
@@ -201,12 +201,12 @@ func Test_appUserRepository_VerifyPassword_shouldReturnTrue_whenCorrectPasswordI
 		t.Helper()
 		sysAdModel := domain.NewSystemAdminModel()
 		sysAd := testNewSystemAdmin(sysAdModel)
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 		testSysOwner, err := appUserRepo.FindSystemOwnerByOrganizationID(ctx, sysAd, orgID)
 		require.NoError(t, err)
 
 		// given
-		_ = testAddAppUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
+		_ = testAddUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
 
 		// when
 		verified, err := appUserRepo.VerifyPassword(ctx, testSysOwner, "LOGIN_ID", "PASSWORD")
@@ -224,12 +224,12 @@ func Test_appUserRepository_VerifyPassword_shouldReturnFalse_whenWrongPasswordIs
 		t.Helper()
 		sysAdModel := domain.NewSystemAdminModel()
 		sysAd := testNewSystemAdmin(sysAdModel)
-		appUserRepo := gateway.NewAppUserRepository(ctx, ts.dialect, ts.db, ts.rf)
+		appUserRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 		testSysOwner, err := appUserRepo.FindSystemOwnerByOrganizationID(ctx, sysAd, orgID)
 		require.NoError(t, err)
 
 		// given
-		_ = testAddAppUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
+		_ = testAddUser(t, ctx, ts, owner, "LOGIN_ID", "USERNAME", "PASSWORD")
 
 		// when
 		verified, err := appUserRepo.VerifyPassword(ctx, testSysOwner, "LOGIN_ID", "WRONG_PASSWORD")

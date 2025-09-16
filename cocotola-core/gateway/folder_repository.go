@@ -55,7 +55,7 @@ func (e *FolderEntity) toModel() (*domain.FolderModel, error) { //nolint:dupl
 		return nil, mbliberrors.Errorf("new parent id(%d): %w", e.ParentID, err)
 	}
 
-	ownerID, err := mbuserdomain.NewAppUserID(e.OwnerID)
+	ownerID, err := mbuserdomain.NewUserID(e.OwnerID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
 	}
@@ -127,14 +127,14 @@ func (r *folderRepository) AddFolder(ctx context.Context, operator mbuserservice
 	folderE := FolderEntity{ //nolint:exhaustruct
 		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.GetAppUserID().Int(),
-			UpdatedBy: operator.GetAppUserID().Int(),
+			CreatedBy: operator.GetUserID().Int(),
+			UpdatedBy: operator.GetUserID().Int(),
 		},
 		OrganizationID: operator.GetOrganizationID().Int(),
 		SpaceID:        param.SpaceID.Int(),
 		ParentID:       param.FolderID.Int(),
 		Name:           param.Name,
-		OwnerID:        operator.GetAppUserID().Int(),
+		OwnerID:        operator.GetUserID().Int(),
 	}
 	if result := r.db.Create(&folderE); result.Error != nil {
 		return nil, mbliberrors.Errorf("add folder entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrFolderAlreadyExists))

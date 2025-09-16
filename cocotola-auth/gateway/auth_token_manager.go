@@ -17,10 +17,10 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-type AppUserClaims struct {
+type UserClaims struct {
 	LoginID string `json:"loginId"`
-	// TODO: Check if AppUserID is needed in the token
-	AppUserID        int    `json:"appUserId"`
+	// TODO: Check if UserID is needed in the token
+	UserID        int    `json:"appUserId"`
 	Username         string `json:"username"`
 	OrganizationID   int    `json:"organizationId"`
 	OrganizationName string `json:"organizationName"`
@@ -42,13 +42,13 @@ func (m *organization) Name() string {
 }
 
 type appUser struct {
-	// appUserID      *mbuserdomain.AppUserID
+	// appUserID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	loginID        string
 	username       string
 }
 
-//	func (m *appUser) AppUserID() *mbuserdomain.AppUserID {
+//	func (m *appUser) UserID() *mbuserdomain.UserID {
 //		return m.appUserID
 //	}
 func (m *appUser) OrganizationID() *mbuserdomain.OrganizationID {
@@ -103,7 +103,7 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 	}
 
 	appUser := appUser{
-		// AppUserID:        userRecord.AppUserID,
+		// UserID:        userRecord.UserID,
 		loginID:        loginID,
 		username:       username,
 		organizationID: organizationID,
@@ -122,7 +122,7 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 	return tokenSet, nil
 }
 
-func (m *AuthTokenManager) CreateTokenSet(ctx context.Context, appUser service.AppUserInterface, organization service.OrganizationInterface) (*domain.AuthTokenSet, error) {
+func (m *AuthTokenManager) CreateTokenSet(ctx context.Context, appUser service.UserInterface, organization service.OrganizationInterface) (*domain.AuthTokenSet, error) {
 	if appUser == nil {
 		return nil, mbliberrors.Errorf("appUser is nil. err: %w", mblibdomain.ErrInvalidArgument)
 	}
@@ -142,14 +142,14 @@ func (m *AuthTokenManager) CreateTokenSet(ctx context.Context, appUser service.A
 	}, nil
 }
 
-func (m *AuthTokenManager) createJWT(ctx context.Context, appUser service.AppUserInterface, organization service.OrganizationInterface, duration time.Duration, tokenType string) (string, error) {
+func (m *AuthTokenManager) createJWT(ctx context.Context, appUser service.UserInterface, organization service.OrganizationInterface, duration time.Duration, tokenType string) (string, error) {
 	if len(m.SigningKey) == 0 {
 		return "", mbliberrors.Errorf("m.SigningKey is not set")
 	}
 
 	now := time.Now()
-	claims := AppUserClaims{ //nolint:exhaustruct
-		// AppUserID:        appUser.AppUserID().Int(),
+	claims := UserClaims{ //nolint:exhaustruct
+		// UserID:        appUser.UserID().Int(),
 		LoginID:          appUser.LoginID(),
 		Username:         appUser.Username(),
 		OrganizationID:   organization.OrganizationID().Int(),
@@ -172,14 +172,14 @@ func (m *AuthTokenManager) createJWT(ctx context.Context, appUser service.AppUse
 	return signed, nil
 }
 
-func (m *AuthTokenManager) GetUserInfo(ctx context.Context, tokenString string) (*service.AppUserInfo, error) {
+func (m *AuthTokenManager) GetUserInfo(ctx context.Context, tokenString string) (*service.UserInfo, error) {
 	currentClaims, err := m.parseToken(ctx, tokenString)
 	if err != nil {
 		return nil, fmt.Errorf("parseToken(%s). err: %w", err.Error(), domain.ErrUnauthenticated)
 	}
 
-	return &service.AppUserInfo{
-		// AppUserID:        currentClaims.AppUserID,
+	return &service.UserInfo{
+		// UserID:        currentClaims.UserID,
 		LoginID:          currentClaims.LoginID,
 		Username:         currentClaims.Username,
 		OrganizationID:   currentClaims.OrganizationID,
@@ -187,12 +187,12 @@ func (m *AuthTokenManager) GetUserInfo(ctx context.Context, tokenString string) 
 	}, nil
 }
 
-func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (*AppUserClaims, error) {
+func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (*UserClaims, error) {
 	keyFunc := func(_ *jwt.Token) (interface{}, error) {
 		return m.SigningKey, nil
 	}
 
-	currentToken, err := jwt.ParseWithClaims(tokenString, &AppUserClaims{}, keyFunc) //nolint:exhaustruct
+	currentToken, err := jwt.ParseWithClaims(tokenString, &UserClaims{}, keyFunc) //nolint:exhaustruct
 	if err != nil {
 		m.logger.InfoContext(ctx, fmt.Sprintf("%v", err))
 		// return nil, fmt.Errorf("jwt.ParseWithClaims. err: %w", domain.ErrUnauthenticated)
@@ -202,7 +202,7 @@ func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (
 		return nil, fmt.Errorf("invalid token")
 	}
 
-	currentClaims, ok := currentToken.Claims.(*AppUserClaims)
+	currentClaims, ok := currentToken.Claims.(*UserClaims)
 	if !ok {
 		return nil, fmt.Errorf("invalid claims")
 	}
@@ -225,7 +225,7 @@ func (m *AuthTokenManager) RefreshToken(ctx context.Context, tokenString string)
 		return "", fmt.Errorf("invalid token type. err: %w", domain.ErrUnauthenticated)
 	}
 
-	// appUserID, err := mbuserdomain.NewAppUserID(currentClaims.AppUserID)
+	// appUserID, err := mbuserdomain.NewUserID(currentClaims.UserID)
 	// if err != nil {
 	// 	return "", err
 	// }

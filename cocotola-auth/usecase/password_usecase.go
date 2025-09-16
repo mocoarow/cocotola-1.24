@@ -39,7 +39,7 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 		return nil, fmt.Errorf("guest cannot authenticate with password")
 	}
 
-	targetOorganization, targetAppUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *appUser, error) {
+	targetOorganization, targetUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *appUser, error) {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
 			service.WithOrganizationByName(organizationName),
 		)
@@ -56,7 +56,7 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 			return nil, nil, domain.ErrUnauthenticated
 		}
 
-		tmpAppUser, err := action.SystemOwner.FindAppUserByLoginID(ctx, loginID)
+		tmpUser, err := action.SystemOwner.FindUserByLoginID(ctx, loginID)
 		if err != nil {
 			return nil, nil, mbliberrors.Errorf("find app user by login id: %w", err)
 		}
@@ -66,24 +66,24 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 			name:           action.Organization.OrganizationModel.Name,
 		}
 
-		targetAppUser := &appUser{
-			appUserID:      tmpAppUser.AppUserModel.AppUserID,
-			organizationID: tmpAppUser.AppUserModel.OrganizationID,
-			loginID:        tmpAppUser.AppUserModel.LoginID,
-			username:       tmpAppUser.AppUserModel.Username,
+		targetUser := &appUser{
+			appUserID:      tmpUser.UserModel.UserID,
+			organizationID: tmpUser.UserModel.OrganizationID,
+			loginID:        tmpUser.UserModel.LoginID,
+			username:       tmpUser.UserModel.Username,
 		}
 
-		return targetOorganization, targetAppUser, nil
+		return targetOorganization, targetUser, nil
 	})
 	if err != nil {
-		if errors.Is(err, mbuserservice.ErrAppUserNotFound) {
+		if errors.Is(err, mbuserservice.ErrUserNotFound) {
 			return nil, mbliberrors.Errorf("app user not found: %w", domain.ErrUnauthenticated)
 		}
 
 		return nil, mbliberrors.Errorf("authenticate: %w", err)
 	}
 
-	tokenSetTmp, err := u.authTokenManager.CreateTokenSet(ctx, targetAppUser, targetOorganization)
+	tokenSetTmp, err := u.authTokenManager.CreateTokenSet(ctx, targetUser, targetOorganization)
 	if err != nil {
 		return nil, mbliberrors.Errorf("s.authTokenManager.CreateTokenSet. err: %w", err)
 	}

@@ -8,7 +8,7 @@ import (
 
 type RepositoryFactory interface {
 	NewOrganizationRepository(ctx context.Context) OrganizationRepository
-	NewAppUserRepository(ctx context.Context) AppUserRepository
+	NewUserRepository(ctx context.Context) UserRepository
 	NewUserGroupRepository(ctx context.Context) UserGroupRepository
 	NewSpaceRepository(ctx context.Context) SpaceRepository
 
@@ -21,7 +21,7 @@ type RepositoryFactory interface {
 	// NewRBACRepository(ctx context.Context) RBACRepository
 
 	NewAuthorizationManager(ctx context.Context) (AuthorizationManager, error)
-	NewAppUserEventHandler(ctx context.Context) mblibservice.ResourceEventHandler
+	NewUserEventHandler(ctx context.Context) mblibservice.ResourceEventHandler
 	NewSpaceEventHandler(ctx context.Context) mblibservice.ResourceEventHandler
 }
 

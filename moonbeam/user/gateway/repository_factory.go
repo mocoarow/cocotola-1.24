@@ -42,8 +42,8 @@ func (f *repositoryFactory) NewOrganizationRepository(ctx context.Context) servi
 	return NewOrganizationRepository(ctx, f.db)
 }
 
-func (f *repositoryFactory) NewAppUserRepository(ctx context.Context) service.AppUserRepository {
-	return NewAppUserRepository(ctx, f.dialect, f.db, f)
+func (f *repositoryFactory) NewUserRepository(ctx context.Context) service.UserRepository {
+	return NewUserRepository(ctx, f.dialect, f.db, f)
 }
 
 func (f *repositoryFactory) NewUserGroupRepository(ctx context.Context) service.UserGroupRepository {
@@ -70,8 +70,8 @@ func (f *repositoryFactory) NewAuthorizationManager(ctx context.Context) (servic
 	return NewAuthorizationManager(ctx, f.dialect, f.db, f)
 }
 
-func (f *repositoryFactory) NewAppUserEventHandler(_ context.Context) mblibservice.ResourceEventHandler {
-	return f.rersourceEventHandlers[domain.ResourceAppUser]
+func (f *repositoryFactory) NewUserEventHandler(_ context.Context) mblibservice.ResourceEventHandler {
+	return f.rersourceEventHandlers[domain.ResourceUser]
 }
 func (f *repositoryFactory) NewSpaceEventHandler(_ context.Context) mblibservice.ResourceEventHandler {
 	return f.rersourceEventHandlers[domain.RecourceSpace]

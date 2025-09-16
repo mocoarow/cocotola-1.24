@@ -55,7 +55,7 @@ func (x *wrappedDB) WhereNotDeleted(table HasTableName) *wrappedDB {
 	return x
 }
 
-func (x *wrappedDB) WhereAppUser() *wrappedDB {
+func (x *wrappedDB) WhereUser() *wrappedDB {
 	return x.WhereOrganizationID(&appUserEntity{}, x.organizationID).WhereNotDeleted(&appUserEntity{}) //nolint:exhaustruct
 }
 

@@ -133,7 +133,7 @@ func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, op
 }
 
 func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		deckIDInt, err := helper.GetIntFromPath(c, "deckID")
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("GetIntFromPath. err: %+v", err))
@@ -159,7 +159,7 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 }
 
 func (h *DeckHandler) AddDeck(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		var apiReq libapicore.AddDeckRequest
 		if err := c.ShouldBindJSON(&apiReq); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
@@ -205,7 +205,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 }
 
 func (h *DeckHandler) UpdateDeck(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		version, err := helper.GetIntFromQuery(c, "version")
 		if err != nil {
 			return mblibdomain.ErrInvalidArgument

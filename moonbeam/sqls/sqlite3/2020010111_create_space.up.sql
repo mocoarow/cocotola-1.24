@@ -12,7 +12,7 @@ create table `mb_space` (
 ,`space_type` varchar(20) not null
 ,`deleted` tinyint(1) not null
 ,unique(`organization_id`, `owner_id`, `key_name`)
-,foreign key(`created_by`) references `mb_app_user`(`id`) on delete cascade
-,foreign key(`updated_by`) references `mb_app_user`(`id`) on delete cascade
+,foreign key(`created_by`) references `mb_user`(`id`) on delete cascade
+,foreign key(`updated_by`) references `mb_user`(`id`) on delete cascade
 ,foreign key(`organization_id`) references `mb_organization`(`id`) on delete cascade
 );

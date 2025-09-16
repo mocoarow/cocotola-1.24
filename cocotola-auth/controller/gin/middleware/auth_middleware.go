@@ -37,9 +37,9 @@ func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager servi
 			return
 		}
 
-		c.Set("AuthorizedUser", appUserModel.AppUserID.Int())
+		c.Set("AuthorizedUser", appUserModel.UserID.Int())
 		c.Set("OrganizationID", appUserModel.OrganizationID.Int())
 
-		// logger.WarnContext(ctx, "authenticated", slog.Int("app_user_id", appUserInfo.AppUserID), slog.Int("organization_id", appUserInfo.OrganizationID))
+		// logger.WarnContext(ctx, "authenticated", slog.Int("app_user_id", appUserInfo.UserID), slog.Int("organization_id", appUserInfo.OrganizationID))
 	}
 }

@@ -42,13 +42,13 @@ type SpaceModel struct {
 	*libdomain.BaseModel
 	SpaceID        *SpaceID        `validate:"required"`
 	OrganizationID *OrganizationID `validate:"required"`
-	OwnerID        *AppUserID      `validate:"required"`
+	OwnerID        *UserID      `validate:"required"`
 	KeyName        string          `validate:"required"`
 	Name           string          `validate:"required"`
 	SpaceType      string          `validate:"required,oneof=personal private public"`
 }
 
-func NewSpaceModel(baseModel *libdomain.BaseModel, spaceID *SpaceID, organizationID *OrganizationID, owernID *AppUserID, keyName, name string, spaceType string) (*SpaceModel, error) {
+func NewSpaceModel(baseModel *libdomain.BaseModel, spaceID *SpaceID, organizationID *OrganizationID, owernID *UserID, keyName, name string, spaceType string) (*SpaceModel, error) {
 	m := &SpaceModel{
 		BaseModel:      baseModel,
 		SpaceID:        spaceID,

@@ -8,16 +8,16 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 )
 
-type AppUserInfo struct {
-	// AppUserID        int
+type UserInfo struct {
+	// UserID        int
 	LoginID          string
 	Username         string
 	OrganizationID   int
 	OrganizationName string
 }
 
-type AppUserInterface interface {
-	// AppUserID() *mbuserdomain.AppUserID
+type UserInterface interface {
+	// UserID() *mbuserdomain.UserID
 	OrganizationID() *mbuserdomain.OrganizationID
 	LoginID() string
 	Username() string
@@ -31,8 +31,8 @@ type OrganizationInterface interface {
 
 type AuthTokenManager interface {
 	SignInWithIDToken(ctx context.Context, idToken string) (*domain.AuthTokenSet, error)
-	GetUserInfo(ctx context.Context, tokenString string) (*AppUserInfo, error)
+	GetUserInfo(ctx context.Context, tokenString string) (*UserInfo, error)
 
-	CreateTokenSet(ctx context.Context, appUser AppUserInterface, organizationUsecase OrganizationInterface) (*domain.AuthTokenSet, error)
+	CreateTokenSet(ctx context.Context, appUser UserInterface, organizationUsecase OrganizationInterface) (*domain.AuthTokenSet, error)
 	RefreshToken(ctx context.Context, accessToken string) (string, error)
 }

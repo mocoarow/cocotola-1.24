@@ -20,13 +20,13 @@ func (m *organization) Name() string {
 }
 
 type appUser struct {
-	appUserID      *mbuserdomain.AppUserID
+	appUserID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	loginID        string
 	username       string
 }
 
-func (m *appUser) AppUserID() *mbuserdomain.AppUserID {
+func (m *appUser) UserID() *mbuserdomain.UserID {
 	return m.appUserID
 }
 func (m *appUser) OrganizationID() *mbuserdomain.OrganizationID {
@@ -46,9 +46,9 @@ func organizationID(t *testing.T, organizationID int) *mbuserdomain.Organization
 	return id
 }
 
-func appUserID(t *testing.T, appUserID int) *mbuserdomain.AppUserID {
+func appUserID(t *testing.T, appUserID int) *mbuserdomain.UserID {
 	t.Helper()
-	id, err := mbuserdomain.NewAppUserID(appUserID)
+	id, err := mbuserdomain.NewUserID(appUserID)
 	require.NoError(t, err)
 	return id
 }

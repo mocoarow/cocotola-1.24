@@ -27,11 +27,11 @@ import (
 )
 
 type operator struct {
-	appUserID      *mbuserdomain.AppUserID
+	appUserID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 }
 
-func (o *operator) GetAppUserID() *mbuserdomain.AppUserID {
+func (o *operator) GetUserID() *mbuserdomain.UserID {
 	return o.appUserID
 }
 func (o *operator) GetOrganizationID() *mbuserdomain.OrganizationID {
@@ -40,7 +40,7 @@ func (o *operator) GetOrganizationID() *mbuserdomain.OrganizationID {
 
 type AuthInitParameter struct {
 	OrganizationID       *mbuserdomain.OrganizationID
-	GuestID              *mbuserdomain.AppUserID
+	GuestID              *mbuserdomain.UserID
 	PublicDefaultSpaceID *mbuserdomain.SpaceID
 }
 

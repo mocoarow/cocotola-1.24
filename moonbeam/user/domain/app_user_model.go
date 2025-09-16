@@ -5,39 +5,39 @@ import (
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 )
 
-type AppUserID struct {
+type UserID struct {
 	Value int `validate:"required,gte=0"`
 }
 
-func NewAppUserID(value int) (*AppUserID, error) {
-	return &AppUserID{
+func NewUserID(value int) (*UserID, error) {
+	return &UserID{
 		Value: value,
 	}, nil
 }
 
-func (v *AppUserID) Int() int {
+func (v *UserID) Int() int {
 	return v.Value
 }
-func (v *AppUserID) IsAppUserID() bool {
+func (v *UserID) IsUserID() bool {
 	return true
 }
-func (v *AppUserID) GetRBACSubject() RBACSubject {
-	return NewRBACAppUser(v)
+func (v *UserID) GetRBACSubject() RBACSubject {
+	return NewRBACUserFromUser(v)
 }
 
-type AppUserModel struct {
+type UserModel struct {
 	*libdomain.BaseModel
-	AppUserID      *AppUserID      `validate:"required"`
+	UserID         *UserID         `validate:"required"`
 	OrganizationID *OrganizationID `validate:"required"`
 	LoginID        string          `validate:"required"`
 	Username       string          `validate:"required"`
 	UserGroups     []*UserGroupModel
 }
 
-func NewAppUserModel(baseModel *libdomain.BaseModel, appUserID *AppUserID, organizationID *OrganizationID, loginID, username string, userGroups []*UserGroupModel) (*AppUserModel, error) {
-	m := &AppUserModel{
+func NewUserModel(baseModel *libdomain.BaseModel, appUserID *UserID, organizationID *OrganizationID, loginID, username string, userGroups []*UserGroupModel) (*UserModel, error) {
+	m := &UserModel{
 		BaseModel:      baseModel,
-		AppUserID:      appUserID,
+		UserID:         appUserID,
 		OrganizationID: organizationID,
 		LoginID:        loginID,
 		Username:       username,

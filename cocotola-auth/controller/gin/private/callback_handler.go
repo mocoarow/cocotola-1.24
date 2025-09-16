@@ -16,7 +16,7 @@ import (
 )
 
 type CallbackUsecase interface {
-	OnAddAppUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID) error
+	OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID) error
 }
 
 type CallbackHandler struct {
@@ -31,9 +31,9 @@ func NewCallbackHandler(callbackUsecase CallbackUsecase) *CallbackHandler {
 	}
 }
 
-func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
+func (h *CallbackHandler) OnAddUser(c *gin.Context) {
 	ctx := c.Request.Context()
-	var apiReq libapiauth.CallbackOnAddAppUserRequest
+	var apiReq libapiauth.CallbackOnAddUserRequest
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -49,7 +49,7 @@ func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 		return
 	}
 
-	appUserID, err := mbuserdomain.NewAppUserID(apiReq.AppUserID)
+	appUserID, err := mbuserdomain.NewUserID(apiReq.UserID)
 	if err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -57,8 +57,8 @@ func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("OnAddAppUser", slog.Int("appUserID", appUserID.Int()))
-	if err := h.callbackUsecase.OnAddAppUser(ctx, organizationID, appUserID); err != nil {
+	h.logger.Info("OnAddUser", slog.Int("appUserID", appUserID.Int()))
+	if err := h.callbackUsecase.OnAddUser(ctx, organizationID, appUserID); err != nil {
 		h.logger.ErrorContext(ctx, fmt.Sprintf("on add app user: %+v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
@@ -73,6 +73,6 @@ func NewInitCallbackRouterFunc(callbackUsecase CallbackUsecase) libcontroller.In
 		for _, m := range middleware {
 			callback.Use(m)
 		}
-		callback.POST("on-add-user", callbackHandler.OnAddAppUser)
+		callback.POST("on-add-user", callbackHandler.OnAddUser)
 	}
 }

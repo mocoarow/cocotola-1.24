@@ -14,9 +14,9 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-type AppUserClaims struct {
+type UserClaims struct {
 	LoginID          string `json:"loginId"`
-	AppUserID        int    `json:"appUserId"`
+	UserID        int    `json:"appUserId"`
 	Username         string `json:"username"`
 	OrganizationID   int    `json:"organizationId"`
 	OrganizationName string `json:"organizationName"`
@@ -52,7 +52,7 @@ func (u *Authentication) SignInWithIDToken(ctx context.Context, idToken string) 
 	return tokenSet, nil
 }
 
-func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.AppUserModel, error) {
+func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.UserModel, error) {
 	appUserModel, err := service.GetUserInfo(ctx, u.systemToken, u.authTokenManager, u.transactionManager, bearerToken)
 	if err != nil {
 		return nil, mbliberrors.Errorf("GetUserInfo: %w", err)
@@ -72,10 +72,10 @@ func (u *Authentication) RefreshToken(ctx context.Context, refreshToken string) 
 	return accessToken, nil
 }
 
-// func (u *Authentication) Authenticate(ctx context.Context, bearerToken string) (*mbuserdomain.AppUserModel, error) {
+// func (u *Authentication) Authenticate(ctx context.Context, bearerToken string) (*mbuserdomain.UserModel, error) {
 // 	logger := mbliblog.GetLoggerFromContext(ctx, liblog.AppUsecaseLoggerContextKey)
 
-// 	token, err := jwt.ParseWithClaims(bearerToken, &AppUserClaims{}, func(token *jwt.Token) (interface{}, error) {
+// 	token, err := jwt.ParseWithClaims(bearerToken, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 // 		return u.signingKey, nil
 // 	})
 // 	if err != nil {
@@ -83,7 +83,7 @@ func (u *Authentication) RefreshToken(ctx context.Context, refreshToken string) 
 // 		return nil, domain.ErrUnauthenticated
 // 	}
 
-// 	claims, ok := token.Claims.(*AppUserClaims)
+// 	claims, ok := token.Claims.(*UserClaims)
 // 	if !ok || !token.Valid {
 // 		// logger.InfoContext(ctx, "invalid token")
 // 		return nil, domain.ErrUnauthenticated
@@ -99,23 +99,23 @@ func (u *Authentication) RefreshToken(ctx context.Context, refreshToken string) 
 // 		return nil, err
 // 	}
 
-// 	appUserID, err := mbuserdomain.NewAppUserID(claims.AppUserID)
+// 	appUserID, err := mbuserdomain.NewUserID(claims.UserID)
 // 	if err != nil {
 // 		return nil, err
 // 	}
 
 // 	// # TODO Check whether the token is registered in the Database
 
-// 	appUserRepo := u.rf.NewAppUserRepository(ctx)
+// 	appUserRepo := u.rf.NewUserRepository(ctx)
 // 	systemOwner, err := appUserRepo.FindSystemOwnerByOrganizationID(ctx, systemAdmin, organizationID)
 // 	if err != nil {
 // 		return nil, err
 // 	}
 
-// 	appUser, err := systemOwner.FindAppUserByID(ctx, appUserID)
+// 	appUser, err := systemOwner.FindUserByID(ctx, appUserID)
 // 	if err != nil {
 // 		return nil, err
 // 	}
 
-// 	return appUser.AppUserModel, nil
+// 	return appUser.UserModel, nil
 // }

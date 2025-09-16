@@ -9,23 +9,23 @@ import (
 )
 
 type OperatorInterface interface {
-	GetAppUserID() *domain.AppUserID
+	GetUserID() *domain.UserID
 	GetOrganizationID() *domain.OrganizationID
 }
 
-type AppUserInterface interface {
-	GetAppUserID() *domain.AppUserID
+type UserInterface interface {
+	GetUserID() *domain.UserID
 	GetOrganizationID() *domain.OrganizationID
 	// LoginID() string
 	// Username() string
 	// GetUserGroups() []domain.UserGroupModel
 }
 
-type AppUser struct {
-	*domain.AppUserModel
+type User struct {
+	*domain.UserModel
 }
 
-func NewAppUser(_ context.Context, rf RepositoryFactory, appUserModel *domain.AppUserModel) (*AppUser, error) {
+func NewUser(_ context.Context, rf RepositoryFactory, appUserModel *domain.UserModel) (*User, error) {
 	if rf == nil {
 		return nil, liberrors.Errorf("rf is nil. err: %w", libdomain.ErrInvalidArgument)
 	}
@@ -33,8 +33,8 @@ func NewAppUser(_ context.Context, rf RepositoryFactory, appUserModel *domain.Ap
 		return nil, liberrors.Errorf("appUserModel is nil. err: %w", libdomain.ErrInvalidArgument)
 	}
 
-	m := &AppUser{
-		AppUserModel: appUserModel,
+	m := &User{
+		UserModel: appUserModel,
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {
@@ -44,16 +44,16 @@ func NewAppUser(_ context.Context, rf RepositoryFactory, appUserModel *domain.Ap
 	return m, nil
 }
 
-func (m *AppUser) GetAppUserID() *domain.AppUserID {
-	return m.AppUserModel.AppUserID
+func (m *User) GetUserID() *domain.UserID {
+	return m.UserModel.UserID
 }
-func (m *AppUser) GetOrganizationID() *domain.OrganizationID {
-	return m.AppUserModel.OrganizationID
+func (m *User) GetOrganizationID() *domain.OrganizationID {
+	return m.UserModel.OrganizationID
 }
 
-// func (m *AppUser) LoginID() string {
-// 	return m.AppUserModel.LoginID
+// func (m *User) LoginID() string {
+// 	return m.UserModel.LoginID
 // }
-// func (m *AppUser) Username() string {
-// 	return m.AppUserModel.Username
+// func (m *User) Username() string {
+// 	return m.UserModel.Username
 // }

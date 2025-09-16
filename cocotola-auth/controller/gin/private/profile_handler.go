@@ -29,7 +29,7 @@ type ProfileHandler struct {
 }
 
 func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		result, err := h.profileQueryUsecase.GetMyProfile(ctx, operator)
 		if err != nil {
 			return mbliberrors.Errorf("GetMyProfile: %w", err)

@@ -11,13 +11,13 @@ type ActionObject struct {
 }
 type AddPolicyToUserParameter struct {
 	OrganizationID           int                  `json:"organizationId"`
-	AppUserID                int                  `json:"appUserId"`
+	UserID                int                  `json:"appUserId"`
 	ListOfActionObjectEffect []ActionObjectEffect `json:"listOfActionObjectEffect"`
 }
 
 type AuthorizeRequest struct {
 	OrganizationID int    `json:"organizationId"`
-	AppUserID      int    `json:"appUserId"`
+	UserID      int    `json:"appUserId"`
 	Action         string `json:"action"`
 	Object         string `json:"object"`
 }

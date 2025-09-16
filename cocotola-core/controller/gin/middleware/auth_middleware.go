@@ -45,8 +45,8 @@ func NewAuthMiddleware(cocotolaAuthClient libapi.CocotolaAuthClient) gin.Handler
 			logger.InfoContext(ctx, fmt.Sprintf("group: %s", g))
 		}
 
-		logger.InfoContext(ctx, fmt.Sprintf("AppUserID: %d", appUserInfo.AppUserID))
-		c.Set("AuthorizedUser", appUserInfo.AppUserID)
+		logger.InfoContext(ctx, fmt.Sprintf("UserID: %d", appUserInfo.UserID))
+		c.Set("AuthorizedUser", appUserInfo.UserID)
 		c.Set("OrganizationID", appUserInfo.OrganizationID)
 		if libdomain.IsGuestLoginID(appUserInfo.LoginID) {
 			c.Set("Role", "guest")
@@ -54,6 +54,6 @@ func NewAuthMiddleware(cocotolaAuthClient libapi.CocotolaAuthClient) gin.Handler
 			c.Set("Role", "student")
 		}
 
-		// logger.WarnContext(ctx, "authenticated", slog.Int("app_user_id", appUserInfo.AppUserID), slog.Int("organization_id", appUserInfo.OrganizationID))
+		// logger.WarnContext(ctx, "authenticated", slog.Int("app_user_id", appUserInfo.UserID), slog.Int("organization_id", appUserInfo.OrganizationID))
 	}
 }

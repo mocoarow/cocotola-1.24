@@ -30,8 +30,8 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 		logger:       slog.Default().With(slog.String(mbliblog.LoggerNameKey, "CallbackUsecase"))}
 }
 
-// func (u *Callback) OnAddAppUser(ctx context.Context, _ *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID) error {
-// 	u.logger.InfoContext(ctx, "OnAddAppUser", slog.Int("app_user_id", appUserID.Int()))
+// func (u *Callback) OnAddUser(ctx context.Context, _ *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID) error {
+// 	u.logger.InfoContext(ctx, "OnAddUser", slog.Int("app_user_id", appUserID.Int()))
 
 // 	fn := func(_ service.RepositoryFactory) error {
 // 		spaceRepo, err := rf.NewSpaceRepository(ctx)
@@ -63,7 +63,7 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 
 // 		if err := u.rbacClient.AddPolicyToUser(ctx, &libapi.AddPolicyToUserParameter{
 // 			OrganizationID: operator.OrganizationID().Int(),
-// 			AppUserID:      operator.AppUserID().Int(),
+// 			UserID:      operator.UserID().Int(),
 // 			ListOfActionObjectEffect: []libapi.ActionObjectEffect{
 // 				{
 // 					Action: librbac.CreateDeckAction.Action(),
@@ -79,7 +79,7 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 // 			return mbliberrors.Errorf("AddPairOfUserAndSpace: %w", err)
 // 		}
 
-// 		u.logger.InfoContext(ctx, "OnAddAppUser: AddSpace", slog.Int("space_id", spaceID.Int()))
+// 		u.logger.InfoContext(ctx, "OnAddUser: AddSpace", slog.Int("space_id", spaceID.Int()))
 // 		return nil
 // 	}
 
@@ -90,8 +90,8 @@ func NewCallback(txManager, nonTxManager service.TransactionManager, rbacClient 
 // 	return nil
 // }
 
-func (u *Callback) OnAddAppUserSpace(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID, spaceID *mbuserdomain.SpaceID) error {
-	u.logger.InfoContext(ctx, "OnAddAppUser", slog.Int("app_user_id", appUserID.Int()))
+func (u *Callback) OnAddUserSpace(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID, spaceID *mbuserdomain.SpaceID) error {
+	u.logger.InfoContext(ctx, "OnAddUser", slog.Int("app_user_id", appUserID.Int()))
 
 	operator := Operator{
 		organizationID: organizationID,
@@ -115,7 +115,7 @@ func (u *Callback) OnAddAppUserSpace(ctx context.Context, organizationID *mbuser
 			return mbliberrors.Errorf("AddFolder: %w", err)
 		}
 
-		u.logger.InfoContext(ctx, "OnAddAppUser: AddSpace", slog.Int("space_id", spaceID.Int()))
+		u.logger.InfoContext(ctx, "OnAddUser: AddSpace", slog.Int("space_id", spaceID.Int()))
 		return nil
 	}
 

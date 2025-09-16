@@ -29,7 +29,7 @@ type SpaceHandler struct {
 }
 
 func (h *SpaceHandler) FindSpaces(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		result, err := h.spaceQueryUsecase.FindPublicSpaces(ctx, operator)
 		if err != nil {
 			return mbliberrors.Errorf("FindPublicSpaces: %w", err)

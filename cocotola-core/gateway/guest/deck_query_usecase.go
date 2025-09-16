@@ -42,7 +42,7 @@ func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator mbuserserv
 		object := spaceID.GetRBACObject()
 		ok, err := u.rbacClient.CheckAuthorization(ctx, &libapiauth.AuthorizeRequest{
 			OrganizationID: operator.GetOrganizationID().Int(),
-			AppUserID:      operator.GetAppUserID().Int(),
+			UserID:      operator.GetUserID().Int(),
 			Action:         action.Action(),
 			Object:         object.Object(),
 		})

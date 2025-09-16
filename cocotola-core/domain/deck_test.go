@@ -31,7 +31,7 @@ func TestNewDeckModel_Valid(t *testing.T) {
 	spaceID, err := mbuserdomain.NewSpaceID(1)
 	require.NoError(t, err)
 
-	ownerID, err := mbuserdomain.NewAppUserID(1)
+	ownerID, err := mbuserdomain.NewUserID(1)
 	require.NoError(t, err)
 
 	folderID, err := domain.NewFolderID(1)
@@ -88,7 +88,7 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 	lang2, err := libdomain.NewLang2("en")
 	require.NoError(t, err)
 
-	ownerID, err := mbuserdomain.NewAppUserID(1)
+	ownerID, err := mbuserdomain.NewUserID(1)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -101,7 +101,7 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 		deckName       string
 		templateID     *domain.TemplateID
 		lang2          *libdomain.Lang2
-		ownerID        *mbuserdomain.AppUserID
+		ownerID        *mbuserdomain.UserID
 	}{
 		{
 			name:           "empty name",

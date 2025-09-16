@@ -33,8 +33,8 @@ func NewCallback(systemToken libdomain.SystemToken, txManager, nonTxManager serv
 		logger:                     slog.Default().With(slog.String(mbliblog.LoggerNameKey, "CallbackUsecase"))}
 }
 
-func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID) error {
-	u.logger.InfoContext(ctx, "OnAddAppUser", slog.Int("app_user_id", appUserID.Int()))
+func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.UserID) error {
+	u.logger.InfoContext(ctx, "OnAddUser", slog.Int("app_user_id", appUserID.Int()))
 
 	fn := func(rf service.RepositoryFactory) error {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
@@ -50,9 +50,9 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 			return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
 		}
 
-		appUser, err := action.SystemOwner.FindAppUserByID(ctx, appUserID)
+		appUser, err := action.SystemOwner.FindUserByID(ctx, appUserID)
 		if err != nil {
-			return mbliberrors.Errorf("FindAppUserByID: %w", err)
+			return mbliberrors.Errorf("FindUserByID: %w", err)
 		}
 
 		spaceManager, err := mbrf.NewSpaceManager(ctx)
@@ -60,8 +60,8 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 			return mbliberrors.Errorf("NewSpaceManager: %w", err)
 		}
 		param := mbuserservice.AddPersonalSpaceParameter{
-			AppUserID: appUserID,
-			KeyName:   libdomain.NewPersonalSpaceKey(appUser.GetAppUserID().Int()),
+			UserID: appUserID,
+			KeyName:   libdomain.NewPersonalSpaceKey(appUser.GetUserID().Int()),
 			Name:      libdomain.NewPersonalSpaceName(appUser.LoginID),
 		}
 		spaceID, err := spaceManager.AddPersonalSpace(ctx, action.SystemOwner, &param)
@@ -87,8 +87,8 @@ func (u *Callback) OnAddAppUser(ctx context.Context, organizationID *mbuserdomai
 			}
 		}
 
-		// if err := u.cocotolaCoreCallbackClient.OnAddAppUserSpace(ctx, organizationID, appUserID, spaceID); err != nil {
-		// 	return mbliberrors.Errorf("cocotolaCoreCallbackClient.OnAddAppUserSpace: %w", err)
+		// if err := u.cocotolaCoreCallbackClient.OnAddUserSpace(ctx, organizationID, appUserID, spaceID); err != nil {
+		// 	return mbliberrors.Errorf("cocotolaCoreCallbackClient.OnAddUserSpace: %w", err)
 		// }
 
 		return nil

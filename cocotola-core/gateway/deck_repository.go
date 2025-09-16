@@ -73,7 +73,7 @@ func (e *DeckEntity) toModel() (*domain.DeckModel, error) {
 		return nil, mbliberrors.Errorf("new lang2(%s): %w", e.Lang2, err)
 	}
 
-	ownerID, err := mbuserdomain.NewAppUserID(e.OwnerID)
+	ownerID, err := mbuserdomain.NewUserID(e.OwnerID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
 	}
@@ -144,8 +144,8 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 	deckE := DeckEntity{ //nolint:exhaustruct
 		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.GetAppUserID().Int(),
-			UpdatedBy: operator.GetAppUserID().Int(),
+			CreatedBy: operator.GetUserID().Int(),
+			UpdatedBy: operator.GetUserID().Int(),
 		},
 		OrganizationID: operator.GetOrganizationID().Int(),
 		SpaceID:        param.SpaceID.Int(),
@@ -154,7 +154,7 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 		Name:           param.Name,
 		Lang2:          param.Lang2.String(),
 		Description:    param.Description,
-		OwnerID:        operator.GetAppUserID().Int(),
+		OwnerID:        operator.GetUserID().Int(),
 	}
 	if result := r.db.Create(&deckE); result.Error != nil {
 		return nil, mbliberrors.Errorf("add deck entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrDeckAlreadyExists))
@@ -220,7 +220,7 @@ func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserse
 	if result := r.db.
 		Model(&DeckEntity{}). //nolint:exhaustruct
 		Where("organization_id = ?", uint(operator.GetOrganizationID().Int())).
-		Where("owner_id = ?", uint(operator.GetAppUserID().Int())).
+		Where("owner_id = ?", uint(operator.GetUserID().Int())).
 		Find(&decksE); result.Error != nil {
 		return nil, mbliberrors.Errorf("deckRepository.FindDecksByOwner: %w", result.Error)
 	}

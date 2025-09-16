@@ -19,12 +19,12 @@ import (
 )
 
 type roleUser struct {
-	appUserID      *mbuserdomain.AppUserID
+	appUserID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	role           string
 }
 
-func (o *roleUser) GetAppUserID() *mbuserdomain.AppUserID {
+func (o *roleUser) GetUserID() *mbuserdomain.UserID {
 	return o.appUserID
 }
 func (o *roleUser) GetOrganizationID() *mbuserdomain.OrganizationID {
@@ -36,7 +36,7 @@ func (o *roleUser) GetRole() string {
 
 func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operator service.RoleUserInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
 	ctx := c.Request.Context()
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleAppUserFunction"))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleUserFunction"))
 
 	organizationIDInt := c.GetInt("OrganizationID")
 	if organizationIDInt == 0 {
@@ -56,7 +56,7 @@ func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operato
 		return
 	}
 
-	operatorID, err := mbuserdomain.NewAppUserID(appUserID)
+	operatorID, err := mbuserdomain.NewUserID(appUserID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 		return
@@ -86,9 +86,9 @@ func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operato
 	}
 }
 
-func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator mbuserservice.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
+func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mbuserservice.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
 	ctx := c.Request.Context()
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleAppUserFunction"))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleUserFunction"))
 
 	organizationIDInt := c.GetInt("OrganizationID")
 	if organizationIDInt == 0 {
@@ -108,7 +108,7 @@ func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator
 		return
 	}
 
-	operatorID, err := mbuserdomain.NewAppUserID(appUserID)
+	operatorID, err := mbuserdomain.NewUserID(appUserID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 		return

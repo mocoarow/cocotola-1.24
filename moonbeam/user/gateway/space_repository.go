@@ -43,7 +43,7 @@ func (e *spaceEntity) ToModel() (*domain.SpaceModel, error) {
 		return nil, liberrors.Errorf("new space id(%d): %w", e.ID, err)
 	}
 
-	ownerID, err := domain.NewAppUserID(e.OwnerID)
+	ownerID, err := domain.NewUserID(e.OwnerID)
 	if err != nil {
 		return nil, liberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
 	}
@@ -89,9 +89,9 @@ func (e *spaceEntity) toSpace() (*service.Space, error) {
 // 		return nil, liberrors.Errorf("new space id(%d). err: %w", e.ID, err)
 // 	}
 
-// 	ownerID, err := domain.NewAppUserID(e.OwnerID)
+// 	ownerID, err := domain.NewUserID(e.OwnerID)
 // 	if err != nil {
-// 		return nil, liberrors.Errorf("domain.NewAppUserModel. err: %w", err)
+// 		return nil, liberrors.Errorf("domain.NewUserModel. err: %w", err)
 // 	}
 
 // 	organizationID, err := domain.NewOrganizationID(e.OrganizationID)
@@ -101,7 +101,7 @@ func (e *spaceEntity) toSpace() (*service.Space, error) {
 
 // 	appUserModel, err := domain.NewSpaceModel(baseModel, spaceID, organizationID, ownerID, e.KeyName, e.Name, e.SpaceType)
 // 	if err != nil {
-// 		return nil, liberrors.Errorf("domain.NewAppUserModel. err: %w", err)
+// 		return nil, liberrors.Errorf("domain.NewUserModel. err: %w", err)
 // 	}
 
 // 	return appUserModel, nil
@@ -143,11 +143,11 @@ func (r *spaceRepository) AddSpace(ctx context.Context, operator service.Operato
 	spaceE := spaceEntity{ //nolint:exhaustruct
 		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.GetAppUserID().Int(),
-			UpdatedBy: operator.GetAppUserID().Int(),
+			CreatedBy: operator.GetUserID().Int(),
+			UpdatedBy: operator.GetUserID().Int(),
 		},
 		OrganizationID: operator.GetOrganizationID().Int(),
-		OwnerID:        operator.GetAppUserID().Int(),
+		OwnerID:        operator.GetUserID().Int(),
 		KeyName:        param.Key,
 		Name:           param.Name,
 		SpaceType:      param.SpaceType,
@@ -239,7 +239,7 @@ func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.Ope
 		&spaceEntity{}, //nolint:exhaustruct
 	).
 		Where("organization_id = ?", uint(operator.GetOrganizationID().Int())).
-		Where("owner_id = ?", uint(operator.GetAppUserID().Int())).
+		Where("owner_id = ?", uint(operator.GetUserID().Int())).
 		Where("id = ?", spaceID.Int()).First(&spaceE); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrSpaceNotFound

@@ -1,12 +1,12 @@
 package domain
 
 type OwnerModel struct {
-	*AppUserModel
+	*UserModel
 }
 
-func NewOwnerModel(appUser *AppUserModel) (*OwnerModel, error) {
+func NewOwnerModel(appUser *UserModel) (*OwnerModel, error) {
 	return &OwnerModel{
-		AppUserModel: appUser,
+		UserModel: appUser,
 	}, nil
 }
 

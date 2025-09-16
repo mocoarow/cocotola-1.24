@@ -19,7 +19,7 @@ var (
 )
 var (
 	invalidOrgID     *domain.OrganizationID
-	invalidAppUserID *domain.AppUserID
+	invalidUserID *domain.UserID
 )
 
 // func getEnv(key, fallback string) string {
@@ -56,11 +56,11 @@ func init() {
 	}
 	invalidOrgID = invalidOrgIDTmp
 
-	invalidAppUserIDTmp, err := domain.NewAppUserID(99999)
+	invalidUserIDTmp, err := domain.NewUserID(99999)
 	if err != nil {
 		panic(err)
 	}
-	invalidAppUserID = invalidAppUserIDTmp
+	invalidUserID = invalidUserIDTmp
 
 	// ctx := context.Background()
 	// mysqlHost := getEnv("MYSQL_HOST", "127.0.0.1")

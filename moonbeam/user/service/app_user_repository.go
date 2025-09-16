@@ -9,12 +9,12 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
-var ErrAppUserNotFound = errors.New("AppUser not found")
-var ErrAppUserAlreadyExists = errors.New("AppUser already exists")
+var ErrUserNotFound = errors.New("User not found")
+var ErrUserAlreadyExists = errors.New("User already exists")
 
 var ErrSystemOwnerNotFound = errors.New("SystemOwner not found")
 
-// type AppUserAddParameterInterface interface {
+// type UserAddParameterInterface interface {
 // 	LoginID() string
 // 	Username() string
 // 	Password() string
@@ -24,7 +24,7 @@ var ErrSystemOwnerNotFound = errors.New("SystemOwner not found")
 // 	ProviderRefreshToken() string
 // }
 
-type AddAppUserParameter struct {
+type AddUserParameter struct {
 	LoginID              string
 	Username             string
 	Password             string
@@ -34,8 +34,8 @@ type AddAppUserParameter struct {
 	providerRefreshToken string
 }
 
-func NewAppUserAddParameter(loginID, username, password, provider, providerLoginID, providerAuthToken, providerRefreshToken string) (*AddAppUserParameter, error) {
-	m := &AddAppUserParameter{
+func NewUserAddParameter(loginID, username, password, provider, providerLoginID, providerAuthToken, providerRefreshToken string) (*AddUserParameter, error) {
+	m := &AddUserParameter{
 		LoginID:              loginID,
 		Username:             username,
 		Password:             password,
@@ -51,25 +51,25 @@ func NewAppUserAddParameter(loginID, username, password, provider, providerLogin
 	return m, nil
 }
 
-// func (p *AppUserAddParameter) LoginID() string {
+// func (p *UserAddParameter) LoginID() string {
 // 	return p.LoginID
 // }
-// func (p *AppUserAddParameter) Username() string {
+// func (p *UserAddParameter) Username() string {
 // 	return p.Username
 // }
-// func (p *AppUserAddParameter) Password() string {
+// func (p *UserAddParameter) Password() string {
 // 	return p.Password
 // }
-// func (p *AppUserAddParameter) Provider() string {
+// func (p *UserAddParameter) Provider() string {
 // 	return p.Provider
 // }
-// func (p *AppUserAddParameter) ProviderLoginID() string {
+// func (p *UserAddParameter) ProviderLoginID() string {
 // 	return p.ProviderLoginID
 // }
-// func (p *AppUserAddParameter) ProviderAuthToken() string {
+// func (p *UserAddParameter) ProviderAuthToken() string {
 // 	return p.ProviderAuthToken
 // }
-// func (p *AppUserAddParameter) ProviderRefreshToken() string {
+// func (p *UserAddParameter) ProviderRefreshToken() string {
 // 	return p.providerRefreshToken
 // }
 
@@ -77,26 +77,26 @@ type Option string
 
 var IncludeGroups Option = "IncludeGroups"
 
-type AppUserRepository interface {
+type UserRepository interface {
 	FindSystemOwnerByOrganizationID(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*SystemOwner, error)
 
 	FindSystemOwnerByOrganizationName(ctx context.Context, operator SystemAdminInterface, organizationName string, options ...Option) (*SystemOwner, error)
 
-	FindAppUserByID(ctx context.Context, operator AppUserInterface, id *domain.AppUserID, options ...Option) (*AppUser, error)
+	FindUserByID(ctx context.Context, operator UserInterface, id *domain.UserID, options ...Option) (*User, error)
 
-	FindAppUserByLoginID(ctx context.Context, operator AppUserInterface, loginID string) (*AppUser, error)
+	FindUserByLoginID(ctx context.Context, operator UserInterface, loginID string) (*User, error)
 
 	FindOwnerByLoginID(ctx context.Context, operator SystemOwnerInterface, loginID string) (*Owner, error)
 
-	AddAppUser(ctx context.Context, operator OwnerModelInterface, param *AddAppUserParameter) (*domain.AppUserID, error)
+	AddUser(ctx context.Context, operator OwnerModelInterface, param *AddUserParameter) (*domain.UserID, error)
 
-	AddSystemOwner(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.AppUserID, error)
+	AddSystemOwner(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserID, error)
 
 	// VerifyPassword(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, loginID, password string) (bool, error)
 
 	VerifyPassword(ctx context.Context, operator SystemOwnerInterface, loginID, password string) (bool, error)
 
-	// AddFirstOwner(ctx context.Context, operator domain.SystemOwnerModel, param FirstOwnerAddParameter) (domain.AppUserID, error)
+	// AddFirstOwner(ctx context.Context, operator domain.SystemOwnerModel, param FirstOwnerAddParameter) (domain.UserID, error)
 
-	// FindAppUserIDs(ctx context.Context, operator domain.SystemOwnerModel, pageNo, pageSize int) ([]domain.AppUserID, error)
+	// FindUserIDs(ctx context.Context, operator domain.SystemOwnerModel, pageNo, pageSize int) ([]domain.UserID, error)
 }

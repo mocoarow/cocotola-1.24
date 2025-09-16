@@ -233,11 +233,11 @@ func (r *rbacRepository) GetEnforcer() casbin.IEnforcer {
 	return r.enforcer
 }
 
-// func (r *rbacRepository) CanDo(ctx context.Context, operatorID domain.AppUserID, ticketID domain.TicketID, action domain.RBACAction) (bool, error) {
+// func (r *rbacRepository) CanDo(ctx context.Context, operatorID domain.UserID, ticketID domain.TicketID, action domain.RBACAction) (bool, error) {
 // 	rbacRepo := r.rf.NewRBACRepository(ctx)
 
 // 	roleObjects := r.getAllRolesForTicket(ticketID)
-// 	userObject := NewRBACAppUser(operatorID)
+// 	userObject := NewRBACUsereratorID)
 // 	e, err := rbacRepo.NewEnforcerWithRolesAndUsers(roleObjects, []domain.RBACUser{userObject})
 // 	if err != nil {
 // 		return false, liberrors.Errorf("failed to NewEnforcerWithRolesAndUsers. err: %w", err)

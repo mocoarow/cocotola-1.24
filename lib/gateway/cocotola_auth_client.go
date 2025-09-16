@@ -25,7 +25,7 @@ func NewCocotolaAuthClient(httpClient HTTPClient, authEndpoint *url.URL) api.Coc
 	}
 }
 
-func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken string) (*apiauth.AppUserInfoResponse, error) {
+func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken string) (*apiauth.UserInfoResponse, error) {
 	ctx, span := tracer.Start(ctx, "cocotolaAuthClient.RetrieveUserInfo")
 	defer span.End()
 
@@ -45,7 +45,7 @@ func (c *cocotolaAuthClient) RetrieveUserInfo(ctx context.Context, bearerToken s
 	}
 	defer resp.Body.Close()
 
-	var response apiauth.AppUserInfoResponse
+	var response apiauth.UserInfoResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, mbliberrors.Errorf("json.NewDecoder: %w", err)
 	}

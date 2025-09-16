@@ -13,7 +13,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-func registerAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createAppUserParameterFunc func() (*mbuserservice.AddAppUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.AppUserModel, error) {
+func registerUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createUserParameterFunc func() (*mbuserservice.AddUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.UserModel, error) {
 	action, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
 		service.WithOrganizationByID(organizationID),
 	)
@@ -21,13 +21,13 @@ func registerAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf 
 		return nil, nil, mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
 	}
 
-	if _, err = action.SystemOwner.FindAppUserByLoginID(ctx, loginID); err == nil {
-		return nil, nil, mbuserservice.ErrAppUserAlreadyExists
-	} else if !errors.Is(err, mbuserservice.ErrAppUserNotFound) {
-		return nil, nil, mbliberrors.Errorf("systemOwner.FindAppUserByLoginID. err: %w", err)
+	if _, err = action.SystemOwner.FindUserByLoginID(ctx, loginID); err == nil {
+		return nil, nil, mbuserservice.ErrUserAlreadyExists
+	} else if !errors.Is(err, mbuserservice.ErrUserNotFound) {
+		return nil, nil, mbliberrors.Errorf("systemOwner.FindUserByLoginID. err: %w", err)
 	}
 
-	appUser, err := registerAppUserWithSystemOwnerAction(ctx, action, createAppUserParameterFunc)
+	appUser, err := registerUserWithSystemOwnerAction(ctx, action, createUserParameterFunc)
 	if err != nil {
 		return nil, nil, mbliberrors.Errorf("find or register app user: %w", err)
 	}
@@ -35,7 +35,7 @@ func registerAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf 
 	return action.Organization.OrganizationModel, appUser, nil
 }
 
-func findOrRegisterAppUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createAppUserParameterFunc func() (*mbuserservice.AddAppUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.AppUserModel, error) {
+func findOrRegisterUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createUserParameterFunc func() (*mbuserservice.AddUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.UserModel, error) {
 	action, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
 		service.WithOrganizationByID(organizationID),
 	)
@@ -43,14 +43,14 @@ func findOrRegisterAppUser(ctx context.Context, systemToken libdomain.SystemToke
 		return nil, nil, mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
 	}
 
-	appUser1, err := action.SystemOwner.FindAppUserByLoginID(ctx, loginID)
+	appUser1, err := action.SystemOwner.FindUserByLoginID(ctx, loginID)
 	if err == nil {
-		return action.Organization.OrganizationModel, appUser1.AppUserModel, nil
-	} else if !errors.Is(err, mbuserservice.ErrAppUserNotFound) {
-		return nil, nil, mbliberrors.Errorf("systemOwner.FindAppUserByLoginID. err: %w", err)
+		return action.Organization.OrganizationModel, appUser1.UserModel, nil
+	} else if !errors.Is(err, mbuserservice.ErrUserNotFound) {
+		return nil, nil, mbliberrors.Errorf("systemOwner.FindUserByLoginID. err: %w", err)
 	}
 
-	appUser, err := registerAppUserWithSystemOwnerAction(ctx, action, createAppUserParameterFunc)
+	appUser, err := registerUserWithSystemOwnerAction(ctx, action, createUserParameterFunc)
 	if err != nil {
 		return nil, nil, mbliberrors.Errorf("find or register app user: %w", err)
 	}
@@ -58,21 +58,21 @@ func findOrRegisterAppUser(ctx context.Context, systemToken libdomain.SystemToke
 	return action.Organization.OrganizationModel, appUser, nil
 }
 
-func registerAppUserWithSystemOwnerAction(ctx context.Context, systemOwnerAction *service.SystemOwnerAction, createAppUserParameterFunc func() (*mbuserservice.AddAppUserParameter, error)) (*mbuserdomain.AppUserModel, error) {
-	parameter, err := createAppUserParameterFunc()
+func registerUserWithSystemOwnerAction(ctx context.Context, systemOwnerAction *service.SystemOwnerAction, createUserParameterFunc func() (*mbuserservice.AddUserParameter, error)) (*mbuserdomain.UserModel, error) {
+	parameter, err := createUserParameterFunc()
 	if err != nil {
-		return nil, mbliberrors.Errorf("invalid AppUserAddParameter. err: %w", err)
+		return nil, mbliberrors.Errorf("invalid UserAddParameter. err: %w", err)
 	}
 
-	studentID, err := systemOwnerAction.SystemOwner.AddAppUser(ctx, parameter)
+	studentID, err := systemOwnerAction.SystemOwner.AddUser(ctx, parameter)
 	if err != nil {
 		return nil, mbliberrors.Errorf("failed to AddStudent. err: %w", err)
 	}
 
-	appUser2, err := systemOwnerAction.SystemOwner.FindAppUserByID(ctx, studentID)
+	appUser2, err := systemOwnerAction.SystemOwner.FindUserByID(ctx, studentID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("failed to FindStudentByID. err: %w", err)
 	}
 
-	return appUser2.AppUserModel, nil
+	return appUser2.UserModel, nil
 }

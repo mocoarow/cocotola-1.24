@@ -2,7 +2,7 @@ package controller_test
 
 // type Operator struct {
 // 	organizationID *mbuserdomain.OrganizationID
-// 	appUserID      *mbuserdomain.AppUserID
+// 	appUserID      *mbuserdomain.UserID
 // }
 
 // func newOperator(t *testing.T, organizationIDValue, appUserIDValue int) *Operator {
@@ -13,7 +13,7 @@ package controller_test
 // 	}
 // }
 
-// func (o *Operator) AppUserID() *mbuserdomain.AppUserID {
+// func (o *Operator) UserID() *mbuserdomain.UserID {
 // 	return o.appUserID
 // }
 // func (o *Operator) OrganizationID() *mbuserdomain.OrganizationID {
@@ -27,9 +27,9 @@ package controller_test
 // 	return id
 // }
 
-// func appUserID(t *testing.T, appUserID int) *mbuserdomain.AppUserID {
+// func appUserID(t *testing.T, appUserID int) *mbuserdomain.UserID {
 // 	t.Helper()
-// 	id, err := mbuserdomain.NewAppUserID(appUserID)
+// 	id, err := mbuserdomain.NewUserID(appUserID)
 // 	require.NoError(t, err)
 // 	return id
 // }

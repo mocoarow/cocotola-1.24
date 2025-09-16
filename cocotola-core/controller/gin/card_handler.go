@@ -39,7 +39,7 @@ func NewCardHandler(cardQueryUsecase CardQueryUsecase) *CardHandler {
 }
 
 func (h *CardHandler) FindCards(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		deckID, ok := getDeckIDFromQuery(c)
 		if !ok {
 			return nil

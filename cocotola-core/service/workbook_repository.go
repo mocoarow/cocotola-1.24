@@ -29,7 +29,7 @@ type WorkbookUpdateParameter struct {
 }
 
 type RoleUserInterface interface {
-	GetAppUserID() *mbuserdomain.AppUserID
+	GetUserID() *mbuserdomain.UserID
 	GetOrganizationID() *mbuserdomain.OrganizationID
 	GetRole() string
 	// LoginID() string

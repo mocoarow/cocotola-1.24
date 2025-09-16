@@ -54,7 +54,7 @@ func (e *CardEntity) ToModel() (*domain.CardModel, error) { //nolint:dupl
 		return nil, mbliberrors.Errorf("new template id(%d): %w", e.TemplateID, err)
 	}
 
-	ownerID, err := mbuserdomain.NewAppUserID(e.OwnerID)
+	ownerID, err := mbuserdomain.NewUserID(e.OwnerID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
 	}
@@ -101,14 +101,14 @@ func (r *cardRepository) AddCard(ctx context.Context, operator mbuserservice.Ope
 	cardE := CardEntity{ //nolint:exhaustruct
 		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.GetAppUserID().Int(),
-			UpdatedBy: operator.GetAppUserID().Int(),
+			CreatedBy: operator.GetUserID().Int(),
+			UpdatedBy: operator.GetUserID().Int(),
 		},
 		OrganizationID: operator.GetOrganizationID().Int(),
 		DeckID:         param.DeckID.Int(),
 		TemplateID:     param.TemplateID.Int(),
 		Content:        param.Content,
-		OwnerID:        operator.GetAppUserID().Int(),
+		OwnerID:        operator.GetUserID().Int(),
 	}
 	if result := r.db.Create(&cardE); result.Error != nil {
 		return nil, mbliberrors.Errorf("add card entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrDeckAlreadyExists))

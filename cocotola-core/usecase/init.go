@@ -5,11 +5,11 @@ import (
 )
 
 type Operator struct {
-	appUserID      *mbuserdomain.AppUserID
+	appUserID      *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 }
 
-func (o *Operator) GetAppUserID() *mbuserdomain.AppUserID {
+func (o *Operator) GetUserID() *mbuserdomain.UserID {
 	return o.appUserID
 }
 func (o *Operator) GetOrganizationID() *mbuserdomain.OrganizationID {

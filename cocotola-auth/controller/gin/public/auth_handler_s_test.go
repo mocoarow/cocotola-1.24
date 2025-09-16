@@ -144,8 +144,8 @@ func TestAuthHandler_GetUserInfo_shouldReturn200_whenAuthorizationHeaderIsValid(
 	ctx := context.Background()
 
 	// given
-	appUserInfo := &mbuserdomain.AppUserModel{
-		AppUserID:      appUserID(t, 123),
+	appUserInfo := &mbuserdomain.UserModel{
+		UserID:      appUserID(t, 123),
 		OrganizationID: organizationID(t, 456),
 		LoginID:        "LOGIN_ID",
 		Username:       "USERNAME",

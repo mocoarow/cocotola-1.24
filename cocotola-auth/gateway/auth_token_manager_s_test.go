@@ -31,7 +31,7 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 		RefreshTimeout time.Duration
 	}
 	type args struct {
-		appUser      service.AppUserInterface
+		appUser      service.UserInterface
 		organization service.OrganizationInterface
 	}
 	tests := []struct {
@@ -127,7 +127,7 @@ func TestAuthTokenManager_GetUserInfo(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    *service.AppUserInfo
+		want    *service.UserInfo
 		wantErr error
 	}{
 		{
@@ -137,8 +137,8 @@ func TestAuthTokenManager_GetUserInfo(t *testing.T) {
 				SigningMethod: jwt.SigningMethodHS256,
 				TokenTimeout:  time.Second,
 			},
-			want: &service.AppUserInfo{
-				// AppUserID:        456,
+			want: &service.UserInfo{
+				// UserID:        456,
 				LoginID:          "LOGIN_ID",
 				Username:         "USERNAME",
 				OrganizationID:   123,

@@ -23,8 +23,8 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 			defer teardownOrganization(t, ts, orgID)
 
 			// given
-			user1 := testAddAppUser(t, ctx, ts, owner, "LOGIN_ID_1", "USERNAME_1", "PASSWORD_1")
-			user2 := testAddAppUser(t, ctx, ts, owner, "LOGIN_ID_2", "USERNAME_2", "PASSWORD_2")
+			user1 := testAddUser(t, ctx, ts, owner, "LOGIN_ID_1", "USERNAME_1", "PASSWORD_1")
+			user2 := testAddUser(t, ctx, ts, owner, "LOGIN_ID_2", "USERNAME_2", "PASSWORD_2")
 
 			authorizationManager, err := gateway.NewAuthorizationManager(ctx, ts.dialect, ts.db, ts.rf)
 			require.NoError(t, err)
@@ -32,7 +32,7 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 			ownerGroup, err := userGroupRepo.FindUserGroupByKey(ctx, owner, service.OwnerGroupKey)
 			require.NoError(t, err)
 
-			rbacRoleObject := domain.NewRBACUserRoleObject(orgID, ownerGroup.UserGroupID)
+			rbacRoleObject := domain.NewRBACObjectFromGroup(orgID, ownerGroup.UserGroupID)
 
 			// when
 			ok, err := authorizationManager.CheckAuthorization(ctx, owner, service.RBACSetAction, rbacRoleObject)
@@ -51,7 +51,7 @@ func Test_AddPairOfUserAndGroup(t *testing.T) {
 
 			// given
 			// - add user1 to owner-group
-			err = authorizationManager.AddUserToGroup(ctx, owner, user1.GetAppUserID(), ownerGroup.UserGroupID)
+			err = authorizationManager.AddUserToGroup(ctx, owner, user1.GetUserID(), ownerGroup.UserGroupID)
 			require.NoError(t, err)
 			// when
 			ok, err = authorizationManager.CheckAuthorization(ctx, user1, service.RBACSetAction, rbacRoleObject)

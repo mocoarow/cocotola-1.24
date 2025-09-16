@@ -1,12 +1,12 @@
 package domain
 
 type SystemAdminModel struct {
-	AppUserID *AppUserID
+	UserID *UserID
 }
 
 func NewSystemAdminModel() *SystemAdminModel {
 	return &SystemAdminModel{
-		AppUserID: SystemAdminID,
+		UserID: SystemAdminID,
 	}
 }
 

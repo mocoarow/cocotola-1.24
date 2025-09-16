@@ -3,7 +3,6 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "service",
     srcs = [
-        "app_user.go",
         "app_user_repository.go",
         "authorization_manager.go",
         "init.go",
@@ -19,6 +18,7 @@ go_library(
         "space_repository.go",
         "system_admin.go",
         "system_owner.go",
+        "user.go",
         "user_group.go",
         "user_group_repository.go",
     ],
