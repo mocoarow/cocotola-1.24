@@ -271,8 +271,8 @@ tasks:
   test:
     cmds:
       - rm -f ./coverage.lcov
-      - bazelisk test //... --collect_code_coverage=true --test_output=errors --test_timeout=60 --test_size_filters=small
-      - bazelisk coverage //... --combined_report=lcov --test_size_filters=small
+      - bazelisk test //... --collect_code_coverage=true --test_output=errors --test_timeout=60 --test_size_filters=small,medium
+      - bazelisk coverage //... --combined_report=lcov --test_size_filters=small,medium
       - |
         OUTPUT_PATH=$(bazel info output_path)
         cp "${OUTPUT_PATH}/_coverage/_coverage_report.dat" ./coverage.lcov

@@ -15,7 +15,9 @@ import (
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
+	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 	libgateway "github.com/mocoarow/cocotola-1.24/lib/gateway"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/config"
@@ -64,34 +66,22 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 }
 
 func initApp(ctx context.Context, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, coreConfig *config.CoreConfig) (service.TransactionManager, error) {
+	// - rbacClient
+	rbacClient := initCocotolaRBACClient(coreConfig.AuthAPIClient)
+
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
-		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC)
+		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, rbacClient)
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
 		return nil, mbliberrors.Errorf("rff: %w", err)
 	}
-	// init transaction manager
-	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
-	if err != nil {
-		return nil, mbliberrors.Errorf("NewTransactionManagerT: %w", err)
-	}
-	// init non transaction manager
-	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
-	if err != nil {
-		return nil, mbliberrors.Errorf("NewNonTransactionManagerT: %w", err)
-	}
 
-	// - rbacClient
-	httpClient := http.Client{ //nolint:exhaustruct
-		Timeout:   time.Duration(coreConfig.AuthAPIClient.TimeoutSec) * time.Second,
-		Transport: otelhttp.NewTransport(http.DefaultTransport),
-	}
-	authEndpoint, err := url.Parse(coreConfig.AuthAPIClient.Endpoint)
-	if err != nil {
-		return nil, mbliberrors.Errorf("Parse: %w", err)
-	}
-	rbacClient := libgateway.NewCocotolaRBACClient(&httpClient, authEndpoint, coreConfig.AuthAPIClient.Username, coreConfig.AuthAPIClient.Password)
+	// init transaction manager
+	txManager := initTransactionManager(db, rff)
+
+	// init non transaction manager
+	nonTxManager := initNonTransactionManager(rf)
 
 	// init auth middleware
 	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(coreConfig.AuthAPIClient)
@@ -323,6 +313,36 @@ func initApp(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Diale
 // 			return mbliberrors.Errorf(". err: %w", err)
 // 		}
 
-// 		return fn(ctx, systemOwner)
-// 	})
-// }
+//			return fn(ctx, systemOwner)
+//		})
+//	}
+func initCocotolaRBACClient(authAPIClientConfig *config.AuthAPIClientConfig) libapi.CocotolaRBACClient {
+	httpClient := http.Client{ //nolint:exhaustruct
+		Timeout:   time.Duration(authAPIClientConfig.TimeoutSec) * time.Second,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+	}
+	authAPIEndpoint, err := url.Parse(authAPIClientConfig.Endpoint)
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+
+	rbacClient := libgateway.NewCocotolaRBACClient(&httpClient, authAPIEndpoint, authAPIClientConfig.Username, authAPIClientConfig.Password)
+
+	return rbacClient
+}
+
+func initTransactionManager(db *gorm.DB, rff func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error)) service.TransactionManager {
+	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+	return txManager
+}
+
+func initNonTransactionManager(rf service.RepositoryFactory) service.TransactionManager {
+	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+	return nonTxManager
+}

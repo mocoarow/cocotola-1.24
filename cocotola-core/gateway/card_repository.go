@@ -94,6 +94,7 @@ func NewCardRepository(db *gorm.DB) service.CardRepository {
 		db: db,
 	}
 }
+
 func (r *cardRepository) AddCard(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddCardParameter) (*domain.CardID, error) { //nolint:dupl
 	_, span := tracer.Start(ctx, "cardRepository.AddCard")
 	defer span.End()

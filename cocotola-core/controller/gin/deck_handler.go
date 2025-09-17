@@ -15,6 +15,7 @@ import (
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
+	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -44,14 +45,16 @@ type DeckHandler struct {
 	guestDeckQueryUsecase   GuestDeckQueryUsecase
 	studentDeckQueryUsecase StudentDeckQueryUsecase
 	deckCommandUsecase      DeckCommandUsecase
+	rbacClient              libapi.CocotolaRBACClient
 	logger                  *slog.Logger
 }
 
-func NewDeckHandler(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase) *DeckHandler {
+func NewDeckHandler(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase, rbacClient libapi.CocotolaRBACClient) *DeckHandler {
 	return &DeckHandler{
 		guestDeckQueryUsecase:   guestDeckQueryUsecase,
 		studentDeckQueryUsecase: studentDeckQueryUsecase,
 		deckCommandUsecase:      deckCommandUsecase,
+		rbacClient:              rbacClient,
 		logger:                  slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckHandler")),
 	}
 }
@@ -256,10 +259,10 @@ func (h *DeckHandler) errorHandle(ctx context.Context, c *gin.Context, err error
 	return false
 }
 
-func NewInitDeckRouterFunc(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase) libcontroller.InitRouterGroupFunc {
+func NewInitDeckRouterFunc(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase, rbacClient libapi.CocotolaRBACClient) libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
 		deck := parentRouterGroup.Group("deck")
-		deckHandler := NewDeckHandler(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase)
+		deckHandler := NewDeckHandler(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase, rbacClient)
 		for _, m := range middleware {
 			deck.Use(m)
 		}

@@ -18,5 +18,21 @@
   "go.formatFlags": [
     "fmt",
     "--stdin"
-  ]
+  ],
+  "files.exclude": {
+    "~/.cache/**": true,
+    "bazel-*/**": true,
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true
+  },
+  "search.exclude": {
+    "~/.cache/**": true,
+    "bazel-*/**": true,
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true
+  }
 }

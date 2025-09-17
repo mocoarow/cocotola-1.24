@@ -148,3 +148,66 @@ func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mb
 		}
 	}
 }
+
+func HandleRBACFunction[P any](c *gin.Context, getParam func(ctx context.Context, operator mbuserservice.OperatorInterface) (P, bool), checkAuthorization func(ctx context.Context, operator mbuserservice.OperatorInterface, param P) bool, fn func(ctx context.Context, operator mbuserservice.OperatorInterface, param P) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
+	ctx := c.Request.Context()
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleUserFunction"))
+
+	operator, ok := getOperator(c)
+	if !ok {
+		return
+	}
+
+	if newCtx, err := liblibcontroller.AddBaggageMembers(ctx, map[string]string{
+		"operator_id":     strconv.Itoa(operator.userID.Int()),
+		"organization_id": strconv.Itoa(operator.organizationID.Int()),
+	}); err == nil {
+		ctx = newCtx
+	}
+
+	logger.InfoContext(ctx, "HandleRBACFunction")
+
+	p, ok := getParam(ctx, operator)
+	if !ok {
+		return
+	}
+	if ok := checkAuthorization(ctx, operator, p); !ok {
+		return
+	}
+	if err := fn(ctx, operator, p); err != nil {
+		if handled := errorHandle(ctx, c, err); !handled {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
+		}
+	}
+}
+
+func getOperator(c *gin.Context) (*operator, bool) {
+	organizationIDInt := c.GetInt("OrganizationID")
+	if organizationIDInt == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+		return nil, false
+	}
+
+	organizationID, err := mbuserdomain.NewOrganizationID(organizationIDInt)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+		return nil, false
+	}
+
+	userID := c.GetInt("AuthorizedUser")
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+		return nil, false
+	}
+
+	operatorID, err := mbuserdomain.NewUserID(userID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
+		return nil, false
+	}
+
+	return &operator{
+		userID:         operatorID,
+		organizationID: organizationID,
+	}, true
+}
