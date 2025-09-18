@@ -7,13 +7,12 @@ import (
 
 	"gorm.io/gorm"
 
+	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
-
-	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -68,7 +67,7 @@ func (e *DeckEntity) toModel() (*domain.DeckModel, error) {
 	}
 
 	e.Lang2 = template.HTMLEscapeString(e.Lang2)
-	lang2, err := libdomain.NewLang2(e.Lang2)
+	lang2, err := mblibdomain.NewLang2(e.Lang2)
 	if err != nil {
 		return nil, mbliberrors.Errorf("new lang2(%s): %w", e.Lang2, err)
 	}

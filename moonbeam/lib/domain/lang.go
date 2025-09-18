@@ -1,7 +1,6 @@
 package domain
 
 import (
-	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 )
 
@@ -15,7 +14,7 @@ type Lang2 struct {
 
 func NewLang2(lang string) (*Lang2, error) {
 	if len(lang) != Lang2Len {
-		return nil, mbliberrors.Errorf("invalid parameter. Lang2: %s. err: %w", lang, mblibdomain.ErrInvalidArgument)
+		return nil, mbliberrors.Errorf("invalid parameter. Lang2: %s. err: %w", lang, ErrInvalidArgument)
 	}
 
 	return &Lang2{
@@ -45,7 +44,7 @@ type Lang3 struct {
 
 func NewLang3(lang string) (*Lang3, error) {
 	if len(lang) != Lang3Len {
-		return nil, mbliberrors.Errorf("invalid parameter. Lang3: %s, err: %w", lang, mblibdomain.ErrInvalidArgument)
+		return nil, mbliberrors.Errorf("invalid parameter. Lang3: %s, err: %w", lang, ErrInvalidArgument)
 	}
 
 	return &Lang3{

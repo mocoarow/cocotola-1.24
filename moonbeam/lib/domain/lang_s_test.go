@@ -10,8 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	domain "github.com/mocoarow/cocotola-1.24/lib/domain"
-	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
+	"github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 )
 
 func TestNewLang2(t *testing.T) {
@@ -39,7 +38,7 @@ func TestNewLang2(t *testing.T) {
 			name:          "empty string",
 			args:          "",
 			wantErr:       true,
-			wantErrDetail: mblibdomain.ErrInvalidArgument,
+			wantErrDetail: domain.ErrInvalidArgument,
 		},
 	}
 	for _, tt := range tests {

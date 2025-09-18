@@ -10,6 +10,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 
 	mblibconfig "github.com/mocoarow/cocotola-1.24/moonbeam/lib/config"
+	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 
@@ -54,7 +55,7 @@ func main() {
 	// logger.Info(fmt.Sprintf("%+v", proto.HelloRequest{}))
 
 	logger.Info("")
-	logger.Info(libdomain.Lang2EN.String())
+	logger.Info(mblibdomain.Lang2EN.String())
 	logger.Info("Hello")
 	logger.Info("Hello")
 	service.A()

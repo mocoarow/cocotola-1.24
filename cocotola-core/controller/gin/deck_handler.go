@@ -18,8 +18,8 @@ import (
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
-	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/api"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/helper"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -76,7 +76,7 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsGuest")
 	defer span.End()
 
-	var apiReq libapicore.FindDecksRequest
+	var apiReq api.FindDecksRequest
 	if err := c.ShouldBindQuery(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -102,9 +102,9 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 		return mbliberrors.Errorf("FindDecks: %w", err)
 	}
 
-	decks := make([]libapicore.FindDecksResponseDeck, 0, len(result))
+	decks := make([]api.FindDecksResponseDeck, 0, len(result))
 	for _, d := range result {
-		decks = append(decks, libapicore.FindDecksResponseDeck{
+		decks = append(decks, api.FindDecksResponseDeck{
 			ID:          d.DeckID.Int(),
 			Version:     d.Version,
 			Name:        d.Name,
@@ -113,7 +113,7 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 			Description: d.Description,
 		})
 	}
-	apiResp := libapicore.FindDecksResponse{
+	apiResp := api.FindDecksResponse{
 		TotalCount: len(result),
 		Results:    decks,
 	}
@@ -163,36 +163,18 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 
 func (h *DeckHandler) AddDeck(c *gin.Context) {
 	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
-		var apiReq libapicore.AddDeckRequest
+		var apiReq api.AddDeckRequest
 		if err := c.ShouldBindJSON(&apiReq); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}
-		templateID, err := domain.NewTemplateID(apiReq.TemplateID)
-		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("NewTemplateID: %+v", err))
-			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-			return nil
-		}
-		spaceID, err := mbuserdomain.NewSpaceID(apiReq.SpaceID)
-		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("NewSpaceID: %+v", err))
-			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-			return nil
-		}
-		lang2, err := libdomain.NewLang2(apiReq.Lang2)
-		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("NewLang2: %+v", err))
-			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-			return nil
-		}
 		param := service.AddDeckParameter{
-			SpaceID:     spaceID,
+			SpaceID:     apiReq.SpaceID.Value,
 			FolderID:    nil,
-			TemplateID:  templateID,
+			TemplateID:  apiReq.TemplateID.Value,
 			Name:        apiReq.Name,
-			Lang2:       lang2,
+			Lang2:       apiReq.Lang2.Value,
 			Description: apiReq.Description,
 		}
 		deckID, err := h.deckCommandUsecase.AddDeck(ctx, operator, &param)

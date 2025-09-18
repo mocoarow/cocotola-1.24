@@ -4,10 +4,9 @@ import (
 	"context"
 	"errors"
 
+	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
-
-	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
@@ -20,7 +19,7 @@ type AddDeckParameter struct {
 	FolderID    *domain.FolderID
 	TemplateID  *domain.TemplateID
 	Name        string
-	Lang2       *libdomain.Lang2
+	Lang2       *mblibdomain.Lang2
 	Description string
 }
 
