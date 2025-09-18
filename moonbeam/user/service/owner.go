@@ -9,7 +9,7 @@ import (
 )
 
 type OwnerModelInterface interface {
-	AppUserInterface
+	UserInterface
 	IsOwner() bool
 	// GetUserGroups() []domain.UserGroupModel
 }
@@ -28,29 +28,29 @@ func NewOwner(rf RepositoryFactory, ownerModel *domain.OwnerModel) *Owner {
 	return m
 }
 
-func (m *Owner) AddAppUser(ctx context.Context, param *AddAppUserParameter) (*domain.AppUserID, error) {
-	appUserRepo := m.rf.NewAppUserRepository(ctx)
-	appUserID, err := appUserRepo.AddAppUser(ctx, m, param)
+func (m *Owner) AddUser(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
+	userRepo := m.rf.NewUserRepository(ctx)
+	userID, err := userRepo.AddUser(ctx, m, param)
 	if err != nil {
-		return nil, liberrors.Errorf("m.appUserRepo.AddAppUser. err: %w", err)
+		return nil, liberrors.Errorf("m.userRepo.AddUser. err: %w", err)
 	}
 
-	return appUserID, nil
+	return userID, nil
 }
 
-func (m *Owner) GetAppUserID() *domain.AppUserID {
-	return m.AppUserModel.AppUserID
+func (m *Owner) GetUserID() *domain.UserID {
+	return m.UserID
 }
 func (m *Owner) GetOrganizationID() *domain.OrganizationID {
-	return m.AppUserModel.OrganizationID
+	return m.OrganizationID
 }
 
 //	func (m *Owner) LoginID() string {
-//		return m.AppUserModel.LoginID
+//		return m.UserModel.LoginID
 //	}
 //
 //	func (m *Owner) Username() string {
-//		return m.AppUserModel.Username
+//		return m.UserModel.Username
 //	}
 func (m *Owner) IsOwner() bool {
 	return true

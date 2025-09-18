@@ -31,15 +31,15 @@ func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager servi
 		}
 
 		bearerToken := authorization[len("Bearer "):]
-		appUserModel, err := service.GetUserInfo(ctx, systemToken, authTokenManager, transactionManager, bearerToken)
+		userModel, err := service.GetUserInfo(ctx, systemToken, authTokenManager, transactionManager, bearerToken)
 		if err != nil {
 			logger.WarnContext(ctx, fmt.Sprintf("getUserInfo: %v", err))
 			return
 		}
 
-		c.Set("AuthorizedUser", appUserModel.AppUserID.Int())
-		c.Set("OrganizationID", appUserModel.OrganizationID.Int())
+		c.Set("AuthorizedUser", userModel.UserID.Int())
+		c.Set("OrganizationID", userModel.OrganizationID.Int())
 
-		// logger.WarnContext(ctx, "authenticated", slog.Int("app_user_id", appUserInfo.AppUserID), slog.Int("organization_id", appUserInfo.OrganizationID))
+		// logger.WarnContext(ctx, "authenticated", slog.Int("user_id", userInfo.UserID), slog.Int("organization_id", userInfo.OrganizationID))
 	}
 }

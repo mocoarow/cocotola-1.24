@@ -8,7 +8,7 @@ var (
 	tracer = otel.Tracer("github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway")
 
 	OrganizationTableName       = "mb_organization"
-	AppUserTableName            = "mb_app_user"
+	UserTableName               = "mb_user"
 	PairOfUserAndGroupTableName = "mb_user_n_group"
 	UserGroupTableName          = "mb_user_group"
 	SpaceTableName              = "mb_space"

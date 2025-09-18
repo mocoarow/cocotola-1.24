@@ -9,13 +9,13 @@ import (
 type AuthorizationManager interface {
 	// Init(ctx context.Context) error
 
-	AddUserToGroup(ctx context.Context, operator AppUserInterface, appUserID *domain.AppUserID, userGroupID *domain.UserGroupID) error
+	AddUserToGroup(ctx context.Context, operator UserInterface, userID *domain.UserID, userGroupID *domain.UserGroupID) error
 
-	AddUserToGroupBySystemAdmin(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, appUserID *domain.AppUserID, userGroupID *domain.UserGroupID) error
+	AddUserToGroupBySystemAdmin(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, userID *domain.UserID, userGroupID *domain.UserGroupID) error
 
 	// RemoveUserFromGroup()
 
-	// AddGroupToGroup(ctx context.Context, operator domain.AppUserModel, src domain.UserGroupID, dst domain.UserGroupID) error
+	// AddGroupToGroup(ctx context.Context, operator domain.UserModel, src domain.UserGroupID, dst domain.UserGroupID) error
 	AddObjectToObject(ctx context.Context, operator SystemOwnerInterface, child, parent domain.RBACObject) error
 
 	// RemoveGroupFromGroup()
@@ -24,13 +24,13 @@ type AuthorizationManager interface {
 
 	// RemoveObjectFromObject()
 
-	AddPolicyToUser(ctx context.Context, operator AppUserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
+	AddPolicyToUser(ctx context.Context, operator UserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
 
 	AddPolicyToUserBySystemAdmin(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
 
 	AddPolicyToUserBySystemOwner(ctx context.Context, operator SystemOwnerInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
 
-	AddPolicyToGroup(ctx context.Context, operator AppUserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
+	AddPolicyToGroup(ctx context.Context, operator UserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
 
 	AddPolicyToGroupBySystemAdmin(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error
 
@@ -38,5 +38,5 @@ type AuthorizationManager interface {
 
 	// RemovePolicyToGroup()
 
-	CheckAuthorization(ctx context.Context, operator AppUserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error)
+	CheckAuthorization(ctx context.Context, operator UserInterface, rbacAction domain.RBACAction, rbacObject domain.RBACObject) (bool, error)
 }

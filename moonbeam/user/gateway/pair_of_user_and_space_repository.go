@@ -20,7 +20,7 @@ type pairOfUserAndSpaceRepository struct {
 type pairOfUserAndSpaceEntity struct {
 	JunctionModelEntity
 	OrganizationID int
-	AppUserID      int
+	UserID         int
 	SpaceID        int
 }
 
@@ -35,35 +35,35 @@ func NewPairOfUserAndSpaceRepository(_ context.Context, dialect libgateway.Diale
 	}
 }
 
-func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context, operator service.AppUserInterface, appUserID *domain.AppUserID, spaceID *domain.SpaceID) error {
+func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context, operator service.UserInterface, userID *domain.UserID, spaceID *domain.SpaceID) error {
 	_, span := tracer.Start(ctx, "pairOfUserAndSpaceRepository.AddPairOfUserAndSpace")
 	defer span.End()
 
 	pairOfUserAndGroup := pairOfUserAndSpaceEntity{
 		JunctionModelEntity: JunctionModelEntity{ //nolint:exhaustruct
-			CreatedBy: operator.GetAppUserID().Int(),
+			CreatedBy: operator.GetUserID().Int(),
 		},
 		OrganizationID: operator.GetOrganizationID().Int(),
-		AppUserID:      appUserID.Int(),
+		UserID:         userID.Int(),
 		SpaceID:        spaceID.Int(),
 	}
 	if result := r.db.Create(&pairOfUserAndGroup); result.Error != nil {
-		return liberrors.Errorf(". err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrAppUserAlreadyExists))
+		return liberrors.Errorf(". err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
 	}
 
 	return nil
 }
 
-func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operator service.AppUserInterface) ([]*service.Space, error) {
+func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operator service.UserInterface) ([]*service.Space, error) {
 	spacesE := []spaceEntity{}
 	if result := r.db.WithContext(ctx).Table(SpaceTableName).Select(SpaceTableName+".*").
 		Where(SpaceTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
 		Where(SpaceTableName+".deleted = ?", r.dialect.BoolDefaultValue()).
-		Where(AppUserTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
-		Where(AppUserTableName+".id = ?", operator.GetAppUserID().Int()).
-		Where(AppUserTableName+".deleted = ?", r.dialect.BoolDefaultValue()).
+		Where(UserTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
+		Where(UserTableName+".id = ?", operator.GetUserID().Int()).
+		Where(UserTableName+".deleted = ?", r.dialect.BoolDefaultValue()).
 		Joins("inner join " + PairOfUserAndSpaceTableName + " on " + SpaceTableName + ".id = " + PairOfUserAndSpaceTableName + ".space_id").
-		Joins("inner join " + AppUserTableName + " on " + PairOfUserAndSpaceTableName + ".app_user_id = " + AppUserTableName + ".id").
+		Joins("inner join " + UserTableName + " on " + PairOfUserAndSpaceTableName + ".user_id = " + UserTableName + ".id").
 		Order(SpaceTableName + ".key_name").
 		Find(&spacesE); result.Error != nil {
 		return nil, result.Error

@@ -9,8 +9,8 @@ create table `mb_user_group_details` (
 ,`user_group_id` int not null
 ,`details` json not null
 ,unique(`organization_id`, `user_group_id`)
-,foreign key(`created_by`) references `mb_app_user`(`id`) on delete cascade
-,foreign key(`updated_by`) references `mb_app_user`(`id`) on delete cascade
+,foreign key(`created_by`) references `mb_user`(`id`) on delete cascade
+,foreign key(`updated_by`) references `mb_user`(`id`) on delete cascade
 ,foreign key(`organization_id`) references `mb_organization`(`id`) on delete cascade
 ,foreign key(`user_group_id`) references `mb_user_group`(`id`) on delete cascade
 );

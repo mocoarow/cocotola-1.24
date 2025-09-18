@@ -119,22 +119,22 @@ type RBACActionObjectEffect struct {
 	Effect RBACEffect
 }
 
-func NewRBACOrganization(organizationID *OrganizationID) RBACDomain {
+func NewRBACDomainFromOrganization(organizationID *OrganizationID) RBACDomain {
 	return NewRBACDomain(fmt.Sprintf("domain:%d", organizationID.Int()))
 }
 
-func NewRBACAppUser(appUserID *AppUserID) RBACUser {
-	return NewRBACUser(fmt.Sprintf("user:%d", appUserID.Int()))
+func NewRBACUserFromUser(userID *UserID) RBACUser {
+	return NewRBACUser(fmt.Sprintf("user:%d", userID.Int()))
 }
 
-func NewRBACUserRole(organizationID *OrganizationID, userGroupID *UserGroupID) RBACRole {
+func NewRBACRoleFromGroup(organizationID *OrganizationID, userGroupID *UserGroupID) RBACRole {
 	return NewRBACRole(fmt.Sprintf("domain:%d,role:%d", organizationID.Int(), userGroupID.Int()))
 }
 
-func NewRBACUserRoleObject(organizationID *OrganizationID, userRoleID *UserGroupID) RBACObject {
+func NewRBACObjectFromGroup(organizationID *OrganizationID, userRoleID *UserGroupID) RBACObject {
 	return NewRBACObject(fmt.Sprintf("domain:%d,role:%d", organizationID.Int(), userRoleID.Int()))
 }
 
-func NewRBACAllUserRolesObject(organizationID *OrganizationID) RBACObject {
+func NewRBACAllUserRolesObjectFromOrganization(organizationID *OrganizationID) RBACObject {
 	return NewRBACObject(fmt.Sprintf("domain:%d,role:*", organizationID.Int()))
 }

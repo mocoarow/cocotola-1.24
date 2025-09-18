@@ -10,31 +10,31 @@ import (
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 )
 
-func GetUserInfo(ctx context.Context, systemToken libdomain.SystemToken, authTokenManager AuthTokenManager, nonTxManager TransactionManager, bearerToken string) (*mbuserdomain.AppUserModel, error) {
+func GetUserInfo(ctx context.Context, systemToken libdomain.SystemToken, authTokenManager AuthTokenManager, nonTxManager TransactionManager, bearerToken string) (*mbuserdomain.UserModel, error) {
 	// TODO: Check whether the token is registered in the Database
-	appUserInfo, err := authTokenManager.GetUserInfo(ctx, bearerToken)
+	userInfo, err := authTokenManager.GetUserInfo(ctx, bearerToken)
 	if err != nil {
 		return nil, mbliberrors.Errorf("GetUserInfo: %w", err)
 	}
 
-	appUserModel, err := mblibservice.Do1(ctx, nonTxManager, func(rf RepositoryFactory) (*mbuserdomain.AppUserModel, error) {
+	userModel, err := mblibservice.Do1(ctx, nonTxManager, func(rf RepositoryFactory) (*mbuserdomain.UserModel, error) {
 		action, err := NewSystemOwnerAction(ctx, systemToken, rf,
-			WithOrganizationByName(appUserInfo.OrganizationName),
+			WithOrganizationByName(userInfo.OrganizationName),
 		)
 		if err != nil {
 			return nil, mbliberrors.Errorf("new organization action: %w", err)
 		}
 
-		appUser, err := action.SystemOwner.FindAppUserByLoginID(ctx, appUserInfo.LoginID)
+		user, err := action.SystemOwner.FindUserByLoginID(ctx, userInfo.LoginID)
 		if err != nil {
-			return nil, mbliberrors.Errorf("find app user by login id(%s): %w", appUserInfo.LoginID, err)
+			return nil, mbliberrors.Errorf("find user by login id(%s): %w", userInfo.LoginID, err)
 		}
 
-		return appUser.AppUserModel, nil
+		return user.UserModel, nil
 	})
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
 
-	return appUserModel, nil
+	return userModel, nil
 }

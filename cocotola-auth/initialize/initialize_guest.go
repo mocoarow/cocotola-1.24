@@ -19,22 +19,22 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxManager service.TransactionManager, organizationName string) (*mbuserdomain.AppUserID, error) {
+func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxManager service.TransactionManager, organizationName string) (*mbuserdomain.UserID, error) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp2"))
 
-	fn := func(rf service.RepositoryFactory) (*mbuserdomain.AppUserID, error) {
+	fn := func(rf service.RepositoryFactory) (*mbuserdomain.UserID, error) {
 		systemOwnerAction := newSystemOwnerAction(ctx, systemToken, rf, organizationName)
 
 		guestLoginID := libdomain.NewGuestLoginID(organizationName)
 		guestUserName := libdomain.NewGuestUserName(organizationName)
 
 		// 1. check whether the guest user already exists
-		guest, err := systemOwnerAction.SystemOwner.FindAppUserByLoginID(ctx, guestLoginID)
+		guest, err := systemOwnerAction.SystemOwner.FindUserByLoginID(ctx, guestLoginID)
 		if err == nil {
-			logger.InfoContext(ctx, fmt.Sprintf("guest already exists. id: %d", guest.GetAppUserID().Int()))
-			return guest.GetAppUserID(), nil
-		} else if !errors.Is(err, mbuserservice.ErrAppUserNotFound) {
-			return nil, mbliberrors.Errorf("find app user by login id(%s): %w", guestLoginID, err)
+			logger.InfoContext(ctx, fmt.Sprintf("guest already exists. id: %d", guest.GetUserID().Int()))
+			return guest.GetUserID(), nil
+		} else if !errors.Is(err, mbuserservice.ErrUserNotFound) {
+			return nil, mbliberrors.Errorf("find user by login id(%s): %w", guestLoginID, err)
 		}
 
 		// 2. add guest user
@@ -95,13 +95,13 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxMa
 	return guestID, nil
 }
 
-func addGuestUser(ctx context.Context, guestLoginID, guestUserName string, systemOwnerAction *service.SystemOwnerAction) *mbuserdomain.AppUserID {
-	appUserAddParam, err := mbuserservice.NewAppUserAddParameter(guestLoginID, guestUserName, "", "", "", "", "")
+func addGuestUser(ctx context.Context, guestLoginID, guestUserName string, systemOwnerAction *service.SystemOwnerAction) *mbuserdomain.UserID {
+	userAddParam, err := mbuserservice.NewUserAddParameter(guestLoginID, guestUserName, "", "", "", "", "")
 	if err != nil {
 		libdomain.CheckError(err)
 	}
 
-	guestID, err := systemOwnerAction.SystemOwner.AddAppUser(ctx, appUserAddParam)
+	guestID, err := systemOwnerAction.SystemOwner.AddUser(ctx, userAddParam)
 	if err != nil {
 		libdomain.CheckError(err)
 	}

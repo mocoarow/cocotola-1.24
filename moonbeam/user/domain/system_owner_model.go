@@ -9,9 +9,9 @@ type SystemOwnerModel struct {
 	*OwnerModel
 }
 
-func NewSystemOwnerModel(appUser *OwnerModel) (*SystemOwnerModel, error) {
+func NewSystemOwnerModel(user *OwnerModel) (*SystemOwnerModel, error) {
 	m := &SystemOwnerModel{
-		OwnerModel: appUser,
+		OwnerModel: user,
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {

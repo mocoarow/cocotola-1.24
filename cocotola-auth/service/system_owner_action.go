@@ -17,6 +17,7 @@ type SystemOwnerAction struct {
 	SystemOwner          *mbuserservice.SystemOwner
 	Organization         *mbuserservice.Organization
 	AuthorizationManager mbuserservice.AuthorizationManager
+	SpaceManager         mbuserservice.SpaceManager
 }
 
 type SystemOwnerActionOption func(context.Context, *SystemOwnerAction) error
@@ -113,6 +114,18 @@ func WithAuthorizationManager() SystemOwnerActionOption {
 		return nil
 	}
 }
+func WithSpaceManager() SystemOwnerActionOption {
+	return func(ctx context.Context, action *SystemOwnerAction) error {
+		spaceManager, err := action.mbrf.NewSpaceManager(ctx)
+		if err != nil {
+			return mbliberrors.Errorf("new space manager: %w", err)
+		}
+		action.SpaceManager = spaceManager
+
+		return nil
+	}
+}
+
 func NewSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf RepositoryFactory, options ...SystemOwnerActionOption) (*SystemOwnerAction, error) {
 	if systemToken == nil {
 		return nil, mbliberrors.Errorf("systemToken is nil: %w", nil)

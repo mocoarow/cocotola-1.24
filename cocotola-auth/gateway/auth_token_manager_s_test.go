@@ -23,7 +23,7 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 	t.Parallel()
 	firebaseAuthClient := new(servicemock.MockFirebaseClient)
 	organizationID := organizationID(t, 123)
-	appUserID := appUserID(t, 456)
+	userID := userID(t, 456)
 	type fields struct {
 		SigningKey     []byte
 		SigningMethod  jwt.SigningMethod
@@ -31,7 +31,7 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 		RefreshTimeout time.Duration
 	}
 	type args struct {
-		appUser      service.AppUserInterface
+		user         service.UserInterface
 		organization service.OrganizationInterface
 	}
 	tests := []struct {
@@ -47,8 +47,8 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 				SigningMethod: jwt.SigningMethodHS256,
 			},
 			args: args{
-				appUser: &appUser{
-					appUserID:      appUserID,
+				user: &user{
+					userID:         userID,
 					organizationID: organizationID,
 					loginID:        "LOGIN_ID",
 					username:       "USERNAME",
@@ -67,8 +67,8 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 				SigningMethod: jwt.SigningMethodHS256,
 			},
 			args: args{
-				appUser: &appUser{
-					appUserID:      appUserID,
+				user: &user{
+					userID:         userID,
 					organizationID: organizationID,
 					loginID:        "LOGIN_ID",
 					username:       "USERNAME",
@@ -87,7 +87,7 @@ func Test_authTokenManager_CreateTokenSet(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := m.CreateTokenSet(ctx, tt.args.appUser, tt.args.organization)
+			got, err := m.CreateTokenSet(ctx, tt.args.user, tt.args.organization)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("authTokenManager.CreateTokenSet() error = %v, wantErr %v", err, tt.wantErr)
@@ -106,9 +106,9 @@ func TestAuthTokenManager_GetUserInfo(t *testing.T) {
 	firebaseAuthClient := new(servicemock.MockFirebaseClient)
 	ctx := context.Background()
 	organizationID := organizationID(t, 123)
-	appUserID := appUserID(t, 456)
-	appUser := &appUser{
-		appUserID:      appUserID,
+	userID := userID(t, 456)
+	user := &user{
+		userID:         userID,
 		organizationID: organizationID,
 		loginID:        "LOGIN_ID",
 		username:       "USERNAME",
@@ -127,7 +127,7 @@ func TestAuthTokenManager_GetUserInfo(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    *service.AppUserInfo
+		want    *service.UserInfo
 		wantErr error
 	}{
 		{
@@ -137,8 +137,8 @@ func TestAuthTokenManager_GetUserInfo(t *testing.T) {
 				SigningMethod: jwt.SigningMethodHS256,
 				TokenTimeout:  time.Second,
 			},
-			want: &service.AppUserInfo{
-				// AppUserID:        456,
+			want: &service.UserInfo{
+				// UserID:        456,
 				LoginID:          "LOGIN_ID",
 				Username:         "USERNAME",
 				OrganizationID:   123,
@@ -162,7 +162,7 @@ func TestAuthTokenManager_GetUserInfo(t *testing.T) {
 			t.Parallel()
 			m := gateway.NewAuthTokenManager(ctx, firebaseAuthClient, tt.fields.SigningKey, tt.fields.SigningMethod, tt.fields.TokenTimeout, tt.fields.RefreshTimeout)
 
-			tokenSet, err := m.CreateTokenSet(ctx, appUser, organization)
+			tokenSet, err := m.CreateTokenSet(ctx, user, organization)
 			require.NoError(t, err)
 			got, err := m.GetUserInfo(ctx, tokenSet.AccessToken)
 			if tt.wantErr == nil {

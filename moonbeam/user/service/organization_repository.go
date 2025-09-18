@@ -15,15 +15,15 @@ var ErrOrganizationAlreadyExists = errors.New("organization already exists")
 
 // type OrganizationAddParameterInterface interface {
 // 	Name() string
-// 	FirstOwner() *AddAppUserParameter
+// 	FirstOwner() *AddUserParameter
 // }
 
 type AddOrganizationParameter struct {
 	Name       string `validate:"required"`
-	FirstOwner *AddAppUserParameter
+	FirstOwner *AddUserParameter
 }
 
-func NewOrganizationAddParameter(name string, firstOwner *AddAppUserParameter) (*AddOrganizationParameter, error) {
+func NewOrganizationAddParameter(name string, firstOwner *AddUserParameter) (*AddOrganizationParameter, error) {
 	m := &AddOrganizationParameter{
 		Name:       name,
 		FirstOwner: firstOwner,
@@ -38,12 +38,12 @@ func NewOrganizationAddParameter(name string, firstOwner *AddAppUserParameter) (
 // func (p *AddOrganizationParameter) Name() string {
 // 	return p.NameInternal
 // }
-// func (p *OrganizationAddParameter) FirstOwner() *AddAppUserParameter {
+// func (p *OrganizationAddParameter) FirstOwner() *AddUserParameter {
 // 	return p.FirstOwnerInternal
 // }
 
 type OrganizationRepository interface {
-	GetOrganization(ctx context.Context, operator AppUserInterface) (*Organization, error)
+	GetOrganization(ctx context.Context, operator UserInterface) (*Organization, error)
 
 	FindOrganizationByName(ctx context.Context, operator SystemAdminInterface, name string) (*Organization, error)
 
@@ -52,5 +52,5 @@ type OrganizationRepository interface {
 	AddOrganization(ctx context.Context, operator SystemAdminInterface, param *AddOrganizationParameter) (*domain.OrganizationID, error)
 
 	// FindOrganizationByName(ctx context.Context, operator SystemAdmin, name string) (Organization, error)
-	// FindOrganization(ctx context.Context, operator AppUser) (Organization, error)
+	// FindOrganization(ctx context.Context, operator User) (Organization, error)
 }

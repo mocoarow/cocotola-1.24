@@ -40,10 +40,10 @@ type DeckModel struct {
 	TemplateID             *TemplateID                  `validate:"required"`
 	Lang2                  *libdomain.Lang2             `validate:"required"`
 	Description            string
-	OwnerID                *mbuserdomain.AppUserID `validate:"required"`
+	OwnerID                *mbuserdomain.UserID `validate:"required"`
 }
 
-func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, folderID *FolderID, name string, templateID *TemplateID, lang2 *libdomain.Lang2, description string, owernID *mbuserdomain.AppUserID) (*DeckModel, error) {
+func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, folderID *FolderID, name string, templateID *TemplateID, lang2 *libdomain.Lang2, description string, owernID *mbuserdomain.UserID) (*DeckModel, error) {
 	if baseModel == nil {
 		return nil, mbliberrors.Errorf("baseModel is nil", mblibdomain.ErrInvalidArgument)
 	}

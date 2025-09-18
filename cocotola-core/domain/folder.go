@@ -37,10 +37,10 @@ type FolderModel struct {
 	SpaceID                *mbuserdomain.SpaceID        `validate:"required"`
 	ParentID               *FolderID                    `validate:"required"`
 	Name                   string                       `validate:"required"`
-	OwnerID                *mbuserdomain.AppUserID      `validate:"required"`
+	OwnerID                *mbuserdomain.UserID         `validate:"required"`
 }
 
-func NewFolderModel(baseModel *mblibdomain.BaseModel, folderID *FolderID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, parentID *FolderID, name string, owernID *mbuserdomain.AppUserID) (*FolderModel, error) {
+func NewFolderModel(baseModel *mblibdomain.BaseModel, folderID *FolderID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, parentID *FolderID, name string, owernID *mbuserdomain.UserID) (*FolderModel, error) {
 	if baseModel == nil {
 		return nil, mbliberrors.Errorf("baseModel is nil", mblibdomain.ErrInvalidArgument)
 	}

@@ -23,20 +23,20 @@ type SystemOwnerInterface interface {
 type SystemOwner struct {
 	*domain.SystemOwnerModel
 	orgRepo       OrganizationRepository
-	appUserRepo   AppUserRepository
+	userRepo      UserRepository
 	userGroupRepo UserGroupRepository
 	spaceRepo     SpaceRepository
 	// pairOfUserAndGroup PairOfUserAndGroupRepository
 	// rbacRepo             RBACRepository
 	authorizationManager AuthorizationManager
-	appUserEventHandler  libservice.ResourceEventHandler
+	userEventHandler     libservice.ResourceEventHandler
 	spaceEventHandler    libservice.ResourceEventHandler
 	logger               *slog.Logger
 }
 
 func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel *domain.SystemOwnerModel) (*SystemOwner, error) {
 	orgRepo := rf.NewOrganizationRepository(ctx)
-	appUserRepo := rf.NewAppUserRepository(ctx)
+	userRepo := rf.NewUserRepository(ctx)
 	userGroupRepo := rf.NewUserGroupRepository(ctx)
 	spaceRepo := rf.NewSpaceRepository(ctx)
 	// pairOfUserAndGroup := rf.NewPairOfUserAndGroupRepository(ctx)
@@ -45,19 +45,19 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 	if err != nil {
 		return nil, liberrors.Errorf("NewAuthorizationManager: %w", err)
 	}
-	appUserEventHandler := rf.NewAppUserEventHandler(ctx)
+	userEventHandler := rf.NewUserEventHandler(ctx)
 	spaceEventHandler := rf.NewSpaceEventHandler(ctx)
 
 	m := &SystemOwner{
 		SystemOwnerModel: systemOwnerModel,
 		orgRepo:          orgRepo,
-		appUserRepo:      appUserRepo,
+		userRepo:         userRepo,
 		userGroupRepo:    userGroupRepo,
 		spaceRepo:        spaceRepo,
 		// pairOfUserAndGroup:   pairOfUserAndGroup,
 		// rbacRepo:             rbacRepo,
 		authorizationManager: authorizationManager,
-		appUserEventHandler:  appUserEventHandler,
+		userEventHandler:     userEventHandler,
 		spaceEventHandler:    spaceEventHandler,
 		logger:               slog.Default().With(slog.String(liblog.LoggerNameKey, "SystemOwner")),
 	}
@@ -69,19 +69,19 @@ func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel 
 	return m, nil
 }
 
-func (m *SystemOwner) GetAppUserID() *domain.AppUserID {
-	return m.AppUserModel.AppUserID
+func (m *SystemOwner) GetUserID() *domain.UserID {
+	return m.UserID
 }
 func (m *SystemOwner) GetOrganizationID() *domain.OrganizationID {
-	return m.AppUserModel.OrganizationID
+	return m.OrganizationID
 }
 
 //	func (m *SystemOwner) LoginID() string {
-//		return m.AppUserModel.LoginID
+//		return m.UserModel.LoginID
 //	}
 //
 //	func (m *SystemOwner) Username() string {
-//		return m.AppUserModel.Username
+//		return m.UserModel.Username
 //	}
 func (m *SystemOwner) IsOwner() bool {
 	return true
@@ -108,27 +108,27 @@ func (m *SystemOwner) GetPublidDefaultSpace(ctx context.Context) (*Space, error)
 	return space, nil
 }
 
-func (m *SystemOwner) FindAppUserByID(ctx context.Context, id *domain.AppUserID) (*AppUser, error) {
-	appUser, err := m.appUserRepo.FindAppUserByID(ctx, m, id)
+func (m *SystemOwner) FindUserByID(ctx context.Context, id *domain.UserID) (*User, error) {
+	user, err := m.userRepo.FindUserByID(ctx, m, id)
 	if err != nil {
-		return nil, liberrors.Errorf("m.appUserRepo.FindAppUserByID. err: %w", err)
+		return nil, liberrors.Errorf("m.userRepo.FindUserByID. err: %w", err)
 	}
 
-	return appUser, nil
+	return user, nil
 }
 
-func (m *SystemOwner) FindAppUserByLoginID(ctx context.Context, loginID string) (*AppUser, error) {
-	appUser, err := m.appUserRepo.FindAppUserByLoginID(ctx, m, loginID)
+func (m *SystemOwner) FindUserByLoginID(ctx context.Context, loginID string) (*User, error) {
+	user, err := m.userRepo.FindUserByLoginID(ctx, m, loginID)
 	if err != nil {
-		return nil, liberrors.Errorf("m.appUserRepo.FindAppUserByLoginID. err: %w", err)
+		return nil, liberrors.Errorf("m.userRepo.FindUserByLoginID. err: %w", err)
 	}
 
-	return appUser, nil
+	return user, nil
 }
 
-func (m *SystemOwner) AddFirstOwner(ctx context.Context, param *AddAppUserParameter) (*domain.AppUserID, error) {
-	// rbacAppUser := NewRBACAppUser(m.GetOrganizationID(), m.GetAppUserID())
-	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObject(m.GetOrganizationID())
+func (m *SystemOwner) AddFirstOwner(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
+	// rbacUser := NewRBACUser(m.GetOrganizationID(), m.GetUserID())
+	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObjectFromOrganization(m.GetOrganizationID())
 
 	// Can "the operator" "set" "all-user-roles" ?
 	ok, err := m.authorizationManager.CheckAuthorization(ctx, m, RBACSetAction, rbacAllUserRolesObject)
@@ -139,9 +139,9 @@ func (m *SystemOwner) AddFirstOwner(ctx context.Context, param *AddAppUserParame
 	}
 
 	// add owner
-	firstOwnerID, err := m.appUserRepo.AddAppUser(ctx, m, param)
+	firstOwnerID, err := m.userRepo.AddUser(ctx, m, param)
 	if err != nil {
-		return nil, liberrors.Errorf("AddAppUser: %w", err)
+		return nil, liberrors.Errorf("AddUser: %w", err)
 	}
 
 	ownerGroup, err := m.userGroupRepo.FindUserGroupByKey(ctx, m, OwnerGroupKey)
@@ -159,34 +159,34 @@ func (m *SystemOwner) AddFirstOwner(ctx context.Context, param *AddAppUserParame
 	// 	return nil, err
 	// }
 
-	// rbacDomain := NewRBACOrganization(m.GetOrganizationID())
+	// rbacDomain := NewRBACDomainFromOrganization(m.GetOrganizationID())
 
 	// // "owner" "can" "set" "all-user-roles"
-	// if err := m.rbacRepo.AddPolicy(rbacDomain, rbacAppUser, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
+	// if err := m.rbacRepo.AddPolicy(rbacDomain, rbacUser, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
 	// 	return nil, liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
 	// }
 
 	// // "owner" "can" "unset" "all-user-roles"
-	// if err := m.rbacRepo.AddPolicy(rbacDomain, rbacAppUser, RBACUnsetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
+	// if err := m.rbacRepo.AddPolicy(rbacDomain, rbacUser, RBACUnsetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
 	// 	return nil, liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
 	// }
 
 	return firstOwnerID, nil
 }
 
-func (m *SystemOwner) AddAppUser(ctx context.Context, param *AddAppUserParameter) (*domain.AppUserID, error) {
+func (m *SystemOwner) AddUser(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
 	m.logger.InfoContext(ctx, "AddStudent")
-	appUserID, err := m.appUserRepo.AddAppUser(ctx, m, param)
+	userID, err := m.userRepo.AddUser(ctx, m, param)
 	if err != nil {
-		return nil, liberrors.Errorf("m.appUserRepo.AddAppUser. err: %w", err)
+		return nil, liberrors.Errorf("m.userRepo.AddUser. err: %w", err)
 	}
 
-	go m.appUserEventHandler.OnAdd(context.Background(), map[string]int{
+	go m.userEventHandler.OnAdd(context.Background(), map[string]int{
 		"organizationId": m.GetOrganizationID().Int(),
-		"appUserId":      appUserID.Int(),
+		"userId":         userID.Int(),
 	})
 
-	return appUserID, nil
+	return userID, nil
 }
 
 func (m *SystemOwner) AddSpace(ctx context.Context, param *AddSpaceParameter) (*domain.SpaceID, error) {
@@ -203,9 +203,9 @@ func (m *SystemOwner) AddSpace(ctx context.Context, param *AddSpaceParameter) (*
 	return spaceID, nil
 }
 func (m *SystemOwner) VerifyPassword(ctx context.Context, loginID, password string) (bool, error) {
-	ok, err := m.appUserRepo.VerifyPassword(ctx, m, loginID, password)
+	ok, err := m.userRepo.VerifyPassword(ctx, m, loginID, password)
 	if err != nil {
-		return false, liberrors.Errorf("m.appUserRepo.VerifyPassword. err: %w", err)
+		return false, liberrors.Errorf("m.userRepo.VerifyPassword. err: %w", err)
 	}
 
 	return ok, nil

@@ -78,7 +78,7 @@ func main() {
 		initGinWeb(ctx, router, viteStaticFS, "flutter")
 	}
 	var organizationID *mbuserdomain.OrganizationID
-	var guestID *mbuserdomain.AppUserID
+	var guestID *mbuserdomain.UserID
 	var publicDefaultSpaceID *mbuserdomain.SpaceID
 	// auth
 	{

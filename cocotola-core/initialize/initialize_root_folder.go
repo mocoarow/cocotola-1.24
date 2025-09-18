@@ -15,7 +15,7 @@ import (
 func initRootFolder(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, publicDefaultSpaceID *mbuserdomain.SpaceID) (*domain.FolderID, error) {
 	operator := &operator{
 		organizationID: organizationID,
-		appUserID:      mbuserservice.SystemAdminID,
+		userID:         mbuserservice.SystemAdminID,
 	}
 
 	fn := func(rf service.RepositoryFactory) (*domain.FolderID, error) {

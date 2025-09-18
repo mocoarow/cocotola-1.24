@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
@@ -55,9 +56,9 @@ func (e *FolderEntity) toModel() (*domain.FolderModel, error) { //nolint:dupl
 		return nil, mbliberrors.Errorf("new parent id(%d): %w", e.ParentID, err)
 	}
 
-	ownerID, err := mbuserdomain.NewAppUserID(e.OwnerID)
+	ownerID, err := mbuserdomain.NewUserID(e.OwnerID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("new app user id(%d): %w", e.OwnerID, err)
+		return nil, mbliberrors.Errorf("new user id(%d): %w", e.OwnerID, err)
 	}
 
 	folderModel, err := domain.NewFolderModel(
@@ -96,7 +97,7 @@ func NewFolderRepository(db *gorm.DB) service.FolderRepository {
 	}
 }
 
-func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserservice.OperatorInterface, spaceID *mbuserdomain.SpaceID) (*service.Folder, error) { //nolint:dupl
+func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserservice.OperatorInterface, spaceID *mbuserdomain.SpaceID) (*service.Folder, error) {
 	_, span := tracer.Start(ctx, "folderRepository.FindRooFolderBySpaceID")
 	defer span.End()
 
@@ -106,7 +107,7 @@ func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, opera
 		Where("space_id = ? ", spaceID.Int()).
 		Where("parent_id = 0").
 		First(&folderE); result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, service.ErrFolderNotFound
 		}
 		return nil, mbliberrors.Errorf("find folder entity by id(%d): %w", spaceID.Int())
@@ -127,14 +128,14 @@ func (r *folderRepository) AddFolder(ctx context.Context, operator mbuserservice
 	folderE := FolderEntity{ //nolint:exhaustruct
 		BaseModelEntity: mbusergateway.BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.GetAppUserID().Int(),
-			UpdatedBy: operator.GetAppUserID().Int(),
+			CreatedBy: operator.GetUserID().Int(),
+			UpdatedBy: operator.GetUserID().Int(),
 		},
 		OrganizationID: operator.GetOrganizationID().Int(),
 		SpaceID:        param.SpaceID.Int(),
 		ParentID:       param.FolderID.Int(),
 		Name:           param.Name,
-		OwnerID:        operator.GetAppUserID().Int(),
+		OwnerID:        operator.GetUserID().Int(),
 	}
 	if result := r.db.Create(&folderE); result.Error != nil {
 		return nil, mbliberrors.Errorf("add folder entity: %w", mblibgateway.ConvertDuplicatedError(result.Error, service.ErrFolderAlreadyExists))

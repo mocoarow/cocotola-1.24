@@ -15,6 +15,7 @@ import (
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
+	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -44,14 +45,16 @@ type DeckHandler struct {
 	guestDeckQueryUsecase   GuestDeckQueryUsecase
 	studentDeckQueryUsecase StudentDeckQueryUsecase
 	deckCommandUsecase      DeckCommandUsecase
+	rbacClient              libapi.CocotolaRBACClient
 	logger                  *slog.Logger
 }
 
-func NewDeckHandler(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase) *DeckHandler {
+func NewDeckHandler(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase, rbacClient libapi.CocotolaRBACClient) *DeckHandler {
 	return &DeckHandler{
 		guestDeckQueryUsecase:   guestDeckQueryUsecase,
 		studentDeckQueryUsecase: studentDeckQueryUsecase,
 		deckCommandUsecase:      deckCommandUsecase,
+		rbacClient:              rbacClient,
 		logger:                  slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckHandler")),
 	}
 }
@@ -133,7 +136,7 @@ func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, op
 }
 
 func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		deckIDInt, err := helper.GetIntFromPath(c, "deckID")
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("GetIntFromPath. err: %+v", err))
@@ -159,7 +162,7 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 }
 
 func (h *DeckHandler) AddDeck(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		var apiReq libapicore.AddDeckRequest
 		if err := c.ShouldBindJSON(&apiReq); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
@@ -205,7 +208,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 }
 
 func (h *DeckHandler) UpdateDeck(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
 		version, err := helper.GetIntFromQuery(c, "version")
 		if err != nil {
 			return mblibdomain.ErrInvalidArgument
@@ -256,10 +259,10 @@ func (h *DeckHandler) errorHandle(ctx context.Context, c *gin.Context, err error
 	return false
 }
 
-func NewInitDeckRouterFunc(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase) libcontroller.InitRouterGroupFunc {
+func NewInitDeckRouterFunc(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase, rbacClient libapi.CocotolaRBACClient) libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
 		deck := parentRouterGroup.Group("deck")
-		deckHandler := NewDeckHandler(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase)
+		deckHandler := NewDeckHandler(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase, rbacClient)
 		for _, m := range middleware {
 			deck.Use(m)
 		}

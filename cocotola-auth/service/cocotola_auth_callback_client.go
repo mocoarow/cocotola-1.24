@@ -7,5 +7,5 @@ import (
 )
 
 type CocotolaAuthCallbackClient interface {
-	OnAddAppUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID) error
+	OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error
 }

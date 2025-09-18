@@ -33,7 +33,7 @@ func NewGuest(systemToken libdomain.SystemToken, txManager, nonTxManager service
 func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string) (*domain.AuthTokenSet, error) {
 	var tokenSet *domain.AuthTokenSet
 
-	targetOorganization, targetAppUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *appUser, error) {
+	targetOorganization, targetUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *user, error) {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
 			service.WithOrganizationByName(organizationName),
 		)
@@ -44,34 +44,34 @@ func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string)
 		}
 
 		guestLoginID := libdomain.NewGuestLoginID(organizationName)
-		tmpAppUser, err := action.SystemOwner.FindAppUserByLoginID(ctx, guestLoginID)
+		tmpUser, err := action.SystemOwner.FindUserByLoginID(ctx, guestLoginID)
 		if err != nil {
-			return nil, nil, mbliberrors.Errorf("find app user by login id: %w", err)
+			return nil, nil, mbliberrors.Errorf("find user by login id: %w", err)
 		}
 
 		targetOorganization := &organization{
-			organizationID: action.Organization.OrganizationModel.OrganizationID,
-			name:           action.Organization.OrganizationModel.Name,
+			organizationID: action.Organization.OrganizationID,
+			name:           action.Organization.Name,
 		}
 
-		targetAppUser := &appUser{
-			appUserID:      tmpAppUser.AppUserModel.AppUserID,
-			organizationID: tmpAppUser.AppUserModel.OrganizationID,
-			loginID:        tmpAppUser.AppUserModel.LoginID,
-			username:       tmpAppUser.AppUserModel.Username,
+		targetUser := &user{
+			userID:         tmpUser.UserID,
+			organizationID: tmpUser.OrganizationID,
+			loginID:        tmpUser.LoginID,
+			username:       tmpUser.Username,
 		}
 
-		return targetOorganization, targetAppUser, nil
+		return targetOorganization, targetUser, nil
 	})
 	if err != nil {
-		if errors.Is(err, mbuserservice.ErrAppUserNotFound) {
-			return nil, mbliberrors.Errorf("app user not found: %w", domain.ErrUnauthenticated)
+		if errors.Is(err, mbuserservice.ErrUserNotFound) {
+			return nil, mbliberrors.Errorf("user not found: %w", domain.ErrUnauthenticated)
 		}
 
 		return nil, mbliberrors.Errorf("authenticate: %w", err)
 	}
 
-	tokenSetTmp, err := u.authTokenManager.CreateTokenSet(ctx, targetAppUser, targetOorganization)
+	tokenSetTmp, err := u.authTokenManager.CreateTokenSet(ctx, targetUser, targetOorganization)
 	if err != nil {
 		return nil, mbliberrors.Errorf("s.authTokenManager.CreateTokenSet. err: %w", err)
 	}

@@ -16,7 +16,7 @@ import (
 )
 
 type CallbackUsecase interface {
-	OnAddAppUserSpace(ctx context.Context, organizationID *mbuserdomain.OrganizationID, appUserID *mbuserdomain.AppUserID, spaceID *mbuserdomain.SpaceID) error
+	OnAddUserSpace(ctx context.Context, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID, spaceID *mbuserdomain.SpaceID) error
 }
 
 type CallbackHandler struct {
@@ -31,9 +31,9 @@ func NewCallbackHandler(callbackUsecase CallbackUsecase) *CallbackHandler {
 	}
 }
 
-// func (h *CallbackHandler) OnAddAppUser(c *gin.Context) {
+// func (h *CallbackHandler) OnAddUser(c *gin.Context) {
 // 	ctx := c.Request.Context()
-// 	var apiReq libapicore.CallbackOnAddAppUserRequest
+// 	var apiReq libapicore.CallbackOnAddUserRequest
 // 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 // 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 // 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -49,7 +49,7 @@ func NewCallbackHandler(callbackUsecase CallbackUsecase) *CallbackHandler {
 // 		return
 // 	}
 
-// 	appUserID, err := mbuserdomain.NewAppUserID(apiReq.AppUserID)
+// 	userID, err := mbuserdomain.NewUserID(apiReq.UserID)
 // 	if err != nil {
 // 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 // 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -57,17 +57,17 @@ func NewCallbackHandler(callbackUsecase CallbackUsecase) *CallbackHandler {
 // 		return
 // 	}
 
-// 	h.logger.Info("OnAddAppUser", slog.Int("appUserID", appUserID.Int()))
-// 	if err := h.callbackUsecase.OnAddAppUser(ctx, organizationID, appUserID); err != nil {
-// 		h.logger.ErrorContext(ctx, fmt.Sprintf("on add app user: %+v", err))
+// 	h.logger.Info("OnAddUser", slog.Int("userID", userID.Int()))
+// 	if err := h.callbackUsecase.OnAddUser(ctx, organizationID, userID); err != nil {
+// 		h.logger.ErrorContext(ctx, fmt.Sprintf("on add user: %+v", err))
 // 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
 //			return
 //		}
 //	}
-func (h *CallbackHandler) OnAddAppUserSpace(c *gin.Context) {
+func (h *CallbackHandler) OnAddUserSpace(c *gin.Context) {
 	ctx := c.Request.Context()
-	var apiReq libapicore.CallbackOnAddAppUserSpaceRequest
+	var apiReq libapicore.CallbackOnAddUserSpaceRequest
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -81,7 +81,7 @@ func (h *CallbackHandler) OnAddAppUserSpace(c *gin.Context) {
 		return
 	}
 
-	appUserID, err := mbuserdomain.NewAppUserID(apiReq.AppUserID)
+	userID, err := mbuserdomain.NewUserID(apiReq.UserID)
 	if err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -95,9 +95,9 @@ func (h *CallbackHandler) OnAddAppUserSpace(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("OnAddAppUserSpace", slog.Int("appUserID", appUserID.Int()))
-	if err := h.callbackUsecase.OnAddAppUserSpace(ctx, organizationID, appUserID, spaceID); err != nil {
-		h.logger.ErrorContext(ctx, fmt.Sprintf("on add app user: %+v", err))
+	h.logger.Info("OnAddUserSpace", slog.Int("userID", userID.Int()))
+	if err := h.callbackUsecase.OnAddUserSpace(ctx, organizationID, userID, spaceID); err != nil {
+		h.logger.ErrorContext(ctx, fmt.Sprintf("on add user: %+v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
 		return
@@ -110,7 +110,7 @@ func NewInitCallbackRouterFunc(callbackUsecase CallbackUsecase) libcontroller.In
 		for _, m := range middleware {
 			callback.Use(m)
 		}
-		// callback.POST("on-add-user", callbackHandler.OnAddAppUser)
-		callback.POST("on-add-user-space", callbackHandler.OnAddAppUserSpace)
+		// callback.POST("on-add-user", callbackHandler.OnAddUser)
+		callback.POST("on-add-user-space", callbackHandler.OnAddUserSpace)
 	}
 }

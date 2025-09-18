@@ -8,7 +8,7 @@ import (
 )
 
 //	type OperatorInterface interface {
-//		AppUserID() *mbuserdomain.AppUserID
+//		UserID() *mbuserdomain.UserID
 //		OrganizationID() *mbuserdomain.OrganizationID
 //		// LoginID() string
 //		// Username() string

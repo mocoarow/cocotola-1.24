@@ -18,20 +18,20 @@ import (
 )
 
 type operator struct {
-	appUserID      *mbuserdomain.AppUserID
+	userID         *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 }
 
-func (o *operator) GetAppUserID() *mbuserdomain.AppUserID {
-	return o.appUserID
+func (o *operator) GetUserID() *mbuserdomain.UserID {
+	return o.userID
 }
 func (o *operator) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
 }
 
-func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator mbuserservice.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
+func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mbuserservice.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
 	ctx := c.Request.Context()
-	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleAppUserFunction"))
+	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleUserFunction"))
 
 	organizationIDInt := c.GetInt("OrganizationID")
 	if organizationIDInt == 0 {
@@ -47,14 +47,14 @@ func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator
 		return
 	}
 
-	appUserID := c.GetInt("AuthorizedUser")
-	if appUserID == 0 {
+	userID := c.GetInt("AuthorizedUser")
+	if userID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 
 		return
 	}
 
-	operatorID, err := mbuserdomain.NewAppUserID(appUserID)
+	operatorID, err := mbuserdomain.NewUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 
@@ -64,7 +64,7 @@ func HandleAppUserFunction(c *gin.Context, fn func(ctx context.Context, operator
 	// logger.InfoContext(ctx, "", slog.Int("organization_id", organizationID.Int()), slog.Int("operator_id", operatorID.Int()))
 
 	operator := &operator{
-		appUserID:      operatorID,
+		userID:         operatorID,
 		organizationID: organizationID,
 	}
 

@@ -49,15 +49,15 @@ func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, _,
 
 		// 3. add policy to "first-owner" user
 
-		firstOwner, err := systemOwnerAction.SystemOwner.FindAppUserByLoginID(ctx, loginID)
+		firstOwner, err := systemOwnerAction.SystemOwner.FindUserByLoginID(ctx, loginID)
 		if err != nil {
-			return nil, nil, mbliberrors.Errorf("FindAppUserByLoginID: %w", err)
+			return nil, nil, mbliberrors.Errorf("FindUserByLoginID: %w", err)
 		}
-		logger.InfoContext(ctx, fmt.Sprintf("firstOwner: %d", firstOwner.GetAppUserID().Int()))
+		logger.InfoContext(ctx, fmt.Sprintf("firstOwner: %d", firstOwner.GetUserID().Int()))
 
-		// first owner can create app users
-		subject := firstOwner.GetAppUserID().GetRBACSubject()
-		action := mbuserdomain.NewRBACAction("CreateAppUser")
+		// first owner can create users
+		subject := firstOwner.GetUserID().GetRBACSubject()
+		action := mbuserdomain.NewRBACAction("CreateUser")
 		object := mbuserdomain.NewRBACObject("*")
 		effect := mbuserservice.RBACAllowEffect
 
@@ -85,9 +85,9 @@ func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, _,
 }
 
 func addOrganization(ctx context.Context, systemAdminAction *service.SystemAdminAction, organizationName, loginID, password string) (*mbuserdomain.OrganizationID, error) {
-	firstOwnerAddParam, err := mbuserservice.NewAppUserAddParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
+	firstOwnerAddParam, err := mbuserservice.NewUserAddParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
 	if err != nil {
-		return nil, mbliberrors.Errorf("new AppUserAddParameter: %w", err)
+		return nil, mbliberrors.Errorf("new UserAddParameter: %w", err)
 	}
 
 	organizationAddParameter, err := mbuserservice.NewOrganizationAddParameter(organizationName, firstOwnerAddParam)

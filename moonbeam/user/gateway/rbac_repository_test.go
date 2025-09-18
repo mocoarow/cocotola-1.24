@@ -51,7 +51,6 @@ func addSubjectGroupingPolicy(t *testing.T, ctx context.Context, rbacRepository 
 }
 
 func TestA(t *testing.T) {
-	t.Parallel()
 
 	fn := func(t *testing.T, ctx context.Context, ts testService) {
 		t.Helper()
@@ -110,8 +109,6 @@ func TestA(t *testing.T) {
 }
 
 func TestB(t *testing.T) {
-	t.Parallel()
-
 	fn := func(t *testing.T, ctx context.Context, ts testService) {
 		t.Helper()
 		defer teardownCasbin(t, ts)
@@ -161,7 +158,6 @@ func TestB(t *testing.T) {
 }
 
 func TestC(t *testing.T) {
-	t.Parallel()
 
 	fn := func(t *testing.T, ctx context.Context, ts testService) {
 		t.Helper()
@@ -233,6 +229,6 @@ func teardownCasbin(t *testing.T, ts testService) {
 	// ts.db.Exec("delete from space where organization_id = ?", orgID.Int())
 	ts.db.Exec("delete from casbin_rule")
 	// db.Where("true").Delete(&spaceEntity{})
-	// db.Where("true").Delete(&appUserEntity{})
+	// db.Where("true").Delete(&userEntity{})
 	// db.Where("true").Delete(&organizationEntity{})
 }

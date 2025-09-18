@@ -56,7 +56,7 @@ func NewOrganizationRepository(_ context.Context, db *gorm.DB) service.Organizat
 	}
 }
 
-func (r *organizationRepository) GetOrganization(ctx context.Context, operator service.AppUserInterface) (*service.Organization, error) {
+func (r *organizationRepository) GetOrganization(ctx context.Context, operator service.UserInterface) (*service.Organization, error) {
 	_, span := tracer.Start(ctx, "organizationRepository.GetOrganization")
 	defer span.End()
 
@@ -117,8 +117,8 @@ func (r *organizationRepository) AddOrganization(ctx context.Context, operator s
 	organization := organizationEntity{ //nolint:exhaustruct
 		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
-			CreatedBy: operator.GetAppUserID().Int(),
-			UpdatedBy: operator.GetAppUserID().Int(),
+			CreatedBy: operator.GetUserID().Int(),
+			UpdatedBy: operator.GetUserID().Int(),
 		},
 		Name: param.Name,
 	}

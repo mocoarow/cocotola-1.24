@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	SystemAdminID *userdomain.AppUserID
+	SystemAdminID *userdomain.UserID
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 )
 
 func init() {
-	systemAdminID, err := userdomain.NewAppUserID(1)
+	systemAdminID, err := userdomain.NewUserID(1)
 	if err != nil {
 		panic(err)
 	}

@@ -58,7 +58,7 @@ func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txMan
 
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
-		NewInitDeckRouterFunc(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase),
+		NewInitDeckRouterFunc(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase, rbacClient),
 		// NewInitProfileRouterFunc(profileUsecase),
 	}, nil
 }

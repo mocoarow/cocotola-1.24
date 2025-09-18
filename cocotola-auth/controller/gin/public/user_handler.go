@@ -21,7 +21,7 @@ import (
 )
 
 type UserUsecase interface {
-	RegisterAppUser(ctx context.Context, operator mbuserservice.OperatorInterface, param *mbuserservice.AddAppUserParameter) (*domain.AuthTokenSet, error)
+	RegisterUser(ctx context.Context, operator mbuserservice.OperatorInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error)
 }
 
 type UserHandler struct {
@@ -36,9 +36,9 @@ func NewUserHandler(userUsecase UserUsecase) *UserHandler {
 	}
 }
 
-func (h *UserHandler) RegisterAppUser(c *gin.Context) {
-	helper.HandleAppUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
-		var apiParam libapiauth.AddAppUserRequest
+func (h *UserHandler) RegisterUser(c *gin.Context) {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+		var apiParam libapiauth.AddUserRequest
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -46,32 +46,32 @@ func (h *UserHandler) RegisterAppUser(c *gin.Context) {
 			return nil
 		}
 
-		param, err := mbuserservice.NewAppUserAddParameter(apiParam.LoginID, apiParam.Username, apiParam.Password, "", "", "", "")
+		param, err := mbuserservice.NewUserAddParameter(apiParam.LoginID, apiParam.Username, apiParam.Password, "", "", "", "")
 		if err != nil {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}
 
-		authResult, err := h.userUsecase.RegisterAppUser(c.Request.Context(), operator, param)
+		authResult, err := h.userUsecase.RegisterUser(c.Request.Context(), operator, param)
 		if err != nil {
 			if errors.Is(err, domain.ErrUnauthenticated) {
 				h.logger.InfoContext(ctx, fmt.Sprintf("unauthenticated: %v", err))
 				c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
 				return nil
 			}
-			if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
-				h.logger.InfoContext(ctx, fmt.Sprintf("app user already exists: %v", err))
+			if errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
+				h.logger.InfoContext(ctx, fmt.Sprintf("user already exists: %v", err))
 				c.JSON(http.StatusConflict, gin.H{"message": http.StatusText(http.StatusConflict)})
 				return nil
 			}
 
-			h.logger.ErrorContext(ctx, fmt.Sprintf("register app user: %+v", err))
+			h.logger.ErrorContext(ctx, fmt.Sprintf("register user: %+v", err))
 			c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusInternalServerError)})
 			return nil
 		}
 
-		h.logger.InfoContext(ctx, fmt.Sprintf("registered app user: %s", authResult.AccessToken))
+		h.logger.InfoContext(ctx, fmt.Sprintf("registered user: %s", authResult.AccessToken))
 
 		c.JSON(http.StatusOK, libapiauth.AuthResponse{
 			AccessToken:  &authResult.AccessToken,
@@ -88,12 +88,12 @@ func (h *UserHandler) errorHandle(ctx context.Context, c *gin.Context, err error
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 		return true
 	}
-	if errors.Is(err, mbuserservice.ErrAppUserNotFound) {
+	if errors.Is(err, mbuserservice.ErrUserNotFound) {
 		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler err: %+v", err))
 		c.JSON(http.StatusNotFound, gin.H{"message": http.StatusText(http.StatusNotFound)})
 		return true
 	}
-	if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
+	if errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
 		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler err: %+v", err))
 		c.JSON(http.StatusConflict, gin.H{"message": http.StatusText(http.StatusConflict)})
 		return true
@@ -110,6 +110,6 @@ func NewInitUserRouterFunc(userUsecase UserUsecase) libcontroller.InitRouterGrou
 		for _, m := range middleware {
 			user.Use(m)
 		}
-		user.POST("", userHandler.RegisterAppUser)
+		user.POST("", userHandler.RegisterUser)
 	}
 }

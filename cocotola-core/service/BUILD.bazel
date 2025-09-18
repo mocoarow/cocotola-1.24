@@ -3,6 +3,8 @@ load("@rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "service",
     srcs = [
+        "app_user.go",
+        "app_user_repository.go",
         "card.go",
         "card_repository.go",
         "deck.go",
@@ -18,7 +20,12 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cocotola-core/domain",
+        "//lib/api",
+        "//lib/api/auth",
         "//lib/domain",
+        "//lib/rbac",
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
         "//moonbeam/user/service",

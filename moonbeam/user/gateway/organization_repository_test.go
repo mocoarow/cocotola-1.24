@@ -29,10 +29,10 @@ func Test_organizationRepository_GetOrganization(t *testing.T) {
 		// get organization registered
 		baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 		require.NoError(t, err)
-		appUserID, _ := domain.NewAppUserID(1)
-		userModel, err := domain.NewAppUserModel(baseModel, appUserID, orgID, "login_id", "username", nil)
+		userID, _ := domain.NewUserID(1)
+		userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
 		require.NoError(t, err)
-		user := testNewAppUser(userModel)
+		user := testNewUser(userModel)
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			require.NoError(t, err)
@@ -40,11 +40,11 @@ func Test_organizationRepository_GetOrganization(t *testing.T) {
 		}
 
 		// get organization unregistered
-		otherAppUserModel, err := domain.NewAppUserModel(baseModel, appUserID, invalidOrgID, "login_id", "username", nil)
+		otherUserModel, err := domain.NewUserModel(baseModel, userID, invalidOrgID, "login_id", "username", nil)
 		require.NoError(t, err)
-		otherAppUser := testNewAppUser(otherAppUserModel)
+		otherUser := testNewUser(otherUserModel)
 		{
-			_, err := orgRepo.GetOrganization(ctx, otherAppUser)
+			_, err := orgRepo.GetOrganization(ctx, otherUser)
 			assert.ErrorIs(t, err, service.ErrOrganizationNotFound)
 		}
 	}
@@ -67,12 +67,12 @@ func Test_organizationRepository_FindOrganizationByName(t *testing.T) {
 		// get organization registered
 		baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 		require.NoError(t, err)
-		appUserID, err := domain.NewAppUserID(1)
+		userID, err := domain.NewUserID(1)
 		require.NoError(t, err)
 
-		userModel, err := domain.NewAppUserModel(baseModel, appUserID, orgID, "login_id", "username", nil)
+		userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
 		require.NoError(t, err)
-		user := testNewAppUser(userModel)
+		user := testNewUser(userModel)
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			require.NoError(t, err)
@@ -110,12 +110,12 @@ func Test_organizationRepository_FindOrganizationByID(t *testing.T) {
 		// get organization registered
 		baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 		require.NoError(t, err)
-		appUserID, err := domain.NewAppUserID(1)
+		userID, err := domain.NewUserID(1)
 		require.NoError(t, err)
 
-		userModel, err := domain.NewAppUserModel(baseModel, appUserID, orgID, "login_id", "username", nil)
+		userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
 		require.NoError(t, err)
-		user := testNewAppUser(userModel)
+		user := testNewUser(userModel)
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			require.NoError(t, err)

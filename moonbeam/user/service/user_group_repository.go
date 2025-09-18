@@ -45,12 +45,12 @@ func NewUserGroupAddParameter(key, name, description string) (*AddUserGroupParam
 // }
 
 type UserGroupRepository interface {
-	FindAllUserGroups(ctx context.Context, operator AppUserInterface) ([]*domain.UserGroupModel, error)
+	FindAllUserGroups(ctx context.Context, operator UserInterface) ([]*domain.UserGroupModel, error)
 
 	FindSystemOwnerGroup(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*UserGroup, error)
 
-	FindUserGroupByKey(ctx context.Context, operator AppUserInterface, key string) (*UserGroup, error)
-	FindUserGroupByID(ctx context.Context, operator AppUserInterface, userGroupID *domain.UserGroupID) (*UserGroup, error)
+	FindUserGroupByKey(ctx context.Context, operator UserInterface, key string) (*UserGroup, error)
+	FindUserGroupByID(ctx context.Context, operator UserInterface, userGroupID *domain.UserGroupID) (*UserGroup, error)
 	AddOwnerGroup(ctx context.Context, operator SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
 	AddPublicGroup(ctx context.Context, operator SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
 

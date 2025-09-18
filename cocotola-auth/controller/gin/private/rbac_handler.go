@@ -19,19 +19,19 @@ import (
 )
 
 type operator struct {
-	appUserID      *mbuserdomain.AppUserID
+	userID         *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 }
 
-func (o *operator) GetAppUserID() *mbuserdomain.AppUserID {
-	return o.appUserID
+func (o *operator) GetUserID() *mbuserdomain.UserID {
+	return o.userID
 }
 func (o *operator) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return o.organizationID
 }
 
 type SystemAdminInterface interface {
-	AppUserID() *mbuserdomain.AppUserID
+	UserID() *mbuserdomain.UserID
 	IsSystemAdmin() bool
 	// GetUserGroups() []domain.UserGroupModel
 }
@@ -71,14 +71,14 @@ func (h *RBACHandler) AddPolicyToUser(c *gin.Context) {
 
 		return
 	}
-	appUserID, err := mbuserdomain.NewAppUserID(apiParam.AppUserID)
+	userID, err := mbuserdomain.NewUserID(apiParam.UserID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
 		return
 	}
 
-	subject := mbuserdomain.NewRBACAppUser(appUserID)
+	subject := mbuserdomain.NewRBACUserFromUser(userID)
 
 	listofActionObjectEffect := make([]mbuserdomain.RBACActionObjectEffect, 0)
 	for _, aoe := range apiParam.ListOfActionObjectEffect {
@@ -118,7 +118,7 @@ func (h *RBACHandler) CheckAuthorization(c *gin.Context) {
 		return
 	}
 
-	operatorID, err := mbuserdomain.NewAppUserID(apiParam.AppUserID)
+	operatorID, err := mbuserdomain.NewUserID(apiParam.UserID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 
@@ -126,7 +126,7 @@ func (h *RBACHandler) CheckAuthorization(c *gin.Context) {
 	}
 
 	operator := &operator{
-		appUserID:      operatorID,
+		userID:         operatorID,
 		organizationID: organizationID,
 	}
 

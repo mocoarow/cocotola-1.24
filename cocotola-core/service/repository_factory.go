@@ -11,6 +11,7 @@ type RepositoryFactory interface {
 	NewFolderRepository(ctx context.Context) (FolderRepository, error)
 	NewDeckRepository(ctx context.Context) (DeckRepository, error)
 	NewCardRepository(ctx context.Context) (CardRepository, error)
+	NewAppUserRepository(ctx context.Context) (AppUserRepository, error)
 }
 
 type TransactionManager mblibservice.TransactionManagerT[RepositoryFactory]

@@ -22,7 +22,7 @@ func (v *OrganizationID) IsOrganizationID() bool {
 	return true
 }
 func (v *OrganizationID) GetRBACDomain() RBACDomain {
-	return NewRBACOrganization(v)
+	return NewRBACDomainFromOrganization(v)
 }
 
 type OrganizationModel struct {

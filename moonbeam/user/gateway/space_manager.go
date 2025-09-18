@@ -28,11 +28,11 @@ func NewSpaceManager(_ context.Context, dialect libgateway.DialectRDBMS, db *gor
 }
 
 func (m *spaceManager) AddPublicDefaultSpace(ctx context.Context, operator service.OperatorInterface) (*domain.SpaceID, error) {
-	appUserRepo := m.rf.NewAppUserRepository(ctx)
+	userRepo := m.rf.NewUserRepository(ctx)
 
-	appUser, err := appUserRepo.FindAppUserByID(ctx, operator, operator.GetAppUserID())
+	user, err := userRepo.FindUserByID(ctx, operator, operator.GetUserID())
 	if err != nil {
-		return nil, liberrors.Errorf("FindAppUserByID: %w", err)
+		return nil, liberrors.Errorf("FindUserByID: %w", err)
 	}
 
 	spaceRepo := m.rf.NewSpaceRepository(ctx)
@@ -48,18 +48,18 @@ func (m *spaceManager) AddPublicDefaultSpace(ctx context.Context, operator servi
 	}
 
 	pairOfUserAndSpaceRepo := NewPairOfUserAndSpaceRepository(ctx, m.dialect, m.db)
-	if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, appUser, appUser.GetAppUserID(), spaceID); err != nil {
+	if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, user, user.GetUserID(), spaceID); err != nil {
 		return nil, liberrors.Errorf("AddPairOfUserAndSpace: %w", err)
 	}
 	return spaceID, nil
 }
 
 func (m *spaceManager) AddPersonalSpace(ctx context.Context, operator service.OperatorInterface, param *service.AddPersonalSpaceParameter) (*domain.SpaceID, error) {
-	appUserRepo := m.rf.NewAppUserRepository(ctx)
+	userRepo := m.rf.NewUserRepository(ctx)
 
-	appUser, err := appUserRepo.FindAppUserByID(ctx, operator, param.AppUserID)
+	user, err := userRepo.FindUserByID(ctx, operator, param.UserID)
 	if err != nil {
-		return nil, liberrors.Errorf("FindAppUserByID: %w", err)
+		return nil, liberrors.Errorf("FindUserByID: %w", err)
 	}
 
 	spaceRepo := m.rf.NewSpaceRepository(ctx)
@@ -75,13 +75,13 @@ func (m *spaceManager) AddPersonalSpace(ctx context.Context, operator service.Op
 	}
 
 	pairOfUserAndSpaceRepo := NewPairOfUserAndSpaceRepository(ctx, m.dialect, m.db)
-	if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, appUser, appUser.GetAppUserID(), spaceID); err != nil {
+	if err := pairOfUserAndSpaceRepo.AddPairOfUserAndSpace(ctx, user, user.GetUserID(), spaceID); err != nil {
 		return nil, liberrors.Errorf("AddPairOfUserAndSpace: %w", err)
 	}
 	return spaceID, nil
 }
 
-func (m *spaceManager) AddUserToSpace(_ context.Context, _ service.SystemOwnerInterface, _ domain.AppUserID, _ *domain.SpaceID) error {
+func (m *spaceManager) AddUserToSpace(_ context.Context, _ service.SystemOwnerInterface, _ domain.UserID, _ *domain.SpaceID) error {
 	return errors.New("not implemented")
 }
 

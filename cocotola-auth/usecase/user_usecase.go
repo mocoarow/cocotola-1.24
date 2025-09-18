@@ -35,40 +35,40 @@ func NewUserUsecase(systemToken libdomain.SystemToken, txManager, nonTxManager s
 	}
 }
 
-func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator mbuserservice.OperatorInterface, param *mbuserservice.AddAppUserParameter) (*domain.AuthTokenSet, error) {
-	action := mbuserdomain.NewRBACAction("CreateAppUser")
+func (u *UserUsecase) RegisterUser(ctx context.Context, operator mbuserservice.OperatorInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error) {
+	action := mbuserdomain.NewRBACAction("CreateUser")
 	object := mbuserdomain.NewRBACObject("*")
 	ok, err := service.CheckAuthorization(ctx, operator, action, object, u.nonTxManager)
 	if err != nil {
 		return nil, mbliberrors.Errorf("authorize: %w", err)
 	} else if !ok {
-		u.logger.InfoContext(ctx, "operator is not authorized to create app user")
+		u.logger.InfoContext(ctx, "operator is not authorized to create user")
 
 		return nil, domain.ErrUnauthenticated
 	}
 
-	createAppUserParameterFunc := func() (*mbuserservice.AddAppUserParameter, error) {
+	createUserParameterFunc := func() (*mbuserservice.AddUserParameter, error) {
 		return param, nil
 	}
 
 	var targetOorganization *organization
-	var targetAppUser *appUser
+	var targetUser *user
 	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
-		tmpOrganization, tmpAppUser, err := registerAppUser(ctx, u.systemToken, rf, operator.GetOrganizationID(), param.LoginID, createAppUserParameterFunc)
-		if err != nil && !errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
-			return mbliberrors.Errorf("register app user: %w", err)
-		} else if errors.Is(err, mbuserservice.ErrAppUserAlreadyExists) {
-			return mbuserservice.ErrAppUserAlreadyExists
+		tmpOrganization, tmpUser, err := registerUser(ctx, u.systemToken, rf, operator.GetOrganizationID(), param.LoginID, createUserParameterFunc)
+		if err != nil && !errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
+			return mbliberrors.Errorf("register user: %w", err)
+		} else if errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
+			return mbuserservice.ErrUserAlreadyExists
 		}
 
 		u.logger.InfoContext(ctx, fmt.Sprintf("tmpOrganization: %d", tmpOrganization.OrganizationID))
-		u.logger.InfoContext(ctx, fmt.Sprintf("tmpAppUser: %d", tmpAppUser.AppUserID))
+		u.logger.InfoContext(ctx, fmt.Sprintf("tmpUser: %d", tmpUser.UserID))
 
-		targetAppUser = &appUser{
-			appUserID:      tmpAppUser.AppUserID,
-			organizationID: tmpAppUser.OrganizationID,
-			loginID:        tmpAppUser.LoginID,
-			username:       tmpAppUser.Username,
+		targetUser = &user{
+			userID:         tmpUser.UserID,
+			organizationID: tmpUser.OrganizationID,
+			loginID:        tmpUser.LoginID,
+			username:       tmpUser.Username,
 		}
 		targetOorganization = &organization{
 			organizationID: tmpOrganization.OrganizationID,
@@ -80,7 +80,7 @@ func (u *UserUsecase) RegisterAppUser(ctx context.Context, operator mbuserservic
 		return nil, err //nolint:wrapcheck
 	}
 
-	tokenSet, err := u.authTokenManager.CreateTokenSet(ctx, targetAppUser, targetOorganization)
+	tokenSet, err := u.authTokenManager.CreateTokenSet(ctx, targetUser, targetOorganization)
 	if err != nil {
 		return nil, mbliberrors.Errorf("create token set: %w", err)
 	}

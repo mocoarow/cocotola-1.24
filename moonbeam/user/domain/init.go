@@ -3,15 +3,15 @@ package domain
 type ResourceKey string
 
 var (
-	SystemAdminID *AppUserID
+	SystemAdminID *UserID
 
-	ResourceAppUser = ResourceKey("app_user")
-	RecourceSpace   = ResourceKey("space")
+	ResourceUser  = ResourceKey("user")
+	RecourceSpace = ResourceKey("space")
 )
 
 func init() {
 	systemAdminID := 1
-	systemAdminIDTmp, err := NewAppUserID(systemAdminID)
+	systemAdminIDTmp, err := NewUserID(systemAdminID)
 	if err != nil {
 		panic(err)
 	}
