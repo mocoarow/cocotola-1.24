@@ -22,7 +22,6 @@ go_library(
         "//cocotola-core/domain",
         "//lib/api",
         "//lib/api/auth",
-        "//lib/domain",
         "//lib/rbac",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",

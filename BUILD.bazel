@@ -1,6 +1,7 @@
 load("@gazelle//:def.bzl", "gazelle")
 
 # gazelle:prefix github.com/mocoarow/cocotola-1.24
+# gazelle:go_test_separate_targets small,medium,large
 
 gazelle(name = "gazelle")
 

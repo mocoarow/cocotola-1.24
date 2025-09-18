@@ -15,6 +15,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cocotola-auth/domain",
+        "//cocotola-core/api",
         "//cocotola-core/config",
         "//cocotola-core/controller/gin/helper",
         "//cocotola-core/controller/gin/middleware",
@@ -27,7 +28,6 @@ go_library(
         "//lib/api",
         "//lib/api/core",
         "//lib/controller/gin",
-        "//lib/domain",
         "//lib/gateway",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
@@ -43,5 +43,9 @@ go_library(
 
 go_test(
     name = "gin_test",
-    srcs = ["helper_test.go"],
+    srcs = [
+        "deck_handler_test.go",
+        "helper_test.go",
+    ],
+    deps = ["//lib/api/moonbeam"],
 )

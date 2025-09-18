@@ -1,15 +1,26 @@
-load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "domain",
     srcs = [
         "base_model.go",
         "init.go",
+        "lang.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain",
     visibility = ["//visibility:public"],
     deps = [
         "//moonbeam/lib/errors",
         "@com_github_go_playground_validator_v10//:validator",
+    ],
+)
+
+go_test(
+    name = "domain_test",
+    srcs = ["lang_s_test.go"],
+    deps = [
+        ":domain",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
     ],
 )

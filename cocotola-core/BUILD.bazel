@@ -17,6 +17,7 @@ go_library(
         "//lib/domain",
         "//lib/gateway",
         "//moonbeam/lib/config",
+        "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "@io_opentelemetry_go_otel//:otel",

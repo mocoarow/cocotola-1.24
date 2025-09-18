@@ -54,3 +54,30 @@ func (m Lang2) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(m.Value.String())
 }
+
+type SpaceIDs []int
+
+func (s *SpaceIDs) UnmarshalJSON(data []byte) error {
+	var ids []int
+	if err := json.Unmarshal(data, &ids); err != nil {
+		return err
+	}
+	*s = SpaceIDs(ids)
+	return nil
+}
+
+func (s SpaceIDs) MarshalJSON() ([]byte, error) {
+	return json.Marshal([]int(s))
+}
+
+func (s SpaceIDs) ToSpaceIDs() ([]*mbuserdomain.SpaceID, error) {
+	spaceIDs := make([]*mbuserdomain.SpaceID, 0, len(s))
+	for _, id := range s {
+		spaceID, err := mbuserdomain.NewSpaceID(id)
+		if err != nil {
+			return nil, err
+		}
+		spaceIDs = append(spaceIDs, spaceID)
+	}
+	return spaceIDs, nil
+}

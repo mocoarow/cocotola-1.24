@@ -8,7 +8,7 @@ import (
 )
 
 type FindDecksRequest struct {
-	SpaceID []int `form:"spaceId"`
+	SpaceIDs libapimb.SpaceIDs `form:"spaceId"`
 }
 
 // FindDecksResponse

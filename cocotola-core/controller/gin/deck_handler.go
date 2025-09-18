@@ -12,7 +12,6 @@ import (
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
@@ -83,15 +82,11 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 		return nil
 	}
 
-	spaceIDs := make([]*mbuserdomain.SpaceID, 0)
-	for _, id := range apiReq.SpaceID {
-		spaceID, err := mbuserdomain.NewSpaceID(id)
-		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("NewSpaceID: %+v", err))
-			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-			return nil
-		}
-		spaceIDs = append(spaceIDs, spaceID)
+	spaceIDs, err := apiReq.SpaceIDs.ToSpaceIDs()
+	if err != nil {
+		h.logger.WarnContext(ctx, fmt.Sprintf("ToSpaceIDs: %+v", err))
+		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+		return nil
 	}
 
 	param := service.FindDecksParameter{SpaceIDs: spaceIDs}

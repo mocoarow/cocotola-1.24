@@ -22,6 +22,7 @@ go_library(
         "//lib/domain",
         "//lib/gateway",
         "//moonbeam/lib/config",
+        "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",
         "//moonbeam/lib/service",
