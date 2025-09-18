@@ -1,4 +1,5 @@
-load("@rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
 
 go_library(
     name = "domain",
@@ -22,20 +23,7 @@ go_library(
     ],
 )
 
-go_test(
-    name = "domain_s_test",
-    size = "small",
-    srcs = ["organization_model_s_test.go"],
-    embed = [":domain"],
-    gotags = ["small"],
-    deps = [
-        "//moonbeam/lib/domain",
-        "@com_github_stretchr_testify//assert",
-        "@com_github_stretchr_testify//require",
-    ],
-)
-
-go_test(
+smart_go_test(
     name = "domain_test",
     srcs = [
         "organization_model_s_test.go",

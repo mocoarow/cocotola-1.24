@@ -1,4 +1,5 @@
-load("@rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
 
 go_library(
     name = "gateway",
@@ -38,7 +39,7 @@ go_library(
     ],
 )
 
-go_test(
+smart_go_test(
     name = "gateway_test",
     srcs = [
         "auth_token_manager_s_test.go",
@@ -47,32 +48,6 @@ go_test(
         "helper_test.go",
     ],
     embed = [":gateway"],
-    deps = [
-        "//cocotola-auth/domain",
-        "//cocotola-auth/gateway/mocks",
-        "//cocotola-auth/service",
-        "//cocotola-auth/service/mocks",
-        "//moonbeam/lib/log",
-        "//moonbeam/user/domain",
-        "@com_github_golang_jwt_jwt_v5//:jwt",
-        "@com_github_stretchr_testify//assert",
-        "@com_github_stretchr_testify//mock",
-        "@com_github_stretchr_testify//require",
-    ],
-)
-
-# keep
-go_test(
-    name = "gateway_s_test",
-    size = "small",
-    srcs = [
-        "auth_token_manager_s_test.go",
-        "export_test.go",
-        "google_auth_client_s_test.go",
-        "helper_test.go",
-    ],
-    embed = [":gateway"],
-    gotags = ["small"],
     deps = [
         "//cocotola-auth/domain",
         "//cocotola-auth/gateway/mocks",

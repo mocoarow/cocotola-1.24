@@ -1,4 +1,5 @@
-load("@rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
 
 go_library(
     name = "domain",
@@ -19,7 +20,7 @@ go_library(
     ],
 )
 
-go_test(
+smart_go_test(
     name = "domain_s_test",
     size = "small",
     srcs = ["deck_test.go"],
@@ -33,7 +34,7 @@ go_test(
     ],
 )
 
-go_test(
+smart_go_test(
     name = "domain_test",
     srcs = ["deck_test.go"],
     deps = [
