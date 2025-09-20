@@ -40,7 +40,7 @@ func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.O
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
 			service.WithOrganizationByID(organizationID),
 			service.WithAuthorizationManager(),
-			service.WithAuthorizationManager(),
+			service.WithSpaceManager(),
 		)
 		if err != nil {
 			return mbliberrors.Errorf("NewSystemOwnerAction: %w", err)

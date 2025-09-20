@@ -4,7 +4,6 @@ load("//bazel:go_test.bzl", "smart_go_test")
 go_library(
     name = "gateway",
     srcs = [
-        "app_user_repository.go",
         "card_repository.go",
         "deck_repository.go",
         "firebase_client.go",

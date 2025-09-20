@@ -8,13 +8,10 @@ go_library(
     deps = [
         "//cocotola-core/domain",
         "//cocotola-core/service",
+        "//cocotola-core/usecase",
         "//lib/api",
-        "//lib/api/auth",
-        "//lib/rbac",
-        "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/service",
-        "//moonbeam/user/domain",
         "//moonbeam/user/service",
     ],
 )
