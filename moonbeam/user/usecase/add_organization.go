@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
@@ -18,12 +19,12 @@ type AddOrganizationCommand struct {
 	logger       *slog.Logger
 }
 
-func NewAddOrganizationCommand(ctx context.Context, txManager service.TransactionManager, nonTxManager service.TransactionManager) (*AddOrganizationCommand, error) {
+func NewAddOrganizationCommand(ctx context.Context, txManager, nonTxManager service.TransactionManager) *AddOrganizationCommand {
 	return &AddOrganizationCommand{
 		txManager:    txManager,
 		nonTxManager: nonTxManager,
 		logger:       slog.Default().With(slog.String(liblog.LoggerNameKey, "AddOrganizationCommand")),
-	}, nil
+	}
 }
 
 func (u *AddOrganizationCommand) Execute(ctx context.Context, operator service.SystemAdminInterface, organizationName string) (*domain.OrganizationID, error) {
@@ -52,7 +53,7 @@ func (u *AddOrganizationCommand) Execute(ctx context.Context, operator service.S
 		if err != nil {
 			return nil, liberrors.Errorf("addSystemOwnertoOrganization: %w", err)
 		}
-		u.logger.InfoContext(ctx, "systemOwnerID: %d", systemOwnerID.Int())
+		u.logger.InfoContext(ctx, fmt.Sprintf("systemOwnerID: %d", systemOwnerID.Int()))
 
 		systemOwner, err := userRepo.FindSystemOwnerByOrganizationName(ctx, operator, organizationName)
 		if err != nil {

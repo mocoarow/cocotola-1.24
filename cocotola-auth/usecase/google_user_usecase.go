@@ -259,6 +259,12 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 	return tokenSet, nil
 }
 
+func (u *GoogleUserUsecase) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserservice.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwnerModel, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwnerModel, error) {
+		return findSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
+	})
+}
+
 // func (u *GoogleUserUsecase) RetrieveAccessToken(ctx context.Context, code string) (*domain.AuthTokenSet, error) {
 // 	resp, err := u.googleAuthClient.RetrieveAccessToken(ctx, code)
 // 	if err != nil {

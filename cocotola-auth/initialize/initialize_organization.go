@@ -15,7 +15,6 @@ import (
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
 type systemAdmin struct {
@@ -106,10 +105,7 @@ func findOrganizationAndPublicDefaultSpace(ctx context.Context, systemAdmin mbus
 }
 
 func addOrganization(ctx context.Context, operator mbuserservice.SystemAdminInterface, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, organizationName string) (*mbuserdomain.OrganizationID, error) {
-	command, err := mbuserusecase.NewAddOrganizationCommand(ctx, mbTxManager, mbNonTxManager)
-	if err != nil {
-		return nil, mbliberrors.Errorf("new AddOrganizationCommand: %w", err)
-	}
+	command := mbuserusecase.NewAddOrganizationCommand(ctx, mbTxManager, mbNonTxManager)
 	organizationID, err := command.Execute(ctx, operator, organizationName)
 	if err != nil {
 		return nil, mbliberrors.Errorf("add organization: %w", err)
@@ -130,21 +126,21 @@ func addFirstOwnerToOrganization(ctx context.Context, operator mbuserservice.Sys
 	return firstOwnerID, nil
 }
 
-func newSystemAdminAction(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory) *service.SystemAdminAction {
-	systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
-	if err != nil {
-		libdomain.CheckError(err)
-	}
-	return systemAdminAction
-}
+// func newSystemAdminAction(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory) *service.SystemAdminAction {
+// 	systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
+// 	if err != nil {
+// 		libdomain.CheckError(err)
+// 	}
+// 	return systemAdminAction
+// }
 
-func newSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory, organizationName string) *service.SystemOwnerAction {
-	systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
-		service.WithOrganizationByName(organizationName),
-		service.WithAuthorizationManager(),
-	)
-	if err != nil {
-		libdomain.CheckError(err)
-	}
-	return systemOwnerAction
-}
+// func newSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory, organizationName string) *service.SystemOwnerAction {
+// 	systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
+// 		service.WithOrganizationByName(organizationName),
+// 		service.WithAuthorizationManager(),
+// 	)
+// 	if err != nil {
+// 		libdomain.CheckError(err)
+// 	}
+// 	return systemOwnerAction
+// }

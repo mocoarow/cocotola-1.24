@@ -14,6 +14,8 @@ var ErrUserAlreadyExists = errors.New("User already exists")
 
 var ErrSystemOwnerNotFound = errors.New("SystemOwner not found")
 
+var ErrUnauthenticated = errors.New("unauthenticated")
+
 // type UserAddParameterInterface interface {
 // 	LoginID() string
 // 	Username() string

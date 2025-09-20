@@ -117,45 +117,45 @@ func (m *SystemOwner) FindUserByID(ctx context.Context, id *domain.UserID) (*Use
 	return user, nil
 }
 
-func (m *SystemOwner) FindUserByLoginID(ctx context.Context, loginID string) (*User, error) {
-	user, err := m.userRepo.FindUserByLoginID(ctx, m, loginID)
-	if err != nil {
-		return nil, liberrors.Errorf("m.userRepo.FindUserByLoginID. err: %w", err)
-	}
+// func (m *SystemOwner) FindUserByLoginID(ctx context.Context, loginID string) (*User, error) {
+// 	user, err := m.userRepo.FindUserByLoginID(ctx, m, loginID)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("m.userRepo.FindUserByLoginID. err: %w", err)
+// 	}
 
-	return user, nil
-}
+// 	return user, nil
+// }
 
-func (m *SystemOwner) AddFirstOwner(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
-	// rbacUser := NewRBACUser(m.GetOrganizationID(), m.GetUserID())
-	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObjectFromOrganization(m.GetOrganizationID())
+// func (m *SystemOwner) AddFirstOwner(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
+// 	// rbacUser := NewRBACUser(m.GetOrganizationID(), m.GetUserID())
+// 	rbacAllUserRolesObject := domain.NewRBACAllUserRolesObjectFromOrganization(m.GetOrganizationID())
 
-	// Can "the operator" "set" "all-user-roles" ?
-	ok, err := m.authorizationManager.CheckAuthorization(ctx, m, RBACSetAction, rbacAllUserRolesObject)
-	if err != nil {
-		return nil, liberrors.Errorf("CheckAuthorization: %w", err)
-	} else if !ok {
-		return nil, libdomain.ErrPermissionDenied
-	}
+// 	// Can "the operator" "set" "all-user-roles" ?
+// 	ok, err := m.authorizationManager.CheckAuthorization(ctx, m, RBACSetAction, rbacAllUserRolesObject)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("CheckAuthorization: %w", err)
+// 	} else if !ok {
+// 		return nil, libdomain.ErrPermissionDenied
+// 	}
 
-	// add owner
-	firstOwnerID, err := m.userRepo.AddUser(ctx, m, param)
-	if err != nil {
-		return nil, liberrors.Errorf("AddUser: %w", err)
-	}
+// 	// add owner
+// 	firstOwnerID, err := m.userRepo.AddUser(ctx, m, param)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("AddUser: %w", err)
+// 	}
 
-	ownerGroup, err := m.userGroupRepo.FindUserGroupByKey(ctx, m, OwnerGroupKey)
-	if err != nil {
-		return nil, liberrors.Errorf("FindUserGroupByKey: %w", err)
-	}
+// 	ownerGroup, err := m.userGroupRepo.FindUserGroupByKey(ctx, m, OwnerGroupKey)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("FindUserGroupByKey: %w", err)
+// 	}
 
-	// add owner to owner-group
-	if err := m.authorizationManager.AddUserToGroup(ctx, m, firstOwnerID, ownerGroup.UserGroupID); err != nil {
-		return nil, liberrors.Errorf("AddUserToGroup: %w", err)
-	}
+// 	// add owner to owner-group
+// 	if err := m.authorizationManager.AddUserToGroup(ctx, m, firstOwnerID, ownerGroup.UserGroupID); err != nil {
+// 		return nil, liberrors.Errorf("AddUserToGroup: %w", err)
+// 	}
 
-	return firstOwnerID, nil
-}
+// 	return firstOwnerID, nil
+// }
 
 // func (m *SystemOwner) AddUser(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
 // 	m.logger.InfoContext(ctx, "AddStudent")
@@ -172,24 +172,25 @@ func (m *SystemOwner) AddFirstOwner(ctx context.Context, param *AddUserParameter
 // 	return userID, nil
 // }
 
-func (m *SystemOwner) AddSpace(ctx context.Context, param *AddSpaceParameter) (*domain.SpaceID, error) {
-	spaceID, err := m.spaceRepo.AddSpace(ctx, m, param)
-	if err != nil {
-		return nil, liberrors.Errorf("spaceRepo.AddSpace. err: %w", err)
-	}
+// func (m *SystemOwner) AddSpace(ctx context.Context, param *AddSpaceParameter) (*domain.SpaceID, error) {
+// 	spaceID, err := m.spaceRepo.AddSpace(ctx, m, param)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("spaceRepo.AddSpace. err: %w", err)
+// 	}
 
-	go m.spaceEventHandler.OnAdd(context.Background(), map[string]int{
-		"organizationId": m.GetOrganizationID().Int(),
-		"spaceId":        spaceID.Int(),
-	})
+// 	go m.spaceEventHandler.OnAdd(context.Background(), map[string]int{
+// 		"organizationId": m.GetOrganizationID().Int(),
+// 		"spaceId":        spaceID.Int(),
+// 	})
 
-	return spaceID, nil
-}
-func (m *SystemOwner) VerifyPassword(ctx context.Context, loginID, password string) (bool, error) {
-	ok, err := m.userRepo.VerifyPassword(ctx, m, loginID, password)
-	if err != nil {
-		return false, liberrors.Errorf("m.userRepo.VerifyPassword. err: %w", err)
-	}
+// 	return spaceID, nil
+// }
 
-	return ok, nil
-}
+// func (m *SystemOwner) VerifyPassword(ctx context.Context, loginID, password string) (bool, error) {
+// 	ok, err := m.userRepo.VerifyPassword(ctx, m, loginID, password)
+// 	if err != nil {
+// 		return false, liberrors.Errorf("m.userRepo.VerifyPassword. err: %w", err)
+// 	}
+
+// 	return ok, nil
+// }

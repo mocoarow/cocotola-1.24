@@ -23,43 +23,40 @@ func NewAddGuestCommand(txManager service.TransactionManager, nonTxManager servi
 }
 
 func (u *AddGuestCommand) Execute(ctx context.Context, operator service.SystemOwnerInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
-	fn2 := func(rf service.RepositoryFactory) (*domain.UserID, error) {
-		userRepo := rf.NewUserRepository(ctx)
-		userGroupRepo := rf.NewUserGroupRepository(ctx)
-		authorizationManager, err := rf.NewAuthorizationManager(ctx)
-		if err != nil {
-			return nil, liberrors.Errorf("failed to NewAuthorizationManager: %w", err)
-		}
-
-		// 1. add guest
-		guestID, err := userRepo.AddUser(ctx, operator, param)
-		if err != nil {
-			return nil, liberrors.Errorf("AddUser: %w", err)
-		}
-
-		// 2. add guest to public-group
-		publicGroup, err := userGroupRepo.FindUserGroupByKey(ctx, operator, service.PublicGroupKey)
-		if err != nil {
-			return nil, liberrors.Errorf("find public group(%s): %w", service.PublicGroupKey, err)
-		}
-		if err := authorizationManager.AddUserToGroup(ctx, operator, guestID, publicGroup.UserGroupID); err != nil {
-			return nil, liberrors.Errorf("AddUserToGroup: %w", err)
-		}
-
-		// 3. add policy to user
-		subject := guestID.GetRBACSubject()
-		for _, aoe := range aoeList {
-			if err := authorizationManager.AddPolicyToUserBySystemOwner(ctx, operator, subject, aoe.Action, aoe.Object, aoe.Effect); err != nil {
-				return nil, liberrors.Errorf("AddPolicyToUserBySystemAdmin: %w", err)
-			}
-		}
-
-		return guestID, nil
+	// 1. Check authorization
+	if err := u.checkAuthorization(ctx, operator); err != nil {
+		return nil, liberrors.Errorf("checkAuthorization: %w", err)
 	}
-	guestID, err := libservice.Do1(ctx, u.nonTxManager, fn2)
+
+	// 2. Execute
+	newUserID, err := u.execute(ctx, operator, param, aoeList)
+	if err != nil {
+		return nil, liberrors.Errorf("execute: %w", err)
+	}
+
+	// 3. Callback
+	if err := u.callback(ctx, operator, newUserID); err != nil {
+		return nil, liberrors.Errorf("callback: %w", err)
+	}
+
+	return newUserID, nil
+}
+
+func (u *AddGuestCommand) checkAuthorization(ctx context.Context, operator service.SystemOwnerInterface) error {
+	return nil
+}
+
+func (u *AddGuestCommand) execute(ctx context.Context, operator service.SystemOwnerInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
+	userID, err := libservice.Do1(ctx, u.txManager, func(rf service.RepositoryFactory) (*domain.UserID, error) {
+		return AddUser(ctx, operator, rf, param, aoeList)
+	})
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
 
-	return guestID, nil
+	return userID, nil
+}
+
+func (u *AddGuestCommand) callback(ctx context.Context, operator service.SystemOwnerInterface, newUserID *domain.UserID) error {
+	return nil
 }

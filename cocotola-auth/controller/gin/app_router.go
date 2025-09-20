@@ -124,8 +124,8 @@ func GetBearerTokenRouterGroupFuncs(_ context.Context, systemToken libdomain.Sys
 	}
 }
 
-func InitBearerTokenAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, nonTxManager mbuserservice.TransactionManager) (gin.HandlerFunc, error) {
-	return middleware.NewAuthMiddleware(systemToken, authTokenManager, nonTxManager), nil
+func InitBearerTokenAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, mbNonTxManager mbuserservice.TransactionManager) (gin.HandlerFunc, error) {
+	return middleware.NewAuthMiddleware(systemToken, authTokenManager, mbNonTxManager), nil
 }
 
 // func InitAuthMiddleware(authConfig *config.AuthConfig) (gin.HandlerFunc, error) {

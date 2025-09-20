@@ -3,11 +3,16 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "usecase",
     srcs = [
+        "add_personal_space.go",
         "authentication_usecase.go",
         "callback_usecase.go",
+        "func.go",
+        "get_user_info_query.go",
         "google_user_usecase.go",
+        "guest_authenticate.go",
         "guest_usecase.go",
         "init.go",
+        "password_authenticate.go",
         "password_usecase.go",
         "rbac_usecase.go",
         "register_user.go",

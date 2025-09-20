@@ -12,17 +12,17 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 )
 
-type CardQueryUseCase struct {
+type CardQueryUsecase struct {
 	db *gorm.DB
 }
 
-func NewCardQueryUsecase(db *gorm.DB) *CardQueryUseCase {
-	return &CardQueryUseCase{
+func NewCardQueryUsecase(db *gorm.DB) *CardQueryUsecase {
+	return &CardQueryUsecase{
 		db: db,
 	}
 }
 
-func (u *CardQueryUseCase) FindCardsByDeckID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error) {
+func (u *CardQueryUsecase) FindCardsByDeckID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error) {
 	_, span := tracer.Start(ctx, "CardQueryUseCase.FindDecks")
 	defer span.End()
 

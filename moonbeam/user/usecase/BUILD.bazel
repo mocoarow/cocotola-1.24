@@ -7,6 +7,7 @@ go_library(
         "add_guest.go",
         "add_organization.go",
         "add_user.go",
+        "verify_password.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/user/usecase",
     visibility = ["//visibility:public"],

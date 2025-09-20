@@ -23,32 +23,32 @@ type ParentAndChildLink struct {
 }
 
 func Initialize2(ctx context.Context, systemToken libdomain.SystemToken, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, organizationID *mbuserdomain.OrganizationID, parentAndChildLink []*ParentAndChildLink) error {
-	rff := func(ctx context.Context, db *gorm.DB) (mbuserservice.RepositoryFactory, error) {
+	mbrff := func(ctx context.Context, db *gorm.DB) (mbuserservice.RepositoryFactory, error) {
 		resouceEventHandlers := map[mbuserdomain.ResourceKey]mblibservice.ResourceEventHandler{}
 		return mbusergateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, resouceEventHandlers)
 	}
+	mbrf, err := mbrff(ctx, db)
+	if err != nil {
+		return mbliberrors.Errorf("rff: %w", err)
+	}
 
-	txManager := initMBTransactionManager(db, rff)
+	txManager := initMBTransactionManager(db, mbrff)
+	mbNonTxManager := initMBNonTransactionManager(mbrf)
+
+	sysAdmin := service.NewSystemAdmin(systemToken)
+
+	sysOwner, err := findSystemOwnerByOrganizationID(ctx, sysAdmin, mbNonTxManager, organizationID)
+	if err != nil {
+		return mbliberrors.Errorf("findSystemOwnerByOrganizationID: %w", err)
+	}
 
 	fn := func(rf mbuserservice.RepositoryFactory) error {
-		systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
-			service.WithOrganizationByID(organizationID),
-			service.WithAuthorizationManager(),
-		)
-		if err != nil {
-			return mbliberrors.Errorf("new system owner action: %w", err)
-		}
-
-		// mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-		// if err != nil {
-		// 	return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-		// }
 		authorizationManager, err := rf.NewAuthorizationManager(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("new authorization manager: %w", err)
 		}
 		for _, po := range parentAndChildLink {
-			if err := authorizationManager.AddObjectToObject(ctx, systemOwnerAction.SystemOwner, po.Child, po.Parent); err != nil {
+			if err := authorizationManager.AddObjectToObject(ctx, sysOwner, po.Child, po.Parent); err != nil {
 				return mbliberrors.Errorf("AddObjectToObject: %w", err)
 			}
 		}

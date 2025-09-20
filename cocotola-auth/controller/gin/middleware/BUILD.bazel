@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//cocotola-auth/domain",
         "//cocotola-auth/service",
+        "//cocotola-auth/usecase",
         "//lib/domain",
         "//moonbeam/lib/log",
         "//moonbeam/user/service",

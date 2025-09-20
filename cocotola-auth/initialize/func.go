@@ -30,6 +30,23 @@ func findOrganizationByName(ctx context.Context, systemAdmin mbuserservice.Syste
 	return orgModel, nil
 }
 
+func findSystemOwnerByOrganizationID(ctx context.Context, systemAdmin mbuserservice.SystemAdminInterface, mbNonTxManager mbuserservice.TransactionManager, organizationID *mbuserdomain.OrganizationID) (*mbuserdomain.SystemOwnerModel, error) {
+	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwnerModel, error) {
+		userRepo := rf.NewUserRepository(ctx)
+		sysOwner, err := userRepo.FindSystemOwnerByOrganizationID(ctx, systemAdmin, organizationID)
+		if err != nil {
+			return nil, mbliberrors.Errorf("find system owner by organization id(%d): %w", organizationID.Int(), err)
+		}
+
+		return sysOwner.SystemOwnerModel, nil
+	}
+	sysOwner, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
+	if err != nil {
+		return nil, err
+	}
+	return sysOwner, nil
+}
+
 func findSystemOwnerByOrganizationName(ctx context.Context, systemAdmin mbuserservice.SystemAdminInterface, mbNonTxManager mbuserservice.TransactionManager, organizationName string) (*mbuserdomain.SystemOwnerModel, error) {
 	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwnerModel, error) {
 		userRepo := rf.NewUserRepository(ctx)
