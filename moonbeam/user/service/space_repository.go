@@ -28,7 +28,7 @@ type SpaceRepository interface {
 
 	FindPublicSpaces(ctx context.Context, operator OperatorInterface) ([]*Space, error)
 
-	FindPublicSpaceByKey(ctx context.Context, key string) (*Space, error)
+	FindPublicSpaceByKey(ctx context.Context, operator OperatorInterface, key string) (*Space, error)
 
 	GetSpaceByID(ctx context.Context, operator OperatorInterface, deckID *domain.SpaceID) (*Space, error)
 }

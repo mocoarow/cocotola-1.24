@@ -18,12 +18,12 @@ import (
 
 type PasswordUsecae struct {
 	systemToken      libdomain.SystemToken
-	txManager        service.TransactionManager
-	nonTxManager     service.TransactionManager
+	txManager        mbuserservice.TransactionManager
+	nonTxManager     mbuserservice.TransactionManager
 	authTokenManager service.AuthTokenManager
 }
 
-func NewPassword(systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) *PasswordUsecae {
+func NewPassword(systemToken libdomain.SystemToken, txManager, nonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager) *PasswordUsecae {
 	return &PasswordUsecae{
 		systemToken:      systemToken,
 		txManager:        txManager,
@@ -39,7 +39,7 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 		return nil, fmt.Errorf("guest cannot authenticate with password")
 	}
 
-	targetOorganization, targetUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *user, error) {
+	targetOorganization, targetUser, err := mblibservice.Do2(ctx, u.txManager, func(rf mbuserservice.RepositoryFactory) (*organization, *user, error) {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
 			service.WithOrganizationByName(organizationName),
 		)

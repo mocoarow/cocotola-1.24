@@ -206,12 +206,13 @@ func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator service
 	return spaces, nil
 }
 
-func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, keyName string) (*service.Space, error) {
+func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, operator service.OperatorInterface, keyName string) (*service.Space, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.FindPublicSpaceByKey")
 	defer span.End()
 
 	var spaceE spaceEntity
 	if result := r.db.Model(&spaceE).
+		Where("organization_id = ?", uint(operator.GetOrganizationID().Value)).
 		Where("key_name = ?", keyName).
 		Where("space_type = ?", "public").
 		First(&spaceE); result.Error != nil {

@@ -127,8 +127,8 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 
 	firstOwnerAddParam, err := service.NewUserAddParameter("OWNER_ID", "OWNER_NAME", "OWNER_PASSWORD", "", "", "", "")
 	require.NoError(t, err)
-	orgAddParam, err := service.NewOrganizationAddParameter(orgName, firstOwnerAddParam)
-	require.NoError(t, err)
+	// orgAddParam, err := service.NewOrganizationAddParameter(orgName, firstOwnerAddParam)
+	// require.NoError(t, err)
 
 	orgRepo := gateway.NewOrganizationRepository(ctx, ts.db)
 	userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
@@ -137,7 +137,7 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 	require.NoError(t, err)
 
 	// 1. add organization
-	orgID, err := orgRepo.AddOrganization(ctx, sysAd, orgAddParam)
+	orgID, err := orgRepo.AddOrganization(ctx, sysAd, orgName)
 	if err != nil {
 		outputOrganization(t, ts.db)
 	}

@@ -49,7 +49,7 @@ type OrganizationRepository interface {
 
 	FindOrganizationByID(ctx context.Context, operator SystemAdminInterface, id *domain.OrganizationID) (*Organization, error)
 
-	AddOrganization(ctx context.Context, operator SystemAdminInterface, param *AddOrganizationParameter) (*domain.OrganizationID, error)
+	AddOrganization(ctx context.Context, operator SystemAdminInterface, organizationName string) (*domain.OrganizationID, error)
 
 	// FindOrganizationByName(ctx context.Context, operator SystemAdmin, name string) (Organization, error)
 	// FindOrganization(ctx context.Context, operator User) (Organization, error)

@@ -12,11 +12,11 @@ import (
 )
 
 type RBACUsecase struct {
-	txManager    service.TransactionManager
-	nonTxManager service.TransactionManager
+	txManager    mbuserservice.TransactionManager
+	nonTxManager mbuserservice.TransactionManager
 }
 
-func NewRBACUsecase(txManager, nonTxManager service.TransactionManager) *RBACUsecase {
+func NewRBACUsecase(txManager, nonTxManager mbuserservice.TransactionManager) *RBACUsecase {
 	return &RBACUsecase{
 		txManager:    txManager,
 		nonTxManager: nonTxManager,
@@ -24,18 +24,18 @@ func NewRBACUsecase(txManager, nonTxManager service.TransactionManager) *RBACUse
 }
 
 func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, listOfActionObjectEffect []mbuserdomain.RBACActionObjectEffect) error {
-	return mblibservice.Do0(ctx, u.txManager, func(rf service.RepositoryFactory) error { //nolint:wrapcheck
-		mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-		if err != nil {
-			return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-		}
+	return mblibservice.Do0(ctx, u.txManager, func(rf mbuserservice.RepositoryFactory) error { //nolint:wrapcheck
+		// mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
+		// if err != nil {
+		// 	return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
+		// }
 
-		sysAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
+		sysAdmin, err := mbuserservice.NewSystemAdmin(ctx, rf)
 		if err != nil {
 			return mbliberrors.Errorf("NewSystemAdmin: %w", err)
 		}
 
-		authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
+		authorizationManager, err := rf.NewAuthorizationManager(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("NewAuthorizationManager: %w", err)
 		}

@@ -7,6 +7,7 @@ import (
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
@@ -26,12 +27,12 @@ type UserClaims struct {
 
 type Authentication struct {
 	systemToken        libdomain.SystemToken
-	transactionManager service.TransactionManager
+	transactionManager mbuserservice.TransactionManager
 	authTokenManager   service.AuthTokenManager
 	// systemOwnerByOrganizationName SystemOwnerByOrganizationName
 }
 
-func NewAuthentication(systemToken libdomain.SystemToken, transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager,
+func NewAuthentication(systemToken libdomain.SystemToken, transactionManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager,
 
 // systemOwnerByOrganizationName SystemOwnerByOrganizationName
 ) *Authentication {

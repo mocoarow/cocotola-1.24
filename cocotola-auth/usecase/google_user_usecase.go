@@ -2,11 +2,11 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
@@ -48,6 +48,8 @@ func (m *user) LoginID() string {
 	return m.loginID
 }
 
+type systemOwner struct {
+}
 type TokenSet struct {
 	AccessToken  string
 	RefreshToken string
@@ -69,6 +71,8 @@ type GoogleUserInfo struct {
 
 type GoogleUserUsecase struct {
 	systemToken      libdomain.SystemToken
+	mbTxManager      mbuserservice.TransactionManager
+	mbNonTxManager   mbuserservice.TransactionManager
 	txManager        service.TransactionManager
 	nonTxManager     service.TransactionManager
 	authTokenManager service.AuthTokenManager
@@ -76,9 +80,11 @@ type GoogleUserUsecase struct {
 	logger           *slog.Logger
 }
 
-func NewGoogleUser(systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager, googleAuthClient GoogleAuthClient) *GoogleUserUsecase {
+func NewGoogleUser(systemToken libdomain.SystemToken, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager, googleAuthClient GoogleAuthClient) *GoogleUserUsecase {
 	return &GoogleUserUsecase{
 		systemToken:      systemToken,
+		mbTxManager:      mbTxManager,
+		mbNonTxManager:   mbNonTxManager,
 		txManager:        txManager,
 		nonTxManager:     nonTxManager,
 		authTokenManager: authTokenManager,
@@ -160,58 +166,95 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 		return nil, mbliberrors.Errorf("get tokens and user info err: %w", err)
 	}
 
-	createUserParameterFunc := func() (*mbuserservice.AddUserParameter, error) {
-		return mbuserservice.NewUserAddParameter(
-			info.Email, //googleUserInfo.Email,
-			info.Name,  //googleUserInfo.Name,
-			"",
-			"google",
-			info.Email,   // googleUserInfo.Email,
-			accessToken,  // googleAuthResponse.AccessToken,
-			refreshToken, // googleAuthResponse.RefreshToken,
-		)
-	}
+	// createUserParameterFunc := func() (*mbuserservice.AddUserParameter, error) {
+	// 	return mbuserservice.NewUserAddParameter(
+	// 		info.Email, //googleUserInfo.Email,
+	// 		info.Name,  //googleUserInfo.Name,
+	// 		"",
+	// 		"google",
+	// 		info.Email,   // googleUserInfo.Email,
+	// 		accessToken,  // googleAuthResponse.AccessToken,
+	// 		refreshToken, // googleAuthResponse.RefreshToken,
+	// 	)
+	// }
 
-	var tokenSet *domain.AuthTokenSet
-	var targetOorganization *organization
-	var targetUser *user
-	if err := u.txManager.Do(ctx, func(rf service.RepositoryFactory) error {
-		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
-			// service.WithOrganizationRepository(),
-			service.WithOrganizationByName(organizationName),
-			// service.WithUserRepository(),
-		)
+	// var tokenSet *domain.AuthTokenSet
+	// var targetOorganization *organization
+	// var targetUser *user
+	// if err := u.mbTxManager.Do(ctx, func(rf mbuserservice.RepositoryFactory) error {
+	// 	action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
+	// 		// service.WithOrganizationRepository(),
+	// 		service.WithOrganizationByName(organizationName),
+	// 		// service.WithUserRepository(),
+	// 	)
+	// 	if err != nil {
+	// 		return mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
+	// 	}
+	// 	organizationID := action.Organization.OrganizationID
+
+	// 	tmpOrganization, tmpUser, err := findOrRegisterUser(ctx, u.systemToken, rf, organizationID, info.Email, createUserParameterFunc)
+	// 	if err != nil && !errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
+	// 		return mbliberrors.Errorf("s.findOrRegisterUser. err: %w", err)
+	// 	}
+
+	// 	targetUser = &user{
+	// 		userID:         tmpUser.UserID,
+	// 		organizationID: tmpUser.OrganizationID,
+	// 		loginID:        tmpUser.LoginID,
+	// 		username:       tmpUser.Username,
+	// 	}
+	// 	targetOorganization = &organization{
+	// 		organizationID: tmpOrganization.OrganizationID,
+	// 		name:           tmpOrganization.Name,
+	// 	}
+
+	// 	return nil
+	// }); err != nil {
+	// 	return nil, mbliberrors.Errorf("RegisterUser. err: %w", err)
+	// }
+	// action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
+	// 	// service.WithOrganizationRepository(),
+	// 	service.WithOrganizationByName(organizationName),
+	// 	// service.WithUserRepository(),
+	// )
+	// if err != nil {
+	// 	return nil, mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
+	// }
+	sysOwner, err := mblibservice.Do1(ctx, u.mbNonTxManager, func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwnerModel, error) {
+		sysAdmin, err := mbuserservice.NewSystemAdmin(ctx, rf)
 		if err != nil {
-			return mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
+			return nil, mbliberrors.Errorf("NewSystemAdmin: %w", err)
 		}
-		organizationID := action.Organization.OrganizationID
-
-		tmpOrganization, tmpUser, err := findOrRegisterUser(ctx, u.systemToken, rf, organizationID, info.Email, createUserParameterFunc)
-		if err != nil && !errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
-			return mbliberrors.Errorf("s.findOrRegisterUser. err: %w", err)
+		userRepo := rf.NewUserRepository(ctx)
+		sysOwner, err := userRepo.FindSystemOwnerByOrganizationName(ctx, sysAdmin, organizationName)
+		if err != nil {
+			return nil, mbliberrors.Errorf("FindSystemOwnerByOrganizationName: %w", err)
 		}
-
-		targetUser = &user{
-			userID:         tmpUser.UserID,
-			organizationID: tmpUser.OrganizationID,
-			loginID:        tmpUser.LoginID,
-			username:       tmpUser.Username,
-		}
-		targetOorganization = &organization{
-			organizationID: tmpOrganization.OrganizationID,
-			name:           tmpOrganization.Name,
-		}
-
-		return nil
-	}); err != nil {
-		return nil, mbliberrors.Errorf("RegisterUser. err: %w", err)
+		return sysOwner.SystemOwnerModel, nil
+	})
+	if err != nil {
+		return nil, mbliberrors.Errorf("Do1: %w", err)
 	}
-
-	tokenSetTmp, err := u.authTokenManager.CreateTokenSet(ctx, targetUser, targetOorganization)
+	command, err := NewRegisterUserCommand(ctx, u.mbTxManager, u.mbNonTxManager, u.authTokenManager)
+	if err != nil {
+		return nil, mbliberrors.Errorf("NewRegisterUserCommand. err: %w", err)
+	}
+	param, err := mbuserservice.NewUserAddParameter(
+		info.Email, //googleUserInfo.Email,
+		info.Name,  //googleUserInfo.Name,
+		"",
+		"google",
+		info.Email,   // googleUserInfo.Email,
+		accessToken,  // googleAuthResponse.AccessToken,
+		refreshToken, // googleAuthResponse.RefreshToken,
+	)
+	if err != nil {
+		return nil, mbliberrors.Errorf("NewUserAddParameter. err: %w", err)
+	}
+	tokenSet, err := command.Execute(ctx, sysOwner, param)
 	if err != nil {
 		return nil, mbliberrors.Errorf("s.authTokenManager.CreateTokenSet. err: %w", err)
 	}
-	tokenSet = tokenSetTmp
 
 	return tokenSet, nil
 }

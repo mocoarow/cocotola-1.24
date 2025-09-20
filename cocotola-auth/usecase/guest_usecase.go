@@ -16,12 +16,12 @@ import (
 
 type GuestUsecae struct {
 	systemToken      libdomain.SystemToken
-	txManager        service.TransactionManager
-	nonTxManager     service.TransactionManager
+	txManager        mbuserservice.TransactionManager
+	nonTxManager     mbuserservice.TransactionManager
 	authTokenManager service.AuthTokenManager
 }
 
-func NewGuest(systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) *GuestUsecae {
+func NewGuest(systemToken libdomain.SystemToken, txManager, nonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager) *GuestUsecae {
 	return &GuestUsecae{
 		systemToken:      systemToken,
 		txManager:        txManager,
@@ -33,7 +33,7 @@ func NewGuest(systemToken libdomain.SystemToken, txManager, nonTxManager service
 func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string) (*domain.AuthTokenSet, error) {
 	var tokenSet *domain.AuthTokenSet
 
-	targetOorganization, targetUser, err := mblibservice.Do2(ctx, u.txManager, func(rf service.RepositoryFactory) (*organization, *user, error) {
+	targetOorganization, targetUser, err := mblibservice.Do2(ctx, u.txManager, func(rf mbuserservice.RepositoryFactory) (*organization, *user, error) {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
 			service.WithOrganizationByName(organizationName),
 		)

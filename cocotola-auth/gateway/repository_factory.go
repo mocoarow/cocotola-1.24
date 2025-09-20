@@ -11,8 +11,6 @@ import (
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
@@ -39,14 +37,14 @@ func NewRepositoryFactory(_ context.Context, dialect mblibgateway.DialectRDBMS, 
 	}, nil
 }
 
-func (f *RepositoryFactory) NewMoonBeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error) {
-	rf, err := mbusergateway.NewRepositoryFactory(ctx, f.dialect, f.driverName, f.db, f.location, f.resourceEventHandlers)
-	if err != nil {
-		return nil, mbliberrors.Errorf("mbusergateway.NewRepositoryFactory: %w", err)
-	}
+// func (f *RepositoryFactory) NewMoonBeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error) {
+// 	rf, err := mbusergateway.NewRepositoryFactory(ctx, f.dialect, f.driverName, f.db, f.location, f.resourceEventHandlers)
+// 	if err != nil {
+// 		return nil, mbliberrors.Errorf("mbusergateway.NewRepositoryFactory: %w", err)
+// 	}
 
-	return rf, nil
-}
+// 	return rf, nil
+// }
 
 func (f *RepositoryFactory) NewStateRepository(ctx context.Context) (service.StateRepository, error) {
 	return NewStateRepository(ctx)

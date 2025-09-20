@@ -50,3 +50,10 @@ func NewUserModel(baseModel *libdomain.BaseModel, userID *UserID, organizationID
 
 	return m, nil
 }
+
+func (m *UserModel) GetUserID() *UserID {
+	return m.UserID
+}
+func (m *UserModel) GetOrganizationID() *OrganizationID {
+	return m.OrganizationID
+}

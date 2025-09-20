@@ -20,3 +20,16 @@ func NewSystemOwnerModel(user *OwnerModel) (*SystemOwnerModel, error) {
 
 	return m, nil
 }
+
+func (m *SystemOwnerModel) IsOwner() bool {
+	return true
+}
+func (m *SystemOwnerModel) IsSystemOwner() bool {
+	return true
+}
+func (m *SystemOwnerModel) GetOrganizationID() *OrganizationID {
+	return m.OwnerModel.GetOrganizationID()
+}
+func (m *SystemOwnerModel) GetUserID() *UserID {
+	return m.OwnerModel.GetUserID()
+}

@@ -90,23 +90,23 @@ func (m *SystemOwner) IsSystemOwner() bool {
 	return true
 }
 
-func (m *SystemOwner) GetOrganization(ctx context.Context) (*Organization, error) {
-	org, err := m.orgRepo.GetOrganization(ctx, m)
-	if err != nil {
-		return nil, liberrors.Errorf("m.orgRepo.GetOrganization. err: %w", err)
-	}
+// func (m *SystemOwner) GetOrganization(ctx context.Context) (*Organization, error) {
+// 	org, err := m.orgRepo.GetOrganization(ctx, m)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("m.orgRepo.GetOrganization. err: %w", err)
+// 	}
 
-	return org, nil
-}
+// 	return org, nil
+// }
 
-func (m *SystemOwner) GetPublidDefaultSpace(ctx context.Context) (*Space, error) {
-	space, err := m.spaceRepo.FindPublicSpaceByKey(ctx, PublicDefaultSpaceKey)
-	if err != nil {
-		return nil, liberrors.Errorf("m.spaceRepo.FindPublicSpaceByKey. err: %w", err)
-	}
+// func (m *SystemOwner) GetPublidDefaultSpace(ctx context.Context) (*Space, error) {
+// 	space, err := m.spaceRepo.FindPublicSpaceByKey(ctx, PublicDefaultSpaceKey)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("m.spaceRepo.FindPublicSpaceByKey. err: %w", err)
+// 	}
 
-	return space, nil
-}
+// 	return space, nil
+// }
 
 func (m *SystemOwner) FindUserByID(ctx context.Context, id *domain.UserID) (*User, error) {
 	user, err := m.userRepo.FindUserByID(ctx, m, id)
@@ -154,40 +154,23 @@ func (m *SystemOwner) AddFirstOwner(ctx context.Context, param *AddUserParameter
 		return nil, liberrors.Errorf("AddUserToGroup: %w", err)
 	}
 
-	// add owner to owner-group
-	// if err := m.pairOfUserAndGroup.AddPairOfUserAndGroup(ctx, m, ownerID, ownerGroup.GetUerGroupID()); err != nil {
-	// 	return nil, err
-	// }
-
-	// rbacDomain := NewRBACDomainFromOrganization(m.GetOrganizationID())
-
-	// // "owner" "can" "set" "all-user-roles"
-	// if err := m.rbacRepo.AddPolicy(rbacDomain, rbacUser, RBACSetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
-	// 	return nil, liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
-	// }
-
-	// // "owner" "can" "unset" "all-user-roles"
-	// if err := m.rbacRepo.AddPolicy(rbacDomain, rbacUser, RBACUnsetAction, rbacAllUserRolesObject, RBACAllowEffect); err != nil {
-	// 	return nil, liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
-	// }
-
 	return firstOwnerID, nil
 }
 
-func (m *SystemOwner) AddUser(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
-	m.logger.InfoContext(ctx, "AddStudent")
-	userID, err := m.userRepo.AddUser(ctx, m, param)
-	if err != nil {
-		return nil, liberrors.Errorf("m.userRepo.AddUser. err: %w", err)
-	}
+// func (m *SystemOwner) AddUser(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
+// 	m.logger.InfoContext(ctx, "AddStudent")
+// 	userID, err := m.userRepo.AddUser(ctx, m, param)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("m.userRepo.AddUser. err: %w", err)
+// 	}
 
-	go m.userEventHandler.OnAdd(context.Background(), map[string]int{
-		"organizationId": m.GetOrganizationID().Int(),
-		"userId":         userID.Int(),
-	})
+// 	go m.userEventHandler.OnAdd(context.Background(), map[string]int{
+// 		"organizationId": m.GetOrganizationID().Int(),
+// 		"userId":         userID.Int(),
+// 	})
 
-	return userID, nil
-}
+// 	return userID, nil
+// }
 
 func (m *SystemOwner) AddSpace(ctx context.Context, param *AddSpaceParameter) (*domain.SpaceID, error) {
 	spaceID, err := m.spaceRepo.AddSpace(ctx, m, param)

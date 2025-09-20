@@ -10,7 +10,7 @@ go_library(
         "init.go",
         "password_usecase.go",
         "rbac_usecase.go",
-        "user_registration.go",
+        "register_user.go",
         "user_usecase.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-auth/usecase",
@@ -25,6 +25,7 @@ go_library(
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
         "//moonbeam/user/service",
+        "//moonbeam/user/usecase",
         "@com_github_golang_jwt_jwt_v5//:jwt",
     ],
 )

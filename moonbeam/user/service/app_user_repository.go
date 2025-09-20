@@ -88,7 +88,7 @@ type UserRepository interface {
 
 	FindOwnerByLoginID(ctx context.Context, operator SystemOwnerInterface, loginID string) (*Owner, error)
 
-	AddUser(ctx context.Context, operator OwnerModelInterface, param *AddUserParameter) (*domain.UserID, error)
+	AddUser(ctx context.Context, operator UserInterface, param *AddUserParameter) (*domain.UserID, error)
 
 	AddSystemOwner(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserID, error)
 

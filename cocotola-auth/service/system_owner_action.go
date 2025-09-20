@@ -11,8 +11,8 @@ import (
 )
 
 type SystemOwnerAction struct {
-	rf                   RepositoryFactory
-	mbrf                 mbuserservice.RepositoryFactory
+	rf mbuserservice.RepositoryFactory
+	// mbrf                 mbuserservice.RepositoryFactory
 	systemAdmin          *mbuserservice.SystemAdmin
 	SystemOwner          *mbuserservice.SystemOwner
 	Organization         *mbuserservice.Organization
@@ -105,7 +105,7 @@ func WithOrganizationByName(organizationName string) SystemOwnerActionOption {
 
 func WithAuthorizationManager() SystemOwnerActionOption {
 	return func(ctx context.Context, action *SystemOwnerAction) error {
-		authorizationManager, err := action.mbrf.NewAuthorizationManager(ctx)
+		authorizationManager, err := action.rf.NewAuthorizationManager(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("new authorization manager: %w", err)
 		}
@@ -116,7 +116,7 @@ func WithAuthorizationManager() SystemOwnerActionOption {
 }
 func WithSpaceManager() SystemOwnerActionOption {
 	return func(ctx context.Context, action *SystemOwnerAction) error {
-		spaceManager, err := action.mbrf.NewSpaceManager(ctx)
+		spaceManager, err := action.rf.NewSpaceManager(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("new space manager: %w", err)
 		}
@@ -126,7 +126,7 @@ func WithSpaceManager() SystemOwnerActionOption {
 	}
 }
 
-func NewSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf RepositoryFactory, options ...SystemOwnerActionOption) (*SystemOwnerAction, error) {
+func NewSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory, options ...SystemOwnerActionOption) (*SystemOwnerAction, error) {
 	if systemToken == nil {
 		return nil, mbliberrors.Errorf("systemToken is nil: %w", nil)
 	}
@@ -136,8 +136,8 @@ func NewSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken
 	}
 
 	action := SystemOwnerAction{ //nolint:exhaustruct
-		rf:          rf,
-		mbrf:        systemAdminAction.mbrf,
+		rf: rf,
+		// mbrf:        systemAdminAction.mbrf,
 		systemAdmin: systemAdminAction.SystemAdmin,
 	}
 	for _, option := range options {

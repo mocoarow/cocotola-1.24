@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, transactionManager service.TransactionManager) gin.HandlerFunc {
+func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, transactionManager mbuserservice.TransactionManager) gin.HandlerFunc {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AuthMiddleware"))
 
 	return func(c *gin.Context) {

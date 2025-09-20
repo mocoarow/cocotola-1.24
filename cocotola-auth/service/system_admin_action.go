@@ -10,34 +10,33 @@ import (
 )
 
 type SystemAdminAction struct {
-	rf          RepositoryFactory
-	mbrf        mbuserservice.RepositoryFactory
+	rf          mbuserservice.RepositoryFactory
 	SystemAdmin *mbuserservice.SystemAdmin
 }
 
-func (a *SystemAdminAction) initMbrf(ctx context.Context) error {
-	if a.mbrf != nil {
-		return nil
-	}
+// func (a *SystemAdminAction) initMbrf(ctx context.Context) error {
+// 	if a.mbrf != nil {
+// 		return nil
+// 	}
 
-	mbrf, err := a.rf.NewMoonBeamRepositoryFactory(ctx)
-	if err != nil {
-		return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-	}
-	a.mbrf = mbrf
+// 	mbrf, err := a.rf.NewMoonBeamRepositoryFactory(ctx)
+// 	if err != nil {
+// 		return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
+// 	}
+// 	a.mbrf = mbrf
 
-	return nil
-}
+// 	return nil
+// }
 
 func (a *SystemAdminAction) initSystemAdmin(ctx context.Context) error {
 	if a.SystemAdmin != nil {
 		return nil
 	}
-	if err := a.initMbrf(ctx); err != nil {
-		return mbliberrors.Errorf("initMbrf: %w", err)
-	}
+	// if err := a.initMbrf(ctx); err != nil {
+	// 	return mbliberrors.Errorf("initMbrf: %w", err)
+	// }
 
-	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, a.mbrf)
+	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, a.rf)
 	if err != nil {
 		return mbliberrors.Errorf("NewSystemAdmin: %w", err)
 	}
@@ -46,7 +45,7 @@ func (a *SystemAdminAction) initSystemAdmin(ctx context.Context) error {
 	return nil
 }
 
-func NewSystemAdminAction(ctx context.Context, _ libdomain.SystemToken, rf RepositoryFactory) (*SystemAdminAction, error) {
+func NewSystemAdminAction(ctx context.Context, _ libdomain.SystemToken, rf mbuserservice.RepositoryFactory) (*SystemAdminAction, error) {
 	action := SystemAdminAction{ //nolint:exhaustruct
 		rf: rf,
 	}

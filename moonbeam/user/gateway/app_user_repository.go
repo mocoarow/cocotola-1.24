@@ -319,7 +319,7 @@ func (r *userRepository) addUser(_ context.Context, userEntity *userEntity) (*do
 	return userID, nil
 }
 
-func (r *userRepository) AddUser(ctx context.Context, operator service.OwnerModelInterface, param *service.AddUserParameter) (*domain.UserID, error) {
+func (r *userRepository) AddUser(ctx context.Context, operator service.UserInterface, param *service.AddUserParameter) (*domain.UserID, error) {
 	_, span := tracer.Start(ctx, "userRepository.AddUser")
 	defer span.End()
 

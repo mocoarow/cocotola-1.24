@@ -18,13 +18,13 @@ import (
 
 type Callback struct {
 	systemToken                libdomain.SystemToken
-	txManager                  service.TransactionManager
-	nonTxManager               service.TransactionManager
+	txManager                  mbuserservice.TransactionManager
+	nonTxManager               mbuserservice.TransactionManager
 	cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient
 	logger                     *slog.Logger
 }
 
-func NewCallback(systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) *Callback {
+func NewCallback(systemToken libdomain.SystemToken, txManager, nonTxManager mbuserservice.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) *Callback {
 	return &Callback{
 		systemToken:                systemToken,
 		txManager:                  txManager,
@@ -36,7 +36,7 @@ func NewCallback(systemToken libdomain.SystemToken, txManager, nonTxManager serv
 func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
 	u.logger.InfoContext(ctx, "OnAddUser", slog.Int("user_id", userID.Int()))
 
-	fn := func(rf service.RepositoryFactory) error {
+	fn := func(rf mbuserservice.RepositoryFactory) error {
 		action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
 			service.WithOrganizationByID(organizationID),
 			service.WithAuthorizationManager(),
