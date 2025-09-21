@@ -24,13 +24,13 @@ type RegisterUserCommand struct {
 	logger           *slog.Logger
 }
 
-func NewRegisterUserCommand(ctx context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager) (*RegisterUserCommand, error) {
+func NewRegisterUserCommand(_ context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager) *RegisterUserCommand {
 	return &RegisterUserCommand{
 		mbTxManager:      mbTxManager,
 		mbNonTxManager:   mbNonTxManager,
 		authTokenManager: authTokenManager,
 		logger:           slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-RegisterUserCommand")),
-	}, nil
+	}
 }
 
 func (u *RegisterUserCommand) Execute(ctx context.Context, operator mbuserdomain.UserInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error) {
@@ -122,13 +122,13 @@ func (u *RegisterUserCommand) callback(ctx context.Context, operator mbuserdomai
 }
 
 func (u *RegisterUserCommand) findUserbyLoginID(ctx context.Context, operator mbuserdomain.UserInterface, loginID string) (*mbuserdomain.User, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) { //nolint:wrapcheck
 		return findUserbyLoginID(ctx, mbrf, operator, loginID)
 	})
 }
 
 func (u *RegisterUserCommand) getOrganization(ctx context.Context, operator mbuserdomain.UserInterface) (*mbuserdomain.Organization, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.Organization, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.Organization, error) { //nolint:wrapcheck
 		return getOrganization(ctx, mbrf, operator)
 	})
 }

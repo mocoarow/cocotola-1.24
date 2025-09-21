@@ -25,7 +25,7 @@ type AddPersonalSpaceCommand struct {
 	logger                     *slog.Logger
 }
 
-func NewAddPersonalSpaceCommand(ctx context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) *AddPersonalSpaceCommand {
+func NewAddPersonalSpaceCommand(_ context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) *AddPersonalSpaceCommand {
 	return &AddPersonalSpaceCommand{
 		mbTxManager:                mbTxManager,
 		mbNonTxManager:             mbNonTxManager,
@@ -53,7 +53,7 @@ func (u *AddPersonalSpaceCommand) Execute(ctx context.Context, operator mbuserdo
 	return nil
 }
 
-func (u *AddPersonalSpaceCommand) checkAuthorization(ctx context.Context, operator mbuserdomain.SystemAdminInterface) error {
+func (u *AddPersonalSpaceCommand) checkAuthorization(_ context.Context, _ mbuserdomain.SystemAdminInterface) error {
 	return nil
 }
 
@@ -125,13 +125,13 @@ func (u *AddPersonalSpaceCommand) callback() error {
 }
 
 func (u *AddPersonalSpaceCommand) findSystemOwnerByOrganizationID(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID) (*mbuserdomain.SystemOwner, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) { //nolint:wrapcheck
 		return findSystemOwnerByOrganizationID(ctx, mbrf, operator, organizationID)
 	})
 }
 
 func (u *AddPersonalSpaceCommand) findUserByID(ctx context.Context, operator mbuserdomain.UserInterface, userID *mbuserdomain.UserID) (*mbuserdomain.User, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) { //nolint:wrapcheck
 		return findUserByID(ctx, mbrf, operator, userID)
 	})
 }

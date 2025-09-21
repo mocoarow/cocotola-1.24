@@ -42,7 +42,7 @@ func findSystemOwnerByOrganizationID(ctx context.Context, systemAdmin mbuserdoma
 	}
 	sysOwner, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 	return sysOwner, nil
 }
@@ -59,7 +59,7 @@ func findSystemOwnerByOrganizationName(ctx context.Context, systemAdmin mbuserdo
 	}
 	sysOwner, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 	return sysOwner, nil
 }
@@ -76,7 +76,7 @@ func findUserByLoginID(ctx context.Context, systemOwner mbuserdomain.SystemOwner
 	}
 	userModel, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 	return userModel, nil
 }
@@ -84,9 +84,9 @@ func findUserByLoginID(ctx context.Context, systemOwner mbuserdomain.SystemOwner
 func findPublicSpaceByKey(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, mbNonTxManager mbuserservice.TransactionManager, key string) (*mbuserdomain.SpaceModel, error) {
 	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SpaceModel, error) {
 		spaceRepo := rf.NewSpaceRepository(ctx)
-		publicDefaultSpace, err := spaceRepo.FindPublicSpaceByKey(ctx, systemOwner, mbuserservice.PublicDefaultSpaceKey)
+		publicDefaultSpace, err := spaceRepo.FindPublicSpaceByKey(ctx, systemOwner, key)
 		if err != nil {
-			return nil, mbliberrors.Errorf("find public default space by key(%s): %w", mbuserservice.PublicDefaultSpaceKey, err)
+			return nil, mbliberrors.Errorf("find public default space by key(%s): %w", key, err)
 		}
 
 		return publicDefaultSpace, nil

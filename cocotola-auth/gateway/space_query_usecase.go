@@ -26,10 +26,5 @@ func (u *SpaceQueryUseCase) FindPublicSpaces(ctx context.Context, operator mbuse
 		return nil, fmt.Errorf("spaceRepo.FindPublicSpaces. err: %w", err)
 	}
 
-	spaceModels := make([]*mbuserdomain.SpaceModel, 0, len(spaces))
-	for _, d := range spaces {
-		spaceModels = append(spaceModels, d)
-	}
-
-	return spaceModels, nil
+	return spaces, nil
 }

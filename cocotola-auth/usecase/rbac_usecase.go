@@ -28,11 +28,6 @@ func NewRBACUsecase(systemToken libdomain.SystemToken, txManager, nonTxManager m
 
 func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, listOfActionObjectEffect []mbuserdomain.RBACActionObjectEffect) error {
 	return mblibservice.Do0(ctx, u.txManager, func(rf mbuserservice.RepositoryFactory) error { //nolint:wrapcheck
-		// mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-		// if err != nil {
-		// 	return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-		// }
-
 		sysAdmin := service.NewSystemAdmin(u.systemToken)
 
 		authorizationManager, err := rf.NewAuthorizationManager(ctx)

@@ -8,7 +8,6 @@ import (
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 	mbuserusecase "github.com/mocoarow/cocotola-1.24/moonbeam/user/usecase"
@@ -65,32 +64,17 @@ func addGuestUser(ctx context.Context, mbTxManager, mbNonTxManager mbuserservice
 		// guest cat read all decks in the "public" space
 		{Action: librbac.ReadDeckAction, Object: spaceObject, Effect: allowEffect},
 	}
-	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.UserID, error) {
-		addGuestCommand := mbuserusecase.NewAddGuestCommand(mbTxManager, mbNonTxManager)
-		addUserParam, err := mbuserservice.NewUserAddParameter(guestLoginID, guestUserName, "", "", "", "", "")
-		if err != nil {
-			libdomain.CheckError(err)
-		}
 
-		guestID, err := addGuestCommand.Execute(ctx, systemOwner, addUserParam, aoeList)
-		if err != nil {
-			return nil, mbliberrors.Errorf("AddGuestCommand.Execute: %w", err)
-		}
-		return guestID, nil
+	addGuestCommand := mbuserusecase.NewAddGuestCommand(mbTxManager, mbNonTxManager)
+	addUserParam, err := mbuserservice.NewUserAddParameter(guestLoginID, guestUserName, "", "", "", "", "")
+	if err != nil {
+		libdomain.CheckError(err)
 	}
 
-	guestID, err := mblibservice.Do1(ctx, mbTxManager, fn)
+	guestID, err := addGuestCommand.Execute(ctx, systemOwner, addUserParam, aoeList)
 	if err != nil {
 		libdomain.CheckError(err)
 	}
 
 	return guestID
-}
-
-func initAuthorizationManager(ctx context.Context, mbrf mbuserservice.RepositoryFactory) mbuserservice.AuthorizationManager {
-	authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
-	if err != nil {
-		libdomain.CheckError(err)
-	}
-	return authorizationManager
 }

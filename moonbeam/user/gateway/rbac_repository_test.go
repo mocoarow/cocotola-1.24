@@ -50,8 +50,7 @@ func addSubjectGroupingPolicy(t *testing.T, ctx context.Context, rbacRepository 
 	require.NoError(t, err)
 }
 
-func TestA(t *testing.T) {
-
+func TestA(t *testing.T) { //nolint:paralleltest
 	fn := func(t *testing.T, ctx context.Context, ts testService) {
 		t.Helper()
 		defer teardownCasbin(t, ts)
@@ -108,7 +107,7 @@ func TestA(t *testing.T) {
 	testDB(t, fn)
 }
 
-func TestB(t *testing.T) {
+func TestB(t *testing.T) { //nolint:paralleltest
 	fn := func(t *testing.T, ctx context.Context, ts testService) {
 		t.Helper()
 		defer teardownCasbin(t, ts)
@@ -157,8 +156,7 @@ func TestB(t *testing.T) {
 	testDB(t, fn)
 }
 
-func TestC(t *testing.T) {
-
+func TestC(t *testing.T) { //nolint:paralleltest
 	fn := func(t *testing.T, ctx context.Context, ts testService) {
 		t.Helper()
 		defer teardownCasbin(t, ts)

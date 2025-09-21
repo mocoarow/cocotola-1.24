@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
+	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
@@ -14,11 +15,11 @@ type SpaceID struct {
 func (m *SpaceID) UnmarshalJSON(data []byte) error {
 	var v int
 	if err := json.Unmarshal(data, &v); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 	value, err := mbuserdomain.NewSpaceID(v)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("mbuserdomain.NewSpaceID: %w", err)
 	}
 	m.Value = value
 	return nil
@@ -26,9 +27,9 @@ func (m *SpaceID) UnmarshalJSON(data []byte) error {
 
 func (m SpaceID) MarshalJSON() ([]byte, error) {
 	if m.Value == nil {
-		return json.Marshal(nil)
+		return json.Marshal(nil) //nolint:wrapcheck
 	}
-	return json.Marshal(m.Value.Value)
+	return json.Marshal(m.Value.Value) //nolint:wrapcheck
 }
 
 type Lang2 struct {
@@ -38,11 +39,11 @@ type Lang2 struct {
 func (m *Lang2) UnmarshalJSON(data []byte) error {
 	var v string
 	if err := json.Unmarshal(data, &v); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 	value, err := mblibdomain.NewLang2(v)
 	if err != nil {
-		return err
+		return mbliberrors.Errorf("mblibdomain.NewLang2: %w", err)
 	}
 	m.Value = value
 	return nil
@@ -50,9 +51,9 @@ func (m *Lang2) UnmarshalJSON(data []byte) error {
 
 func (m Lang2) MarshalJSON() ([]byte, error) {
 	if m.Value == nil {
-		return json.Marshal(nil)
+		return json.Marshal(nil) //nolint:wrapcheck
 	}
-	return json.Marshal(m.Value.String())
+	return json.Marshal(m.Value.String()) //nolint:wrapcheck
 }
 
 type SpaceIDs []int
@@ -60,14 +61,14 @@ type SpaceIDs []int
 func (s *SpaceIDs) UnmarshalJSON(data []byte) error {
 	var ids []int
 	if err := json.Unmarshal(data, &ids); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 	*s = SpaceIDs(ids)
 	return nil
 }
 
 func (s SpaceIDs) MarshalJSON() ([]byte, error) {
-	return json.Marshal([]int(s))
+	return json.Marshal([]int(s)) //nolint:wrapcheck
 }
 
 func (s SpaceIDs) ToSpaceIDs() ([]*mbuserdomain.SpaceID, error) {
@@ -75,7 +76,7 @@ func (s SpaceIDs) ToSpaceIDs() ([]*mbuserdomain.SpaceID, error) {
 	for _, id := range s {
 		spaceID, err := mbuserdomain.NewSpaceID(id)
 		if err != nil {
-			return nil, err
+			return nil, mbliberrors.Errorf("mbuserdomain.NewSpaceID: %w", err)
 		}
 		spaceIDs = append(spaceIDs, spaceID)
 	}

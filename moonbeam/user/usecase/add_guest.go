@@ -42,7 +42,7 @@ func (u *AddGuestCommand) Execute(ctx context.Context, operator domain.SystemOwn
 	return newUserID, nil
 }
 
-func (u *AddGuestCommand) checkAuthorization(ctx context.Context, operator domain.SystemOwnerInterface) error {
+func (u *AddGuestCommand) checkAuthorization(_ context.Context, _ domain.SystemOwnerInterface) error {
 	return nil
 }
 
@@ -57,6 +57,6 @@ func (u *AddGuestCommand) execute(ctx context.Context, operator domain.SystemOwn
 	return userID, nil
 }
 
-func (u *AddGuestCommand) callback(ctx context.Context, operator domain.SystemOwnerInterface, newUserID *domain.UserID) error {
+func (u *AddGuestCommand) callback(_ context.Context, _ domain.SystemOwnerInterface, _ *domain.UserID) error {
 	return nil
 }

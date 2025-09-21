@@ -41,11 +41,11 @@ type TemplateID struct {
 func (m *TemplateID) UnmarshalJSON(data []byte) error {
 	var v int
 	if err := json.Unmarshal(data, &v); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 	value, err := domain.NewTemplateID(v)
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 	m.Value = value
 	return nil
@@ -53,7 +53,7 @@ func (m *TemplateID) UnmarshalJSON(data []byte) error {
 
 func (m TemplateID) MarshalJSON() ([]byte, error) {
 	if m.Value == nil {
-		return json.Marshal(nil)
+		return json.Marshal(nil) //nolint:wrapcheck
 	}
-	return json.Marshal(m.Value.Int())
+	return json.Marshal(m.Value.Int()) //nolint:wrapcheck
 }

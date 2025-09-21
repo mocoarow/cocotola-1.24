@@ -109,7 +109,7 @@ func (m *AppUser) AddDeck(ctx context.Context, param *service.AddDeckParameter) 
 			},
 		},
 	}); err != nil {
-		// return nil, mbliberrors.Errorf("add policy to user: %w", err)
+		return nil, mbliberrors.Errorf("add policy to user: %w", err)
 	}
 
 	return deckID, nil

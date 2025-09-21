@@ -17,7 +17,7 @@ func (m *systemAdmin) IsSystemAdmin() bool {
 	return true
 }
 
-func NewSystemAdmin(systemToken libdomain.SystemToken) mbuserdomain.SystemAdminInterface {
+func NewSystemAdmin(_ libdomain.SystemToken) mbuserdomain.SystemAdminInterface {
 	return &systemAdmin{
 		mbuserdomain.NewSystemAdmin(),
 	}

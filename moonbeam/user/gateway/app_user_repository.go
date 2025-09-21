@@ -105,7 +105,7 @@ func (e *userEntity) toOwnerModel(userGroups []*domain.UserGroupModel) (*domain.
 // 	return systemOwner, nil
 // }
 
-func (e *userEntity) toSystemOwnerModel(ctx context.Context, rf service.RepositoryFactory, userGroup []*domain.UserGroupModel) (*domain.SystemOwner, error) {
+func (e *userEntity) toSystemOwnerModel(_ context.Context, _ service.RepositoryFactory, userGroup []*domain.UserGroupModel) (*domain.SystemOwner, error) {
 	if e.LoginID != service.SystemOwnerLoginID {
 		return nil, liberrors.Errorf("invalid system owner. loginID: %s", e.LoginID)
 	}

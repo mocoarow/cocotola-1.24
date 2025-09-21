@@ -117,6 +117,7 @@ linters:
           - wsl_v5
           - revive
           - exhaustruct
+          - wrapcheck
 formatters:
   enable:
     - gofmt

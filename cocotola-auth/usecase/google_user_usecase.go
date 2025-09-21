@@ -48,8 +48,6 @@ func (m *user) GetLoginID() string {
 	return m.loginID
 }
 
-type systemOwner struct {
-}
 type TokenSet struct {
 	AccessToken  string
 	RefreshToken string
@@ -171,10 +169,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 		return nil, mbliberrors.Errorf("Do1: %w", err)
 	}
 
-	command, err := NewRegisterUserCommand(ctx, u.mbTxManager, u.mbNonTxManager, u.authTokenManager)
-	if err != nil {
-		return nil, mbliberrors.Errorf("NewRegisterUserCommand. err: %w", err)
-	}
+	command := NewRegisterUserCommand(ctx, u.mbTxManager, u.mbNonTxManager, u.authTokenManager)
 	param, err := mbuserservice.NewUserAddParameter(
 		info.Email, //googleUserInfo.Email,
 		info.Name,  //googleUserInfo.Name,
@@ -196,7 +191,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 }
 
 func (u *GoogleUserUsecase) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwner, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) { //nolint:wrapcheck
 		return findSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
 	})
 }

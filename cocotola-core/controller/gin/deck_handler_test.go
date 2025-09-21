@@ -8,6 +8,7 @@ import (
 )
 
 func TestSpaceID_shouldUnmarshalSuccessfully_whenGivenValidInteger(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -22,6 +23,7 @@ func TestSpaceID_shouldUnmarshalSuccessfully_whenGivenValidInteger(t *testing.T)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var spaceID libapimb.SpaceID
 			err := json.Unmarshal([]byte(tt.jsonData), &spaceID)
 
@@ -38,6 +40,7 @@ func TestSpaceID_shouldUnmarshalSuccessfully_whenGivenValidInteger(t *testing.T)
 }
 
 func TestSpaceID_shouldReturnError_whenGivenInvalidData(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -58,6 +61,7 @@ func TestSpaceID_shouldReturnError_whenGivenInvalidData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var spaceID libapimb.SpaceID
 			err := json.Unmarshal([]byte(tt.jsonData), &spaceID)
 
@@ -69,6 +73,7 @@ func TestSpaceID_shouldReturnError_whenGivenInvalidData(t *testing.T) {
 }
 
 func TestSpaceIDs_shouldUnmarshalSuccessfully_whenGivenValidArray(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -93,6 +98,7 @@ func TestSpaceIDs_shouldUnmarshalSuccessfully_whenGivenValidArray(t *testing.T) 
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var spaceIDs libapimb.SpaceIDs
 			err := json.Unmarshal([]byte(tt.jsonData), &spaceIDs)
 
@@ -116,6 +122,7 @@ func TestSpaceIDs_shouldUnmarshalSuccessfully_whenGivenValidArray(t *testing.T) 
 }
 
 func TestSpaceIDs_shouldReturnError_whenGivenInvalidData(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -136,6 +143,7 @@ func TestSpaceIDs_shouldReturnError_whenGivenInvalidData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var spaceIDs libapimb.SpaceIDs
 			err := json.Unmarshal([]byte(tt.jsonData), &spaceIDs)
 
@@ -147,6 +155,7 @@ func TestSpaceIDs_shouldReturnError_whenGivenInvalidData(t *testing.T) {
 }
 
 func TestSpaceIDs_ToSpaceIDs_shouldReturnValidSpaceIDs(t *testing.T) {
+	t.Parallel()
 	spaceIDs := libapimb.SpaceIDs{123, 456}
 
 	result, err := spaceIDs.ToSpaceIDs()

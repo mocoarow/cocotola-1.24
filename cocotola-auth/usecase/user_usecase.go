@@ -34,11 +34,7 @@ func NewUserUsecase(systemToken libdomain.SystemToken, mbTxManager, mbNonTxManag
 }
 
 func (u *UserUsecase) RegisterUser(ctx context.Context, operator mbuserdomain.UserInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error) {
-	command, err := NewRegisterUserCommand(ctx, u.mbTxManager, u.mbNonTxManager, u.authTokenManager)
-	if err != nil {
-		return nil, mbliberrors.Errorf("NewRegisterUserCommand. err: %w", err)
-	}
-
+	command := NewRegisterUserCommand(ctx, u.mbTxManager, u.mbNonTxManager, u.authTokenManager)
 	tokenSet, err := command.Execute(ctx, operator, param)
 	if err != nil {
 		return nil, mbliberrors.Errorf("s.authTokenManager.CreateTokenSet. err: %w", err)

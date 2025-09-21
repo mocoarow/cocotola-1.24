@@ -18,7 +18,7 @@ type AddUserCommand struct {
 	logger       *slog.Logger
 }
 
-func NewAddUserCommand(ctx context.Context, txManager service.TransactionManager, nonTxManager service.TransactionManager) *AddUserCommand {
+func NewAddUserCommand(_ context.Context, txManager service.TransactionManager, nonTxManager service.TransactionManager) *AddUserCommand {
 	return &AddUserCommand{
 		txManager:    txManager,
 		nonTxManager: nonTxManager,
@@ -48,7 +48,7 @@ func (u *AddUserCommand) Execute(ctx context.Context, operator domain.UserInterf
 	return newUserID, nil
 }
 
-func (u *AddUserCommand) checkAuthorization(ctx context.Context, operator domain.UserInterface) error {
+func (u *AddUserCommand) checkAuthorization(_ context.Context, _ domain.UserInterface) error {
 	return nil
 }
 

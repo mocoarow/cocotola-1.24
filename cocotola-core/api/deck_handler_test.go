@@ -13,6 +13,7 @@ import (
 )
 
 func TestSpaceID_shouldUnmarshalSuccessfully_whenGivenValidInteger(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -27,6 +28,7 @@ func TestSpaceID_shouldUnmarshalSuccessfully_whenGivenValidInteger(t *testing.T)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var spaceID libapimb.SpaceID
 			err := json.Unmarshal([]byte(tt.jsonData), &spaceID)
 
@@ -43,6 +45,7 @@ func TestSpaceID_shouldUnmarshalSuccessfully_whenGivenValidInteger(t *testing.T)
 }
 
 func TestSpaceID_shouldReturnError_whenGivenInvalidData(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -63,6 +66,7 @@ func TestSpaceID_shouldReturnError_whenGivenInvalidData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var spaceID libapimb.SpaceID
 			err := json.Unmarshal([]byte(tt.jsonData), &spaceID)
 
@@ -74,6 +78,7 @@ func TestSpaceID_shouldReturnError_whenGivenInvalidData(t *testing.T) {
 }
 
 func TestLang2_shouldUnmarshalSuccessfully_whenGivenValidString(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -93,6 +98,7 @@ func TestLang2_shouldUnmarshalSuccessfully_whenGivenValidString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var lang2 libapimb.Lang2
 			err := json.Unmarshal([]byte(tt.jsonData), &lang2)
 
@@ -109,6 +115,7 @@ func TestLang2_shouldUnmarshalSuccessfully_whenGivenValidString(t *testing.T) {
 }
 
 func TestLang2_shouldReturnError_whenGivenInvalidData(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -133,6 +140,7 @@ func TestLang2_shouldReturnError_whenGivenInvalidData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var lang2 libapimb.Lang2
 			err := json.Unmarshal([]byte(tt.jsonData), &lang2)
 
@@ -144,6 +152,7 @@ func TestLang2_shouldReturnError_whenGivenInvalidData(t *testing.T) {
 }
 
 func TestAddDeckRequest_shouldUnmarshalSuccessfully_whenGivenValidJSON(t *testing.T) {
+	t.Parallel()
 	jsonData := `{
 		"spaceId": 123,
 		"name": "Test Deck",
@@ -180,6 +189,7 @@ func TestAddDeckRequest_shouldUnmarshalSuccessfully_whenGivenValidJSON(t *testin
 }
 
 func TestAddDeckRequest_shouldMarshalSuccessfully_whenGivenValidStruct(t *testing.T) {
+	t.Parallel()
 	spaceID, err := mbuserdomain.NewSpaceID(123)
 	if err != nil {
 		t.Fatalf("Failed to create SpaceID: %v", err)
@@ -215,6 +225,7 @@ func TestAddDeckRequest_shouldMarshalSuccessfully_whenGivenValidStruct(t *testin
 }
 
 func TestAddDeckRequest_shouldReturnError_whenGivenInvalidJSON(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -243,6 +254,7 @@ func TestAddDeckRequest_shouldReturnError_whenGivenInvalidJSON(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var req api.AddDeckRequest
 			err := json.Unmarshal([]byte(tt.jsonData), &req)
 

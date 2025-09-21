@@ -19,7 +19,7 @@ type AddOrganizationCommand struct {
 	logger       *slog.Logger
 }
 
-func NewAddOrganizationCommand(ctx context.Context, txManager, nonTxManager service.TransactionManager) *AddOrganizationCommand {
+func NewAddOrganizationCommand(_ context.Context, txManager, nonTxManager service.TransactionManager) *AddOrganizationCommand {
 	return &AddOrganizationCommand{
 		txManager:    txManager,
 		nonTxManager: nonTxManager,

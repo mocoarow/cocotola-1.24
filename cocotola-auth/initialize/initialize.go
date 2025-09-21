@@ -175,11 +175,6 @@ func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.
 		return nil, nil, mbliberrors.Errorf("rff: %w", err)
 	}
 
-	// mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-	// if err != nil {
-	// 	return nil, nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-	// }
-
 	// init transaction manager
 	mbTxManager := initMBTransactionManager(db, mbrff)
 	mbNonTxManager := initMBNonTransactionManager(mbrf)

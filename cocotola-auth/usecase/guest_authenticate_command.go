@@ -19,7 +19,7 @@ type GuestAuthenticateCommand struct {
 	authTokenManager service.AuthTokenManager
 }
 
-func NewGuestAuthenticateCommand(ctx context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager) *GuestAuthenticateCommand {
+func NewGuestAuthenticateCommand(_ context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager) *GuestAuthenticateCommand {
 	return &GuestAuthenticateCommand{
 		mbTxManager:      mbTxManager,
 		mbNonTxManager:   mbNonTxManager,
@@ -27,44 +27,39 @@ func NewGuestAuthenticateCommand(ctx context.Context, mbTxManager, mbNonTxManage
 	}
 }
 
-func (u *GuestAuthenticateCommand) Execute(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, organizationName string) (*domain.AuthTokenSet, error) {
+func (u *GuestAuthenticateCommand) Execute(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, organizationName string) (*domain.AuthTokenSet, error) {
 	// 1. Check authorization
-	if err := u.checkAuthorization(ctx, systemAdmin); err != nil {
+	if err := u.checkAuthorization(ctx, systemOwner); err != nil {
 		return nil, mbliberrors.Errorf("checkAuthorization: %w", err)
 	}
 
 	// 2. Execute
-	tokenSet, err := u.execute(ctx, systemAdmin, organizationName)
+	tokenSet, err := u.execute(ctx, systemOwner, organizationName)
 	if err != nil {
 		return nil, mbliberrors.Errorf("execute: %w", err)
 	}
 
 	// 3. Callback
-	if err := u.callback(ctx, systemAdmin); err != nil {
+	if err := u.callback(ctx, systemOwner); err != nil {
 		return nil, mbliberrors.Errorf("callback: %w", err)
 	}
 	return tokenSet, nil
 }
 
-func (u *GuestAuthenticateCommand) checkAuthorization(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface) error {
+func (u *GuestAuthenticateCommand) checkAuthorization(_ context.Context, _ mbuserdomain.SystemOwnerInterface) error {
 	return nil
 }
 
-func (u *GuestAuthenticateCommand) execute(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, organizationName string) (*domain.AuthTokenSet, error) {
-	sysOwner, err := u.findSystemOwnerByOrganizationName(ctx, systemAdmin, organizationName)
-	if err != nil {
-		return nil, mbliberrors.Errorf("findSystemOwnerByOrganizationName: %w", err)
-	}
-
+func (u *GuestAuthenticateCommand) execute(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, organizationName string) (*domain.AuthTokenSet, error) {
 	guestLoginID := libdomain.NewGuestLoginID(organizationName)
-	user, err := u.findUserbyLoginID(ctx, sysOwner, guestLoginID)
+	user, err := u.findUserbyLoginID(ctx, systemOwner, guestLoginID)
 	if err != nil {
 		if errors.Is(err, mbuserservice.ErrUserNotFound) {
 			return nil, domain.ErrUnauthenticated
 		}
 		return nil, mbliberrors.Errorf("findUserbyLoginID: %w", err)
 	}
-	org, err := u.getOrganization(ctx, sysOwner)
+	org, err := u.getOrganization(ctx, systemOwner)
 	if err != nil {
 		return nil, mbliberrors.Errorf("getOrganization: %w", err)
 	}
@@ -75,23 +70,18 @@ func (u *GuestAuthenticateCommand) execute(ctx context.Context, systemAdmin mbus
 	return tokenSet, nil
 }
 
-func (u *GuestAuthenticateCommand) callback(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface) error {
+func (u *GuestAuthenticateCommand) callback(_ context.Context, _ mbuserdomain.SystemOwnerInterface) error {
 	return nil
 }
 
-func (u *GuestAuthenticateCommand) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwner, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
-		return findSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
-	})
-}
 func (u *GuestAuthenticateCommand) findUserbyLoginID(ctx context.Context, operator mbuserdomain.UserInterface, loginID string) (*mbuserdomain.User, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) { //nolint:wrapcheck
 		return findUserbyLoginID(ctx, mbrf, operator, loginID)
 	})
 }
 
 func (u *GuestAuthenticateCommand) getOrganization(ctx context.Context, operator mbuserdomain.UserInterface) (*mbuserdomain.Organization, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.Organization, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.Organization, error) { //nolint:wrapcheck
 		return getOrganization(ctx, mbrf, operator)
 	})
 }

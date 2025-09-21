@@ -9,10 +9,10 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
-var ErrUserNotFound = errors.New("User not found")
-var ErrUserAlreadyExists = errors.New("User already exists")
+var ErrUserNotFound = errors.New("user not found")
+var ErrUserAlreadyExists = errors.New("user already exists")
 
-var ErrSystemOwnerNotFound = errors.New("SystemOwner not found")
+var ErrSystemOwnerNotFound = errors.New("system owner not found")
 
 var ErrUnauthenticated = errors.New("unauthenticated")
 
