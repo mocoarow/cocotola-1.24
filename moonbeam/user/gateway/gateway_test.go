@@ -108,7 +108,7 @@ func testDB(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testServ
 	}
 }
 
-func testOrganization(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwnerModel, owner *service.Owner)) {
+func testOrganization(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwnerModel, owner *domain.OwnerModel)) {
 	t.Helper()
 	testDB(t, func(t *testing.T, ctx context.Context, ts testService) {
 		t.Helper()
@@ -119,11 +119,10 @@ func testOrganization(t *testing.T, fn func(t *testing.T, ctx context.Context, t
 	})
 }
 
-func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*domain.OrganizationID, *domain.SystemOwnerModel, *service.Owner) {
+func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*domain.OrganizationID, *domain.SystemOwnerModel, *domain.OwnerModel) {
 	t.Helper()
 	orgName := RandString(orgNameLength)
-	sysAd, err := service.NewSystemAdmin(ctx, ts.rf)
-	require.NoError(t, err)
+	sysAd := domain.NewSystemAdminModel()
 
 	firstOwnerAddParam, err := service.NewUserAddParameter("OWNER_ID", "OWNER_NAME", "OWNER_PASSWORD", "", "", "", "")
 	require.NoError(t, err)
@@ -208,7 +207,7 @@ func teardownOrganization(t *testing.T, ts testService, orgID *domain.Organizati
 	// db.Where("true").Delete(&organizationEntity{})
 }
 
-func testAddUser(t *testing.T, ctx context.Context, ts testService, owner service.OwnerModelInterface, loginID, username, password string) *service.User {
+func testAddUser(t *testing.T, ctx context.Context, ts testService, owner service.OwnerModelInterface, loginID, username, password string) *domain.UserModel {
 	t.Helper()
 	userRepo := ts.rf.NewUserRepository(ctx)
 	userID1, err := userRepo.AddUser(ctx, owner, testNewUserAddParameter(t, loginID, username, password))
@@ -326,10 +325,8 @@ func getOrganization(t *testing.T, ctx context.Context, ts testService, orgID *d
 	userID, _ := domain.NewUserID(1)
 	userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
 	require.NoError(t, err)
-	user, err := service.NewUser(ctx, ts.rf, userModel)
-	require.NoError(t, err)
 
-	org, err := orgRepo.GetOrganization(ctx, user)
+	org, err := orgRepo.GetOrganization(ctx, userModel)
 	require.NoError(t, err)
 	require.Len(t, org.Name, orgNameLength)
 

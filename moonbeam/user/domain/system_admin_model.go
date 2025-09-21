@@ -10,6 +10,9 @@ func NewSystemAdminModel() *SystemAdminModel {
 	}
 }
 
-// func (s *systemAdminModel) IsSystemAdminModel() bool {
-// 	return true
-// }
+func (m *SystemAdminModel) IsSystemAdmin() bool {
+	return true
+}
+func (m *SystemAdminModel) GetUserID() *UserID {
+	return m.UserID
+}

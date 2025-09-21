@@ -16,7 +16,7 @@ func findUserByID(ctx context.Context, mbrf mbuserservice.RepositoryFactory, ope
 	if err != nil {
 		return nil, mbliberrors.Errorf("FindUserByLoginID(%d). err: %w", userID.Int(), err)
 	}
-	return user.UserModel, nil
+	return user, nil
 }
 
 func findUserbyLoginID(ctx context.Context, mbrf mbuserservice.RepositoryFactory, operator mbuserservice.OperatorInterface, loginID string) (*mbuserdomain.UserModel, error) {
@@ -25,7 +25,7 @@ func findUserbyLoginID(ctx context.Context, mbrf mbuserservice.RepositoryFactory
 	if err != nil {
 		return nil, mbliberrors.Errorf("FindUserByLoginID(%s). err: %w", loginID, err)
 	}
-	return user.UserModel, nil
+	return user, nil
 }
 
 func findSystemOwnerByOrganizationID(ctx context.Context, mbrf mbuserservice.RepositoryFactory, systemAdmin mbuserservice.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID) (*mbuserdomain.SystemOwnerModel, error) {

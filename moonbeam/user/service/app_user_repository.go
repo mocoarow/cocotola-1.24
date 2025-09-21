@@ -84,11 +84,11 @@ type UserRepository interface {
 
 	FindSystemOwnerByOrganizationName(ctx context.Context, operator SystemAdminInterface, organizationName string, options ...Option) (*domain.SystemOwnerModel, error)
 
-	FindUserByID(ctx context.Context, operator UserInterface, id *domain.UserID, options ...Option) (*User, error)
+	FindUserByID(ctx context.Context, operator UserInterface, id *domain.UserID, options ...Option) (*domain.UserModel, error)
 
-	FindUserByLoginID(ctx context.Context, operator UserInterface, loginID string) (*User, error)
+	FindUserByLoginID(ctx context.Context, operator UserInterface, loginID string) (*domain.UserModel, error)
 
-	FindOwnerByLoginID(ctx context.Context, operator SystemOwnerInterface, loginID string) (*Owner, error)
+	FindOwnerByLoginID(ctx context.Context, operator SystemOwnerInterface, loginID string) (*domain.OwnerModel, error)
 
 	AddUser(ctx context.Context, operator UserInterface, param *AddUserParameter) (*domain.UserID, error)
 

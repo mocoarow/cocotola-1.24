@@ -165,76 +165,12 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 	if err != nil {
 		return nil, mbliberrors.Errorf("get tokens and user info err: %w", err)
 	}
-
-	// createUserParameterFunc := func() (*mbuserservice.AddUserParameter, error) {
-	// 	return mbuserservice.NewUserAddParameter(
-	// 		info.Email, //googleUserInfo.Email,
-	// 		info.Name,  //googleUserInfo.Name,
-	// 		"",
-	// 		"google",
-	// 		info.Email,   // googleUserInfo.Email,
-	// 		accessToken,  // googleAuthResponse.AccessToken,
-	// 		refreshToken, // googleAuthResponse.RefreshToken,
-	// 	)
-	// }
-
-	// var tokenSet *domain.AuthTokenSet
-	// var targetOorganization *organization
-	// var targetUser *user
-	// if err := u.mbTxManager.Do(ctx, func(rf mbuserservice.RepositoryFactory) error {
-	// 	action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
-	// 		// service.WithOrganizationRepository(),
-	// 		service.WithOrganizationByName(organizationName),
-	// 		// service.WithUserRepository(),
-	// 	)
-	// 	if err != nil {
-	// 		return mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
-	// 	}
-	// 	organizationID := action.Organization.OrganizationID
-
-	// 	tmpOrganization, tmpUser, err := findOrRegisterUser(ctx, u.systemToken, rf, organizationID, info.Email, createUserParameterFunc)
-	// 	if err != nil && !errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
-	// 		return mbliberrors.Errorf("s.findOrRegisterUser. err: %w", err)
-	// 	}
-
-	// 	targetUser = &user{
-	// 		userID:         tmpUser.UserID,
-	// 		organizationID: tmpUser.OrganizationID,
-	// 		loginID:        tmpUser.LoginID,
-	// 		username:       tmpUser.Username,
-	// 	}
-	// 	targetOorganization = &organization{
-	// 		organizationID: tmpOrganization.OrganizationID,
-	// 		name:           tmpOrganization.Name,
-	// 	}
-
-	// 	return nil
-	// }); err != nil {
-	// 	return nil, mbliberrors.Errorf("RegisterUser. err: %w", err)
-	// }
-	// action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
-	// 	// service.WithOrganizationRepository(),
-	// 	service.WithOrganizationByName(organizationName),
-	// 	// service.WithUserRepository(),
-	// )
-	// if err != nil {
-	// 	return nil, mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
-	// }
-	sysOwner, err := mblibservice.Do1(ctx, u.mbNonTxManager, func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwnerModel, error) {
-		sysAdmin, err := mbuserservice.NewSystemAdmin(ctx, rf)
-		if err != nil {
-			return nil, mbliberrors.Errorf("NewSystemAdmin: %w", err)
-		}
-		userRepo := rf.NewUserRepository(ctx)
-		sysOwner, err := userRepo.FindSystemOwnerByOrganizationName(ctx, sysAdmin, organizationName)
-		if err != nil {
-			return nil, mbliberrors.Errorf("FindSystemOwnerByOrganizationName: %w", err)
-		}
-		return sysOwner, nil
-	})
+	systemAdmin := service.NewSystemAdmin(u.systemToken)
+	sysOwner, err := u.findSystemOwnerByOrganizationName(ctx, systemAdmin, organizationName)
 	if err != nil {
 		return nil, mbliberrors.Errorf("Do1: %w", err)
 	}
+
 	command, err := NewRegisterUserCommand(ctx, u.mbTxManager, u.mbNonTxManager, u.authTokenManager)
 	if err != nil {
 		return nil, mbliberrors.Errorf("NewRegisterUserCommand. err: %w", err)
@@ -264,59 +200,3 @@ func (u *GoogleUserUsecase) findSystemOwnerByOrganizationName(ctx context.Contex
 		return findSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
 	})
 }
-
-// func (u *GoogleUserUsecase) RetrieveAccessToken(ctx context.Context, code string) (*domain.AuthTokenSet, error) {
-// 	resp, err := u.googleAuthClient.RetrieveAccessToken(ctx, code)
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf(". err: %w", err)
-// 	}
-
-// 	return resp, nil
-// }
-
-// func (u *GoogleUserUsecase) RetrieveUserInfo(ctx context.Context, googleAuthResponse *domain.AuthTokenSet) (*domain.UserInfo, error) {
-// 	info, err := u.googleAuthClient.RetrieveUserInfo(ctx, googleAuthResponse)
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf(". err: %w", err)
-// 	}
-
-// 	return info, nil
-// }
-
-// func (u *GoogleUserUsecase) RegisterUser(ctx context.Context, googleUserInfo *domain.UserInfo, googleAuthResponse *domain.AuthTokenSet, organizationName string) (*domain.AuthTokenSet, error) {
-// 	var tokenSet *domain.AuthTokenSet
-
-// 	var targetOorganization *organization
-// 	var targetUser *user
-// 	if err := u.transactionManager.Do(ctx, func(rf service.RepositoryFactory) error {
-// 		tmpOrganization, tmpUser, err := u.registerUser(ctx, rf, organizationName, googleUserInfo.Email, googleUserInfo.Name, googleUserInfo.Email, googleAuthResponse.AccessToken, googleAuthResponse.RefreshToken)
-// 		if err != nil && !errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
-// 			return mbliberrors.Errorf("s.registerUser. err: %w", err)
-// 		}
-
-// 		targetUser = &user{
-// 			userID:      tmpUser.UserID,
-// 			organizationID: tmpUser.OrganizationID,
-// 			loginID:        tmpUser.LoginID,
-// 			username:       tmpUser.Username,
-// 		}
-// 		targetOorganization = &organization{
-// 			organizationID: tmpOrganization.OrganizationID,
-// 			name:           tmpOrganization.Name,
-// 		}
-
-// 		return nil
-// 	}); err != nil {
-// 		return nil, mbliberrors.Errorf("RegisterUser. err: %w", err)
-// 	}
-
-// 	// if err := s.registerUserCallback(ctx, organizationName, user); err != nil {
-// 	// 	return nil, mbliberrors.Errorf("registerStudentCallback. err: %w", err)
-// 	// }
-// 	tokenSetTmp, err := u.authTokenManager.CreateTokenSet(ctx, targetUser, targetOorganization)
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf("s.authTokenManager.CreateTokenSet. err: %w", err)
-// 	}
-// 	tokenSet = tokenSetTmp
-// 	return tokenSet, nil
-// }

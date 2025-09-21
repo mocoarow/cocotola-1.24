@@ -72,7 +72,7 @@ func findUserByLoginID(ctx context.Context, systemOwner mbuserservice.SystemOwne
 			return nil, mbliberrors.Errorf("find user by login id(%s): %w", loginID, err)
 		}
 
-		return user.UserModel, nil
+		return user, nil
 	}
 	userModel, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
 	if err != nil {

@@ -24,27 +24,6 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/usecase"
 )
 
-// type systemOwnerByOrganizationName struct {
-// }
-
-// func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
-// 	mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-// 	}
-// 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf("NewSystemAdmin: %w", err)
-// 	}
-
-// 	systemOwner, err := systemAdmin.FindSystemOwnerByOrganizationName(ctx, organizationName)
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf("GetFindSystemOwnerByOrganizationNameUser: %w", err)
-// 	}
-
-// 	return systemOwner, nil
-// }
-
 func NewInitTestRouterFunc() libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
 		test := parentRouterGroup.Group("test")
@@ -98,7 +77,7 @@ func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemTo
 
 func GetBasicPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager mbuserservice.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) []libcontroller.InitRouterGroupFunc {
 	// - rbac
-	rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
+	rbacUsecase := usecase.NewRBACUsecase(systemToken, txManager, nonTxManager)
 	// - callback
 	callbackUsecase := usecase.NewCallback(systemToken, txManager, nonTxManager, cocotolaCoreCallbackClient)
 

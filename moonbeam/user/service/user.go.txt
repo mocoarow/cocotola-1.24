@@ -8,24 +8,12 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
-type OperatorInterface interface {
-	GetUserID() *domain.UserID
-	GetOrganizationID() *domain.OrganizationID
-}
-
-type UserInterface interface {
-	GetUserID() *domain.UserID
-	GetOrganizationID() *domain.OrganizationID
-	// LoginID() string
-	// Username() string
-	// GetUserGroups() []domain.UserGroupModel
-}
 
 type User struct {
 	*domain.UserModel
 }
 
-func NewUser(_ context.Context, rf RepositoryFactory, userModel *domain.UserModel) (*User, error) {
+func NewUserx(_ context.Context, rf RepositoryFactory, userModel *domain.UserModel) (*User, error) {
 	if rf == nil {
 		return nil, liberrors.Errorf("rf is nil. err: %w", libdomain.ErrInvalidArgument)
 	}

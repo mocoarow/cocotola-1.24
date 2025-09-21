@@ -11,7 +11,6 @@ go_library(
         "google_user_usecase.go",
         "guest_authenticate.go",
         "guest_usecase.go",
-        "init.go",
         "password_authenticate.go",
         "password_usecase.go",
         "rbac_usecase.go",

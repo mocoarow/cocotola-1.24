@@ -10,6 +10,12 @@ func NewOwnerModel(user *UserModel) (*OwnerModel, error) {
 	}, nil
 }
 
-// func (m *ownerModel) IsOwnerModel() bool {
-// 	return true
-// }
+func (m *OwnerModel) IsOwner() bool {
+	return true
+}
+func (m *OwnerModel) GetOrganizationID() *OrganizationID {
+	return m.UserModel.GetOrganizationID()
+}
+func (m *OwnerModel) GetUserID() *UserID {
+	return m.UserModel.GetUserID()
+}

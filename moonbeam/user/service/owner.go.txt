@@ -1,25 +1,15 @@
 package service
 
 import (
-	"context"
-
-	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
-
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
-
-type OwnerModelInterface interface {
-	UserInterface
-	IsOwner() bool
-	// GetUserGroups() []domain.UserGroupModel
-}
 
 type Owner struct {
 	rf RepositoryFactory
 	*domain.OwnerModel
 }
 
-func NewOwner(rf RepositoryFactory, ownerModel *domain.OwnerModel) *Owner {
+func NewOwnerx(rf RepositoryFactory, ownerModel *domain.OwnerModel) *Owner {
 	m := &Owner{
 		rf:         rf,
 		OwnerModel: ownerModel,
@@ -28,15 +18,15 @@ func NewOwner(rf RepositoryFactory, ownerModel *domain.OwnerModel) *Owner {
 	return m
 }
 
-func (m *Owner) AddUser(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
-	userRepo := m.rf.NewUserRepository(ctx)
-	userID, err := userRepo.AddUser(ctx, m, param)
-	if err != nil {
-		return nil, liberrors.Errorf("m.userRepo.AddUser. err: %w", err)
-	}
+// func (m *Owner) AddUserx(ctx context.Context, param *AddUserParameter) (*domain.UserID, error) {
+// 	userRepo := m.rf.NewUserRepository(ctx)
+// 	userID, err := userRepo.AddUser(ctx, m, param)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("m.userRepo.AddUser. err: %w", err)
+// 	}
 
-	return userID, nil
-}
+// 	return userID, nil
+// }
 
 func (m *Owner) GetUserID() *domain.UserID {
 	return m.UserID

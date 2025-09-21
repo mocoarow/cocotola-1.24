@@ -128,28 +128,29 @@ func (e *userEntity) toSystemOwnerModel(ctx context.Context, rf service.Reposito
 
 	return systemOwnerModel, nil
 }
-func (e *userEntity) toOwner(rf service.RepositoryFactory, userGroup []*domain.UserGroupModel) (*service.Owner, error) {
-	ownerModel, err := e.toOwnerModel(userGroup)
-	if err != nil {
-		return nil, liberrors.Errorf("e.toOwnerModel(). err: %w", err)
-	}
 
-	return service.NewOwner(rf, ownerModel), nil
-}
+// func (e *userEntity) toOwner(rf service.RepositoryFactory, userGroup []*domain.UserGroupModel) (*service.Owner, error) {
+// 	ownerModel, err := e.toOwnerModel(userGroup)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("e.toOwnerModel(). err: %w", err)
+// 	}
 
-func (e *userEntity) toUser(ctx context.Context, rf service.RepositoryFactory, userGroups []*domain.UserGroupModel) (*service.User, error) {
-	userModel, err := e.toUserModel(userGroups)
-	if err != nil {
-		return nil, liberrors.Errorf("e.toUserModel(). err: %w", err)
-	}
+// 	return service.NewOwner(rf, ownerModel), nil
+// }
 
-	user, err := service.NewUser(ctx, rf, userModel)
-	if err != nil {
-		return nil, liberrors.Errorf("service.NewUser. err: %w", err)
-	}
+// func (e *userEntity) toUser(ctx context.Context, rf service.RepositoryFactory, userGroups []*domain.UserGroupModel) (*service.User, error) {
+// 	userModel, err := e.toUserModel(userGroups)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("e.toUserModel(). err: %w", err)
+// 	}
 
-	return user, nil
-}
+// 	user, err := service.NewUser(ctx, rf, userModel)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("service.NewUser. err: %w", err)
+// 	}
+
+// 	return user, nil
+// }
 
 func NewUserRepository(_ context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB, rf service.RepositoryFactory) service.UserRepository {
 	return &userRepository{
@@ -194,7 +195,7 @@ func (r *userRepository) FindSystemOwnerByOrganizationName(ctx context.Context, 
 		return nil, result.Error
 	}
 
-	user, err := userE.toUser(ctx, r.rf, nil)
+	user, err := userE.toUserModel(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -215,14 +216,14 @@ func (r *userRepository) FindSystemOwnerByOrganizationName(ctx context.Context, 
 	return userE.toSystemOwnerModel(ctx, r.rf, userGroups)
 }
 
-func (r *userRepository) FindUserByID(ctx context.Context, operator service.UserInterface, id *domain.UserID, options ...service.Option) (*service.User, error) {
+func (r *userRepository) FindUserByID(ctx context.Context, operator service.UserInterface, id *domain.UserID, options ...service.Option) (*domain.UserModel, error) {
 	_, span := tracer.Start(ctx, "userRepository.FindUserByID")
 	defer span.End()
 
 	return r.findUserByID(ctx, operator.GetOrganizationID(), id, options...)
 }
 
-func (r *userRepository) findUserByID(ctx context.Context, organizationID *domain.OrganizationID, id *domain.UserID, options ...service.Option) (*service.User, error) {
+func (r *userRepository) findUserByID(ctx context.Context, organizationID *domain.OrganizationID, id *domain.UserID, options ...service.Option) (*domain.UserModel, error) {
 	_, span := tracer.Start(ctx, "userRepository.findUserByID")
 	defer span.End()
 
@@ -237,7 +238,7 @@ func (r *userRepository) findUserByID(ctx context.Context, organizationID *domai
 		return nil, result.Error
 	}
 
-	user, err := userE.toUser(ctx, r.rf, nil)
+	user, err := userE.toUserModel(nil)
 	if err != nil {
 		return nil, liberrors.Errorf("toUser: %w", err)
 	}
@@ -256,17 +257,17 @@ func (r *userRepository) findUserByID(ctx context.Context, organizationID *domai
 		}
 	}
 
-	return userE.toUser(ctx, r.rf, userGroups)
+	return userE.toUserModel(userGroups)
 }
 
-func (r *userRepository) FindUserByLoginID(ctx context.Context, operator service.UserInterface, loginID string) (*service.User, error) {
+func (r *userRepository) FindUserByLoginID(ctx context.Context, operator service.UserInterface, loginID string) (*domain.UserModel, error) {
 	_, span := tracer.Start(ctx, "userRepository.FindUserByLoginID")
 	defer span.End()
 
 	return r.findUserByLoginID(ctx, operator.GetOrganizationID(), loginID)
 }
 
-func (r *userRepository) findUserByLoginID(ctx context.Context, organizationID *domain.OrganizationID, loginID string) (*service.User, error) {
+func (r *userRepository) findUserByLoginID(ctx context.Context, organizationID *domain.OrganizationID, loginID string) (*domain.UserModel, error) {
 	_, span := tracer.Start(ctx, "userRepository.findUserByLoginID")
 	defer span.End()
 
@@ -275,7 +276,7 @@ func (r *userRepository) findUserByLoginID(ctx context.Context, organizationID *
 		return nil, err
 	}
 
-	return userEntity.toUser(ctx, r.rf, nil)
+	return userEntity.toUserModel(nil)
 }
 
 func (r *userRepository) findUserEntityByLoginID(ctx context.Context, organizationID *domain.OrganizationID, loginID string) (*userEntity, error) {
@@ -296,7 +297,7 @@ func (r *userRepository) findUserEntityByLoginID(ctx context.Context, organizati
 	return &user, nil
 }
 
-func (r *userRepository) FindOwnerByLoginID(ctx context.Context, operator service.SystemOwnerInterface, loginID string) (*service.Owner, error) {
+func (r *userRepository) FindOwnerByLoginID(ctx context.Context, operator service.SystemOwnerInterface, loginID string) (*domain.OwnerModel, error) {
 	_, span := tracer.Start(ctx, "userRepository.FindOwnerByLoginID")
 	defer span.End()
 
@@ -320,7 +321,7 @@ func (r *userRepository) FindOwnerByLoginID(ctx context.Context, operator servic
 		return nil, result.Error
 	}
 
-	return user.toOwner(r.rf, nil)
+	return user.toOwnerModel(nil)
 }
 
 func (r *userRepository) addUser(_ context.Context, userEntity *userEntity) (*domain.UserID, error) {

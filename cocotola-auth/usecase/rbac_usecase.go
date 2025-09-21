@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
@@ -12,12 +13,14 @@ import (
 )
 
 type RBACUsecase struct {
+	systemToken  libdomain.SystemToken
 	txManager    mbuserservice.TransactionManager
 	nonTxManager mbuserservice.TransactionManager
 }
 
-func NewRBACUsecase(txManager, nonTxManager mbuserservice.TransactionManager) *RBACUsecase {
+func NewRBACUsecase(systemToken libdomain.SystemToken, txManager, nonTxManager mbuserservice.TransactionManager) *RBACUsecase {
 	return &RBACUsecase{
+		systemToken:  systemToken,
 		txManager:    txManager,
 		nonTxManager: nonTxManager,
 	}
@@ -30,10 +33,7 @@ func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuse
 		// 	return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
 		// }
 
-		sysAdmin, err := mbuserservice.NewSystemAdmin(ctx, rf)
-		if err != nil {
-			return mbliberrors.Errorf("NewSystemAdmin: %w", err)
-		}
+		sysAdmin := service.NewSystemAdmin(u.systemToken)
 
 		authorizationManager, err := rf.NewAuthorizationManager(ctx)
 		if err != nil {

@@ -40,55 +40,5 @@ func (u *Callback) OnAddUser(ctx context.Context, organizationID *mbuserdomain.O
 		return mbliberrors.Errorf("command.Execute: %w", err)
 	}
 
-	// fn := func(rf mbuserservice.RepositoryFactory) error {
-	// 	action, err := service.NewSystemOwnerAction(ctx, u.systemToken, rf,
-	// 		service.WithOrganizationByID(organizationID),
-	// 		service.WithAuthorizationManager(),
-	// 		service.WithSpaceManager(),
-	// 	)
-	// 	if err != nil {
-	// 		return mbliberrors.Errorf("NewSystemOwnerAction: %w", err)
-	// 	}
-
-	// 	// Create personal space for the new user
-	// 	user, err := action.SystemOwner.FindUserByID(ctx, userID)
-	// 	if err != nil {
-	// 		return mbliberrors.Errorf("FindUserByID: %w", err)
-	// 	}
-
-	// 	param := mbuserservice.AddPersonalSpaceParameter{
-	// 		UserID:  userID,
-	// 		KeyName: libdomain.NewPersonalSpaceKey(user.GetUserID().Int()),
-	// 		Name:    libdomain.NewPersonalSpaceName(user.LoginID),
-	// 	}
-	// 	spaceID, err := action.SpaceManager.AddPersonalSpace(ctx, action.SystemOwner, &param)
-	// 	if err != nil {
-	// 		return mbliberrors.Errorf("AddSpace: %w", err)
-	// 	}
-
-	// 	subject := userID.GetRBACSubject()
-	// 	actions := []mbuserdomain.RBACAction{
-	// 		librbac.CreateDeckAction,
-	// 		librbac.ListDecksAction,
-	// 	}
-	// 	object := spaceID.GetRBACObject()
-	// 	effect := mbuserservice.RBACAllowEffect
-	// 	for _, a := range actions {
-	// 		if err := action.AuthorizationManager.AddPolicyToUser(ctx, action.SystemOwner, subject, a, object, effect); err != nil {
-	// 			return mbliberrors.Errorf("add policy to user. space(%d), action(%s): %w", spaceID.Int(), a, err)
-	// 		}
-	// 	}
-
-	// 	if err := u.cocotolaCoreCallbackClient.OnAddUserSpace(ctx, organizationID, userID, spaceID); err != nil {
-	// 		return mbliberrors.Errorf("cocotolaCoreCallbackClient.OnAddUserSpace: %w", err)
-	// 	}
-
-	// 	return nil
-	// }
-
-	// if err := mblibservice.Do0(ctx, u.nonTxManager, fn); err != nil {
-	// 	return err //nolint:wrapcheck
-	// }
-
 	return nil
 }
