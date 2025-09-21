@@ -23,7 +23,7 @@ func NewGetUserInfoQuery(mbNonTxManager mbuserservice.TransactionManager, authTo
 	}
 }
 
-func (u *GetUserInfoQuery) Execute(ctx context.Context, systemAdmin mbuserservice.SystemAdminInterface, bearerToken string) (*mbuserdomain.UserModel, error) {
+func (u *GetUserInfoQuery) Execute(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, bearerToken string) (*mbuserdomain.User, error) {
 	// TODO: Check whether the token is registered in the Database
 	userInfo, err := u.authTokenManager.GetUserInfo(ctx, bearerToken)
 	if err != nil {
@@ -40,14 +40,14 @@ func (u *GetUserInfoQuery) Execute(ctx context.Context, systemAdmin mbuserservic
 	return user, nil
 }
 
-func (u *GetUserInfoQuery) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserservice.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwnerModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwnerModel, error) {
+func (u *GetUserInfoQuery) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwner, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
 		return findSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
 	})
 }
 
-func (u *GetUserInfoQuery) findUserbyLoginID(ctx context.Context, operator mbuserservice.OperatorInterface, loginID string) (*mbuserdomain.UserModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.UserModel, error) {
+func (u *GetUserInfoQuery) findUserbyLoginID(ctx context.Context, operator mbuserdomain.UserInterface, loginID string) (*mbuserdomain.User, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) {
 		return findUserbyLoginID(ctx, mbrf, operator, loginID)
 	})
 }

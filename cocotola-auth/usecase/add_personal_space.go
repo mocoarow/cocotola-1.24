@@ -34,7 +34,7 @@ func NewAddPersonalSpaceCommand(ctx context.Context, mbTxManager, mbNonTxManager
 	}
 }
 
-func (u *AddPersonalSpaceCommand) Execute(ctx context.Context, operator mbuserservice.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
+func (u *AddPersonalSpaceCommand) Execute(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
 	// 1. Check authorization
 	if err := u.checkAuthorization(ctx, operator); err != nil {
 		return mbliberrors.Errorf("checkAuthorization: %w", err)
@@ -53,11 +53,11 @@ func (u *AddPersonalSpaceCommand) Execute(ctx context.Context, operator mbuserse
 	return nil
 }
 
-func (u *AddPersonalSpaceCommand) checkAuthorization(ctx context.Context, operator mbuserservice.SystemAdminInterface) error {
+func (u *AddPersonalSpaceCommand) checkAuthorization(ctx context.Context, operator mbuserdomain.SystemAdminInterface) error {
 	return nil
 }
 
-func (u *AddPersonalSpaceCommand) execute(ctx context.Context, operator mbuserservice.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
+func (u *AddPersonalSpaceCommand) execute(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
 	sysOwner, err := u.findSystemOwnerByOrganizationID(ctx, operator, organizationID)
 	if err != nil {
 		return mbliberrors.Errorf("findSystemOwnerByOrganizationID: %w", err)
@@ -124,14 +124,14 @@ func (u *AddPersonalSpaceCommand) callback() error {
 	return nil
 }
 
-func (u *AddPersonalSpaceCommand) findSystemOwnerByOrganizationID(ctx context.Context, operator mbuserservice.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID) (*mbuserdomain.SystemOwnerModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwnerModel, error) {
+func (u *AddPersonalSpaceCommand) findSystemOwnerByOrganizationID(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID) (*mbuserdomain.SystemOwner, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
 		return findSystemOwnerByOrganizationID(ctx, mbrf, operator, organizationID)
 	})
 }
 
-func (u *AddPersonalSpaceCommand) findUserByID(ctx context.Context, operator mbuserservice.OperatorInterface, userID *mbuserdomain.UserID) (*mbuserdomain.UserModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.UserModel, error) {
+func (u *AddPersonalSpaceCommand) findUserByID(ctx context.Context, operator mbuserdomain.UserInterface, userID *mbuserdomain.UserID) (*mbuserdomain.User, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) {
 		return findUserByID(ctx, mbrf, operator, userID)
 	})
 }

@@ -8,7 +8,6 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -80,7 +79,7 @@ func getEnglishBlankDecks() []englishBlankDeck {
 	}
 }
 
-func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckRepo service.DeckRepository, cardRepo service.CardRepository, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID, nameToDecks map[string]*service.Deck) ([]*domain.DeckID, error) {
+func initEnglishBlankDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckRepo service.DeckRepository, cardRepo service.CardRepository, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID, nameToDecks map[string]*service.Deck) ([]*domain.DeckID, error) {
 	deckIDs := make([]*domain.DeckID, 0)
 	for _, englishBlankDeck := range getEnglishBlankDecks() {
 		name := englishBlankDeck.Name
@@ -123,10 +122,10 @@ func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorIn
 	return deckIDs, nil
 }
 
-func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID) ([]*domain.DeckID, error) {
+func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, systemOwnerID *mbuserdomain.UserID, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID) ([]*domain.DeckID, error) {
 	operator := &operator{
 		organizationID: organizationID,
-		userID:         mbuserservice.SystemAdminID,
+		userID:         systemOwnerID,
 	}
 
 	fn := func(rf service.RepositoryFactory) ([]*domain.DeckID, error) {

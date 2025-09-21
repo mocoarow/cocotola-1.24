@@ -18,14 +18,14 @@ import (
 )
 
 type AppUser struct {
-	operator mbuserservice.OperatorInterface
+	operator mbuserdomain.UserInterface
 	// rf         RepositoryFactory
 	txManager    service.TransactionManager
 	nonTxManager service.TransactionManager
 	rbacClient   libapi.CocotolaRBACClient
 }
 
-func NewAppUser(operator mbuserservice.OperatorInterface,
+func NewAppUser(operator mbuserdomain.UserInterface,
 	txManager, nonTxManager service.TransactionManager,
 	//rf RepositoryFactory,
 	rbacClient libapi.CocotolaRBACClient) *AppUser {

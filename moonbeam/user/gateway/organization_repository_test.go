@@ -30,9 +30,8 @@ func Test_organizationRepository_GetOrganization(t *testing.T) {
 		baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 		require.NoError(t, err)
 		userID, _ := domain.NewUserID(1)
-		userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
+		user, err := domain.NewUser(baseModel, userID, orgID, "login_id", "username", nil)
 		require.NoError(t, err)
-		user := testNewUser(userModel)
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			require.NoError(t, err)
@@ -40,9 +39,8 @@ func Test_organizationRepository_GetOrganization(t *testing.T) {
 		}
 
 		// get organization unregistered
-		otherUserModel, err := domain.NewUserModel(baseModel, userID, invalidOrgID, "login_id", "username", nil)
+		otherUser, err := domain.NewUser(baseModel, userID, invalidOrgID, "login_id", "username", nil)
 		require.NoError(t, err)
-		otherUser := testNewUser(otherUserModel)
 		{
 			_, err := orgRepo.GetOrganization(ctx, otherUser)
 			assert.ErrorIs(t, err, service.ErrOrganizationNotFound)
@@ -57,8 +55,7 @@ func Test_organizationRepository_FindOrganizationByName(t *testing.T) {
 		t.Helper()
 		orgID, _, _ := setupOrganization(ctx, t, ts)
 		defer teardownOrganization(t, ts, orgID)
-		sysAdModel := domain.NewSystemAdminModel()
-		sysAd := testNewSystemAdmin(sysAdModel)
+		sysAd := domain.NewSystemAdmin()
 
 		orgRepo := gateway.NewOrganizationRepository(ctx, ts.db)
 
@@ -70,9 +67,8 @@ func Test_organizationRepository_FindOrganizationByName(t *testing.T) {
 		userID, err := domain.NewUserID(1)
 		require.NoError(t, err)
 
-		userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
+		user, err := domain.NewUser(baseModel, userID, orgID, "login_id", "username", nil)
 		require.NoError(t, err)
-		user := testNewUser(userModel)
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			require.NoError(t, err)
@@ -102,8 +98,7 @@ func Test_organizationRepository_FindOrganizationByID(t *testing.T) {
 		t.Helper()
 		orgID, _, _ := setupOrganization(ctx, t, ts)
 		defer teardownOrganization(t, ts, orgID)
-		sysAdModel := domain.NewSystemAdminModel()
-		sysAd := testNewSystemAdmin(sysAdModel)
+		sysAd := domain.NewSystemAdmin()
 
 		orgRepo := gateway.NewOrganizationRepository(ctx, ts.db)
 
@@ -113,9 +108,8 @@ func Test_organizationRepository_FindOrganizationByID(t *testing.T) {
 		userID, err := domain.NewUserID(1)
 		require.NoError(t, err)
 
-		userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
+		user, err := domain.NewUser(baseModel, userID, orgID, "login_id", "username", nil)
 		require.NoError(t, err)
-		user := testNewUser(userModel)
 		{
 			org, err := orgRepo.GetOrganization(ctx, user)
 			require.NoError(t, err)

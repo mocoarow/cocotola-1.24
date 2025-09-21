@@ -3,8 +3,10 @@ package gateway_test
 import (
 	"testing"
 
-	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
 type organization struct {
@@ -12,10 +14,13 @@ type organization struct {
 	name           string
 }
 
-func (m *organization) OrganizationID() *mbuserdomain.OrganizationID {
+var _ service.OrganizationInterface = (*organization)(nil)
+
+func (m *organization) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return m.organizationID
 }
-func (m *organization) Name() string {
+
+func (m *organization) GetName() string {
 	return m.name
 }
 
@@ -26,16 +31,18 @@ type user struct {
 	username       string
 }
 
-func (m *user) UserID() *mbuserdomain.UserID {
+var _ service.UserInterface = (*user)(nil)
+
+func (m *user) GetUserID() *mbuserdomain.UserID {
 	return m.userID
 }
-func (m *user) OrganizationID() *mbuserdomain.OrganizationID {
+func (m *user) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return m.organizationID
 }
-func (m *user) Username() string {
+func (m *user) GetUsername() string {
 	return m.username
 }
-func (m *user) LoginID() string {
+func (m *user) GetLoginID() string {
 	return m.loginID
 }
 

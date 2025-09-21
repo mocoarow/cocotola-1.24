@@ -10,7 +10,6 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
@@ -35,7 +34,7 @@ func NewDeckQueryUsecase(db *gorm.DB, rbacClient libapi.CocotolaRBACClient) *Dec
 	}
 }
 
-func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator mbuserservice.OperatorInterface, action mbuserdomain.RBACAction, spaceIDs []*mbuserdomain.SpaceID) ([]*mbuserdomain.SpaceID, error) {
+func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator mbuserdomain.UserInterface, action mbuserdomain.RBACAction, spaceIDs []*mbuserdomain.SpaceID) ([]*mbuserdomain.SpaceID, error) {
 	filteredSpaceIDs := make([]*mbuserdomain.SpaceID, 0, len(spaceIDs))
 	for _, spaceID := range spaceIDs {
 		action := action
@@ -56,7 +55,7 @@ func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator mbuserserv
 	return filteredSpaceIDs, nil
 }
 
-func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error) {
+func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error) {
 	_, span := tracer.Start(ctx, "DeckQueryUseCase.FindDecks")
 	defer span.End()
 

@@ -5,12 +5,12 @@ import (
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 )
 
-type SystemOwnerModel struct {
+type SystemOwner struct {
 	*OwnerModel
 }
 
-func NewSystemOwnerModel(user *OwnerModel) (*SystemOwnerModel, error) {
-	m := &SystemOwnerModel{
+func NewSystemOwnerModel(user *OwnerModel) (*SystemOwner, error) {
+	m := &SystemOwner{
 		OwnerModel: user,
 	}
 
@@ -21,15 +21,15 @@ func NewSystemOwnerModel(user *OwnerModel) (*SystemOwnerModel, error) {
 	return m, nil
 }
 
-func (m *SystemOwnerModel) IsOwner() bool {
+func (m *SystemOwner) IsOwner() bool {
 	return true
 }
-func (m *SystemOwnerModel) IsSystemOwner() bool {
+func (m *SystemOwner) IsSystemOwner() bool {
 	return true
 }
-func (m *SystemOwnerModel) GetOrganizationID() *OrganizationID {
+func (m *SystemOwner) GetOrganizationID() *OrganizationID {
 	return m.OwnerModel.GetOrganizationID()
 }
-func (m *SystemOwnerModel) GetUserID() *UserID {
+func (m *SystemOwner) GetUserID() *UserID {
 	return m.OwnerModel.GetUserID()
 }

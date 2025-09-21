@@ -53,7 +53,7 @@ func (u *RBACUsecase) AddPolicyToUser(ctx context.Context, organizationID *mbuse
 	})
 }
 
-func (u *RBACUsecase) CheckAuthorization(ctx context.Context, operator mbuserservice.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error) {
+func (u *RBACUsecase) CheckAuthorization(ctx context.Context, operator mbuserdomain.UserInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error) {
 	ok, err := service.CheckAuthorization(ctx, operator, action, object, u.nonTxManager)
 	if err != nil {
 		return false, mbliberrors.Errorf("CheckAuthorization: %w", err)

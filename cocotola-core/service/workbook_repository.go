@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
@@ -37,7 +36,7 @@ type RoleUserInterface interface {
 }
 
 type WorkbookRepository interface {
-	AddWorkbook(ctx context.Context, operator mbuserservice.OperatorInterface, param *WorkbookAddParameter) (*domain.WorkbookID, error)
+	AddWorkbook(ctx context.Context, operator mbuserdomain.UserInterface, param *WorkbookAddParameter) (*domain.WorkbookID, error)
 
-	UpdateWorkbook(ctx context.Context, operator mbuserservice.OperatorInterface, workbookID *domain.WorkbookID, version int, param *WorkbookUpdateParameter) error
+	UpdateWorkbook(ctx context.Context, operator mbuserdomain.UserInterface, workbookID *domain.WorkbookID, version int, param *WorkbookUpdateParameter) error
 }

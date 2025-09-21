@@ -22,7 +22,6 @@ go_library(
         "//moonbeam/lib/domain",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
-        "//moonbeam/user/service",
     ],
 )
 

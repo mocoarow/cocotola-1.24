@@ -6,7 +6,7 @@ import (
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 )
 
-//	type OperatorInterface interface {
+//	type UserInterface interface {
 //		UserID() *mbuserdomain.UserID
 //		OrganizationID() *mbuserdomain.OrganizationID
 //		// LoginID() string

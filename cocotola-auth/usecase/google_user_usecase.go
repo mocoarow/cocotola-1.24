@@ -21,10 +21,10 @@ type organization struct {
 	name           string
 }
 
-func (m *organization) OrganizationID() *mbuserdomain.OrganizationID {
+func (m *organization) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return m.organizationID
 }
-func (m *organization) Name() string {
+func (m *organization) GetName() string {
 	return m.name
 }
 
@@ -35,16 +35,16 @@ type user struct {
 	username       string
 }
 
-func (m *user) UserID() *mbuserdomain.UserID {
+func (m *user) GetUserID() *mbuserdomain.UserID {
 	return m.userID
 }
-func (m *user) OrganizationID() *mbuserdomain.OrganizationID {
+func (m *user) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return m.organizationID
 }
-func (m *user) Username() string {
+func (m *user) GetUsername() string {
 	return m.username
 }
-func (m *user) LoginID() string {
+func (m *user) GetLoginID() string {
 	return m.loginID
 }
 
@@ -195,8 +195,8 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 	return tokenSet, nil
 }
 
-func (u *GoogleUserUsecase) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserservice.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwnerModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwnerModel, error) {
+func (u *GoogleUserUsecase) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwner, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
 		return findSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
 	})
 }

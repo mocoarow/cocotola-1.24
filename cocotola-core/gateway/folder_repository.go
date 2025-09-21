@@ -10,7 +10,6 @@ import (
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -97,7 +96,7 @@ func NewFolderRepository(db *gorm.DB) service.FolderRepository {
 	}
 }
 
-func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserservice.OperatorInterface, spaceID *mbuserdomain.SpaceID) (*service.Folder, error) {
+func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserdomain.UserInterface, spaceID *mbuserdomain.SpaceID) (*service.Folder, error) {
 	_, span := tracer.Start(ctx, "folderRepository.FindRooFolderBySpaceID")
 	defer span.End()
 
@@ -121,7 +120,7 @@ func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, opera
 	return folder, nil
 }
 
-func (r *folderRepository) AddFolder(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddFolderParameter) (*domain.FolderID, error) { //nolint:dupl
+func (r *folderRepository) AddFolder(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddFolderParameter) (*domain.FolderID, error) { //nolint:dupl
 	_, span := tracer.Start(ctx, "folderRepository.AddFolder")
 	defer span.End()
 

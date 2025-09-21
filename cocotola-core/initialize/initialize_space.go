@@ -1,6 +1,6 @@
 package initialize
 
-// func addPublicSpaceIfNotExists(ctx context.Context, rf service.RepositoryFactory, operator mbuserservice.OperatorInterface) (*domain.SpaceID, error) {
+// func addPublicSpaceIfNotExists(ctx context.Context, rf service.RepositoryFactory, operator mbuserdomain.UserInterface) (*domain.SpaceID, error) {
 // 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitPublicSpace"))
 
 // 	spaceRepo, err := rf.NewSpaceRepository(ctx)

@@ -33,7 +33,7 @@ func NewProfileQueryUsecase(nonTxManager mbuserservice.TransactionManager,
 	}
 }
 
-func (u *ProfileQueryUsecase) GetMyProfile(ctx context.Context, operator mbuserservice.OperatorInterface) (*domain.ProfileModel, error) {
+func (u *ProfileQueryUsecase) GetMyProfile(ctx context.Context, operator mbuserdomain.UserInterface) (*domain.ProfileModel, error) {
 	privateSpaceID, err := mblibservice.Do1(ctx, u.nonTxManager, func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SpaceID, error) {
 		// mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
 		// if err != nil {

@@ -22,7 +22,7 @@ func NewAddGuestCommand(txManager service.TransactionManager, nonTxManager servi
 	}
 }
 
-func (u *AddGuestCommand) Execute(ctx context.Context, operator service.SystemOwnerInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
+func (u *AddGuestCommand) Execute(ctx context.Context, operator domain.SystemOwnerInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
 	// 1. Check authorization
 	if err := u.checkAuthorization(ctx, operator); err != nil {
 		return nil, liberrors.Errorf("checkAuthorization: %w", err)
@@ -42,11 +42,11 @@ func (u *AddGuestCommand) Execute(ctx context.Context, operator service.SystemOw
 	return newUserID, nil
 }
 
-func (u *AddGuestCommand) checkAuthorization(ctx context.Context, operator service.SystemOwnerInterface) error {
+func (u *AddGuestCommand) checkAuthorization(ctx context.Context, operator domain.SystemOwnerInterface) error {
 	return nil
 }
 
-func (u *AddGuestCommand) execute(ctx context.Context, operator service.SystemOwnerInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
+func (u *AddGuestCommand) execute(ctx context.Context, operator domain.SystemOwnerInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
 	userID, err := libservice.Do1(ctx, u.txManager, func(rf service.RepositoryFactory) (*domain.UserID, error) {
 		return AddUser(ctx, operator, rf, param, aoeList)
 	})
@@ -57,6 +57,6 @@ func (u *AddGuestCommand) execute(ctx context.Context, operator service.SystemOw
 	return userID, nil
 }
 
-func (u *AddGuestCommand) callback(ctx context.Context, operator service.SystemOwnerInterface, newUserID *domain.UserID) error {
+func (u *AddGuestCommand) callback(ctx context.Context, operator domain.SystemOwnerInterface, newUserID *domain.UserID) error {
 	return nil
 }

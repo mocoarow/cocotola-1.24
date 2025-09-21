@@ -53,7 +53,7 @@ func (u *Authentication) SignInWithIDToken(ctx context.Context, idToken string) 
 	return tokenSet, nil
 }
 
-func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.UserModel, error) {
+func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.User, error) {
 	sysAdmin := service.NewSystemAdmin(u.systemToken)
 	query := NewGetUserInfoQuery(u.transactionManager, u.authTokenManager)
 	userModel, err := query.Execute(ctx, sysAdmin, bearerToken)

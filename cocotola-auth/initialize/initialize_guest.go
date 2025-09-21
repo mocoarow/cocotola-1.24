@@ -17,12 +17,15 @@ import (
 	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
 func initApp2(ctx context.Context, systemToken libdomain.SystemToken, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, organizationName string) (*mbuserdomain.UserID, error) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp2"))
 
-	sysOwner, err := findSystemOwnerByOrganizationName(ctx, newSystemAdmin(ctx), mbNonTxManager, organizationName)
+	sysAdmin := service.NewSystemAdmin(systemToken)
+
+	sysOwner, err := findSystemOwnerByOrganizationName(ctx, sysAdmin, mbNonTxManager, organizationName)
 	if err != nil {
 		return nil, mbliberrors.Errorf("findSystemOwnerByOrganizationName: %w", err)
 	}
@@ -52,7 +55,7 @@ func initApp2(ctx context.Context, systemToken libdomain.SystemToken, mbTxManage
 	return guestID, nil
 }
 
-func addGuestUser(ctx context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, systemOwner mbuserservice.SystemOwnerInterface, guestLoginID, guestUserName string, spaceID *mbuserdomain.SpaceID) *mbuserdomain.UserID {
+func addGuestUser(ctx context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, systemOwner mbuserdomain.SystemOwnerInterface, guestLoginID, guestUserName string, spaceID *mbuserdomain.SpaceID) *mbuserdomain.UserID {
 	allowEffect := mbuserservice.RBACAllowEffect
 	spaceObject := spaceID.GetRBACObject()
 

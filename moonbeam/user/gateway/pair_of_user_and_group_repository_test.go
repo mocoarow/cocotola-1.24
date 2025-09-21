@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
@@ -30,33 +31,31 @@ func Test_pairOfUserAndGroupRepository_FindUserGroupsByUserID(t *testing.T) {
 		pairOfUserAndGroupRepo := gateway.NewPairOfUserAndGroupRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// - user1 belongs to group1, group2, group3
-		for _, group := range []*service.UserGroup{group1, group2, group3} {
+		for _, group := range []*domain.UserGroupModel{group1, group2, group3} {
 			err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user1.GetUserID(), group.UserGroupID)
 			require.NoError(t, err)
 		}
 		// - user2 belongs to group1
-		for _, group := range []*service.UserGroup{group1} {
+		for _, group := range []*domain.UserGroupModel{group1} {
 			err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user2.GetUserID(), group.UserGroupID)
 			require.NoError(t, err)
 		}
 
 		// when
-		groupModels1, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, owner, user1.GetUserID())
+		groups1, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, owner, user1.GetUserID())
 		require.NoError(t, err)
-		groupModels2, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, owner, user2.GetUserID())
+		groups2, err := pairOfUserAndGroupRepo.FindUserGroupsByUserID(ctx, owner, user2.GetUserID())
 		require.NoError(t, err)
-		groups1 := testNewUserGroups(groupModels1)
-		groups2 := testNewUserGroups(groupModels2)
 
 		// then
 		// - user1 belongs to group1, group2, group3
 		assert.Len(t, groups1, 3)
-		assert.Equal(t, "GROUP_KEY_1", groups1[0].Key())
-		assert.Equal(t, "GROUP_KEY_2", groups1[1].Key())
-		assert.Equal(t, "GROUP_KEY_3", groups1[2].Key())
+		assert.Equal(t, "GROUP_KEY_1", groups1[0].Key)
+		assert.Equal(t, "GROUP_KEY_2", groups1[1].Key)
+		assert.Equal(t, "GROUP_KEY_3", groups1[2].Key)
 		// - user2 belongs to group1
 		assert.Len(t, groups2, 1)
-		assert.Equal(t, "GROUP_KEY_1", groups2[0].Key())
+		assert.Equal(t, "GROUP_KEY_1", groups2[0].Key)
 	}
 	testDB(t, fn)
 }

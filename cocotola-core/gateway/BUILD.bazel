@@ -23,7 +23,6 @@ go_library(
         "//moonbeam/lib/gateway",
         "//moonbeam/user/domain",
         "//moonbeam/user/gateway",
-        "//moonbeam/user/service",
         "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_otel//:otel",
     ],

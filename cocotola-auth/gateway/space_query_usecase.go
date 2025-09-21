@@ -16,7 +16,7 @@ func NewSpaceQueryUsecase(mbrf mbuserservice.RepositoryFactory) *SpaceQueryUseCa
 	return &SpaceQueryUseCase{mbrf: mbrf}
 }
 
-func (u *SpaceQueryUseCase) FindPublicSpaces(ctx context.Context, operator mbuserservice.OperatorInterface) ([]*mbuserdomain.SpaceModel, error) {
+func (u *SpaceQueryUseCase) FindPublicSpaces(ctx context.Context, operator mbuserdomain.UserInterface) ([]*mbuserdomain.SpaceModel, error) {
 	_, span := tracer.Start(ctx, "SpaceQueryUseCase.FindPublicSpaces")
 	defer span.End()
 
@@ -28,7 +28,7 @@ func (u *SpaceQueryUseCase) FindPublicSpaces(ctx context.Context, operator mbuse
 
 	spaceModels := make([]*mbuserdomain.SpaceModel, 0, len(spaces))
 	for _, d := range spaces {
-		spaceModels = append(spaceModels, d.SpaceModel)
+		spaceModels = append(spaceModels, d)
 	}
 
 	return spaceModels, nil

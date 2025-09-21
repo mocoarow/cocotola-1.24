@@ -27,7 +27,7 @@ func NewAddOrganizationCommand(ctx context.Context, txManager, nonTxManager serv
 	}
 }
 
-func (u *AddOrganizationCommand) Execute(ctx context.Context, operator service.SystemAdminInterface, organizationName string) (*domain.OrganizationID, error) {
+func (u *AddOrganizationCommand) Execute(ctx context.Context, operator domain.SystemAdminInterface, organizationName string) (*domain.OrganizationID, error) {
 	fn := func(rf service.RepositoryFactory) (*domain.OrganizationID, error) {
 		orgRepo := rf.NewOrganizationRepository(ctx)
 		userRepo := rf.NewUserRepository(ctx)
@@ -90,7 +90,7 @@ type ActionObjectEffect struct {
 	Effect domain.RBACEffect
 }
 
-func (u *AddOrganizationCommand) addSystemOwnerToOrganization(ctx context.Context, operator service.SystemAdminInterface, userRepo service.UserRepository, authorizationManager service.AuthorizationManager, organizationID *domain.OrganizationID) (*domain.UserID, error) {
+func (u *AddOrganizationCommand) addSystemOwnerToOrganization(ctx context.Context, operator domain.SystemAdminInterface, userRepo service.UserRepository, authorizationManager service.AuthorizationManager, organizationID *domain.OrganizationID) (*domain.UserID, error) {
 	systemOwnerID, err := userRepo.AddSystemOwner(ctx, operator, organizationID)
 	if err != nil {
 		return nil, liberrors.Errorf("AddSystemOwner: %w", err)
@@ -119,7 +119,7 @@ func (u *AddOrganizationCommand) addSystemOwnerToOrganization(ctx context.Contex
 	return systemOwnerID, nil
 }
 
-func (u *AddOrganizationCommand) addOwnergroupToOrganization(ctx context.Context, operator service.SystemOwnerInterface, userGroupRepo service.UserGroupRepository, authorizationManager service.AuthorizationManager, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
+func (u *AddOrganizationCommand) addOwnergroupToOrganization(ctx context.Context, operator domain.SystemOwnerInterface, userGroupRepo service.UserGroupRepository, authorizationManager service.AuthorizationManager, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
 	// 4. add owner-group
 	ownerGroupID, err := userGroupRepo.AddOwnerGroup(ctx, operator, organizationID)
 	if err != nil {

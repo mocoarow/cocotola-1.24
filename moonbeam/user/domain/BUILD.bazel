@@ -4,15 +4,15 @@ load("//bazel:go_test.bzl", "smart_go_test")
 go_library(
     name = "domain",
     srcs = [
-        "app_user_model.go",
         "init.go",
-        "organization_model.go",
-        "owner_model.go",
+        "organization.go",
+        "owner.go",
         "rbac.go",
         "space_model.go",
-        "system_admin_model.go",
-        "system_owner_model.go",
-        "user_group_model.go",
+        "system_admin.go",
+        "system_owner.go",
+        "user.go",
+        "user_group.go",
         "user_role.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain",
@@ -26,8 +26,8 @@ go_library(
 smart_go_test(
     name = "domain_test",
     srcs = [
-        "organization_model_s_test.go",
-        "system_owner_model_test.go",
+        "organization_s_test.go",
+        "system_owner_s_test.go",
     ],
     deps = [
         ":domain",

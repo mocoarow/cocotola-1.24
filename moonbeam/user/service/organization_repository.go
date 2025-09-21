@@ -43,13 +43,13 @@ func NewOrganizationAddParameter(name string, firstOwner *AddUserParameter) (*Ad
 // }
 
 type OrganizationRepository interface {
-	GetOrganization(ctx context.Context, operator UserInterface) (*Organization, error)
+	GetOrganization(ctx context.Context, operator domain.UserInterface) (*domain.Organization, error)
 
-	FindOrganizationByName(ctx context.Context, operator SystemAdminInterface, name string) (*Organization, error)
+	FindOrganizationByName(ctx context.Context, operator domain.SystemAdminInterface, name string) (*domain.Organization, error)
 
-	FindOrganizationByID(ctx context.Context, operator SystemAdminInterface, id *domain.OrganizationID) (*Organization, error)
+	FindOrganizationByID(ctx context.Context, operator domain.SystemAdminInterface, id *domain.OrganizationID) (*domain.Organization, error)
 
-	AddOrganization(ctx context.Context, operator SystemAdminInterface, organizationName string) (*domain.OrganizationID, error)
+	AddOrganization(ctx context.Context, operator domain.SystemAdminInterface, organizationName string) (*domain.OrganizationID, error)
 
 	// FindOrganizationByName(ctx context.Context, operator SystemAdmin, name string) (Organization, error)
 	// FindOrganization(ctx context.Context, operator User) (Organization, error)

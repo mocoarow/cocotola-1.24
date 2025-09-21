@@ -27,7 +27,7 @@ func NewPasswordAuthenticateCommand(ctx context.Context, mbTxManager, mbNonTxMan
 	}
 }
 
-func (u *PasswordAuthenticateCommand) Execute(ctx context.Context, systemAdmin mbuserservice.SystemAdminInterface, loginID, password, organizationName string) (*domain.AuthTokenSet, error) {
+func (u *PasswordAuthenticateCommand) Execute(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, loginID, password, organizationName string) (*domain.AuthTokenSet, error) {
 	// 1. Check authorization
 	if err := u.checkAuthorization(ctx, systemAdmin, loginID); err != nil {
 		return nil, mbliberrors.Errorf("checkAuthorization: %w", err)
@@ -46,14 +46,14 @@ func (u *PasswordAuthenticateCommand) Execute(ctx context.Context, systemAdmin m
 	return tokenSet, nil
 }
 
-func (u *PasswordAuthenticateCommand) checkAuthorization(ctx context.Context, systemAdmin mbuserservice.SystemAdminInterface, loginID string) error {
+func (u *PasswordAuthenticateCommand) checkAuthorization(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, loginID string) error {
 	if strings.Contains(loginID, "guest@@") {
 		return domain.ErrUnauthenticated
 	}
 
 	return nil
 }
-func (u *PasswordAuthenticateCommand) execute(ctx context.Context, systemAdmin mbuserservice.SystemAdminInterface, loginID, password, organizationName string) (*domain.AuthTokenSet, error) {
+func (u *PasswordAuthenticateCommand) execute(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, loginID, password, organizationName string) (*domain.AuthTokenSet, error) {
 	sysOwner, err := u.findSystemOwnerByOrganizationName(ctx, systemAdmin, organizationName)
 	if err != nil {
 		return nil, mbliberrors.Errorf("findSystemOwnerByOrganizationName: %w", err)
@@ -91,27 +91,27 @@ func (u *PasswordAuthenticateCommand) execute(ctx context.Context, systemAdmin m
 	return tokenSet, nil
 }
 
-func (u *PasswordAuthenticateCommand) callback(ctx context.Context, systemAdmin mbuserservice.SystemAdminInterface) error {
+func (u *PasswordAuthenticateCommand) callback(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface) error {
 	return nil
 }
 
-func (u *PasswordAuthenticateCommand) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserservice.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwnerModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwnerModel, error) {
+func (u *PasswordAuthenticateCommand) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwner, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
 		return findSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
 	})
 }
-func (u *PasswordAuthenticateCommand) findUserbyLoginID(ctx context.Context, operator mbuserservice.OperatorInterface, loginID string) (*mbuserdomain.UserModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.UserModel, error) {
+func (u *PasswordAuthenticateCommand) findUserbyLoginID(ctx context.Context, operator mbuserdomain.UserInterface, loginID string) (*mbuserdomain.User, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) {
 		return findUserbyLoginID(ctx, mbrf, operator, loginID)
 	})
 }
 
-func (u *PasswordAuthenticateCommand) getOrganization(ctx context.Context, operator mbuserservice.OperatorInterface) (*mbuserdomain.OrganizationModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.OrganizationModel, error) {
+func (u *PasswordAuthenticateCommand) getOrganization(ctx context.Context, operator mbuserdomain.UserInterface) (*mbuserdomain.Organization, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.Organization, error) {
 		return getOrganization(ctx, mbrf, operator)
 	})
 }
 
-func (u *PasswordAuthenticateCommand) createTokenSet(ctx context.Context, userModel *mbuserdomain.UserModel, organizationModel *mbuserdomain.OrganizationModel) (*domain.AuthTokenSet, error) {
+func (u *PasswordAuthenticateCommand) createTokenSet(ctx context.Context, userModel *mbuserdomain.User, organizationModel *mbuserdomain.Organization) (*domain.AuthTokenSet, error) {
 	return createTokenSet(ctx, u.authTokenManager, userModel, organizationModel)
 }

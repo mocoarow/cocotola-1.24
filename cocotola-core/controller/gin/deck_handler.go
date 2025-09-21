@@ -12,7 +12,7 @@ import (
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
@@ -25,19 +25,19 @@ import (
 )
 
 type GuestDeckQueryUsecase interface {
-	FindDecks(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error)
+	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error)
 
-	// RetrieveDeckByID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
+	// RetrieveDeckByID(ctx context.Context, operator domain.UserInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
 }
 type StudentDeckQueryUsecase interface {
-	FindDecks(ctx context.Context, operator mbuserservice.OperatorInterface) ([]*domain.DeckModel, error)
+	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface) ([]*domain.DeckModel, error)
 
-	RetrieveDeckByID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
+	RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
 }
 
 type DeckCommandUsecase interface {
-	AddDeck(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddDeckParameter) (*domain.DeckID, error)
-	UpdateDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error
+	AddDeck(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) (*domain.DeckID, error)
+	UpdateDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error
 }
 
 type DeckHandler struct {
@@ -71,7 +71,7 @@ func (h *DeckHandler) FindDecks(c *gin.Context) {
 	}, h.errorHandle)
 }
 
-func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, operator mbuserservice.OperatorInterface) error {
+func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, operator mbuserdomain.UserInterface) error {
 	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsGuest")
 	defer span.End()
 
@@ -117,7 +117,7 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 	return nil
 }
 
-func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, operator mbuserservice.OperatorInterface) error {
+func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, operator mbuserdomain.UserInterface) error {
 	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsStudent")
 	defer span.End()
 
@@ -131,7 +131,7 @@ func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, op
 }
 
 func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		deckIDInt, err := helper.GetIntFromPath(c, "deckID")
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("GetIntFromPath. err: %+v", err))
@@ -157,7 +157,7 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 }
 
 func (h *DeckHandler) AddDeck(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		var apiReq api.AddDeckRequest
 		if err := c.ShouldBindJSON(&apiReq); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
@@ -185,7 +185,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 }
 
 func (h *DeckHandler) UpdateDeck(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		version, err := helper.GetIntFromQuery(c, "version")
 		if err != nil {
 			return mblibdomain.ErrInvalidArgument

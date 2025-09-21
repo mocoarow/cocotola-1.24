@@ -6,6 +6,7 @@ import (
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -32,7 +33,7 @@ func NewUserUsecase(systemToken libdomain.SystemToken, mbTxManager, mbNonTxManag
 	}
 }
 
-func (u *UserUsecase) RegisterUser(ctx context.Context, operator mbuserservice.OperatorInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error) {
+func (u *UserUsecase) RegisterUser(ctx context.Context, operator mbuserdomain.UserInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error) {
 	command, err := NewRegisterUserCommand(ctx, u.mbTxManager, u.mbNonTxManager, u.authTokenManager)
 	if err != nil {
 		return nil, mbliberrors.Errorf("NewRegisterUserCommand. err: %w", err)

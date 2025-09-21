@@ -10,7 +10,7 @@ import (
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
@@ -20,7 +20,7 @@ import (
 )
 
 type ProfileUsecase interface {
-	GetMyProfile(ctx context.Context, operator mbuserservice.OperatorInterface) (*domain.ProfileModel, error)
+	GetMyProfile(ctx context.Context, operator mbuserdomain.UserInterface) (*domain.ProfileModel, error)
 }
 
 type ProfileHandler struct {
@@ -29,7 +29,7 @@ type ProfileHandler struct {
 }
 
 func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		result, err := h.profileUsecase.GetMyProfile(ctx, operator)
 		if err != nil {
 			return mbliberrors.Errorf("GetMyProfile: %w", err)

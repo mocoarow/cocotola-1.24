@@ -6,16 +6,15 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-func initRootFolder(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, publicDefaultSpaceID *mbuserdomain.SpaceID) (*domain.FolderID, error) {
+func initRootFolder(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, sysOwnerID *mbuserdomain.UserID, publicDefaultSpaceID *mbuserdomain.SpaceID) (*domain.FolderID, error) {
 	operator := &operator{
 		organizationID: organizationID,
-		userID:         mbuserservice.SystemAdminID,
+		userID:         sysOwnerID,
 	}
 
 	fn := func(rf service.RepositoryFactory) (*domain.FolderID, error) {

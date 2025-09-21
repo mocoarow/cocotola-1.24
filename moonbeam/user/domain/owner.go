@@ -1,12 +1,12 @@
 package domain
 
 type OwnerModel struct {
-	*UserModel
+	*User
 }
 
-func NewOwnerModel(user *UserModel) (*OwnerModel, error) {
+func NewOwnerModel(user *User) (*OwnerModel, error) {
 	return &OwnerModel{
-		UserModel: user,
+		User: user,
 	}, nil
 }
 
@@ -14,8 +14,8 @@ func (m *OwnerModel) IsOwner() bool {
 	return true
 }
 func (m *OwnerModel) GetOrganizationID() *OrganizationID {
-	return m.UserModel.GetOrganizationID()
+	return m.User.GetOrganizationID()
 }
 func (m *OwnerModel) GetUserID() *UserID {
-	return m.UserModel.GetUserID()
+	return m.User.GetUserID()
 }

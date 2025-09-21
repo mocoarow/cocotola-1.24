@@ -20,7 +20,7 @@ func NewProfileUsecase(nonTxManager service.TransactionManager) *ProfileUsecase 
 	}
 }
 
-// func (u *ProfileUsecase) GetMyProfile(ctx context.Context, operator service.OperatorInterface) (*domain.ProfileModel, error) {
+// func (u *ProfileUsecase) GetMyProfile(ctx context.Context, operator domain.UserInterface) (*domain.ProfileModel, error) {
 // privateSpaceID, err := mblibservice.Do1(ctx, u.nonTxManager, func(rf service.RepositoryFactory) (*domain.SpaceID, error) {
 // 	pairofUserAndSpaceRepo, err := rf.NewPairOfUserAndSpaceRepository(ctx)
 // 	if err != nil {

@@ -34,10 +34,10 @@ type organization struct {
 	name           string
 }
 
-func (m *organization) OrganizationID() *mbuserdomain.OrganizationID {
+func (m *organization) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return m.organizationID
 }
-func (m *organization) Name() string {
+func (m *organization) GetName() string {
 	return m.name
 }
 
@@ -51,13 +51,13 @@ type user struct {
 //	func (m *user) UserID() *mbuserdomain.UserID {
 //		return m.userID
 //	}
-func (m *user) OrganizationID() *mbuserdomain.OrganizationID {
+func (m *user) GetOrganizationID() *mbuserdomain.OrganizationID {
 	return m.organizationID
 }
-func (m *user) Username() string {
+func (m *user) GetUsername() string {
 	return m.username
 }
-func (m *user) LoginID() string {
+func (m *user) GetLoginID() string {
 	return m.loginID
 }
 
@@ -150,10 +150,10 @@ func (m *AuthTokenManager) createJWT(ctx context.Context, user service.UserInter
 	now := time.Now()
 	claims := UserClaims{ //nolint:exhaustruct
 		// UserID:        user.UserID().Int(),
-		LoginID:          user.LoginID(),
-		Username:         user.Username(),
-		OrganizationID:   organization.OrganizationID().Int(),
-		OrganizationName: organization.Name(),
+		LoginID:          user.GetLoginID(),
+		Username:         user.GetUsername(),
+		OrganizationID:   organization.GetOrganizationID().Int(),
+		OrganizationName: organization.GetName(),
 		TokenType:        tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{ //nolint:exhaustruct
 			IssuedAt:  jwt.NewNumericDate(now),

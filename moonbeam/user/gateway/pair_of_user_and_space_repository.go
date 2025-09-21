@@ -35,7 +35,7 @@ func NewPairOfUserAndSpaceRepository(_ context.Context, dialect libgateway.Diale
 	}
 }
 
-func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context, operator service.UserInterface, userID *domain.UserID, spaceID *domain.SpaceID) error {
+func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context, operator domain.UserInterface, userID *domain.UserID, spaceID *domain.SpaceID) error {
 	_, span := tracer.Start(ctx, "pairOfUserAndSpaceRepository.AddPairOfUserAndSpace")
 	defer span.End()
 
@@ -54,7 +54,7 @@ func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context
 	return nil
 }
 
-func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operator service.UserInterface) ([]*service.Space, error) {
+func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.SpaceModel, error) {
 	spacesE := []spaceEntity{}
 	if result := r.db.WithContext(ctx).Table(SpaceTableName).Select(SpaceTableName+".*").
 		Where(SpaceTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
@@ -69,9 +69,9 @@ func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operato
 		return nil, result.Error
 	}
 
-	spaces := make([]*service.Space, len(spacesE))
+	spaces := make([]*domain.SpaceModel, len(spacesE))
 	for i, e := range spacesE {
-		m, err := e.toSpace()
+		m, err := e.toSpaceModel()
 		if err != nil {
 			return nil, err
 		}

@@ -10,7 +10,6 @@ import (
 
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
@@ -39,9 +38,9 @@ type SystemAdminInterface interface {
 type RBACUsecase interface {
 	// Who can do what actions on which resources
 	AddPolicyToUser(ctx context.Context, organizationID *mbuserdomain.OrganizationID, subject mbuserdomain.RBACSubject, listOfActionObjectEffect []mbuserdomain.RBACActionObjectEffect) error
-	// Authorize(ctx context.Context, operator service.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error)
+	// Authorize(ctx context.Context, operator domain.UserInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error)
 	// Check whether the operator can do the action on the object
-	CheckAuthorization(ctx context.Context, operator mbuserservice.OperatorInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error)
+	CheckAuthorization(ctx context.Context, operator mbuserdomain.UserInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject) (bool, error)
 }
 
 type RBACHandler struct {

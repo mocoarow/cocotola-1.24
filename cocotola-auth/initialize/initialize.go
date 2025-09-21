@@ -124,23 +124,23 @@ func newCallbackOnAddUserSpace(cocotolaCoreCallbackClient service.CocotolaCoreCa
 	}
 }
 
-func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (*mbuserdomain.OrganizationID, *mbuserdomain.UserID, *mbuserdomain.SpaceID, error) {
+func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (*mbuserdomain.OrganizationID, *mbuserdomain.UserID, *mbuserdomain.UserID, *mbuserdomain.SpaceID, error) {
 	txManager, nonTxManager, err := initApp(ctx, systemToken, parent, dialect, driverName, db, logConfig, authConfig)
 	if err != nil {
-		return nil, nil, nil, mbliberrors.Errorf("initApp: %w", err)
+		return nil, nil, nil, nil, mbliberrors.Errorf("initApp: %w", err)
 	}
 
-	organizationID, publicDefaultSpaceID, err := initOrganization(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
+	organizationID, sysOwnerID, publicDefaultSpaceID, err := initOrganization(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
 	if err != nil {
-		return nil, nil, nil, mbliberrors.Errorf("initOrganization: %w", err)
+		return nil, nil, nil, nil, mbliberrors.Errorf("initOrganization: %w", err)
 	}
 
 	guestID, err := initApp2(ctx, systemToken, txManager, nonTxManager, "cocotola")
 	if err != nil {
-		return nil, nil, nil, mbliberrors.Errorf("initApp2: %w", err)
+		return nil, nil, nil, nil, mbliberrors.Errorf("initApp2: %w", err)
 	}
 
-	return organizationID, guestID, publicDefaultSpaceID, nil
+	return organizationID, sysOwnerID, guestID, publicDefaultSpaceID, nil
 }
 
 func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (mbuserservice.TransactionManager, mbuserservice.TransactionManager, error) {

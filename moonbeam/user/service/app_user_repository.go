@@ -80,25 +80,25 @@ type Option string
 var IncludeGroups Option = "IncludeGroups"
 
 type UserRepository interface {
-	FindSystemOwnerByOrganizationID(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.SystemOwnerModel, error)
+	FindSystemOwnerByOrganizationID(ctx context.Context, operator domain.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.SystemOwner, error)
 
-	FindSystemOwnerByOrganizationName(ctx context.Context, operator SystemAdminInterface, organizationName string, options ...Option) (*domain.SystemOwnerModel, error)
+	FindSystemOwnerByOrganizationName(ctx context.Context, operator domain.SystemAdminInterface, organizationName string, options ...Option) (*domain.SystemOwner, error)
 
-	FindUserByID(ctx context.Context, operator UserInterface, id *domain.UserID, options ...Option) (*domain.UserModel, error)
+	FindUserByID(ctx context.Context, operator domain.UserInterface, id *domain.UserID, options ...Option) (*domain.User, error)
 
-	FindUserByLoginID(ctx context.Context, operator UserInterface, loginID string) (*domain.UserModel, error)
+	FindUserByLoginID(ctx context.Context, operator domain.UserInterface, loginID string) (*domain.User, error)
 
-	FindOwnerByLoginID(ctx context.Context, operator SystemOwnerInterface, loginID string) (*domain.OwnerModel, error)
+	FindOwnerByLoginID(ctx context.Context, operator domain.SystemOwnerInterface, loginID string) (*domain.OwnerModel, error)
 
-	AddUser(ctx context.Context, operator UserInterface, param *AddUserParameter) (*domain.UserID, error)
+	AddUser(ctx context.Context, operator domain.UserInterface, param *AddUserParameter) (*domain.UserID, error)
 
-	AddSystemOwner(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserID, error)
+	AddSystemOwner(ctx context.Context, operator domain.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserID, error)
 
 	// VerifyPassword(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, loginID, password string) (bool, error)
 
-	VerifyPassword(ctx context.Context, operator SystemOwnerInterface, loginID, password string) (bool, error)
+	VerifyPassword(ctx context.Context, operator domain.SystemOwnerInterface, loginID, password string) (bool, error)
 
-	// AddFirstOwner(ctx context.Context, operator domain.SystemOwnerModel, param FirstOwnerAddParameter) (domain.UserID, error)
+	// AddFirstOwner(ctx context.Context, operator domain.SystemOwner, param FirstOwnerAddParameter) (domain.UserID, error)
 
-	// FindUserIDs(ctx context.Context, operator domain.SystemOwnerModel, pageNo, pageSize int) ([]domain.UserID, error)
+	// FindUserIDs(ctx context.Context, operator domain.SystemOwner, pageNo, pageSize int) ([]domain.UserID, error)
 }

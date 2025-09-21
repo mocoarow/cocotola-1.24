@@ -38,6 +38,8 @@ type rbacRepository struct {
 	enforcer casbin.IEnforcer
 }
 
+var _ service.RBACRepository = (*rbacRepository)(nil)
+
 func newRBACRepository(_ context.Context, db *gorm.DB) (service.RBACRepository, error) {
 	if db == nil {
 		panic(errors.New("db is nil"))

@@ -26,7 +26,7 @@ func NewAddUserCommand(ctx context.Context, txManager service.TransactionManager
 	}
 }
 
-func (u *AddUserCommand) Execute(ctx context.Context, operator service.OperatorInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
+func (u *AddUserCommand) Execute(ctx context.Context, operator domain.UserInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
 	u.logger.InfoContext(ctx, "AddStudent")
 
 	// 1. Check authorization
@@ -48,11 +48,11 @@ func (u *AddUserCommand) Execute(ctx context.Context, operator service.OperatorI
 	return newUserID, nil
 }
 
-func (u *AddUserCommand) checkAuthorization(ctx context.Context, operator service.OperatorInterface) error {
+func (u *AddUserCommand) checkAuthorization(ctx context.Context, operator domain.UserInterface) error {
 	return nil
 }
 
-func (u *AddUserCommand) execute(ctx context.Context, operator service.OperatorInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
+func (u *AddUserCommand) execute(ctx context.Context, operator domain.UserInterface, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
 	u.logger.InfoContext(ctx, "AddStudent")
 	userID, err := libservice.Do1(ctx, u.txManager, func(rf service.RepositoryFactory) (*domain.UserID, error) {
 		return AddUser(ctx, operator, rf, param, aoeList)
@@ -64,7 +64,7 @@ func (u *AddUserCommand) execute(ctx context.Context, operator service.OperatorI
 	return userID, nil
 }
 
-func (u *AddUserCommand) callback(ctx context.Context, operator service.OperatorInterface, newUserID *domain.UserID) error {
+func (u *AddUserCommand) callback(ctx context.Context, operator domain.UserInterface, newUserID *domain.UserID) error {
 	fn := func(rf service.RepositoryFactory) error {
 		userEventHandler := rf.NewUserEventHandler(ctx)
 		userEventHandler.OnAdd(context.Background(), map[string]int{
@@ -79,7 +79,7 @@ func (u *AddUserCommand) callback(ctx context.Context, operator service.Operator
 	return nil
 }
 
-func AddUser(ctx context.Context, operator service.OperatorInterface, rf service.RepositoryFactory, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
+func AddUser(ctx context.Context, operator domain.UserInterface, rf service.RepositoryFactory, param *service.AddUserParameter, aoeList []ActionObjectEffect) (*domain.UserID, error) {
 	userRepo := rf.NewUserRepository(ctx)
 	userGroupRepo := rf.NewUserGroupRepository(ctx)
 	authorizationManager, err := rf.NewAuthorizationManager(ctx)

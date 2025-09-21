@@ -10,7 +10,6 @@ go_library(
         "//lib/controller",
         "//moonbeam/lib/log",
         "//moonbeam/user/domain",
-        "//moonbeam/user/service",
         "@com_github_gin_gonic_gin//:gin",
     ],
 )

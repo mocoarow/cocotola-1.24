@@ -45,16 +45,16 @@ func NewUserGroupAddParameter(key, name, description string) (*AddUserGroupParam
 // }
 
 type UserGroupRepository interface {
-	FindAllUserGroups(ctx context.Context, operator UserInterface) ([]*domain.UserGroupModel, error)
+	FindAllUserGroups(ctx context.Context, operator domain.UserInterface) ([]*domain.UserGroupModel, error)
 
-	FindSystemOwnerGroup(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*UserGroup, error)
+	FindSystemOwnerGroup(ctx context.Context, operator domain.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserGroupModel, error)
 
-	FindUserGroupByKey(ctx context.Context, operator UserInterface, key string) (*UserGroup, error)
-	FindUserGroupByID(ctx context.Context, operator UserInterface, userGroupID *domain.UserGroupID) (*UserGroup, error)
-	AddOwnerGroup(ctx context.Context, operator SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
-	AddPublicGroup(ctx context.Context, operator SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
+	FindUserGroupByKey(ctx context.Context, operator domain.UserInterface, key string) (*domain.UserGroupModel, error)
+	FindUserGroupByID(ctx context.Context, operator domain.UserInterface, userGroupID *domain.UserGroupID) (*domain.UserGroupModel, error)
+	AddOwnerGroup(ctx context.Context, operator domain.SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
+	AddPublicGroup(ctx context.Context, operator domain.SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
 
-	AddSystemOwnerGroup(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
+	AddSystemOwnerGroup(ctx context.Context, operator domain.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error)
 
-	AddUserGroup(ctx context.Context, operator OwnerModelInterface, parameter *AddUserGroupParameter) (*domain.UserGroupID, error)
+	AddUserGroup(ctx context.Context, operator domain.OwnerInterface, parameter *AddUserGroupParameter) (*domain.UserGroupID, error)
 }

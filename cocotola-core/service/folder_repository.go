@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
@@ -29,6 +28,6 @@ type AddFolderParameter struct {
 // }
 
 type FolderRepository interface {
-	AddFolder(ctx context.Context, operator mbuserservice.OperatorInterface, param *AddFolderParameter) (*domain.FolderID, error)
-	RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserservice.OperatorInterface, spaceID *mbuserdomain.SpaceID) (*Folder, error)
+	AddFolder(ctx context.Context, operator mbuserdomain.UserInterface, param *AddFolderParameter) (*domain.FolderID, error)
+	RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserdomain.UserInterface, spaceID *mbuserdomain.SpaceID) (*Folder, error)
 }

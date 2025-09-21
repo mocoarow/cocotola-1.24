@@ -33,7 +33,7 @@ func NewRegisterUserCommand(ctx context.Context, mbTxManager, mbNonTxManager mbu
 	}, nil
 }
 
-func (u *RegisterUserCommand) Execute(ctx context.Context, operator mbuserservice.OperatorInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error) {
+func (u *RegisterUserCommand) Execute(ctx context.Context, operator mbuserdomain.UserInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error) {
 	// 1. Check authorization
 	if err := u.checkAuthorization(ctx, operator); err != nil {
 		return nil, mbliberrors.Errorf("checkAuthorization: %w", err)
@@ -53,7 +53,7 @@ func (u *RegisterUserCommand) Execute(ctx context.Context, operator mbuserservic
 	return tokenSet, nil
 }
 
-func (u *RegisterUserCommand) checkAuthorization(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+func (u *RegisterUserCommand) checkAuthorization(ctx context.Context, operator mbuserdomain.UserInterface) error {
 	action := mbuserdomain.NewRBACAction("CreateUser")
 	object := mbuserdomain.NewRBACObject("*")
 	ok, err := service.CheckAuthorization(ctx, operator, action, object, u.mbNonTxManager)
@@ -67,7 +67,7 @@ func (u *RegisterUserCommand) checkAuthorization(ctx context.Context, operator m
 	return nil
 }
 
-func (u *RegisterUserCommand) execute(ctx context.Context, operator mbuserservice.OperatorInterface, param *mbuserservice.AddUserParameter) (*mbuserdomain.UserID, *domain.AuthTokenSet, error) {
+func (u *RegisterUserCommand) execute(ctx context.Context, operator mbuserdomain.UserInterface, param *mbuserservice.AddUserParameter) (*mbuserdomain.UserID, *domain.AuthTokenSet, error) {
 	// 1. Check if the user already exists
 	existingUser, err := u.findUserbyLoginID(ctx, operator, param.LoginID)
 	if err != nil && !errors.Is(err, mbuserservice.ErrUserNotFound) {
@@ -106,7 +106,7 @@ func (u *RegisterUserCommand) execute(ctx context.Context, operator mbuserservic
 	return newUser.UserID, tokenSet, nil
 }
 
-func (u *RegisterUserCommand) callback(ctx context.Context, operator mbuserservice.OperatorInterface, newUserID *mbuserdomain.UserID) error {
+func (u *RegisterUserCommand) callback(ctx context.Context, operator mbuserdomain.UserInterface, newUserID *mbuserdomain.UserID) error {
 	fn := func(rf mbuserservice.RepositoryFactory) error {
 		userEventHandler := rf.NewUserEventHandler(ctx)
 		userEventHandler.OnAdd(context.Background(), map[string]int{
@@ -121,18 +121,18 @@ func (u *RegisterUserCommand) callback(ctx context.Context, operator mbuserservi
 	return nil
 }
 
-func (u *RegisterUserCommand) findUserbyLoginID(ctx context.Context, operator mbuserservice.OperatorInterface, loginID string) (*mbuserdomain.UserModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.UserModel, error) {
+func (u *RegisterUserCommand) findUserbyLoginID(ctx context.Context, operator mbuserdomain.UserInterface, loginID string) (*mbuserdomain.User, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) {
 		return findUserbyLoginID(ctx, mbrf, operator, loginID)
 	})
 }
 
-func (u *RegisterUserCommand) getOrganization(ctx context.Context, operator mbuserservice.OperatorInterface) (*mbuserdomain.OrganizationModel, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.OrganizationModel, error) {
+func (u *RegisterUserCommand) getOrganization(ctx context.Context, operator mbuserdomain.UserInterface) (*mbuserdomain.Organization, error) {
+	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.Organization, error) {
 		return getOrganization(ctx, mbrf, operator)
 	})
 }
 
-func (u *RegisterUserCommand) createTokenSet(ctx context.Context, userModel *mbuserdomain.UserModel, organizationModel *mbuserdomain.OrganizationModel) (*domain.AuthTokenSet, error) {
+func (u *RegisterUserCommand) createTokenSet(ctx context.Context, userModel *mbuserdomain.User, organizationModel *mbuserdomain.Organization) (*domain.AuthTokenSet, error) {
 	return createTokenSet(ctx, u.authTokenManager, userModel, organizationModel)
 }

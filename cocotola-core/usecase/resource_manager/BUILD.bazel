@@ -12,6 +12,6 @@ go_library(
         "//lib/api",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/service",
-        "//moonbeam/user/service",
+        "//moonbeam/user/domain",
     ],
 )

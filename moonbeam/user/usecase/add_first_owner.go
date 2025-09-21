@@ -23,7 +23,7 @@ func NewAddFirstOwnerCommand(txManager service.TransactionManager, nonTxManager 
 	}
 }
 
-func (u *AddFirstOwnerCommand) Execute(ctx context.Context, operator service.SystemOwnerInterface, param *service.AddUserParameter) (*domain.UserID, error) {
+func (u *AddFirstOwnerCommand) Execute(ctx context.Context, operator domain.SystemOwnerInterface, param *service.AddUserParameter) (*domain.UserID, error) {
 	fn1 := func(rf service.RepositoryFactory) error {
 		authorizationManager, err := rf.NewAuthorizationManager(ctx)
 		if err != nil {

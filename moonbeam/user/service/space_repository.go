@@ -22,13 +22,13 @@ type AddSpaceParameter struct {
 // }
 
 type SpaceRepository interface {
-	AddSpace(ctx context.Context, operator OperatorInterface, param *AddSpaceParameter) (*domain.SpaceID, error)
+	AddSpace(ctx context.Context, operator domain.UserInterface, param *AddSpaceParameter) (*domain.SpaceID, error)
 
-	// UpdateSpace(ctx context.Context, operator OperatorInterface, deckID *domain.SpaceID, version int, param *SpaceUpdateParameter) error
+	// UpdateSpace(ctx context.Context, operator UserInterface, deckID *domain.SpaceID, version int, param *SpaceUpdateParameter) error
 
-	FindPublicSpaces(ctx context.Context, operator OperatorInterface) ([]*Space, error)
+	FindPublicSpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.SpaceModel, error)
 
-	FindPublicSpaceByKey(ctx context.Context, operator OperatorInterface, key string) (*Space, error)
+	FindPublicSpaceByKey(ctx context.Context, operator domain.UserInterface, key string) (*domain.SpaceModel, error)
 
-	GetSpaceByID(ctx context.Context, operator OperatorInterface, deckID *domain.SpaceID) (*Space, error)
+	GetSpaceByID(ctx context.Context, operator domain.UserInterface, deckID *domain.SpaceID) (*domain.SpaceModel, error)
 }

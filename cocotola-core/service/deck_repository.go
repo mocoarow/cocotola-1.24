@@ -6,7 +6,6 @@ import (
 
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
@@ -33,13 +32,13 @@ type FindDecksParameter struct {
 }
 
 type DeckRepository interface {
-	AddDeck(ctx context.Context, operator mbuserservice.OperatorInterface, param *AddDeckParameter) (*domain.DeckID, error)
+	AddDeck(ctx context.Context, operator mbuserdomain.UserInterface, param *AddDeckParameter) (*domain.DeckID, error)
 
-	UpdateDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID, version int, param *UpdateDeckParameter) error
+	UpdateDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID, version int, param *UpdateDeckParameter) error
 
-	FindDecks(ctx context.Context, operator mbuserservice.OperatorInterface, param *FindDecksParameter) ([]*Deck, error)
+	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *FindDecksParameter) ([]*Deck, error)
 
-	FindDecksByOwner(ctx context.Context, operator mbuserservice.OperatorInterface) ([]*Deck, error)
+	FindDecksByOwner(ctx context.Context, operator mbuserdomain.UserInterface) ([]*Deck, error)
 
-	RetrieveDeckByID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) (*Deck, error)
+	RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*Deck, error)
 }

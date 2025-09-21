@@ -5,7 +5,7 @@ import (
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 
@@ -28,7 +28,7 @@ func NewDeckCommandUsecase(txManager, nonTxManager service.TransactionManager, r
 	}
 }
 
-func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
+func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
 	appUser := usecase.NewAppUser(operator, u.txManager, u.nonTxManager, u.rbacClient)
 	deckID, err := appUser.AddDeck(ctx, param)
 	if err != nil {
@@ -38,7 +38,7 @@ func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator mbuserservice
 	return deckID, nil
 }
 
-func (u *DeckCommandUseCase) UpdateDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error {
+func (u *DeckCommandUseCase) UpdateDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error {
 	if err := mblibservice.Do0(ctx, u.txManager, func(rf service.RepositoryFactory) error {
 		deckRepo, err := rf.NewDeckRepository(ctx)
 		if err != nil {

@@ -12,7 +12,7 @@ import (
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
@@ -23,7 +23,7 @@ import (
 )
 
 type CardQueryUsecase interface {
-	FindCardsByDeckID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error)
+	FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.CardModel, error)
 }
 
 type CardHandler struct {
@@ -39,7 +39,7 @@ func NewCardHandler(cardQueryUsecase CardQueryUsecase) *CardHandler {
 }
 
 func (h *CardHandler) FindCards(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		deckID, ok := getDeckIDFromQuery(c)
 		if !ok {
 			return nil

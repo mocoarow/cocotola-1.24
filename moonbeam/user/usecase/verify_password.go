@@ -8,6 +8,7 @@ import (
 	liblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	libservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
@@ -23,7 +24,7 @@ func NewVerifyPasswordCommand(nonTxManager service.TransactionManager) *VerifyPa
 	}
 }
 
-func (u *VerifyPasswordCommand) Execute(ctx context.Context, operator service.SystemOwnerInterface, loginID, password string) error {
+func (u *VerifyPasswordCommand) Execute(ctx context.Context, operator domain.SystemOwnerInterface, loginID, password string) error {
 	fn := func(rf service.RepositoryFactory) (bool, error) {
 		userRepo := rf.NewUserRepository(ctx)
 		ok, err := userRepo.VerifyPassword(ctx, operator, loginID, password)

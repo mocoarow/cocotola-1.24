@@ -7,7 +7,7 @@ import (
 )
 
 type PairOfUserAndSpaceRepository interface {
-	AddPairOfUserAndSpace(ctx context.Context, operator UserInterface, userID *domain.UserID, spaceID *domain.SpaceID) error
+	AddPairOfUserAndSpace(ctx context.Context, operator domain.UserInterface, userID *domain.UserID, spaceID *domain.SpaceID) error
 
-	FindMySpaces(ctx context.Context, operator UserInterface) ([]*Space, error)
+	FindMySpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.SpaceModel, error)
 }

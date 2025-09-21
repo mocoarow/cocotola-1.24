@@ -13,12 +13,6 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
-type pairOfUserAndGroupRepository struct {
-	dialect libgateway.DialectRDBMS
-	db      *gorm.DB
-	rf      service.RepositoryFactory
-}
-
 type pairOfUserAndGroupEntity struct {
 	JunctionModelEntity
 	OrganizationID int
@@ -30,6 +24,14 @@ func (u *pairOfUserAndGroupEntity) TableName() string {
 	return PairOfUserAndGroupTableName
 }
 
+type pairOfUserAndGroupRepository struct {
+	dialect libgateway.DialectRDBMS
+	db      *gorm.DB
+	rf      service.RepositoryFactory
+}
+
+var _ service.PairOfUserAndGroupRepository = (*pairOfUserAndGroupRepository)(nil)
+
 func NewPairOfUserAndGroupRepository(_ context.Context, dialect libgateway.DialectRDBMS, db *gorm.DB, rf service.RepositoryFactory) service.PairOfUserAndGroupRepository {
 	return &pairOfUserAndGroupRepository{
 		dialect: dialect,
@@ -38,7 +40,7 @@ func NewPairOfUserAndGroupRepository(_ context.Context, dialect libgateway.Diale
 	}
 }
 
-func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroupBySystemAdmin(ctx context.Context, operator service.SystemAdminInterface, organizationID *domain.OrganizationID, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
+func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroupBySystemAdmin(ctx context.Context, operator domain.SystemAdminInterface, organizationID *domain.OrganizationID, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
 	_, span := tracer.Start(ctx, "pairOfUserAndGroupRepository.AddPairOfUserAndGroupToSystemOwner")
 	defer span.End()
 
@@ -63,7 +65,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroupBySystemAdmin(ctx co
 	return nil
 }
 
-func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context, operator service.UserInterface, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
+func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context, operator domain.UserInterface, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
 	_, span := tracer.Start(ctx, "pairOfUserAndGroupRepository.AddPairOfUserAndGroup")
 	defer span.End()
 
@@ -132,7 +134,7 @@ func (r *pairOfUserAndGroupRepository) AddPairOfUserAndGroup(ctx context.Context
 // 	return nil
 // }
 
-func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Context, operator service.UserInterface, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
+func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Context, operator domain.UserInterface, userID *domain.UserID, userGroupID *domain.UserGroupID) error {
 	_, span := tracer.Start(ctx, "pairOfUserAndGroupRepository.RemovePairOfUserAndGroup")
 	defer span.End()
 
@@ -205,7 +207,7 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 // 	return nil
 // }
 
-// func (r *pairOfUserAndGroupRepository) enforce(ctx context.Context, operator domain.UserModel, rbacObject domain.RBACObject, rbacAction domain.RBACAction) (bool, error) {
+// func (r *pairOfUserAndGroupRepository) enforce(ctx context.Context, operator domain.User, rbacObject domain.RBACObject, rbacAction domain.RBACAction) (bool, error) {
 // 	rbacDomain := service.NewRBACDomainFromOrganization(operator.GetOrganizationID())
 
 // 	userGroupRepo:= r.rf.NewUserGroupRepository(ctx)
@@ -237,7 +239,7 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 // 	return false, nil
 // }
 
-func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator service.UserInterface, userID *domain.UserID) ([]*domain.UserGroupModel, error) {
+func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator domain.UserInterface, userID *domain.UserID) ([]*domain.UserGroupModel, error) {
 	userGroups := []userGroupEntity{}
 	if result := r.db.WithContext(ctx).Table(UserGroupTableName).Select(UserGroupTableName+".*").
 		Where(UserGroupTableName+".organization_id = ?", operator.GetOrganizationID().Int()).

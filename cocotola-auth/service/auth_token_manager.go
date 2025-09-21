@@ -18,15 +18,15 @@ type UserInfo struct {
 
 type UserInterface interface {
 	// UserID() *mbuserdomain.UserID
-	OrganizationID() *mbuserdomain.OrganizationID
-	LoginID() string
-	Username() string
+	GetOrganizationID() *mbuserdomain.OrganizationID
+	GetLoginID() string
+	GetUsername() string
 	// GetUserGroups() []domain.UserGroupModel
 }
 
 type OrganizationInterface interface {
-	OrganizationID() *mbuserdomain.OrganizationID
-	Name() string
+	GetOrganizationID() *mbuserdomain.OrganizationID
+	GetName() string
 }
 
 type AuthTokenManager interface {
