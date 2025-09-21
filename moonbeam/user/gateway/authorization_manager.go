@@ -83,10 +83,13 @@ func (m *authorizationManager) AddUserToGroup(ctx context.Context, operator doma
 }
 
 func (m *authorizationManager) AddPolicyToUser(ctx context.Context, operator domain.UserInterface, subject domain.RBACSubject, action domain.RBACAction, object domain.RBACObject, effect domain.RBACEffect) error {
+	ctx, span := tracer.Start(ctx, "authorizationManager.AddPolicyToUser")
+	defer span.End()
+
 	rbacDomain := domain.NewRBACDomainFromOrganization(operator.GetOrganizationID())
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
-		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
+		return liberrors.Errorf("rbacRepo.AddNamedPolicy. priv: read, err: %w", err)
 	}
 
 	return nil

@@ -292,7 +292,9 @@ tasks:
   kics:
     cmds:
       - docker run -t -v $(pwd):/path checkmarx/kics:latest scan -p /path -o /path/ --config /path/.github/kics.yml
-
+  docker-up:
+    cmds:
+      - docker compose -f compose.local.yml up
   docker-dev-all-in-one-up:
     cmds:
       - docker compose -f docker/dev-all-in-one/compose.yml up -d

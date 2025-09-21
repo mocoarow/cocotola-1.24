@@ -20,6 +20,7 @@ go_library(
     deps = [
         "//cocotola-core/domain",
         "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
     ],

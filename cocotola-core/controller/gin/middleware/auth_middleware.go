@@ -32,7 +32,7 @@ func NewAuthMiddleware(cocotolaAuthClient libapi.CocotolaAuthClient) gin.Handler
 		}
 
 		bearerToken := authorization[len("Bearer "):]
-		userInfo, err := cocotolaAuthClient.RetrieveUserInfo(ctx, bearerToken)
+		userInfo, err := cocotolaAuthClient.GetUserInfo(ctx, bearerToken)
 		if err != nil {
 			logger.WarnContext(ctx, fmt.Sprintf("getUserInfo: %v", err))
 
@@ -46,12 +46,21 @@ func NewAuthMiddleware(cocotolaAuthClient libapi.CocotolaAuthClient) gin.Handler
 		}
 
 		logger.InfoContext(ctx, fmt.Sprintf("UserID: %d", userInfo.UserID))
+
+		// span.SetAttributes(
+		// 	attribute.Int("user.id", userInfo.UserID),
+		// 	attribute.Int("user.organization_id", userInfo.OrganizationID),
+		// )
+
 		c.Set("AuthorizedUser", userInfo.UserID)
 		c.Set("OrganizationID", userInfo.OrganizationID)
+		c.Set("BearerToken", bearerToken)
 		if libdomain.IsGuestLoginID(userInfo.LoginID) {
 			c.Set("Role", "guest")
+			// span.SetAttributes(attribute.String("user.role", "guest"))
 		} else {
 			c.Set("Role", "student")
+			// span.SetAttributes(attribute.String("user.role", "student"))
 		}
 
 		// logger.WarnContext(ctx, "authenticated", slog.Int("user_id", userInfo.UserID), slog.Int("organization_id", userInfo.OrganizationID))

@@ -80,6 +80,9 @@ func getEnglishBlankDecks() []englishBlankDeck {
 }
 
 func initEnglishBlankDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckRepo service.DeckRepository, cardRepo service.CardRepository, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID, nameToDecks map[string]*service.Deck) ([]*domain.DeckID, error) {
+	ctx, span := tracer.Start(ctx, "initEnglishBlankDeck")
+	defer span.End()
+
 	deckIDs := make([]*domain.DeckID, 0)
 	for _, englishBlankDeck := range getEnglishBlankDecks() {
 		name := englishBlankDeck.Name
@@ -123,6 +126,9 @@ func initEnglishBlankDeck(ctx context.Context, operator mbuserdomain.UserInterfa
 }
 
 func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, systemOwnerID *mbuserdomain.UserID, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID) ([]*domain.DeckID, error) {
+	ctx, span := tracer.Start(ctx, "initEnglishWord")
+	defer span.End()
+
 	operator := &operator{
 		organizationID: organizationID,
 		userID:         systemOwnerID,

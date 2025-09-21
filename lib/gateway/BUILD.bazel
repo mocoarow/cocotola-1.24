@@ -16,6 +16,7 @@ go_library(
         "//lib/controller",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",
+        "//moonbeam/lib/log",
         "@io_opentelemetry_go_otel//:otel",
         "@org_golang_x_sync//errgroup",
     ],

@@ -1,5 +1,5 @@
 package auth
 
-type ProfileResponse struct {
-	PrivateSpaceID int `json:"privateSpaceId"`
-}
+// type ProfileResponse struct {
+// 	PrivateSpaceID int `json:"privateSpaceId"`
+// }

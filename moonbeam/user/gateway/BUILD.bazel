@@ -4,7 +4,6 @@ load("//bazel:go_test.bzl", "smart_go_test")
 go_library(
     name = "gateway",
     srcs = [
-        "app_user_repository.go",
         "authorization_manager.go",
         "init.go",
         "model_entity.go",
@@ -17,6 +16,7 @@ go_library(
         "space_repository.go",
         "transaction_manager.go",
         "user_group_repository.go",
+        "user_repository.go",
         "wrapped_db.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway",
@@ -41,7 +41,6 @@ go_library(
 smart_go_test(
     name = "gateway_test",
     srcs = [
-        "app_user_repository_test.go",
         "authorization_manager_test.go",
         "authorization_test.go",
         "export_test.go",
@@ -50,6 +49,7 @@ smart_go_test(
         "organization_repository_test.go",
         "pair_of_user_and_group_repository_test.go",
         "rbac_repository_test.go",
+        "user_repository_test.go",
     ],
     embed = [":gateway"],
     deps = [

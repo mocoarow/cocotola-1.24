@@ -4,6 +4,7 @@ go_library(
     name = "initialize",
     srcs = [
         "func.go",
+        "init.go",
         "initialize.go",
         "initialize_2.go",
         "initialize_guest.go",
@@ -32,5 +33,6 @@ go_library(
         "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_contrib_instrumentation_net_http_otelhttp//:otelhttp",
+        "@io_opentelemetry_go_otel//:otel",
     ],
 )

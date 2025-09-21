@@ -32,18 +32,6 @@ func (e *userEntity) TableName() string {
 	return UserTableName
 }
 
-// func (e *userEntity) toUser(ctx context.Context, rf service.RepositoryFactory, userGroups []domain.UserGroupModel) (*service.User, error) {
-// 	userModel, err := e.toUser(userGroups)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	user, err := service.NewUser(ctx, rf, userModel)
-// 	if err != nil {
-// 		return nil, err
-
-//		}
-//		return user, nil
-//	}
 func (e *userEntity) toUser(userGroups []*domain.UserGroupModel) (*domain.User, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
@@ -82,29 +70,6 @@ func (e *userEntity) toOwnerModel(userGroups []*domain.UserGroupModel) (*domain.
 	return ownerModel, nil
 }
 
-// func (e *userEntity) toSystemOwner(ctx context.Context, rf service.RepositoryFactory, userGroup []*domain.UserGroupModel) (*service.SystemOwner, error) {
-// 	if e.LoginID != service.SystemOwnerLoginID {
-// 		return nil, liberrors.Errorf("invalid system owner. loginID: %s", e.LoginID)
-// 	}
-
-// 	ownerModel, err := e.toOwnerModel(userGroup)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("e.toOwnerModel(). err: %w", err)
-// 	}
-
-// 	systemOwnerModel, err := domain.NewSystemOwnerModel(ownerModel)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("domain.NewSystemOwnerModel. err: %w", err)
-// 	}
-
-// 	systemOwner, err := service.NewSystemOwner(ctx, rf, systemOwnerModel)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("service.NewSystemOwner. err: %w", err)
-// 	}
-
-// 	return systemOwner, nil
-// }
-
 func (e *userEntity) toSystemOwnerModel(_ context.Context, _ service.RepositoryFactory, userGroup []*domain.UserGroupModel) (*domain.SystemOwner, error) {
 	if e.LoginID != service.SystemOwnerLoginID {
 		return nil, liberrors.Errorf("invalid system owner. loginID: %s", e.LoginID)
@@ -122,29 +87,6 @@ func (e *userEntity) toSystemOwnerModel(_ context.Context, _ service.RepositoryF
 
 	return systemOwnerModel, nil
 }
-
-// func (e *userEntity) toOwner(rf service.RepositoryFactory, userGroup []*domain.UserGroupModel) (*service.Owner, error) {
-// 	ownerModel, err := e.toOwnerModel(userGroup)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("e.toOwnerModel(). err: %w", err)
-// 	}
-
-// 	return service.NewOwner(rf, ownerModel), nil
-// }
-
-// func (e *userEntity) toUser(ctx context.Context, rf service.RepositoryFactory, userGroups []*domain.UserGroupModel) (*service.User, error) {
-// 	userModel, err := e.toUser(userGroups)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("e.toUser(). err: %w", err)
-// 	}
-
-// 	user, err := service.NewUser(ctx, rf, userModel)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("service.NewUser. err: %w", err)
-// 	}
-
-// 	return user, nil
-// }
 
 type userRepository struct {
 	dialect libgateway.DialectRDBMS
@@ -326,7 +268,10 @@ func (r *userRepository) FindOwnerByLoginID(ctx context.Context, operator domain
 	return user.toOwnerModel(nil)
 }
 
-func (r *userRepository) addUser(_ context.Context, userEntity *userEntity) (*domain.UserID, error) {
+func (r *userRepository) addUser(ctx context.Context, userEntity *userEntity) (*domain.UserID, error) {
+	_, span := tracer.Start(ctx, "userRepository.addUser")
+	defer span.End()
+
 	if result := r.db.Create(userEntity); result.Error != nil {
 		return nil, liberrors.Errorf("db.Create. err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
 	}

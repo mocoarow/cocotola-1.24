@@ -9,7 +9,7 @@ import (
 )
 
 type FolderID struct {
-	Value int `validate:"gte=0"`
+	Value int `validate:"gte=1"`
 }
 
 func NewFolderID(value int) (*FolderID, error) {

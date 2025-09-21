@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -12,6 +13,7 @@ import (
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
+	liblibcontroller "github.com/mocoarow/cocotola-1.24/lib/controller"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 )
 
@@ -37,33 +39,24 @@ func (h *CallbackHandler) OnAddUser(c *gin.Context) {
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 		return
 	}
-
-	organizationID, err := mbuserdomain.NewOrganizationID(apiReq.OrganizationID)
-	if err != nil {
-		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
-		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
-		return
+	if newCtx, err := liblibcontroller.AddBaggageMembers(ctx, map[string]string{
+		"operator_id":     strconv.Itoa(apiReq.UserID.Value.Int()),
+		"organization_id": strconv.Itoa(apiReq.OrganizationID.Value.Int()),
+	}); err == nil {
+		ctx = newCtx
+		// Add baggage members as span attributes
+		liblibcontroller.AddBaggageToCurrentSpan(ctx)
 	}
 
-	userID, err := mbuserdomain.NewUserID(apiReq.UserID)
-	if err != nil {
-		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
-		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
-		return
-	}
-
-	h.logger.Info("OnAddUser", slog.Int("userID", userID.Int()))
-	if err := h.callbackUsecase.OnAddUser(ctx, organizationID, userID); err != nil {
+	if err := h.callbackUsecase.OnAddUser(ctx, apiReq.OrganizationID.Value, apiReq.UserID.Value); err != nil {
 		h.logger.ErrorContext(ctx, fmt.Sprintf("on add user: %+v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
 		return
 	}
+
+	c.Status(http.StatusOK)
 }
 
 func NewInitCallbackRouterFunc(callbackUsecase CallbackUsecase) libcontroller.InitRouterGroupFunc {

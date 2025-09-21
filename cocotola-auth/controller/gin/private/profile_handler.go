@@ -35,7 +35,7 @@ func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
 			return mbliberrors.Errorf("GetMyProfile: %w", err)
 		}
 
-		apiResp := libapiauth.ProfileResponse{
+		apiResp := libapiauth.GetMyProfileResponse{
 			PrivateSpaceID: result.PrivateSpaceID.Int(),
 		}
 		c.JSON(http.StatusOK, apiResp)

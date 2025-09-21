@@ -8,6 +8,7 @@ go_library(
         "deck.go",
         "folder.go",
         "init.go",
+        "profile.go",
         "template.go",
         "workbook.go",
     ],

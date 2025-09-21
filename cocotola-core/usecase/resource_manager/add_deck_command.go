@@ -1,4 +1,4 @@
-package usecase
+package resourcemanager
 
 import (
 	"context"
@@ -17,50 +17,64 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-type AppUser struct {
-	operator mbuserdomain.UserInterface
-	// rf         RepositoryFactory
+type AddDeckCommand struct {
 	txManager    service.TransactionManager
 	nonTxManager service.TransactionManager
 	rbacClient   libapi.CocotolaRBACClient
 }
 
-func NewAppUser(operator mbuserdomain.UserInterface,
-	txManager, nonTxManager service.TransactionManager,
-	//rf RepositoryFactory,
-	rbacClient libapi.CocotolaRBACClient) *AppUser {
-	return &AppUser{
-		operator:     operator,
+func NewAddDeckCommand(txManager, nonTxManager service.TransactionManager, rbacClient libapi.CocotolaRBACClient) *AddDeckCommand {
+	return &AddDeckCommand{
 		txManager:    txManager,
 		nonTxManager: nonTxManager,
-		// rf:         rf,
-		rbacClient: rbacClient,
+		rbacClient:   rbacClient,
 	}
 }
 
-func (m *AppUser) AddDeck(ctx context.Context, param *service.AddDeckParameter) (*domain.DeckID, error) {
+func (u *AddDeckCommand) Execute(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
+	// 1. Check authorization
+	if err := u.checkAuthorization(ctx, operator, param); err != nil {
+		return nil, mbliberrors.Errorf("checkAuthorization: %w", err)
+	}
+
+	// 2. Execute
+	deckID, err := u.execute(ctx, operator, param)
+	if err != nil {
+		return nil, mbliberrors.Errorf("execute: %w", err)
+	}
+
+	// 3. Callback
+	if err := u.callback(); err != nil {
+		return nil, mbliberrors.Errorf("callback: %w", err)
+	}
+
+	return deckID, nil
+}
+func (u *AddDeckCommand) checkAuthorization(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) error {
 	// Check RBAC
 	// Can "operator" "createDeck" in "space" ?
 	action := librbac.CreateDeckAction
 	object := param.SpaceID.GetRBACObject()
-	ok, err := m.rbacClient.CheckAuthorization(ctx, &libapiauth.AuthorizeRequest{
-		OrganizationID: m.operator.GetOrganizationID().Int(),
-		UserID:         m.operator.GetUserID().Int(),
+	ok, err := u.rbacClient.CheckAuthorization(ctx, &libapiauth.AuthorizeRequest{
+		OrganizationID: operator.GetOrganizationID().Int(),
+		UserID:         operator.GetUserID().Int(),
 		Action:         action.Action(),
 		Object:         object.Object(),
 	})
 	if err != nil {
-		return nil, mbliberrors.Errorf("check authorization: %w", err)
+		return mbliberrors.Errorf("check authorization: %w", err)
 	} else if !ok {
-		return nil, mbliberrors.Errorf("permission denied. space(%d): %w", param.SpaceID.Int(), mblibdomain.ErrPermissionDenied)
+		return mbliberrors.Errorf("permission denied. space(%d): %w", param.SpaceID.Int(), mblibdomain.ErrPermissionDenied)
 	}
-
-	deckID, err := mblibservice.Do1(ctx, m.txManager, func(rf service.RepositoryFactory) (*domain.DeckID, error) {
+	return nil
+}
+func (u *AddDeckCommand) execute(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
+	deckID, err := mblibservice.Do1(ctx, u.txManager, func(rf service.RepositoryFactory) (*domain.DeckID, error) {
 		folderRepo, err := rf.NewFolderRepository(ctx)
 		if err != nil {
 			return nil, mbliberrors.Errorf("NewFolderRepository:%w", err)
 		}
-		folder, err := folderRepo.RetrieveRooFolderBySpaceID(ctx, m.operator, param.SpaceID)
+		folder, err := folderRepo.RetrieveRooFolderBySpaceID(ctx, operator, param.SpaceID)
 		if err != nil {
 			return nil, mbliberrors.Errorf("retrieve root folder by space id(%d): %w", param.SpaceID.Int(), err)
 		}
@@ -69,7 +83,7 @@ func (m *AppUser) AddDeck(ctx context.Context, param *service.AddDeckParameter) 
 		if err != nil {
 			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
 		}
-		deckID, err := deckRepo.AddDeck(ctx, m.operator, param)
+		deckID, err := deckRepo.AddDeck(ctx, operator, param)
 		if err != nil {
 			return nil, mbliberrors.Errorf("deckRepo.AddDeck: %w", err)
 		}
@@ -83,9 +97,9 @@ func (m *AppUser) AddDeck(ctx context.Context, param *service.AddDeckParameter) 
 	// RBAC
 	deckObject := deckID.GetRBACObject()
 	// - "operator "can" "ListCards" for "deck"
-	if err := m.rbacClient.AddPolicyToUser(ctx, &libapiauth.AddPolicyToUserParameter{
-		OrganizationID: m.operator.GetOrganizationID().Int(),
-		UserID:         m.operator.GetUserID().Int(),
+	if err := u.rbacClient.AddPolicyToUser(ctx, &libapiauth.AddPolicyToUserParameter{
+		OrganizationID: operator.GetOrganizationID().Int(),
+		UserID:         operator.GetUserID().Int(),
 		ListOfActionObjectEffect: []libapiauth.ActionObjectEffect{
 			{
 				Action: mbuserdomain.NewRBACAction("ListCards").Action(),
@@ -113,4 +127,8 @@ func (m *AppUser) AddDeck(ctx context.Context, param *service.AddDeckParameter) 
 	}
 
 	return deckID, nil
+}
+
+func (u *AddDeckCommand) callback() error {
+	return nil
 }

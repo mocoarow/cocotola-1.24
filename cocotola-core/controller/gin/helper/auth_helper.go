@@ -21,6 +21,7 @@ type roleUser struct {
 	userID         *mbuserdomain.UserID
 	organizationID *mbuserdomain.OrganizationID
 	role           string
+	bearerToken    string
 }
 
 func (o *roleUser) GetUserID() *mbuserdomain.UserID {
@@ -31,6 +32,9 @@ func (o *roleUser) GetOrganizationID() *mbuserdomain.OrganizationID {
 }
 func (o *roleUser) GetRole() string {
 	return o.role
+}
+func (o *roleUser) GetBearerToken() string {
+	return o.bearerToken
 }
 
 type operator struct {
@@ -79,6 +83,7 @@ func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operato
 		userID:         operatorID,
 		organizationID: organizationID,
 		role:           c.GetString("Role"),
+		bearerToken:    c.GetString("BearerToken"),
 	}
 
 	if newCtx, err := liblibcontroller.AddBaggageMembers(ctx, map[string]string{
@@ -86,6 +91,8 @@ func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operato
 		"organization_id": strconv.Itoa(organizationID.Int()),
 	}); err == nil {
 		ctx = newCtx
+		// Add baggage members as span attributes
+		liblibcontroller.AddBaggageToCurrentSpan(ctx)
 	}
 
 	logger.InfoContext(ctx, "xxxxxxxx")
@@ -137,6 +144,8 @@ func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mb
 		"organization_id": strconv.Itoa(organizationID.Int()),
 	}); err == nil {
 		ctx = newCtx
+		// Add baggage members as span attributes
+		liblibcontroller.AddBaggageToCurrentSpan(ctx)
 	}
 
 	logger.InfoContext(ctx, "xxxxxxxx")

@@ -3,16 +3,19 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "usecase",
     srcs = [
-        "add_personal_space_command.go",
         "authentication_usecase.go",
+        "callback_on_add_user_command.go",
         "callback_usecase.go",
         "func.go",
+        "get_my_profile_query.go",
         "get_user_info_query.go",
         "google_user_usecase.go",
         "guest_authenticate_command.go",
         "guest_usecase.go",
+        "init.go",
         "password_authenticate_command.go",
         "password_usecase.go",
+        "profile_usecase.go",
         "rbac_usecase.go",
         "register_user_command.go",
         "user_usecase.go",
@@ -31,5 +34,6 @@ go_library(
         "//moonbeam/user/service",
         "//moonbeam/user/usecase",
         "@com_github_golang_jwt_jwt_v5//:jwt",
+        "@io_opentelemetry_go_otel//:otel",
     ],
 )

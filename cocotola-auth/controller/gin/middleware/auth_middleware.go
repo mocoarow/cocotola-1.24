@@ -17,17 +17,16 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/usecase"
 )
 
-func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, mbNonTxManager mbuserservice.TransactionManager) gin.HandlerFunc {
+func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, mbNonTxManager mbuserservice.TransactionManager, _ mbuserservice.RepositoryFactory) gin.HandlerFunc {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AuthMiddleware"))
 
 	sysAdmin := service.NewSystemAdmin(systemToken)
-
 	getUserInfoQuery := usecase.NewGetUserInfoQuery(mbNonTxManager, authTokenManager)
 
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
-		ctx, span := tracer.Start(ctx, "AuthMiddleware")
 
+		ctx, span := tracer.Start(ctx, "AuthMiddleware")
 		defer span.End()
 
 		authorization := c.GetHeader("Authorization")
@@ -45,7 +44,5 @@ func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager servi
 
 		c.Set("AuthorizedUser", userModel.UserID.Int())
 		c.Set("OrganizationID", userModel.OrganizationID.Int())
-
-		// logger.WarnContext(ctx, "authenticated", slog.Int("user_id", userInfo.UserID), slog.Int("organization_id", userInfo.OrganizationID))
 	}
 }

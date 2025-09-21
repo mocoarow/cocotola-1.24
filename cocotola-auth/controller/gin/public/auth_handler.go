@@ -69,7 +69,6 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	if !strings.HasPrefix(authorization, "Bearer ") {
 		h.logger.InfoContext(ctx, "invalid header. Bearer not found")
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
-
 		return
 	}
 
@@ -78,7 +77,6 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	if err != nil {
 		h.logger.InfoContext(ctx, "GetUserInfo", slog.Any("err", (err)))
 		c.JSON(http.StatusUnauthorized, gin.H{"message": http.StatusText(http.StatusUnauthorized)})
-
 		return
 	}
 
@@ -86,7 +84,7 @@ func (h *AuthHandler) GetUserInfo(c *gin.Context) {
 	for _, g := range userInfo.UserGroups {
 		groups = append(groups, g.Name)
 	}
-	c.JSON(http.StatusOK, libapiauth.UserInfoResponse{
+	c.JSON(http.StatusOK, libapiauth.GetUserInfoResponse{
 		UserID:         userInfo.UserID.Int(),
 		OrganizationID: userInfo.OrganizationID.Int(),
 		LoginID:        userInfo.LoginID,

@@ -23,6 +23,9 @@ type ParentAndChildLink struct {
 }
 
 func Initialize2(ctx context.Context, systemToken libdomain.SystemToken, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, organizationID *mbuserdomain.OrganizationID, parentAndChildLink []*ParentAndChildLink) error {
+	ctx, span := tracer.Start(ctx, "Initialize2")
+	defer span.End()
+
 	mbrff := func(ctx context.Context, db *gorm.DB) (mbuserservice.RepositoryFactory, error) {
 		resouceEventHandlers := map[mbuserdomain.ResourceKey]mblibservice.ResourceEventHandler{}
 		return mbusergateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, resouceEventHandlers)

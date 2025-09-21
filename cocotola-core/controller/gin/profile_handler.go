@@ -15,12 +15,13 @@ import (
 	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/helper"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
 type ProfileUsecase interface {
-	GetMyProfile(ctx context.Context, operator mbuserdomain.UserInterface) (*domain.ProfileModel, error)
+	GetMyProfile(ctx context.Context, operator mbuserdomain.UserInterface, bearerToken string) (*domain.ProfileModel, error)
 }
 
 type ProfileHandler struct {
@@ -29,14 +30,17 @@ type ProfileHandler struct {
 }
 
 func (h *ProfileHandler) GetMyProfile(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
-		result, err := h.profileUsecase.GetMyProfile(ctx, operator)
+	helper.HandleRoleUserFunction(c, func(ctx context.Context, operator service.RoleUserInterface) error {
+		result, err := h.profileUsecase.GetMyProfile(ctx, operator, operator.GetBearerToken())
 		if err != nil {
 			return mbliberrors.Errorf("GetMyProfile: %w", err)
 		}
 
-		apiResp := libapicore.ProfileResponse{
-			PrivateSpaceID: result.PrivateSpaceID.Int(),
+		apiResp := libapicore.GetMyProfileResponse{
+			PrivateSpace: libapicore.GetMyProfileResponseSpace{
+				SpaceID:      result.PrivateSpaceID.Int(),
+				RootFolderID: result.RootFolderID.Int(),
+			},
 		}
 		c.JSON(http.StatusOK, apiResp)
 

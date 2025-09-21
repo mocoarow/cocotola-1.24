@@ -28,8 +28,9 @@ type FindDecksResponseDeck struct {
 
 type AddDeckRequest struct {
 	SpaceID     libapimb.SpaceID `json:"spaceId" binding:"required"`
-	Name        string           `json:"name" binding:"required"`
+	FolderID    FolderID         `json:"folderId" binding:"required"`
 	TemplateID  TemplateID       `json:"templateId" binding:"required"`
+	Name        string           `json:"name" binding:"required"`
 	Lang2       libapimb.Lang2   `json:"lang2" binding:"required"`
 	Description string           `json:"description"`
 }
@@ -52,6 +53,30 @@ func (m *TemplateID) UnmarshalJSON(data []byte) error {
 }
 
 func (m TemplateID) MarshalJSON() ([]byte, error) {
+	if m.Value == nil {
+		return json.Marshal(nil) //nolint:wrapcheck
+	}
+	return json.Marshal(m.Value.Int()) //nolint:wrapcheck
+}
+
+type FolderID struct {
+	Value *domain.FolderID `validate:"required,gte=1"`
+}
+
+func (m *FolderID) UnmarshalJSON(data []byte) error {
+	var v int
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err //nolint:wrapcheck
+	}
+	value, err := domain.NewFolderID(v)
+	if err != nil {
+		return err //nolint:wrapcheck
+	}
+	m.Value = value
+	return nil
+}
+
+func (m FolderID) MarshalJSON() ([]byte, error) {
 	if m.Value == nil {
 		return json.Marshal(nil) //nolint:wrapcheck
 	}

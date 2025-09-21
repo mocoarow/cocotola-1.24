@@ -47,6 +47,6 @@ func (u *GuestUsecae) Authenticate(ctx context.Context, organizationName string)
 
 func (u *GuestUsecae) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwner, error) {
 	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) { //nolint:wrapcheck
-		return findSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
+		return service.FindSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
 	})
 }

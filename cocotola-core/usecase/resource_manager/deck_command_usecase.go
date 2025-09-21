@@ -11,7 +11,6 @@ import (
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/usecase"
 )
 
 type DeckCommandUseCase struct {
@@ -29,8 +28,8 @@ func NewDeckCommandUsecase(txManager, nonTxManager service.TransactionManager, r
 }
 
 func (u *DeckCommandUseCase) AddDeck(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
-	appUser := usecase.NewAppUser(operator, u.txManager, u.nonTxManager, u.rbacClient)
-	deckID, err := appUser.AddDeck(ctx, param)
+	command := NewAddDeckCommand(u.txManager, u.nonTxManager, u.rbacClient)
+	deckID, err := command.execute(ctx, operator, param)
 	if err != nil {
 		return nil, mbliberrors.Errorf("add deck: %w", err)
 	}

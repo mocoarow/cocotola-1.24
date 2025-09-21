@@ -16,7 +16,7 @@ func NewSpaceID(value int) (*SpaceID, error) {
 		Value: value,
 	}
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("validate space id: %w", err)
+		return nil, liberrors.Errorf("validate space id(%d): %w", value, err)
 	}
 	return &SpaceID{
 		Value: value,

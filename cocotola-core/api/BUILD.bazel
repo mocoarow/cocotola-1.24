@@ -21,5 +21,6 @@ smart_go_test(
         "//lib/api/moonbeam",
         "//moonbeam/lib/domain",
         "//moonbeam/user/domain",
+        "@com_github_stretchr_testify//require",
     ],
 )

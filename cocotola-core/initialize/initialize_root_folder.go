@@ -12,6 +12,9 @@ import (
 )
 
 func initRootFolder(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, sysOwnerID *mbuserdomain.UserID, publicDefaultSpaceID *mbuserdomain.SpaceID) (*domain.FolderID, error) {
+	ctx, span := tracer.Start(ctx, "initRootFolder")
+	defer span.End()
+
 	operator := &operator{
 		organizationID: organizationID,
 		userID:         sysOwnerID,

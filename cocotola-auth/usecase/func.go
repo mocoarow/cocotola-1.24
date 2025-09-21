@@ -28,24 +28,6 @@ func findUserbyLoginID(ctx context.Context, mbrf mbuserservice.RepositoryFactory
 	return user, nil
 }
 
-func findSystemOwnerByOrganizationID(ctx context.Context, mbrf mbuserservice.RepositoryFactory, systemAdmin mbuserdomain.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID) (*mbuserdomain.SystemOwner, error) {
-	userRepo := mbrf.NewUserRepository(ctx)
-	sysOwner, err := userRepo.FindSystemOwnerByOrganizationID(ctx, systemAdmin, organizationID)
-	if err != nil {
-		return nil, mbliberrors.Errorf("FindSystemOwnerByOrganizationID: %w", err)
-	}
-	return sysOwner, nil
-}
-
-func findSystemOwnerByOrganizationName(ctx context.Context, mbrf mbuserservice.RepositoryFactory, systemAdmin mbuserdomain.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwner, error) {
-	userRepo := mbrf.NewUserRepository(ctx)
-	sysOwner, err := userRepo.FindSystemOwnerByOrganizationName(ctx, systemAdmin, organizationName)
-	if err != nil {
-		return nil, mbliberrors.Errorf("FindSystemOwnerByOrganizationName: %w", err)
-	}
-	return sysOwner, nil
-}
-
 func getOrganization(ctx context.Context, mbrf mbuserservice.RepositoryFactory, operator mbuserdomain.UserInterface) (*mbuserdomain.Organization, error) {
 	orgRepo := mbrf.NewOrganizationRepository(ctx)
 	org, err := orgRepo.GetOrganization(ctx, operator)

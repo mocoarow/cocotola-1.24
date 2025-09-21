@@ -55,6 +55,9 @@ func (m *spaceManager) AddPublicDefaultSpace(ctx context.Context, operator domai
 }
 
 func (m *spaceManager) AddPersonalSpace(ctx context.Context, operator domain.UserInterface, param *service.AddPersonalSpaceParameter) (*domain.SpaceID, error) {
+	ctx, span := tracer.Start(ctx, "spaceManager.AddPersonalSpace")
+	defer span.End()
+
 	userRepo := m.rf.NewUserRepository(ctx)
 
 	user, err := userRepo.FindUserByID(ctx, operator, param.UserID)
