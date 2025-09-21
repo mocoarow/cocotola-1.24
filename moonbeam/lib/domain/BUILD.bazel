@@ -22,8 +22,8 @@ smart_go_test(
         "base_model_m_test.go",
         "lang_s_test.go",
     ],
-    embed = [":domain"],
     deps = [
+        ":domain",
         "@com_github_stretchr_testify//assert",
         "@com_github_stretchr_testify//require",
     ],
