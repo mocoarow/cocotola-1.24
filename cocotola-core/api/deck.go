@@ -3,8 +3,9 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	libapimb "github.com/mocoarow/cocotola-1.24/lib/api/moonbeam"
+
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
 
 type FindDecksRequest struct {
