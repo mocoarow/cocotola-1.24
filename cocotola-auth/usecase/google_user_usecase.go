@@ -230,7 +230,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 		if err != nil {
 			return nil, mbliberrors.Errorf("FindSystemOwnerByOrganizationName: %w", err)
 		}
-		return sysOwner.SystemOwnerModel, nil
+		return sysOwner, nil
 	})
 	if err != nil {
 		return nil, mbliberrors.Errorf("Do1: %w", err)

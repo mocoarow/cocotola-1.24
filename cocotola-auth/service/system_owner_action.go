@@ -22,32 +22,33 @@ type SystemOwnerAction struct {
 
 type SystemOwnerActionOption func(context.Context, *SystemOwnerAction) error
 
-func (a *SystemOwnerAction) initSystemOwnerByOrganizationID(ctx context.Context, organizationID *mbuserdomain.OrganizationID) error {
-	if a.SystemOwner != nil {
-		return nil
-	}
+// func (a *SystemOwnerAction) initSystemOwnerByOrganizationID(ctx context.Context, organizationID *mbuserdomain.OrganizationID) error {
+// 	if a.SystemOwner != nil {
+// 		return nil
+// 	}
 
-	systemOwner, err := a.systemAdmin.FindSystemOwnerByOrganizationID(ctx, organizationID)
-	if err != nil {
-		return mbliberrors.Errorf("find system owner by organization id(%d): %w", organizationID.Int(), err)
-	}
-	a.SystemOwner = systemOwner
+// 	systemOwner, err := a.systemAdmin.FindSystemOwnerByOrganizationID(ctx, organizationID)
+// 	if err != nil {
+// 		return mbliberrors.Errorf("find system owner by organization id(%d): %w", organizationID.Int(), err)
+// 	}
+// 	a.SystemOwner = systemOwner
 
-	return nil
-}
-func (a *SystemOwnerAction) initSystemOwnerByOrganizationName(ctx context.Context, organizationName string) error {
-	if a.SystemOwner != nil {
-		return nil
-	}
+// 	return nil
+// }
 
-	systemOwner, err := a.systemAdmin.FindSystemOwnerByOrganizationName(ctx, organizationName)
-	if err != nil {
-		return mbliberrors.Errorf("find system owner by organization name %s: %w", organizationName, err)
-	}
-	a.SystemOwner = systemOwner
+// func (a *SystemOwnerAction) initSystemOwnerByOrganizationName(ctx context.Context, organizationName string) error {
+// 	if a.SystemOwner != nil {
+// 		return nil
+// 	}
 
-	return nil
-}
+// 	systemOwner, err := a.systemAdmin.FindSystemOwnerByOrganizationName(ctx, organizationName)
+// 	if err != nil {
+// 		return mbliberrors.Errorf("find system owner by organization name %s: %w", organizationName, err)
+// 	}
+// 	a.SystemOwner = systemOwner
+
+// 	return nil
+// }
 
 func (a *SystemOwnerAction) initOrganizationByOrganizationID(ctx context.Context, organizationID *mbuserdomain.OrganizationID) error {
 	if a.Organization != nil {
@@ -77,31 +78,31 @@ func (a *SystemOwnerAction) initOrganizationByOrganizationName(ctx context.Conte
 	return nil
 }
 
-func WithOrganizationByID(organizationID *mbuserdomain.OrganizationID) SystemOwnerActionOption {
-	return func(ctx context.Context, action *SystemOwnerAction) error {
-		if err := action.initSystemOwnerByOrganizationID(ctx, organizationID); err != nil {
-			return err
-		}
-		if err := action.initOrganizationByOrganizationID(ctx, organizationID); err != nil {
-			return err
-		}
+// func WithOrganizationByID(organizationID *mbuserdomain.OrganizationID) SystemOwnerActionOption {
+// 	return func(ctx context.Context, action *SystemOwnerAction) error {
+// 		if err := action.initSystemOwnerByOrganizationID(ctx, organizationID); err != nil {
+// 			return err
+// 		}
+// 		if err := action.initOrganizationByOrganizationID(ctx, organizationID); err != nil {
+// 			return err
+// 		}
 
-		return nil
-	}
-}
+// 		return nil
+// 	}
+// }
 
-func WithOrganizationByName(organizationName string) SystemOwnerActionOption {
-	return func(ctx context.Context, action *SystemOwnerAction) error {
-		if err := action.initSystemOwnerByOrganizationName(ctx, organizationName); err != nil {
-			return err
-		}
-		if err := action.initOrganizationByOrganizationName(ctx, organizationName); err != nil {
-			return err
-		}
+// func WithOrganizationByName(organizationName string) SystemOwnerActionOption {
+// 	return func(ctx context.Context, action *SystemOwnerAction) error {
+// 		if err := action.initSystemOwnerByOrganizationName(ctx, organizationName); err != nil {
+// 			return err
+// 		}
+// 		if err := action.initOrganizationByOrganizationName(ctx, organizationName); err != nil {
+// 			return err
+// 		}
 
-		return nil
-	}
-}
+// 		return nil
+// 	}
+// }
 
 func WithAuthorizationManager() SystemOwnerActionOption {
 	return func(ctx context.Context, action *SystemOwnerAction) error {

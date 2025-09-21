@@ -80,9 +80,9 @@ type Option string
 var IncludeGroups Option = "IncludeGroups"
 
 type UserRepository interface {
-	FindSystemOwnerByOrganizationID(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*SystemOwner, error)
+	FindSystemOwnerByOrganizationID(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.SystemOwnerModel, error)
 
-	FindSystemOwnerByOrganizationName(ctx context.Context, operator SystemAdminInterface, organizationName string, options ...Option) (*SystemOwner, error)
+	FindSystemOwnerByOrganizationName(ctx context.Context, operator SystemAdminInterface, organizationName string, options ...Option) (*domain.SystemOwnerModel, error)
 
 	FindUserByID(ctx context.Context, operator UserInterface, id *domain.UserID, options ...Option) (*User, error)
 

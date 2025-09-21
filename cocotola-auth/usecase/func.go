@@ -34,7 +34,7 @@ func findSystemOwnerByOrganizationID(ctx context.Context, mbrf mbuserservice.Rep
 	if err != nil {
 		return nil, mbliberrors.Errorf("FindSystemOwnerByOrganizationID: %w", err)
 	}
-	return sysOwner.SystemOwnerModel, nil
+	return sysOwner, nil
 }
 
 func findSystemOwnerByOrganizationName(ctx context.Context, mbrf mbuserservice.RepositoryFactory, systemAdmin mbuserservice.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwnerModel, error) {
@@ -43,7 +43,7 @@ func findSystemOwnerByOrganizationName(ctx context.Context, mbrf mbuserservice.R
 	if err != nil {
 		return nil, mbliberrors.Errorf("FindSystemOwnerByOrganizationName: %w", err)
 	}
-	return sysOwner.SystemOwnerModel, nil
+	return sysOwner, nil
 }
 
 func getOrganization(ctx context.Context, mbrf mbuserservice.RepositoryFactory, operator mbuserservice.OperatorInterface) (*mbuserdomain.OrganizationModel, error) {

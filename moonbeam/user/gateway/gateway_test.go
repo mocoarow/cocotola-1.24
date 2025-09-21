@@ -108,7 +108,7 @@ func testDB(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testServ
 	}
 }
 
-func testOrganization(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *service.SystemOwner, owner *service.Owner)) {
+func testOrganization(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwnerModel, owner *service.Owner)) {
 	t.Helper()
 	testDB(t, func(t *testing.T, ctx context.Context, ts testService) {
 		t.Helper()
@@ -119,7 +119,7 @@ func testOrganization(t *testing.T, fn func(t *testing.T, ctx context.Context, t
 	})
 }
 
-func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*domain.OrganizationID, *service.SystemOwner, *service.Owner) {
+func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*domain.OrganizationID, *domain.SystemOwnerModel, *service.Owner) {
 	t.Helper()
 	orgName := RandString(orgNameLength)
 	sysAd, err := service.NewSystemAdmin(ctx, ts.rf)

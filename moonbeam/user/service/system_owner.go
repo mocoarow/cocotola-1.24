@@ -34,7 +34,7 @@ type SystemOwner struct {
 	logger               *slog.Logger
 }
 
-func NewSystemOwner(ctx context.Context, rf RepositoryFactory, systemOwnerModel *domain.SystemOwnerModel) (*SystemOwner, error) {
+func NewSystemOwnerx(ctx context.Context, rf RepositoryFactory, systemOwnerModel *domain.SystemOwnerModel) (*SystemOwner, error) {
 	orgRepo := rf.NewOrganizationRepository(ctx)
 	userRepo := rf.NewUserRepository(ctx)
 	userGroupRepo := rf.NewUserGroupRepository(ctx)
@@ -108,14 +108,14 @@ func (m *SystemOwner) IsSystemOwner() bool {
 // 	return space, nil
 // }
 
-func (m *SystemOwner) FindUserByID(ctx context.Context, id *domain.UserID) (*User, error) {
-	user, err := m.userRepo.FindUserByID(ctx, m, id)
-	if err != nil {
-		return nil, liberrors.Errorf("m.userRepo.FindUserByID. err: %w", err)
-	}
+// func (m *SystemOwner) FindUserByIDx(ctx context.Context, id *domain.UserID) (*User, error) {
+// 	user, err := m.userRepo.FindUserByID(ctx, m, id)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("m.userRepo.FindUserByID. err: %w", err)
+// 	}
 
-	return user, nil
-}
+// 	return user, nil
+// }
 
 // func (m *SystemOwner) FindUserByLoginID(ctx context.Context, loginID string) (*User, error) {
 // 	user, err := m.userRepo.FindUserByLoginID(ctx, m, loginID)

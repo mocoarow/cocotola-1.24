@@ -88,10 +88,6 @@ func (u *RegisterUserCommand) execute(ctx context.Context, operator mbuserservic
 
 	// 2. add user
 	aoeList := []mbuserusecase.ActionObjectEffect{}
-	// command := mbuserusecase.NewAddUserCommand(ctx, u.mbTxManager, u.mbNonTxManager)
-	// if _, err := command.Execute(ctx, operator, param, []mbuserusecase.ActionObjectEffect{}); err != nil {
-	// 	return nil, mbliberrors.Errorf("AddUserCommand.Execute. err: %w", err)
-	// }
 	if _, err := mblibservice.Do1(ctx, u.mbTxManager, func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.UserID, error) {
 		return mbuserusecase.AddUser(ctx, operator, rf, param, aoeList)
 	}); err != nil {

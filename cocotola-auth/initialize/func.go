@@ -38,7 +38,7 @@ func findSystemOwnerByOrganizationID(ctx context.Context, systemAdmin mbuserserv
 			return nil, mbliberrors.Errorf("find system owner by organization id(%d): %w", organizationID.Int(), err)
 		}
 
-		return sysOwner.SystemOwnerModel, nil
+		return sysOwner, nil
 	}
 	sysOwner, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
 	if err != nil {
@@ -55,7 +55,7 @@ func findSystemOwnerByOrganizationName(ctx context.Context, systemAdmin mbuserse
 			return nil, mbliberrors.Errorf("find system owner by organization name(%s): %w", organizationName, err)
 		}
 
-		return sysOwner.SystemOwnerModel, nil
+		return sysOwner, nil
 	}
 	sysOwner, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
 	if err != nil {

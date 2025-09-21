@@ -52,23 +52,23 @@ func (m *SystemAdmin) IsSystemAdmin() bool {
 	return true
 }
 
-func (m *SystemAdmin) FindSystemOwnerByOrganizationID(ctx context.Context, organizationID *domain.OrganizationID) (*SystemOwner, error) {
-	sysOwner, err := m.userRepo.FindSystemOwnerByOrganizationID(ctx, m, organizationID)
-	if err != nil {
-		return nil, liberrors.Errorf("m.userRepo.FindSystemOwnerByOrganizationID. error: %w", err)
-	}
+// func (m *SystemAdmin) FindSystemOwnerByOrganizationID(ctx context.Context, organizationID *domain.OrganizationID) (*SystemOwner, error) {
+// 	sysOwner, err := m.userRepo.FindSystemOwnerByOrganizationID(ctx, m, organizationID)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("m.userRepo.FindSystemOwnerByOrganizationID. error: %w", err)
+// 	}
 
-	return sysOwner, nil
-}
+// 	return sysOwner, nil
+// }
 
-func (m *SystemAdmin) FindSystemOwnerByOrganizationName(ctx context.Context, organizationName string) (*SystemOwner, error) {
-	sysOwner, err := m.userRepo.FindSystemOwnerByOrganizationName(ctx, m, organizationName)
-	if err != nil {
-		return nil, liberrors.Errorf("find system owner by organization name: %w", err)
-	}
+// func (m *SystemAdmin) FindSystemOwnerByOrganizationName(ctx context.Context, organizationName string) (*SystemOwner, error) {
+// 	sysOwner, err := m.userRepo.FindSystemOwnerByOrganizationName(ctx, m, organizationName)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("find system owner by organization name: %w", err)
+// 	}
 
-	return sysOwner, nil
-}
+// 	return sysOwner, nil
+// }
 
 func (m *SystemAdmin) FindOrganizationByID(ctx context.Context, organizationID *domain.OrganizationID) (*Organization, error) {
 	org, err := m.orgRepo.FindOrganizationByID(ctx, m, organizationID)
