@@ -42,6 +42,7 @@ func (o *operator) GetOrganizationID() *mbuserdomain.OrganizationID {
 
 type AuthInitParameter struct {
 	OrganizationID       *mbuserdomain.OrganizationID
+	SystemOwnerID        *mbuserdomain.UserID
 	GuestID              *mbuserdomain.UserID
 	PublicDefaultSpaceID *mbuserdomain.SpaceID
 }
@@ -52,12 +53,12 @@ func Initialize(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Di
 		return nil, nil, mbliberrors.Errorf("initApp: %w", err)
 	}
 
-	rootFolderID, err := initRootFolder(ctx, txManager, authInitParam.OrganizationID, authInitParam.PublicDefaultSpaceID)
+	rootFolderID, err := initRootFolder(ctx, txManager, authInitParam.OrganizationID, authInitParam.SystemOwnerID, authInitParam.PublicDefaultSpaceID)
 	if err != nil {
 		return nil, nil, mbliberrors.Errorf("initApp2: %w", err)
 	}
 
-	deckIDs, err := initEnglishWord(ctx, txManager, authInitParam.OrganizationID, authInitParam.PublicDefaultSpaceID, rootFolderID)
+	deckIDs, err := initEnglishWord(ctx, txManager, authInitParam.OrganizationID, authInitParam.SystemOwnerID, authInitParam.PublicDefaultSpaceID, rootFolderID)
 	if err != nil {
 		return nil, nil, mbliberrors.Errorf("initEnglishWord: %w", err)
 	}

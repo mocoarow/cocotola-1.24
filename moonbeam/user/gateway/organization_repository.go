@@ -12,10 +12,6 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
-type organizationRepository struct {
-	db *gorm.DB
-}
-
 type organizationEntity struct {
 	BaseModelEntity
 	ID   int
@@ -26,7 +22,7 @@ func (e *organizationEntity) TableName() string {
 	return OrganizationTableName
 }
 
-func (e *organizationEntity) toModel() (*service.Organization, error) {
+func (e *organizationEntity) toModel() (*domain.Organization, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, liberrors.Errorf("e.ToBaseModel: %w", err)
@@ -42,13 +38,14 @@ func (e *organizationEntity) toModel() (*service.Organization, error) {
 		return nil, liberrors.Errorf("domain.NewOrganizationModel. err: %w", err)
 	}
 
-	org, err := service.NewOrganization(organizationModel)
-	if err != nil {
-		return nil, liberrors.Errorf("service.NewOrganization. err: %w", err)
-	}
-
-	return org, nil
+	return organizationModel, nil
 }
+
+type organizationRepository struct {
+	db *gorm.DB
+}
+
+var _ service.OrganizationRepository = (*organizationRepository)(nil)
 
 func NewOrganizationRepository(_ context.Context, db *gorm.DB) service.OrganizationRepository {
 	return &organizationRepository{
@@ -56,7 +53,7 @@ func NewOrganizationRepository(_ context.Context, db *gorm.DB) service.Organizat
 	}
 }
 
-func (r *organizationRepository) GetOrganization(ctx context.Context, operator service.UserInterface) (*service.Organization, error) {
+func (r *organizationRepository) GetOrganization(ctx context.Context, operator domain.UserInterface) (*domain.Organization, error) {
 	_, span := tracer.Start(ctx, "organizationRepository.GetOrganization")
 	defer span.End()
 
@@ -74,7 +71,7 @@ func (r *organizationRepository) GetOrganization(ctx context.Context, operator s
 	return organization.toModel()
 }
 
-func (r *organizationRepository) FindOrganizationByName(ctx context.Context, _ service.SystemAdminInterface, name string) (*service.Organization, error) {
+func (r *organizationRepository) FindOrganizationByName(ctx context.Context, _ domain.SystemAdminInterface, name string) (*domain.Organization, error) {
 	_, span := tracer.Start(ctx, "organizationRepository.FindOrganizationByName")
 	defer span.End()
 
@@ -92,7 +89,7 @@ func (r *organizationRepository) FindOrganizationByName(ctx context.Context, _ s
 	return organization.toModel()
 }
 
-func (r *organizationRepository) FindOrganizationByID(ctx context.Context, _ service.SystemAdminInterface, id *domain.OrganizationID) (*service.Organization, error) {
+func (r *organizationRepository) FindOrganizationByID(ctx context.Context, _ domain.SystemAdminInterface, id *domain.OrganizationID) (*domain.Organization, error) {
 	_, span := tracer.Start(ctx, "organizationRepository.FindOrganizationByID")
 	defer span.End()
 
@@ -110,7 +107,7 @@ func (r *organizationRepository) FindOrganizationByID(ctx context.Context, _ ser
 	return organization.toModel()
 }
 
-func (r *organizationRepository) AddOrganization(ctx context.Context, operator service.SystemAdminInterface, param *service.AddOrganizationParameter) (*domain.OrganizationID, error) {
+func (r *organizationRepository) AddOrganization(ctx context.Context, operator domain.SystemAdminInterface, organizationName string) (*domain.OrganizationID, error) {
 	_, span := tracer.Start(ctx, "organizationRepository.AddOrganization")
 	defer span.End()
 
@@ -120,7 +117,7 @@ func (r *organizationRepository) AddOrganization(ctx context.Context, operator s
 			CreatedBy: operator.GetUserID().Int(),
 			UpdatedBy: operator.GetUserID().Int(),
 		},
-		Name: param.Name,
+		Name: organizationName,
 	}
 
 	if result := r.db.Create(&organization); result.Error != nil {

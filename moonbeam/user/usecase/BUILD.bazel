@@ -2,7 +2,21 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "usecase",
-    srcs = ["system_owner_usecase.go"],
+    srcs = [
+        "add_first_owner.go",
+        "add_guest.go",
+        "add_organization.go",
+        "add_user.go",
+        "verify_password.go",
+    ],
     importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/user/usecase",
     visibility = ["//visibility:public"],
+    deps = [
+        "//moonbeam/lib/domain",
+        "//moonbeam/lib/errors",
+        "//moonbeam/lib/log",
+        "//moonbeam/lib/service",
+        "//moonbeam/user/domain",
+        "//moonbeam/user/service",
+    ],
 )

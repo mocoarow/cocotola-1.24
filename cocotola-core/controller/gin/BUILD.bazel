@@ -1,4 +1,5 @@
-load("@rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
 
 go_library(
     name = "gin",
@@ -15,6 +16,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cocotola-auth/domain",
+        "//cocotola-core/api",
         "//cocotola-core/config",
         "//cocotola-core/controller/gin/helper",
         "//cocotola-core/controller/gin/middleware",
@@ -27,13 +29,11 @@ go_library(
         "//lib/api",
         "//lib/api/core",
         "//lib/controller/gin",
-        "//lib/domain",
         "//lib/gateway",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "//moonbeam/user/domain",
-        "//moonbeam/user/service",
         "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_contrib_instrumentation_net_http_otelhttp//:otelhttp",
@@ -41,7 +41,11 @@ go_library(
     ],
 )
 
-go_test(
+smart_go_test(
     name = "gin_test",
-    srcs = ["helper_test.go"],
+    srcs = [
+        "deck_handler_test.go",
+        "helper_test.go",
+    ],
+    deps = ["//lib/api/moonbeam"],
 )

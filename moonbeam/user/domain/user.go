@@ -25,7 +25,7 @@ func (v *UserID) GetRBACSubject() RBACSubject {
 	return NewRBACUserFromUser(v)
 }
 
-type UserModel struct {
+type User struct {
 	*libdomain.BaseModel
 	UserID         *UserID         `validate:"required"`
 	OrganizationID *OrganizationID `validate:"required"`
@@ -34,8 +34,8 @@ type UserModel struct {
 	UserGroups     []*UserGroupModel
 }
 
-func NewUserModel(baseModel *libdomain.BaseModel, userID *UserID, organizationID *OrganizationID, loginID, username string, userGroups []*UserGroupModel) (*UserModel, error) {
-	m := &UserModel{
+func NewUser(baseModel *libdomain.BaseModel, userID *UserID, organizationID *OrganizationID, loginID, username string, userGroups []*UserGroupModel) (*User, error) {
+	m := &User{
 		BaseModel:      baseModel,
 		UserID:         userID,
 		OrganizationID: organizationID,
@@ -49,4 +49,11 @@ func NewUserModel(baseModel *libdomain.BaseModel, userID *UserID, organizationID
 	}
 
 	return m, nil
+}
+
+func (m *User) GetUserID() *UserID {
+	return m.UserID
+}
+func (m *User) GetOrganizationID() *OrganizationID {
+	return m.OrganizationID
 }

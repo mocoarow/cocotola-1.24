@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
@@ -19,7 +19,7 @@ type AddCardParameter struct {
 }
 
 type CardRepository interface {
-	AddCard(ctx context.Context, operator mbuserservice.OperatorInterface, param *AddCardParameter) (*domain.CardID, error)
+	AddCard(ctx context.Context, operator mbuserdomain.UserInterface, param *AddCardParameter) (*domain.CardID, error)
 
-	FindCardsByDeckID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) ([]*Card, error)
+	FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*Card, error)
 }

@@ -78,16 +78,18 @@ func main() {
 		initGinWeb(ctx, router, viteStaticFS, "flutter")
 	}
 	var organizationID *mbuserdomain.OrganizationID
+	var sysOwnerID *mbuserdomain.UserID
 	var guestID *mbuserdomain.UserID
 	var publicDefaultSpaceID *mbuserdomain.SpaceID
 	// auth
 	{
 		auth := router.Group("auth")
-		orgIDTmp, guestIDTmp, publicDefaultSpaceIDTmp, err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth)
+		orgIDTmp, sysOwnerIDTmp, guestIDTmp, publicDefaultSpaceIDTmp, err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth)
 		if err != nil {
 			libdomain.CheckError(err)
 		}
 		organizationID = orgIDTmp
+		sysOwnerID = sysOwnerIDTmp
 		guestID = guestIDTmp
 		publicDefaultSpaceID = publicDefaultSpaceIDTmp
 	}
@@ -98,6 +100,7 @@ func main() {
 		core := router.Group("core")
 		authInitParam := coreinit.AuthInitParameter{
 			OrganizationID:       organizationID,
+			SystemOwnerID:        sysOwnerID,
 			GuestID:              guestID,
 			PublicDefaultSpaceID: publicDefaultSpaceID,
 		}

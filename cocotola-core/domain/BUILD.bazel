@@ -1,4 +1,5 @@
-load("@rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
 
 go_library(
     name = "domain",
@@ -13,14 +14,13 @@ go_library(
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/domain",
     visibility = ["//visibility:public"],
     deps = [
-        "//lib/domain",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/user/domain",
     ],
 )
 
-go_test(
+smart_go_test(
     name = "domain_s_test",
     size = "small",
     srcs = ["deck_test.go"],
@@ -34,12 +34,11 @@ go_test(
     ],
 )
 
-go_test(
+smart_go_test(
     name = "domain_test",
     srcs = ["deck_test.go"],
     deps = [
         ":domain",
-        "//lib/domain",
         "//moonbeam/lib/domain",
         "//moonbeam/user/domain",
         "@com_github_stretchr_testify//require",

@@ -47,8 +47,9 @@ func (f *RepositoryFactory) NewCardRepository(_ context.Context) (service.CardRe
 func (f *RepositoryFactory) NewFolderRepository(_ context.Context) (service.FolderRepository, error) {
 	return NewFolderRepository(f.db), nil
 }
-func (f *RepositoryFactory) NewAppUserRepository(_ context.Context) (service.AppUserRepository, error) {
-	return NewAppUserRepository(f.db, f, f.rbacClient), nil
-}
+
+// func (f *RepositoryFactory) NewAppUserRepository(_ context.Context) (service.AppUserRepository, error) {
+// 	return NewAppUserRepository(f.db, f, f.rbacClient), nil
+// }
 
 type RepositoryFactoryFunc func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error)

@@ -1,9 +1,9 @@
-load("@rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
 
 go_library(
     name = "gateway",
     srcs = [
-        "app_user_repository.go",
         "card_repository.go",
         "deck_repository.go",
         "firebase_client.go",
@@ -18,19 +18,17 @@ go_library(
         "//cocotola-core/domain",
         "//cocotola-core/service",
         "//lib/api",
-        "//lib/domain",
         "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/gateway",
         "//moonbeam/user/domain",
         "//moonbeam/user/gateway",
-        "//moonbeam/user/service",
         "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_otel//:otel",
     ],
 )
 
-go_test(
+smart_go_test(
     name = "gateway_test",
     srcs = ["firebase_client_test.go"],
     deps = [

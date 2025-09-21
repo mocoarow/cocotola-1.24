@@ -4,17 +4,16 @@ import (
 	"context"
 
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
-//	type OperatorInterface interface {
+//	type UserInterface interface {
 //		UserID() *mbuserdomain.UserID
 //		OrganizationID() *mbuserdomain.OrganizationID
 //		// LoginID() string
 //		// Username() string
 //	}
 type RepositoryFactory interface {
-	NewMoonBeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error)
+	// NewMoonBeamRepositoryFactory(ctx context.Context) (mbuserservice.RepositoryFactory, error)
 
 	NewStateRepository(ctx context.Context) (StateRepository, error)
 }

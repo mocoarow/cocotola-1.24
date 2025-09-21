@@ -24,27 +24,6 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/usecase"
 )
 
-// type systemOwnerByOrganizationName struct {
-// }
-
-// func (s systemOwnerByOrganizationName) Get(ctx context.Context, rf service.RepositoryFactory, organizationName string) (*mbuserservice.SystemOwner, error) {
-// 	mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-// 	}
-// 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, mbrf)
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf("NewSystemAdmin: %w", err)
-// 	}
-
-// 	systemOwner, err := systemAdmin.FindSystemOwnerByOrganizationName(ctx, organizationName)
-// 	if err != nil {
-// 		return nil, mbliberrors.Errorf("GetFindSystemOwnerByOrganizationNameUser: %w", err)
-// 	}
-
-// 	return systemOwner, nil
-// }
-
 func NewInitTestRouterFunc() libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
 		test := parentRouterGroup.Group("test")
@@ -69,7 +48,7 @@ func NewAuthTokenManager(ctx context.Context, authConfig *config.AuthConfig) (se
 	return authTokenManager, nil
 }
 
-func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, authConfig *config.AuthConfig, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) ([]libcontroller.InitRouterGroupFunc, error) {
+func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, authConfig *config.AuthConfig, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - google
 	httpClient := http.Client{ //nolint:exhaustruct
 		Timeout:   time.Duration(authConfig.GoogleAPITimeoutSec) * time.Second,
@@ -77,14 +56,14 @@ func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemTo
 	}
 
 	googleAuthClient := gateway.NewGoogleAuthClient(&httpClient, authConfig.GoogleClientID, authConfig.GoogleClientSecret, authConfig.GoogleCallbackURL)
-	googleUserUsecase := usecase.NewGoogleUser(systemToken, txManager, nonTxManager, authTokenManager, googleAuthClient)
+	googleUserUsecase := usecase.NewGoogleUser(systemToken, mbTxManager, mbNonTxManager, txManager, nonTxManager, authTokenManager, googleAuthClient)
 	// - authentication
-	authenticationUsecase := usecase.NewAuthentication(systemToken, txManager, authTokenManager)
+	authenticationUsecase := usecase.NewAuthentication(systemToken, mbTxManager, authTokenManager)
 	// &systemOwnerByOrganizationName{})
 	// - password
-	passwordUsecase := usecase.NewPassword(systemToken, txManager, nonTxManager, authTokenManager)
+	passwordUsecase := usecase.NewPassword(systemToken, mbTxManager, mbNonTxManager, authTokenManager)
 	// - guest
-	guestUsecase := usecase.NewGuest(systemToken, txManager, nonTxManager, authTokenManager)
+	guestUsecase := usecase.NewGuest(systemToken, mbTxManager, mbNonTxManager, authTokenManager)
 
 	// public router
 	return []libcontroller.InitRouterGroupFunc{
@@ -96,9 +75,9 @@ func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemTo
 	}, nil
 }
 
-func GetBasicPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) []libcontroller.InitRouterGroupFunc {
+func GetBasicPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager mbuserservice.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) []libcontroller.InitRouterGroupFunc {
 	// - rbac
-	rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
+	rbacUsecase := usecase.NewRBACUsecase(systemToken, txManager, nonTxManager)
 	// - callback
 	callbackUsecase := usecase.NewCallback(systemToken, txManager, nonTxManager, cocotolaCoreCallbackClient)
 
@@ -109,7 +88,7 @@ func GetBasicPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.Sy
 	}
 }
 
-func GetBearerTokenRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager service.TransactionManager, authTokenManager service.AuthTokenManager, mbrf mbuserservice.RepositoryFactory) []libcontroller.InitRouterGroupFunc {
+func GetBearerTokenRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager, mbrf mbuserservice.RepositoryFactory) []libcontroller.InitRouterGroupFunc {
 	// - rbac
 	// rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
 	// - user
@@ -124,8 +103,8 @@ func GetBearerTokenRouterGroupFuncs(_ context.Context, systemToken libdomain.Sys
 	}
 }
 
-func InitBearerTokenAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, nonTxManager service.TransactionManager) (gin.HandlerFunc, error) {
-	return middleware.NewAuthMiddleware(systemToken, authTokenManager, nonTxManager), nil
+func InitBearerTokenAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, mbNonTxManager mbuserservice.TransactionManager) (gin.HandlerFunc, error) {
+	return middleware.NewAuthMiddleware(systemToken, authTokenManager, mbNonTxManager), nil
 }
 
 // func InitAuthMiddleware(authConfig *config.AuthConfig) (gin.HandlerFunc, error) {

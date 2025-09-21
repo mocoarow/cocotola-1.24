@@ -8,11 +8,12 @@ import (
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 	"gorm.io/gorm"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
@@ -22,32 +23,32 @@ type ParentAndChildLink struct {
 }
 
 func Initialize2(ctx context.Context, systemToken libdomain.SystemToken, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, organizationID *mbuserdomain.OrganizationID, parentAndChildLink []*ParentAndChildLink) error {
-	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
+	mbrff := func(ctx context.Context, db *gorm.DB) (mbuserservice.RepositoryFactory, error) {
 		resouceEventHandlers := map[mbuserdomain.ResourceKey]mblibservice.ResourceEventHandler{}
-		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, resouceEventHandlers)
+		return mbusergateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, resouceEventHandlers)
+	}
+	mbrf, err := mbrff(ctx, db)
+	if err != nil {
+		return mbliberrors.Errorf("rff: %w", err)
 	}
 
-	txManager := initTransactionManager(db, rff)
+	txManager := initMBTransactionManager(db, mbrff)
+	mbNonTxManager := initMBNonTransactionManager(mbrf)
 
-	fn := func(rf service.RepositoryFactory) error {
-		systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
-			service.WithOrganizationByID(organizationID),
-			service.WithAuthorizationManager(),
-		)
-		if err != nil {
-			return mbliberrors.Errorf("new system owner action: %w", err)
-		}
+	sysAdmin := service.NewSystemAdmin(systemToken)
 
-		mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-		if err != nil {
-			return mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-		}
-		authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
+	sysOwner, err := findSystemOwnerByOrganizationID(ctx, sysAdmin, mbNonTxManager, organizationID)
+	if err != nil {
+		return mbliberrors.Errorf("findSystemOwnerByOrganizationID: %w", err)
+	}
+
+	fn := func(rf mbuserservice.RepositoryFactory) error {
+		authorizationManager, err := rf.NewAuthorizationManager(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("new authorization manager: %w", err)
 		}
 		for _, po := range parentAndChildLink {
-			if err := authorizationManager.AddObjectToObject(ctx, systemOwnerAction.SystemOwner, po.Child, po.Parent); err != nil {
+			if err := authorizationManager.AddObjectToObject(ctx, sysOwner, po.Child, po.Parent); err != nil {
 				return mbliberrors.Errorf("AddObjectToObject: %w", err)
 			}
 		}

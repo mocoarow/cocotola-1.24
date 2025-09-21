@@ -27,7 +27,7 @@ func NewSpaceManager(_ context.Context, dialect libgateway.DialectRDBMS, db *gor
 	}, nil
 }
 
-func (m *spaceManager) AddPublicDefaultSpace(ctx context.Context, operator service.OperatorInterface) (*domain.SpaceID, error) {
+func (m *spaceManager) AddPublicDefaultSpace(ctx context.Context, operator domain.UserInterface) (*domain.SpaceID, error) {
 	userRepo := m.rf.NewUserRepository(ctx)
 
 	user, err := userRepo.FindUserByID(ctx, operator, operator.GetUserID())
@@ -54,7 +54,7 @@ func (m *spaceManager) AddPublicDefaultSpace(ctx context.Context, operator servi
 	return spaceID, nil
 }
 
-func (m *spaceManager) AddPersonalSpace(ctx context.Context, operator service.OperatorInterface, param *service.AddPersonalSpaceParameter) (*domain.SpaceID, error) {
+func (m *spaceManager) AddPersonalSpace(ctx context.Context, operator domain.UserInterface, param *service.AddPersonalSpaceParameter) (*domain.SpaceID, error) {
 	userRepo := m.rf.NewUserRepository(ctx)
 
 	user, err := userRepo.FindUserByID(ctx, operator, param.UserID)
@@ -81,11 +81,11 @@ func (m *spaceManager) AddPersonalSpace(ctx context.Context, operator service.Op
 	return spaceID, nil
 }
 
-func (m *spaceManager) AddUserToSpace(_ context.Context, _ service.SystemOwnerInterface, _ domain.UserID, _ *domain.SpaceID) error {
+func (m *spaceManager) AddUserToSpace(_ context.Context, _ domain.SystemOwnerInterface, _ domain.UserID, _ *domain.SpaceID) error {
 	return errors.New("not implemented")
 }
 
-func (m *spaceManager) GetPersonalSpace(ctx context.Context, operator service.OperatorInterface) (*service.Space, error) {
+func (m *spaceManager) GetPersonalSpace(ctx context.Context, operator domain.UserInterface) (*domain.SpaceModel, error) {
 	pairOfUserAndSpaceRepo := NewPairOfUserAndSpaceRepository(ctx, m.dialect, m.db)
 	spaces, err := pairOfUserAndSpaceRepo.FindMySpaces(ctx, operator)
 	if err != nil {

@@ -1,0 +1,25 @@
+load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
+
+go_library(
+    name = "api",
+    srcs = ["deck.go"],
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/api",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cocotola-core/domain",
+        "//lib/api/moonbeam",
+    ],
+)
+
+smart_go_test(
+    name = "api_test",
+    srcs = ["deck_handler_test.go"],
+    deps = [
+        ":api",
+        "//cocotola-core/domain",
+        "//lib/api/moonbeam",
+        "//moonbeam/lib/domain",
+        "//moonbeam/user/domain",
+    ],
+)

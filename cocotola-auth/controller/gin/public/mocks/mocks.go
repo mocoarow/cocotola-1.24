@@ -40,23 +40,23 @@ func (_m *MockAuthenticationUsecase) EXPECT() *MockAuthenticationUsecase_Expecte
 }
 
 // GetUserInfo provides a mock function for the type MockAuthenticationUsecase
-func (_mock *MockAuthenticationUsecase) GetUserInfo(ctx context.Context, bearerToken string) (*domain.UserModel, error) {
+func (_mock *MockAuthenticationUsecase) GetUserInfo(ctx context.Context, bearerToken string) (*domain.User, error) {
 	ret := _mock.Called(ctx, bearerToken)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserInfo")
 	}
 
-	var r0 *domain.UserModel
+	var r0 *domain.User
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*domain.UserModel, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*domain.User, error)); ok {
 		return returnFunc(ctx, bearerToken)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *domain.UserModel); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *domain.User); ok {
 		r0 = returnFunc(ctx, bearerToken)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*domain.UserModel)
+			r0 = ret.Get(0).(*domain.User)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -86,12 +86,12 @@ func (_c *MockAuthenticationUsecase_GetUserInfo_Call) Run(run func(ctx context.C
 	return _c
 }
 
-func (_c *MockAuthenticationUsecase_GetUserInfo_Call) Return(userModel *domain.UserModel, err error) *MockAuthenticationUsecase_GetUserInfo_Call {
-	_c.Call.Return(userModel, err)
+func (_c *MockAuthenticationUsecase_GetUserInfo_Call) Return(user *domain.User, err error) *MockAuthenticationUsecase_GetUserInfo_Call {
+	_c.Call.Return(user, err)
 	return _c
 }
 
-func (_c *MockAuthenticationUsecase_GetUserInfo_Call) RunAndReturn(run func(ctx context.Context, bearerToken string) (*domain.UserModel, error)) *MockAuthenticationUsecase_GetUserInfo_Call {
+func (_c *MockAuthenticationUsecase_GetUserInfo_Call) RunAndReturn(run func(ctx context.Context, bearerToken string) (*domain.User, error)) *MockAuthenticationUsecase_GetUserInfo_Call {
 	_c.Call.Return(run)
 	return _c
 }

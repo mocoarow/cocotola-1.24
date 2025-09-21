@@ -11,6 +11,7 @@ import (
 
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
@@ -21,7 +22,7 @@ import (
 )
 
 type UserUsecase interface {
-	RegisterUser(ctx context.Context, operator mbuserservice.OperatorInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error)
+	RegisterUser(ctx context.Context, operator mbuserdomain.UserInterface, param *mbuserservice.AddUserParameter) (*domain.AuthTokenSet, error)
 }
 
 type UserHandler struct {
@@ -37,7 +38,7 @@ func NewUserHandler(userUsecase UserUsecase) *UserHandler {
 }
 
 func (h *UserHandler) RegisterUser(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		var apiParam libapiauth.AddUserRequest
 		if err := c.ShouldBindJSON(&apiParam); err != nil {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))

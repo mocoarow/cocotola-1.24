@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
+	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
-
-	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -27,7 +25,7 @@ type englishBlankCard struct {
 }
 type englishBlankDeck struct {
 	Name  string
-	Lang2 *libdomain.Lang2
+	Lang2 *mblibdomain.Lang2
 	Cards []englishBlankCard
 }
 
@@ -35,7 +33,7 @@ func getEnglishBlankDecks() []englishBlankDeck {
 	return []englishBlankDeck{
 		{
 			Name:  "初心者向け基本文法",
-			Lang2: libdomain.Lang2JA,
+			Lang2: mblibdomain.Lang2JA,
 			Cards: []englishBlankCard{
 				{
 					SourceText:  "私は毎日英語を勉強します。",
@@ -57,7 +55,7 @@ func getEnglishBlankDecks() []englishBlankDeck {
 		},
 		{
 			Name:  "中級文法チャレンジ",
-			Lang2: libdomain.Lang2JA,
+			Lang2: mblibdomain.Lang2JA,
 			Cards: []englishBlankCard{
 				{
 					SourceText:  "私は彼女に図書館で会った。",
@@ -81,7 +79,7 @@ func getEnglishBlankDecks() []englishBlankDeck {
 	}
 }
 
-func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckRepo service.DeckRepository, cardRepo service.CardRepository, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID, nameToDecks map[string]*service.Deck) ([]*domain.DeckID, error) {
+func initEnglishBlankDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckRepo service.DeckRepository, cardRepo service.CardRepository, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID, nameToDecks map[string]*service.Deck) ([]*domain.DeckID, error) {
 	deckIDs := make([]*domain.DeckID, 0)
 	for _, englishBlankDeck := range getEnglishBlankDecks() {
 		name := englishBlankDeck.Name
@@ -94,7 +92,7 @@ func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorIn
 			FolderID:    rootFolderID,
 			Name:        name,
 			TemplateID:  service.TemplateIDEnglishBlank,
-			Lang2:       libdomain.Lang2JA,
+			Lang2:       mblibdomain.Lang2JA,
 			Description: "",
 		}
 
@@ -124,10 +122,10 @@ func initEnglishBlankDeck(ctx context.Context, operator mbuserservice.OperatorIn
 	return deckIDs, nil
 }
 
-func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID) ([]*domain.DeckID, error) {
+func initEnglishWord(ctx context.Context, txManager service.TransactionManager, organizationID *mbuserdomain.OrganizationID, systemOwnerID *mbuserdomain.UserID, publicDefaultSpaceID *mbuserdomain.SpaceID, rootFolderID *domain.FolderID) ([]*domain.DeckID, error) {
 	operator := &operator{
 		organizationID: organizationID,
-		userID:         mbuserservice.SystemAdminID,
+		userID:         systemOwnerID,
 	}
 
 	fn := func(rf service.RepositoryFactory) ([]*domain.DeckID, error) {

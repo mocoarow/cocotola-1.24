@@ -7,8 +7,8 @@ package mocks
 import (
 	"context"
 
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
-	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+	domain0 "github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -40,26 +40,26 @@ func (_m *MockCardQueryUsecase) EXPECT() *MockCardQueryUsecase_Expecter {
 }
 
 // FindCardsByDeckID provides a mock function for the type MockCardQueryUsecase
-func (_mock *MockCardQueryUsecase) FindCardsByDeckID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error) {
+func (_mock *MockCardQueryUsecase) FindCardsByDeckID(ctx context.Context, operator domain.UserInterface, deckID *domain0.DeckID) ([]*domain0.CardModel, error) {
 	ret := _mock.Called(ctx, operator, deckID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindCardsByDeckID")
 	}
 
-	var r0 []*domain.CardModel
+	var r0 []*domain0.CardModel
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, service.OperatorInterface, *domain.DeckID) ([]*domain.CardModel, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.UserInterface, *domain0.DeckID) ([]*domain0.CardModel, error)); ok {
 		return returnFunc(ctx, operator, deckID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, service.OperatorInterface, *domain.DeckID) []*domain.CardModel); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.UserInterface, *domain0.DeckID) []*domain0.CardModel); ok {
 		r0 = returnFunc(ctx, operator, deckID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*domain.CardModel)
+			r0 = ret.Get(0).([]*domain0.CardModel)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, service.OperatorInterface, *domain.DeckID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.UserInterface, *domain0.DeckID) error); ok {
 		r1 = returnFunc(ctx, operator, deckID)
 	} else {
 		r1 = ret.Error(1)
@@ -80,19 +80,19 @@ func (_e *MockCardQueryUsecase_Expecter) FindCardsByDeckID(ctx interface{}, oper
 	return &MockCardQueryUsecase_FindCardsByDeckID_Call{Call: _e.mock.On("FindCardsByDeckID", ctx, operator, deckID)}
 }
 
-func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Run(run func(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID)) *MockCardQueryUsecase_FindCardsByDeckID_Call {
+func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Run(run func(ctx context.Context, operator domain.UserInterface, deckID *domain0.DeckID)) *MockCardQueryUsecase_FindCardsByDeckID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(service.OperatorInterface), args[2].(*domain.DeckID))
+		run(args[0].(context.Context), args[1].(domain.UserInterface), args[2].(*domain0.DeckID))
 	})
 	return _c
 }
 
-func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Return(cardModels []*domain.CardModel, err error) *MockCardQueryUsecase_FindCardsByDeckID_Call {
+func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Return(cardModels []*domain0.CardModel, err error) *MockCardQueryUsecase_FindCardsByDeckID_Call {
 	_c.Call.Return(cardModels, err)
 	return _c
 }
 
-func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) RunAndReturn(run func(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) ([]*domain.CardModel, error)) *MockCardQueryUsecase_FindCardsByDeckID_Call {
+func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) RunAndReturn(run func(ctx context.Context, operator domain.UserInterface, deckID *domain0.DeckID) ([]*domain0.CardModel, error)) *MockCardQueryUsecase_FindCardsByDeckID_Call {
 	_c.Call.Return(run)
 	return _c
 }

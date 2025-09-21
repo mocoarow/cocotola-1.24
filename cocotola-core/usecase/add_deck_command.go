@@ -1,10 +1,11 @@
-package service
+package usecase
 
 import (
 	"context"
 
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
+	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
@@ -13,23 +14,31 @@ import (
 	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
 type AppUser struct {
-	operator   mbuserservice.OperatorInterface
-	rf         RepositoryFactory
-	rbacClient libapi.CocotolaRBACClient
+	operator mbuserdomain.UserInterface
+	// rf         RepositoryFactory
+	txManager    service.TransactionManager
+	nonTxManager service.TransactionManager
+	rbacClient   libapi.CocotolaRBACClient
 }
 
-func NewAppUser(operator mbuserservice.OperatorInterface, rf RepositoryFactory, rbacClient libapi.CocotolaRBACClient) *AppUser {
+func NewAppUser(operator mbuserdomain.UserInterface,
+	txManager, nonTxManager service.TransactionManager,
+	//rf RepositoryFactory,
+	rbacClient libapi.CocotolaRBACClient) *AppUser {
 	return &AppUser{
-		operator:   operator,
-		rf:         rf,
+		operator:     operator,
+		txManager:    txManager,
+		nonTxManager: nonTxManager,
+		// rf:         rf,
 		rbacClient: rbacClient,
 	}
 }
 
-func (m *AppUser) AddDeck(ctx context.Context, param *AddDeckParameter) (*domain.DeckID, error) {
+func (m *AppUser) AddDeck(ctx context.Context, param *service.AddDeckParameter) (*domain.DeckID, error) {
 	// Check RBAC
 	// Can "operator" "createDeck" in "space" ?
 	action := librbac.CreateDeckAction
@@ -46,23 +55,29 @@ func (m *AppUser) AddDeck(ctx context.Context, param *AddDeckParameter) (*domain
 		return nil, mbliberrors.Errorf("permission denied. space(%d): %w", param.SpaceID.Int(), mblibdomain.ErrPermissionDenied)
 	}
 
-	folderRepo, err := m.rf.NewFolderRepository(ctx)
-	if err != nil {
-		return nil, mbliberrors.Errorf("NewFolderRepository:%w", err)
-	}
-	folder, err := folderRepo.RetrieveRooFolderBySpaceID(ctx, m.operator, param.SpaceID)
-	if err != nil {
-		return nil, mbliberrors.Errorf("retrieve root folder by space id(%d): %w", param.SpaceID.Int(), err)
-	}
-	param.FolderID = folder.FolderID
-	deckRepo, err := m.rf.NewDeckRepository(ctx)
-	if err != nil {
-		return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
-	}
+	deckID, err := mblibservice.Do1(ctx, m.txManager, func(rf service.RepositoryFactory) (*domain.DeckID, error) {
+		folderRepo, err := rf.NewFolderRepository(ctx)
+		if err != nil {
+			return nil, mbliberrors.Errorf("NewFolderRepository:%w", err)
+		}
+		folder, err := folderRepo.RetrieveRooFolderBySpaceID(ctx, m.operator, param.SpaceID)
+		if err != nil {
+			return nil, mbliberrors.Errorf("retrieve root folder by space id(%d): %w", param.SpaceID.Int(), err)
+		}
+		param.FolderID = folder.FolderID
+		deckRepo, err := rf.NewDeckRepository(ctx)
+		if err != nil {
+			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
+		}
+		deckID, err := deckRepo.AddDeck(ctx, m.operator, param)
+		if err != nil {
+			return nil, mbliberrors.Errorf("deckRepo.AddDeck: %w", err)
+		}
 
-	deckID, err := deckRepo.AddDeck(ctx, m.operator, param)
+		return deckID, nil
+	})
 	if err != nil {
-		return nil, mbliberrors.Errorf("deckRepo.AddDeck: %w", err)
+		return nil, err //nolint:wrapcheck
 	}
 
 	// RBAC

@@ -108,7 +108,7 @@ func testDB(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testServ
 	}
 }
 
-func testOrganization(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *service.SystemOwner, owner *service.Owner)) {
+func testOrganization(t *testing.T, fn func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel)) {
 	t.Helper()
 	testDB(t, func(t *testing.T, ctx context.Context, ts testService) {
 		t.Helper()
@@ -119,16 +119,15 @@ func testOrganization(t *testing.T, fn func(t *testing.T, ctx context.Context, t
 	})
 }
 
-func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*domain.OrganizationID, *service.SystemOwner, *service.Owner) {
+func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*domain.OrganizationID, *domain.SystemOwner, *domain.OwnerModel) {
 	t.Helper()
 	orgName := RandString(orgNameLength)
-	sysAd, err := service.NewSystemAdmin(ctx, ts.rf)
-	require.NoError(t, err)
+	sysAd := domain.NewSystemAdmin()
 
 	firstOwnerAddParam, err := service.NewUserAddParameter("OWNER_ID", "OWNER_NAME", "OWNER_PASSWORD", "", "", "", "")
 	require.NoError(t, err)
-	orgAddParam, err := service.NewOrganizationAddParameter(orgName, firstOwnerAddParam)
-	require.NoError(t, err)
+	// orgAddParam, err := service.NewOrganizationAddParameter(orgName, firstOwnerAddParam)
+	// require.NoError(t, err)
 
 	orgRepo := gateway.NewOrganizationRepository(ctx, ts.db)
 	userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
@@ -137,7 +136,7 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 	require.NoError(t, err)
 
 	// 1. add organization
-	orgID, err := orgRepo.AddOrganization(ctx, sysAd, orgAddParam)
+	orgID, err := orgRepo.AddOrganization(ctx, sysAd, orgName)
 	if err != nil {
 		outputOrganization(t, ts.db)
 	}
@@ -208,7 +207,7 @@ func teardownOrganization(t *testing.T, ts testService, orgID *domain.Organizati
 	// db.Where("true").Delete(&organizationEntity{})
 }
 
-func testAddUser(t *testing.T, ctx context.Context, ts testService, owner service.OwnerModelInterface, loginID, username, password string) *service.User {
+func testAddUser(t *testing.T, ctx context.Context, ts testService, owner domain.OwnerInterface, loginID, username, password string) *domain.User {
 	t.Helper()
 	userRepo := ts.rf.NewUserRepository(ctx)
 	userID1, err := userRepo.AddUser(ctx, owner, testNewUserAddParameter(t, loginID, username, password))
@@ -220,7 +219,7 @@ func testAddUser(t *testing.T, ctx context.Context, ts testService, owner servic
 	return user1
 }
 
-func testAddUserGroup(t *testing.T, ctx context.Context, ts testService, owner service.OwnerModelInterface, key, name, description string) *service.UserGroup {
+func testAddUserGroup(t *testing.T, ctx context.Context, ts testService, owner domain.OwnerInterface, key, name, description string) *domain.UserGroupModel {
 	t.Helper()
 	userGorupRepo := ts.rf.NewUserGroupRepository(ctx)
 	groupID1, err := userGorupRepo.AddUserGroup(ctx, owner, testNewUserGroupAddParameter(t, key, name, description))
@@ -234,72 +233,72 @@ func testAddUserGroup(t *testing.T, ctx context.Context, ts testService, owner s
 	return group1
 }
 
-type testSystemAdmin struct {
-	*domain.SystemAdminModel
-}
+// type testSystemAdmin struct {
+// 	*domain.SystemAdmin
+// }
 
-func (m *testSystemAdmin) GetUserID() *domain.UserID {
-	return m.UserID
-}
-func (m *testSystemAdmin) IsSystemAdmin() bool {
-	return true
-}
-func testNewSystemAdmin(systemAdminModel *domain.SystemAdminModel) *testSystemAdmin {
-	return &testSystemAdmin{
-		systemAdminModel,
-	}
-}
+// func (m *testSystemAdmin) GetUserID() *domain.UserID {
+// 	return m.UserID
+// }
+// func (m *testSystemAdmin) IsSystemAdmin() bool {
+// 	return true
+// }
+// func testNewSystemAdmin(systemAdminModel *domain.SystemAdmin) *testSystemAdmin {
+// 	return &testSystemAdmin{
+// 		systemAdminModel,
+// 	}
+// }
 
-type testUserModel struct {
-	*domain.UserModel
-}
+// type testUser struct {
+// 	*domain.User
+// }
 
-func (m *testUserModel) GetUserID() *domain.UserID {
-	return m.UserID
-}
-func (m *testUserModel) GetOrganizationID() *domain.OrganizationID {
-	return m.OrganizationID
-}
+// func (m *testUser) GetUserID() *domain.UserID {
+// 	return m.UserID
+// }
+// func (m *testUser) GetOrganizationID() *domain.OrganizationID {
+// 	return m.OrganizationID
+// }
 
-//	func (m *testUserModel) LoginID() string {
-//		return m.UserModel.LoginID
-//	}
-//
-//	func (m *testUserModel) Username() string {
-//		return m.UserModel.Username
-//	}
-func testNewUser(userModel *domain.UserModel) *testUserModel {
-	return &testUserModel{
-		userModel,
-	}
-}
+// //	func (m *testUser) LoginID() string {
+// //		return m.User.LoginID
+// //	}
+// //
+// //	func (m *testUser) Username() string {
+// //		return m.User.Username
+// //	}
+// func testNewUser(userModel *domain.User) *testUser {
+// 	return &testUser{
+// 		userModel,
+// 	}
+// }
 
-type testUserGroupModel struct {
-	*domain.UserGroupModel
-}
+// type testUserGroupModel struct {
+// 	*domain.UserGroupModel
+// }
 
-func (m *testUserGroupModel) Key() string {
-	return m.UserGroupModel.Key
-}
-func (m *testUserGroupModel) Name() string {
-	return m.UserGroupModel.Key
-}
-func (m *testUserGroupModel) Description() string {
-	return m.UserGroupModel.Description
-}
-func testNewUserGroup(userGroupModel *domain.UserGroupModel) *testUserGroupModel {
-	return &testUserGroupModel{
-		userGroupModel,
-	}
-}
-func testNewUserGroups(userGroupModels []*domain.UserGroupModel) []*testUserGroupModel {
-	groups := make([]*testUserGroupModel, len(userGroupModels))
-	for i, groupModel := range userGroupModels {
-		groups[i] = testNewUserGroup(groupModel)
-	}
+// func (m *testUserGroupModel) Key() string {
+// 	return m.UserGroupModel.Key
+// }
+// func (m *testUserGroupModel) Name() string {
+// 	return m.UserGroupModel.Key
+// }
+// func (m *testUserGroupModel) Description() string {
+// 	return m.UserGroupModel.Description
+// }
+// func testNewUserGroup(userGroupModel *domain.UserGroupModel) *testUserGroupModel {
+// 	return &testUserGroupModel{
+// 		userGroupModel,
+// 	}
+// }
+// func testNewUserGroups(userGroupModels []*domain.UserGroupModel) []*testUserGroupModel {
+// 	groups := make([]*testUserGroupModel, len(userGroupModels))
+// 	for i, groupModel := range userGroupModels {
+// 		groups[i] = testNewUserGroup(groupModel)
+// 	}
 
-	return groups
-}
+// 	return groups
+// }
 
 func testNewUserAddParameter(t *testing.T, loginID, username, password string) *service.AddUserParameter {
 	t.Helper()
@@ -317,19 +316,17 @@ func testNewUserGroupAddParameter(t *testing.T, key, name, description string) *
 	return p
 }
 
-func getOrganization(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID) *service.Organization {
+func getOrganization(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID) *domain.Organization {
 	t.Helper()
 	orgRepo := gateway.NewOrganizationRepository(ctx, ts.db)
 
 	baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 	require.NoError(t, err)
 	userID, _ := domain.NewUserID(1)
-	userModel, err := domain.NewUserModel(baseModel, userID, orgID, "login_id", "username", nil)
-	require.NoError(t, err)
-	user, err := service.NewUser(ctx, ts.rf, userModel)
+	userModel, err := domain.NewUser(baseModel, userID, orgID, "login_id", "username", nil)
 	require.NoError(t, err)
 
-	org, err := orgRepo.GetOrganization(ctx, user)
+	org, err := orgRepo.GetOrganization(ctx, userModel)
 	require.NoError(t, err)
 	require.Len(t, org.Name, orgNameLength)
 

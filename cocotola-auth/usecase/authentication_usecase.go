@@ -7,6 +7,7 @@ import (
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
@@ -26,12 +27,12 @@ type UserClaims struct {
 
 type Authentication struct {
 	systemToken        libdomain.SystemToken
-	transactionManager service.TransactionManager
+	transactionManager mbuserservice.TransactionManager
 	authTokenManager   service.AuthTokenManager
 	// systemOwnerByOrganizationName SystemOwnerByOrganizationName
 }
 
-func NewAuthentication(systemToken libdomain.SystemToken, transactionManager service.TransactionManager, authTokenManager service.AuthTokenManager,
+func NewAuthentication(systemToken libdomain.SystemToken, transactionManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager,
 
 // systemOwnerByOrganizationName SystemOwnerByOrganizationName
 ) *Authentication {
@@ -52,10 +53,12 @@ func (u *Authentication) SignInWithIDToken(ctx context.Context, idToken string) 
 	return tokenSet, nil
 }
 
-func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.UserModel, error) {
-	userModel, err := service.GetUserInfo(ctx, u.systemToken, u.authTokenManager, u.transactionManager, bearerToken)
+func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.User, error) {
+	sysAdmin := service.NewSystemAdmin(u.systemToken)
+	query := NewGetUserInfoQuery(u.transactionManager, u.authTokenManager)
+	userModel, err := query.Execute(ctx, sysAdmin, bearerToken)
 	if err != nil {
-		return nil, mbliberrors.Errorf("GetUserInfo: %w", err)
+		return nil, mbliberrors.Errorf("GetUserInfox: %w", err)
 	}
 
 	return userModel, nil
@@ -71,51 +74,3 @@ func (u *Authentication) RefreshToken(ctx context.Context, refreshToken string) 
 
 	return accessToken, nil
 }
-
-// func (u *Authentication) Authenticate(ctx context.Context, bearerToken string) (*mbuserdomain.UserModel, error) {
-// 	logger := mbliblog.GetLoggerFromContext(ctx, liblog.AppUsecaseLoggerContextKey)
-
-// 	token, err := jwt.ParseWithClaims(bearerToken, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
-// 		return u.signingKey, nil
-// 	})
-// 	if err != nil {
-// 		logger.InfoContext(ctx, fmt.Sprintf("invalid token. err: %v", err))
-// 		return nil, domain.ErrUnauthenticated
-// 	}
-
-// 	claims, ok := token.Claims.(*UserClaims)
-// 	if !ok || !token.Valid {
-// 		// logger.InfoContext(ctx, "invalid token")
-// 		return nil, domain.ErrUnauthenticated
-// 	}
-
-// 	systemAdmin, err := mbuserservice.NewSystemAdmin(ctx, u.rf)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	organizationID, err := mbuserdomain.NewOrganizationID(claims.OrganizationID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	userID, err := mbuserdomain.NewUserID(claims.UserID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// # TODO Check whether the token is registered in the Database
-
-// 	userRepo := u.rf.NewUserRepository(ctx)
-// 	systemOwner, err := userRepo.FindSystemOwnerByOrganizationID(ctx, systemAdmin, organizationID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	user, err := systemOwner.FindUserByID(ctx, userID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return user.UserModel, nil
-// }

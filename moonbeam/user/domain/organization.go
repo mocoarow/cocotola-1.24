@@ -25,14 +25,14 @@ func (v *OrganizationID) GetRBACDomain() RBACDomain {
 	return NewRBACDomainFromOrganization(v)
 }
 
-type OrganizationModel struct {
+type Organization struct {
 	*libdomain.BaseModel
 	OrganizationID *OrganizationID
 	Name           string `validate:"required"`
 }
 
-func NewOrganizationModel(basemodel *libdomain.BaseModel, organizationID *OrganizationID, name string) (*OrganizationModel, error) {
-	m := &OrganizationModel{
+func NewOrganizationModel(basemodel *libdomain.BaseModel, organizationID *OrganizationID, name string) (*Organization, error) {
+	m := &Organization{
 		BaseModel:      basemodel,
 		OrganizationID: organizationID,
 		Name:           name,

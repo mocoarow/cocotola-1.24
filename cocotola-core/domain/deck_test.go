@@ -11,8 +11,6 @@ import (
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
-	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
-
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
 
@@ -40,7 +38,7 @@ func TestNewDeckModel_Valid(t *testing.T) {
 	templateID, err := domain.NewTemplateID(1)
 	require.NoError(t, err)
 
-	lang2, err := libdomain.NewLang2("en")
+	lang2, err := mblibdomain.NewLang2("en")
 	require.NoError(t, err)
 
 	deckModel, err := domain.NewDeckModel(
@@ -85,7 +83,7 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 	templateID, err := domain.NewTemplateID(1)
 	require.NoError(t, err)
 
-	lang2, err := libdomain.NewLang2("en")
+	lang2, err := mblibdomain.NewLang2("en")
 	require.NoError(t, err)
 
 	ownerID, err := mbuserdomain.NewUserID(1)
@@ -100,7 +98,7 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 		folderID       *domain.FolderID
 		deckName       string
 		templateID     *domain.TemplateID
-		lang2          *libdomain.Lang2
+		lang2          *mblibdomain.Lang2
 		ownerID        *mbuserdomain.UserID
 	}{
 		{

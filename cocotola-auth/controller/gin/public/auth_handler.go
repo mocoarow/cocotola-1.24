@@ -19,7 +19,7 @@ import (
 
 type AuthenticationUsecase interface {
 	SignInWithIDToken(ctx context.Context, idToken string) (*domain.AuthTokenSet, error)
-	GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.UserModel, error)
+	GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.User, error)
 	RefreshToken(ctx context.Context, refreshToken string) (string, error)
 }
 

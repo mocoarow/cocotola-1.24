@@ -13,32 +13,31 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libapicore "github.com/mocoarow/cocotola-1.24/lib/api/core"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
-	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/api"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/helper"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
 type GuestDeckQueryUsecase interface {
-	FindDecks(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error)
+	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error)
 
-	// RetrieveDeckByID(ctx context.Context, operator service.OperatorInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
+	// RetrieveDeckByID(ctx context.Context, operator domain.UserInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
 }
 type StudentDeckQueryUsecase interface {
-	FindDecks(ctx context.Context, operator mbuserservice.OperatorInterface) ([]*domain.DeckModel, error)
+	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface) ([]*domain.DeckModel, error)
 
-	RetrieveDeckByID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
+	RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
 }
 
 type DeckCommandUsecase interface {
-	AddDeck(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddDeckParameter) (*domain.DeckID, error)
-	UpdateDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error
+	AddDeck(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) (*domain.DeckID, error)
+	UpdateDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error
 }
 
 type DeckHandler struct {
@@ -72,26 +71,22 @@ func (h *DeckHandler) FindDecks(c *gin.Context) {
 	}, h.errorHandle)
 }
 
-func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, operator mbuserservice.OperatorInterface) error {
+func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, operator mbuserdomain.UserInterface) error {
 	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsGuest")
 	defer span.End()
 
-	var apiReq libapicore.FindDecksRequest
+	var apiReq api.FindDecksRequest
 	if err := c.ShouldBindQuery(&apiReq); err != nil {
 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 		return nil
 	}
 
-	spaceIDs := make([]*mbuserdomain.SpaceID, 0)
-	for _, id := range apiReq.SpaceID {
-		spaceID, err := mbuserdomain.NewSpaceID(id)
-		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("NewSpaceID: %+v", err))
-			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-			return nil
-		}
-		spaceIDs = append(spaceIDs, spaceID)
+	spaceIDs, err := apiReq.SpaceIDs.ToSpaceIDs()
+	if err != nil {
+		h.logger.WarnContext(ctx, fmt.Sprintf("ToSpaceIDs: %+v", err))
+		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+		return nil
 	}
 
 	param := service.FindDecksParameter{SpaceIDs: spaceIDs}
@@ -102,9 +97,9 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 		return mbliberrors.Errorf("FindDecks: %w", err)
 	}
 
-	decks := make([]libapicore.FindDecksResponseDeck, 0, len(result))
+	decks := make([]api.FindDecksResponseDeck, 0, len(result))
 	for _, d := range result {
-		decks = append(decks, libapicore.FindDecksResponseDeck{
+		decks = append(decks, api.FindDecksResponseDeck{
 			ID:          d.DeckID.Int(),
 			Version:     d.Version,
 			Name:        d.Name,
@@ -113,7 +108,7 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 			Description: d.Description,
 		})
 	}
-	apiResp := libapicore.FindDecksResponse{
+	apiResp := api.FindDecksResponse{
 		TotalCount: len(result),
 		Results:    decks,
 	}
@@ -122,7 +117,7 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 	return nil
 }
 
-func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, operator mbuserservice.OperatorInterface) error {
+func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, operator mbuserdomain.UserInterface) error {
 	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsStudent")
 	defer span.End()
 
@@ -136,7 +131,7 @@ func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, op
 }
 
 func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		deckIDInt, err := helper.GetIntFromPath(c, "deckID")
 		if err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("GetIntFromPath. err: %+v", err))
@@ -162,37 +157,19 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 }
 
 func (h *DeckHandler) AddDeck(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
-		var apiReq libapicore.AddDeckRequest
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
+		var apiReq api.AddDeckRequest
 		if err := c.ShouldBindJSON(&apiReq); err != nil {
 			h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}
-		templateID, err := domain.NewTemplateID(apiReq.TemplateID)
-		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("NewTemplateID: %+v", err))
-			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-			return nil
-		}
-		spaceID, err := mbuserdomain.NewSpaceID(apiReq.SpaceID)
-		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("NewSpaceID: %+v", err))
-			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-			return nil
-		}
-		lang2, err := libdomain.NewLang2(apiReq.Lang2)
-		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("NewLang2: %+v", err))
-			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-			return nil
-		}
 		param := service.AddDeckParameter{
-			SpaceID:     spaceID,
+			SpaceID:     apiReq.SpaceID.Value,
 			FolderID:    nil,
-			TemplateID:  templateID,
+			TemplateID:  apiReq.TemplateID.Value,
 			Name:        apiReq.Name,
-			Lang2:       lang2,
+			Lang2:       apiReq.Lang2.Value,
 			Description: apiReq.Description,
 		}
 		deckID, err := h.deckCommandUsecase.AddDeck(ctx, operator, &param)
@@ -208,7 +185,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 }
 
 func (h *DeckHandler) UpdateDeck(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		version, err := helper.GetIntFromQuery(c, "version")
 		if err != nil {
 			return mblibdomain.ErrInvalidArgument

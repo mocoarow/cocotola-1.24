@@ -11,7 +11,6 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
@@ -20,7 +19,7 @@ import (
 )
 
 type SpaceQueryUsecase interface {
-	FindPublicSpaces(ctx context.Context, operator mbuserservice.OperatorInterface) ([]*mbuserdomain.SpaceModel, error)
+	FindPublicSpaces(ctx context.Context, operator mbuserdomain.UserInterface) ([]*mbuserdomain.SpaceModel, error)
 }
 
 type SpaceHandler struct {
@@ -29,7 +28,7 @@ type SpaceHandler struct {
 }
 
 func (h *SpaceHandler) FindSpaces(c *gin.Context) {
-	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserservice.OperatorInterface) error {
+	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		result, err := h.spaceQueryUsecase.FindPublicSpaces(ctx, operator)
 		if err != nil {
 			return mbliberrors.Errorf("FindPublicSpaces: %w", err)

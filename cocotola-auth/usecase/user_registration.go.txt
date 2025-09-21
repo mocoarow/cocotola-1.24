@@ -7,13 +7,14 @@ import (
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+	mbuserusecase "github.com/mocoarow/cocotola-1.24/moonbeam/user/usecase"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-func registerUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createUserParameterFunc func() (*mbuserservice.AddUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.UserModel, error) {
+func registerUser(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createUserParameterFunc func() (*mbuserservice.AddUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.UserModel, error) {
 	action, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
 		service.WithOrganizationByID(organizationID),
 	)
@@ -35,7 +36,7 @@ func registerUser(ctx context.Context, systemToken libdomain.SystemToken, rf ser
 	return action.Organization.OrganizationModel, user, nil
 }
 
-func findOrRegisterUser(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createUserParameterFunc func() (*mbuserservice.AddUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.UserModel, error) {
+func findOrRegisterUser(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory, organizationID *mbuserdomain.OrganizationID, loginID string, createUserParameterFunc func() (*mbuserservice.AddUserParameter, error)) (*mbuserdomain.OrganizationModel, *mbuserdomain.UserModel, error) {
 	action, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
 		service.WithOrganizationByID(organizationID),
 	)
@@ -64,12 +65,21 @@ func registerUserWithSystemOwnerAction(ctx context.Context, systemOwnerAction *s
 		return nil, mbliberrors.Errorf("invalid UserAddParameter. err: %w", err)
 	}
 
-	studentID, err := systemOwnerAction.SystemOwner.AddUser(ctx, parameter)
+	command, err := mbuserusecase.NewAddUserCommand(ctx, mbTxManager, mbNonTxManager)
 	if err != nil {
-		return nil, mbliberrors.Errorf("failed to AddStudent. err: %w", err)
+		return nil, mbliberrors.Errorf("NewAddUserCommand. err: %w", err)
+	}
+	userID, err := command.Execute(ctx, systemOwnerAction.SystemOwner, parameter)
+	if err != nil {
+		return nil, mbliberrors.Errorf("AddUserCommand.Execute. err: %w", err)
 	}
 
-	user2, err := systemOwnerAction.SystemOwner.FindUserByID(ctx, studentID)
+	// studentID, err := systemOwnerAction.SystemOwner.AddUser(ctx, parameter)
+	// if err != nil {
+	// 	return nil, mbliberrors.Errorf("failed to AddStudent. err: %w", err)
+	// }
+
+	user2, err := systemOwnerAction.SystemOwner.FindUserByID(ctx, userID)
 	if err != nil {
 		return nil, mbliberrors.Errorf("failed to FindStudentByID. err: %w", err)
 	}

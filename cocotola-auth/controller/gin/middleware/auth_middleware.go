@@ -8,15 +8,21 @@ import (
 	"github.com/gin-gonic/gin"
 
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/usecase"
 )
 
-func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, transactionManager service.TransactionManager) gin.HandlerFunc {
+func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, mbNonTxManager mbuserservice.TransactionManager) gin.HandlerFunc {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AuthMiddleware"))
+
+	sysAdmin := service.NewSystemAdmin(systemToken)
+
+	getUserInfoQuery := usecase.NewGetUserInfoQuery(mbNonTxManager, authTokenManager)
 
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -31,7 +37,7 @@ func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager servi
 		}
 
 		bearerToken := authorization[len("Bearer "):]
-		userModel, err := service.GetUserInfo(ctx, systemToken, authTokenManager, transactionManager, bearerToken)
+		userModel, err := getUserInfoQuery.Execute(ctx, sysAdmin, bearerToken)
 		if err != nil {
 			logger.WarnContext(ctx, fmt.Sprintf("getUserInfo: %v", err))
 			return

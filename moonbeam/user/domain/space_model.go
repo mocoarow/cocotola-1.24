@@ -12,6 +12,12 @@ type SpaceID struct {
 }
 
 func NewSpaceID(value int) (*SpaceID, error) {
+	m := &SpaceID{
+		Value: value,
+	}
+	if err := libdomain.Validator.Struct(m); err != nil {
+		return nil, liberrors.Errorf("validate space id: %w", err)
+	}
 	return &SpaceID{
 		Value: value,
 	}, nil

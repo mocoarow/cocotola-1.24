@@ -6,117 +6,125 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
-	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
-	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
+	mbuserusecase "github.com/mocoarow/cocotola-1.24/moonbeam/user/usecase"
+
+	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
+
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
+	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, _, nonTxManager service.TransactionManager, organizationName, loginID, password string) (*mbuserdomain.OrganizationID, *mbuserdomain.SpaceID, error) {
+func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, organizationName, loginID, password string) (*mbuserdomain.OrganizationID, *mbuserdomain.UserID, *mbuserdomain.SpaceID, error) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"InitApp1"))
 
-	fn := func(rf service.RepositoryFactory) (*mbuserdomain.OrganizationID, *mbuserdomain.SpaceID, error) {
-		systemAdminAction := newSystemAdminAction(ctx, systemToken, rf)
+	sysAdmin := service.NewSystemAdmin(systemToken)
 
-		// 1. check whether the organization already exists
-		organization, err := systemAdminAction.SystemAdmin.FindOrganizationByName(ctx, organizationName)
-		if err == nil {
-			logger.InfoContext(ctx, fmt.Sprintf("organization: %d", organization.OrganizationID.Int()))
-
-			systemOwnerAction := newSystemOwnerAction(ctx, systemToken, rf, organizationName)
-
-			publicDefaultSpace, err := systemOwnerAction.SystemOwner.GetPublidDefaultSpace(ctx)
-			if err != nil {
-				return nil, nil, mbliberrors.Errorf("GetPublidDefaultSpace: %w", err)
-			}
-			return organization.OrganizationID, publicDefaultSpace.SpaceID, nil
-		} else if !errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
-			return nil, nil, mbliberrors.Errorf("find organization by name(%s): %w", organizationName, err)
-		}
-
-		// 2. add organization
-		organizationID, err := addOrganization(ctx, systemAdminAction, organizationName, loginID, password)
+	// 1. check whether the organization already exists
+	{
+		organization, sysOwner, publicDefaultSpace, found, err := findOrganizationAndSystemOwnerAndPublicDefaultSpace(ctx, sysAdmin, mbNonTxManager, organizationName)
 		if err != nil {
-			return nil, nil, mbliberrors.Errorf("add organization: %w", err)
+			return nil, nil, nil, mbliberrors.Errorf("findOrganizationAndPublicDefaultSpace: %w", err)
 		}
-		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
-
-		systemOwnerAction := newSystemOwnerAction(ctx, systemToken, rf, organizationName)
-
-		// 3. add policy to "first-owner" user
-
-		firstOwner, err := systemOwnerAction.SystemOwner.FindUserByLoginID(ctx, loginID)
-		if err != nil {
-			return nil, nil, mbliberrors.Errorf("FindUserByLoginID: %w", err)
+		if found {
+			return organization.OrganizationID, sysOwner.UserID, publicDefaultSpace.SpaceID, nil
 		}
-		logger.InfoContext(ctx, fmt.Sprintf("firstOwner: %d", firstOwner.GetUserID().Int()))
-
-		// first owner can create users
-		subject := firstOwner.GetUserID().GetRBACSubject()
-		action := mbuserdomain.NewRBACAction("CreateUser")
-		object := mbuserdomain.NewRBACObject("*")
-		effect := mbuserservice.RBACAllowEffect
-
-		if err := systemOwnerAction.AuthorizationManager.AddPolicyToUserBySystemOwner(ctx, systemOwnerAction.SystemOwner, subject, action, object, effect); err != nil {
-			return nil, nil, mbliberrors.Errorf("AddPolicyToUserBySystemOwner: %w", err)
-		}
-
-		logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", organizationID.Int()))
-
-		publicDefaultSpace, err := systemOwnerAction.SystemOwner.GetPublidDefaultSpace(ctx)
-		if err != nil {
-			return nil, nil, mbliberrors.Errorf("GetPublidDefaultSpace: %w", err)
-		}
-		logger.InfoContext(ctx, fmt.Sprintf("publicDefaultSpace: %d", publicDefaultSpace.SpaceID.Int()))
-
-		return organizationID, publicDefaultSpace.SpaceID, nil
 	}
 
-	organizationID, publicDefaultSpaceID, err := mblibservice.Do2(ctx, nonTxManager, fn)
+	// 2. add organization
+	orgID2, err := addOrganization(ctx, sysAdmin, mbTxManager, mbNonTxManager, organizationName)
 	if err != nil {
-		return nil, nil, err //nolint:wrapcheck
+		return nil, nil, nil, mbliberrors.Errorf("add organization: %w", err)
+	}
+	logger.InfoContext(ctx, fmt.Sprintf("organizationID: %d", orgID2.Int()))
+
+	// 3. find system owner
+	sysOwner, err := findSystemOwnerByOrganizationName(ctx, sysAdmin, mbNonTxManager, organizationName)
+	if err != nil {
+		return nil, nil, nil, mbliberrors.Errorf("findSystemOwnerByOrganizationName: %w", err)
 	}
 
-	return organizationID, publicDefaultSpaceID, nil
+	// 4. add first owner
+	firstOwnerID, err := addFirstOwnerToOrganization(ctx, sysOwner, mbTxManager, mbNonTxManager, loginID, password)
+	if err != nil {
+		return nil, nil, nil, mbliberrors.Errorf("add first owner: %w", err)
+	}
+	logger.InfoContext(ctx, fmt.Sprintf("firstOwnerID: %d", firstOwnerID.Int()))
+
+	// 5. find public default space
+	publicDefaultSpace2, err := findPublicSpaceByKey(ctx, sysOwner, mbNonTxManager, mbuserservice.PublicDefaultSpaceKey)
+	if err != nil {
+		return nil, nil, nil, mbliberrors.Errorf("find public default space by key(%s): %w", mbuserservice.PublicDefaultSpaceKey, err)
+	}
+
+	return orgID2, sysOwner.UserID, publicDefaultSpace2.SpaceID, nil
 }
 
-func addOrganization(ctx context.Context, systemAdminAction *service.SystemAdminAction, organizationName, loginID, password string) (*mbuserdomain.OrganizationID, error) {
+func findOrganizationAndSystemOwnerAndPublicDefaultSpace(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, mbNonTxManager mbuserservice.TransactionManager, organizationName string) (*mbuserdomain.Organization, *mbuserdomain.SystemOwner, *mbuserdomain.SpaceModel, bool, error) {
+	organization, err := findOrganizationByName(ctx, systemAdmin, mbNonTxManager, organizationName)
+	if err != nil {
+		if !errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
+			return nil, nil, nil, false, mbliberrors.Errorf("find organization by name: %w", err)
+		}
+		return nil, nil, nil, false, nil
+	}
+
+	sysOwner, err := findSystemOwnerByOrganizationName(ctx, systemAdmin, mbNonTxManager, organizationName)
+	if err != nil {
+		return nil, nil, nil, false, mbliberrors.Errorf("find system owner by organization name: %w", err)
+	}
+
+	publicDefaultSpace, err := findPublicSpaceByKey(ctx, sysOwner, mbNonTxManager, mbuserservice.PublicDefaultSpaceKey)
+	if err != nil {
+		if !errors.Is(err, mbuserservice.ErrSpaceNotFound) {
+			return nil, nil, nil, false, mbliberrors.Errorf("find public default space by key: %w", err)
+		}
+		return nil, nil, nil, false, nil
+	}
+
+	return organization, sysOwner, publicDefaultSpace, true, nil
+}
+
+func addOrganization(ctx context.Context, operator mbuserdomain.SystemAdminInterface, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, organizationName string) (*mbuserdomain.OrganizationID, error) {
+	command := mbuserusecase.NewAddOrganizationCommand(ctx, mbTxManager, mbNonTxManager)
+	organizationID, err := command.Execute(ctx, operator, organizationName)
+	if err != nil {
+		return nil, mbliberrors.Errorf("add organization: %w", err)
+	}
+	return organizationID, nil
+}
+
+func addFirstOwnerToOrganization(ctx context.Context, operator mbuserdomain.SystemOwnerInterface, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, loginID, password string) (*mbuserdomain.UserID, error) {
 	firstOwnerAddParam, err := mbuserservice.NewUserAddParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
 	if err != nil {
 		return nil, mbliberrors.Errorf("new UserAddParameter: %w", err)
 	}
-
-	organizationAddParameter, err := mbuserservice.NewOrganizationAddParameter(organizationName, firstOwnerAddParam)
+	addFirstOwnerCommand := mbuserusecase.NewAddFirstOwnerCommand(mbTxManager, mbNonTxManager)
+	firstOwnerID, err := addFirstOwnerCommand.Execute(ctx, operator, firstOwnerAddParam)
 	if err != nil {
-		return nil, mbliberrors.Errorf("new OrganizationAddParameter: %w", err)
+		return nil, mbliberrors.Errorf("add first owner: %w", err)
 	}
-
-	organizationID, err := systemAdminAction.SystemAdmin.AddOrganization(ctx, organizationAddParameter)
-	if err != nil {
-		return nil, mbliberrors.Errorf("add organization: %w", err)
-	}
-
-	return organizationID, nil
-}
-func newSystemAdminAction(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory) *service.SystemAdminAction {
-	systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
-	if err != nil {
-		libdomain.CheckError(err)
-	}
-	return systemAdminAction
+	return firstOwnerID, nil
 }
 
-func newSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf service.RepositoryFactory, organizationName string) *service.SystemOwnerAction {
-	systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
-		service.WithOrganizationByName(organizationName),
-		service.WithAuthorizationManager(),
-	)
-	if err != nil {
-		libdomain.CheckError(err)
-	}
-	return systemOwnerAction
-}
+// func newSystemAdminAction(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory) *service.SystemAdminAction {
+// 	systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
+// 	if err != nil {
+// 		libdomain.CheckError(err)
+// 	}
+// 	return systemAdminAction
+// }
+
+// func newSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory, organizationName string) *service.SystemOwnerAction {
+// 	systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
+// 		service.WithOrganizationByName(organizationName),
+// 		service.WithAuthorizationManager(),
+// 	)
+// 	if err != nil {
+// 		libdomain.CheckError(err)
+// 	}
+// 	return systemOwnerAction
+// }

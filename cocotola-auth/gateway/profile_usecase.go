@@ -11,18 +11,17 @@ import (
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
 type ProfileQueryUsecase struct {
 	// dialect      mblibgateway.DialectRDBMS
 	// driverName   string
 	// db           *gorm.DB
-	nonTxManager service.TransactionManager
+	nonTxManager mbuserservice.TransactionManager
 	logger       *slog.Logger
 }
 
-func NewProfileQueryUsecase(nonTxManager service.TransactionManager,
+func NewProfileQueryUsecase(nonTxManager mbuserservice.TransactionManager,
 
 /*dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB*/) *ProfileQueryUsecase {
 	return &ProfileQueryUsecase{
@@ -34,13 +33,13 @@ func NewProfileQueryUsecase(nonTxManager service.TransactionManager,
 	}
 }
 
-func (u *ProfileQueryUsecase) GetMyProfile(ctx context.Context, operator mbuserservice.OperatorInterface) (*domain.ProfileModel, error) {
-	privateSpaceID, err := mblibservice.Do1(ctx, u.nonTxManager, func(rf service.RepositoryFactory) (*mbuserdomain.SpaceID, error) {
-		mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-		if err != nil {
-			return nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-		}
-		spaeManager, err := mbrf.NewSpaceManager(ctx)
+func (u *ProfileQueryUsecase) GetMyProfile(ctx context.Context, operator mbuserdomain.UserInterface) (*domain.ProfileModel, error) {
+	privateSpaceID, err := mblibservice.Do1(ctx, u.nonTxManager, func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SpaceID, error) {
+		// mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
+		// if err != nil {
+		// 	return nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
+		// }
+		spaeManager, err := rf.NewSpaceManager(ctx)
 		if err != nil {
 			return nil, mbliberrors.Errorf("NewSpaceManager: %w", err)
 		}

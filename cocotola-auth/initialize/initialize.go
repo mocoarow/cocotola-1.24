@@ -19,6 +19,8 @@ import (
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mblibservice "github.com/mocoarow/cocotola-1.24/moonbeam/lib/service"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
+	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	libcontroller "github.com/mocoarow/cocotola-1.24/lib/controller/gin"
 	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
@@ -122,26 +124,26 @@ func newCallbackOnAddUserSpace(cocotolaCoreCallbackClient service.CocotolaCoreCa
 	}
 }
 
-func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (*mbuserdomain.OrganizationID, *mbuserdomain.UserID, *mbuserdomain.SpaceID, error) {
+func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (*mbuserdomain.OrganizationID, *mbuserdomain.UserID, *mbuserdomain.UserID, *mbuserdomain.SpaceID, error) {
 	txManager, nonTxManager, err := initApp(ctx, systemToken, parent, dialect, driverName, db, logConfig, authConfig)
 	if err != nil {
-		return nil, nil, nil, mbliberrors.Errorf("initApp: %w", err)
+		return nil, nil, nil, nil, mbliberrors.Errorf("initApp: %w", err)
 	}
 
-	organizationID, publicDefaultSpaceID, err := initOrganization(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
+	organizationID, sysOwnerID, publicDefaultSpaceID, err := initOrganization(ctx, systemToken, txManager, nonTxManager, "cocotola", authConfig.OwnerLoginID, authConfig.OwnerPassword)
 	if err != nil {
-		return nil, nil, nil, mbliberrors.Errorf("initApp1: %w", err)
+		return nil, nil, nil, nil, mbliberrors.Errorf("initOrganization: %w", err)
 	}
 
 	guestID, err := initApp2(ctx, systemToken, txManager, nonTxManager, "cocotola")
 	if err != nil {
-		return nil, nil, nil, mbliberrors.Errorf("initApp2: %w", err)
+		return nil, nil, nil, nil, mbliberrors.Errorf("initApp2: %w", err)
 	}
 
-	return organizationID, guestID, publicDefaultSpaceID, nil
+	return organizationID, sysOwnerID, guestID, publicDefaultSpaceID, nil
 }
 
-func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (service.TransactionManager, service.TransactionManager, error) {
+func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (mbuserservice.TransactionManager, mbuserservice.TransactionManager, error) {
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"initApp"))
 
 	cocotolaAuthCallbackClient := initCocotolaAuthCallbackClient(authConfig)
@@ -158,6 +160,13 @@ func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.
 		mbuserdomain.RecourceSpace: spaceEventHandler,
 	}
 
+	mbrff := func(ctx context.Context, db *gorm.DB) (mbuserservice.RepositoryFactory, error) {
+		return mbusergateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, resouceEventHandlers)
+	}
+	mbrf, err := mbrff(ctx, db)
+	if err != nil {
+		return nil, nil, mbliberrors.Errorf("rff: %w", err)
+	}
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
 		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, resouceEventHandlers)
 	}
@@ -166,15 +175,10 @@ func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.
 		return nil, nil, mbliberrors.Errorf("rff: %w", err)
 	}
 
-	mbrf, err := rf.NewMoonBeamRepositoryFactory(ctx)
-	if err != nil {
-		return nil, nil, mbliberrors.Errorf("NewMoonBeamRepositoryFactory: %w", err)
-	}
-
 	// init transaction manager
+	mbTxManager := initMBTransactionManager(db, mbrff)
+	mbNonTxManager := initMBNonTransactionManager(mbrf)
 	txManager := initTransactionManager(db, rff)
-
-	// init non transaction manager
 	nonTxManager := initNonTransactionManager(rf)
 
 	// init auth token manager
@@ -184,7 +188,7 @@ func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.
 	}
 
 	// init auth middleware
-	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(systemToken, authTokenManager, nonTxManager)
+	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(systemToken, authTokenManager, mbNonTxManager)
 	if err != nil {
 		return nil, nil, mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
 	}
@@ -193,12 +197,12 @@ func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.
 	})
 
 	// init public and private router group functions
-	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, systemToken, authConfig, txManager, nonTxManager, authTokenManager)
+	publicRouterGroupFuncs, err := controller.GetPublicRouterGroupFuncs(ctx, systemToken, authConfig, mbTxManager, mbNonTxManager, txManager, nonTxManager, authTokenManager)
 	if err != nil {
 		return nil, nil, mbliberrors.Errorf("GetPublicRouterGroupFuncs: %w", err)
 	}
-	bearerTokenRouterGroupFuncs := controller.GetBearerTokenRouterGroupFuncs(ctx, systemToken, txManager, nonTxManager, authTokenManager, mbrf)
-	basicPrivateRouterGroupFuncs := controller.GetBasicPrivateRouterGroupFuncs(ctx, systemToken, txManager, nonTxManager, cocotolaCoreCallbackClient)
+	bearerTokenRouterGroupFuncs := controller.GetBearerTokenRouterGroupFuncs(ctx, systemToken, mbTxManager, mbNonTxManager, authTokenManager, mbrf)
+	basicPrivateRouterGroupFuncs := controller.GetBasicPrivateRouterGroupFuncs(ctx, systemToken, mbTxManager, mbNonTxManager, cocotolaCoreCallbackClient)
 
 	// api
 	api := libcontroller.InitAPIRouterGroup(ctx, parent, domain.AppName, logConfig)
@@ -214,7 +218,7 @@ func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.
 
 	libcontroller.InitPrivateAPIRouterGroup(ctx, v1, basicAuthMiddleware, basicPrivateRouterGroupFuncs)
 
-	return txManager, nonTxManager, nil
+	return mbTxManager, mbNonTxManager, nil
 }
 
 func initCocotolaAuthCallbackClient(authConfig *config.AuthConfig) service.CocotolaAuthCallbackClient {
@@ -245,6 +249,22 @@ func initCocotolaCoreCallbackClient(coreAPIClientConfig *config.CoreAPIClientCon
 	cocotolaCoreCallbackClient := gateway.NewCocotolaCoreCallbackClient(&httpClient, coreAPIEndpoint, coreAPIClientConfig.Username, coreAPIClientConfig.Password)
 
 	return cocotolaCoreCallbackClient
+}
+
+func initMBTransactionManager(db *gorm.DB, rff func(ctx context.Context, db *gorm.DB) (mbuserservice.RepositoryFactory, error)) mbuserservice.TransactionManager {
+	txManager, err := mblibgateway.NewTransactionManagerT(db, rff)
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+	return txManager
+}
+
+func initMBNonTransactionManager(rf mbuserservice.RepositoryFactory) mbuserservice.TransactionManager {
+	nonTxManager, err := mblibgateway.NewNonTransactionManagerT(rf)
+	if err != nil {
+		libdomain.CheckError(err)
+	}
+	return nonTxManager
 }
 
 func initTransactionManager(db *gorm.DB, rff func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error)) service.TransactionManager {

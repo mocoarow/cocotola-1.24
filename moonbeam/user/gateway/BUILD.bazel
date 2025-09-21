@@ -1,4 +1,5 @@
-load("@rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
 
 go_library(
     name = "gateway",
@@ -37,7 +38,7 @@ go_library(
     ],
 )
 
-go_test(
+smart_go_test(
     name = "gateway_test",
     srcs = [
         "app_user_repository_test.go",
@@ -55,31 +56,6 @@ go_test(
         "//moonbeam/lib/domain",
         "//moonbeam/lib/gateway",
         "//moonbeam/lib/service",
-        "//moonbeam/sqls",
-        "//moonbeam/testlib/gateway",
-        "//moonbeam/user/domain",
-        "//moonbeam/user/service",
-        "@com_github_casbin_casbin_v2//:casbin",
-        "@com_github_stretchr_testify//assert",
-        "@com_github_stretchr_testify//require",
-        "@io_gorm_gorm//:gorm",
-    ],
-)
-
-go_test(
-    name = "gateway_m_test",
-    size = "medium",
-    srcs = [
-        "export_test.go",
-        "gateway_test.go",
-        "init_test.go",
-        "rbac_repository_test.go",
-    ],
-    embed = [":gateway"],
-    gotags = ["medium"],
-    deps = [
-        "//moonbeam/lib/domain",
-        "//moonbeam/lib/gateway",
         "//moonbeam/sqls",
         "//moonbeam/testlib/gateway",
         "//moonbeam/user/domain",

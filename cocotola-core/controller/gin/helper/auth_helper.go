@@ -10,7 +10,6 @@ import (
 
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	liblibcontroller "github.com/mocoarow/cocotola-1.24/lib/controller"
 
@@ -98,7 +97,7 @@ func HandleRoleUserFunction(c *gin.Context, fn func(ctx context.Context, operato
 	}
 }
 
-func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mbuserservice.OperatorInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
+func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mbuserdomain.UserInterface) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
 	ctx := c.Request.Context()
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleUserFunction"))
 
@@ -149,7 +148,7 @@ func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mb
 	}
 }
 
-func HandleRBACFunction[P any](c *gin.Context, getParam func(ctx context.Context, operator mbuserservice.OperatorInterface) (P, bool), checkAuthorization func(ctx context.Context, operator mbuserservice.OperatorInterface, param P) bool, fn func(ctx context.Context, operator mbuserservice.OperatorInterface, param P) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
+func HandleRBACFunction[P any](c *gin.Context, getParam func(ctx context.Context, operator mbuserdomain.UserInterface) (P, bool), checkAuthorization func(ctx context.Context, operator mbuserdomain.UserInterface, param P) bool, fn func(ctx context.Context, operator mbuserdomain.UserInterface, param P) error, errorHandle func(ctx context.Context, c *gin.Context, err error) bool) {
 	ctx := c.Request.Context()
 	logger := slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-HandleUserFunction"))
 

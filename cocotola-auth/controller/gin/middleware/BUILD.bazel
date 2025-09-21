@@ -11,8 +11,10 @@ go_library(
     deps = [
         "//cocotola-auth/domain",
         "//cocotola-auth/service",
+        "//cocotola-auth/usecase",
         "//lib/domain",
         "//moonbeam/lib/log",
+        "//moonbeam/user/service",
         "@com_github_gin_gonic_gin//:gin",
         "@io_opentelemetry_go_otel//:otel",
     ],

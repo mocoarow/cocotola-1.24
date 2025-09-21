@@ -22,7 +22,7 @@ func TestNewSystemOwner(t *testing.T) {
 	require.NoError(t, err)
 	organizationID, err := domain.NewOrganizationID(1)
 	require.NoError(t, err)
-	user, err := domain.NewUserModel(model, userID, organizationID, "LOGIN_ID", "USERNAME", nil)
+	user, err := domain.NewUser(model, userID, organizationID, "LOGIN_ID", "USERNAME", nil)
 	require.NoError(t, err)
 	ower, err := domain.NewOwnerModel(user)
 	require.NoError(t, err)

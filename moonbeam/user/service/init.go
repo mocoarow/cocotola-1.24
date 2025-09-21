@@ -1,11 +1,7 @@
 package service
 
 import (
-	userdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-)
-
-var (
-	SystemAdminID *userdomain.UserID
+	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
 const (
@@ -23,10 +19,8 @@ const (
 	PublicDefaultSpaceName = "Public Default Space"
 )
 
-func init() {
-	systemAdminID, err := userdomain.NewUserID(1)
-	if err != nil {
-		panic(err)
-	}
-	SystemAdminID = systemAdminID
-}
+var RBACSetAction = domain.NewRBACAction("Set")
+var RBACUnsetAction = domain.NewRBACAction("Unset")
+
+var RBACAllowEffect = domain.NewRBACEffect("allow")
+var RBACDenyEffect = domain.NewRBACEffect("deny")

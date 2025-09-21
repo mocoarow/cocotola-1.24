@@ -27,7 +27,7 @@ func (e *spaceEntity) TableName() string {
 	return SpaceTableName
 }
 
-func (e *spaceEntity) ToModel() (*domain.SpaceModel, error) {
+func (e *spaceEntity) toSpaceModel() (*domain.SpaceModel, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, liberrors.Errorf("to base model: %w", err)
@@ -64,19 +64,19 @@ func (e *spaceEntity) ToModel() (*domain.SpaceModel, error) {
 	return spaceModel, nil
 }
 
-func (e *spaceEntity) toSpace() (*service.Space, error) {
-	spaceModel, err := e.ToModel()
-	if err != nil {
-		return nil, liberrors.Errorf("to space model: %w", err)
-	}
+// func (e *spaceEntity) toSpace() (*service.Space, error) {
+// 	spaceModel, err := e.ToModel()
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("to space model: %w", err)
+// 	}
 
-	space, err := service.NewSpace(spaceModel)
-	if err != nil {
-		return nil, liberrors.Errorf("new space: %w", err)
-	}
+// 	space, err := service.NewSpace(spaceModel)
+// 	if err != nil {
+// 		return nil, liberrors.Errorf("new space: %w", err)
+// 	}
 
-	return space, nil
-}
+// 	return space, nil
+// }
 
 // func (e *spaceEntity) toSpaceModel() (*domain.SpaceModel, error) {
 // 	baseModel, err := e.ToBaseModel()
@@ -91,7 +91,7 @@ func (e *spaceEntity) toSpace() (*service.Space, error) {
 
 // 	ownerID, err := domain.NewUserID(e.OwnerID)
 // 	if err != nil {
-// 		return nil, liberrors.Errorf("domain.NewUserModel. err: %w", err)
+// 		return nil, liberrors.Errorf("domain.NewUser. err: %w", err)
 // 	}
 
 // 	organizationID, err := domain.NewOrganizationID(e.OrganizationID)
@@ -101,7 +101,7 @@ func (e *spaceEntity) toSpace() (*service.Space, error) {
 
 // 	userModel, err := domain.NewSpaceModel(baseModel, spaceID, organizationID, ownerID, e.KeyName, e.Name, e.SpaceType)
 // 	if err != nil {
-// 		return nil, liberrors.Errorf("domain.NewUserModel. err: %w", err)
+// 		return nil, liberrors.Errorf("domain.NewUser. err: %w", err)
 // 	}
 
 // 	return userModel, nil
@@ -109,10 +109,10 @@ func (e *spaceEntity) toSpace() (*service.Space, error) {
 
 type spaceEntities []spaceEntity
 
-func (e spaceEntities) toSpaces() ([]*service.Space, error) {
-	spaces := make([]*service.Space, len(e))
+func (e spaceEntities) toSpaces() ([]*domain.SpaceModel, error) {
+	spaces := make([]*domain.SpaceModel, len(e))
 	for i, spaceE := range e {
-		space, err := spaceE.toSpace()
+		space, err := spaceE.toSpaceModel()
 		if err != nil {
 			return nil, liberrors.Errorf("to space: %w", err)
 		}
@@ -136,7 +136,7 @@ func NewSpaceRepository(_ context.Context, dialect libgateway.DialectRDBMS, db *
 	}
 }
 
-func (r *spaceRepository) AddSpace(ctx context.Context, operator service.OperatorInterface, param *service.AddSpaceParameter) (*domain.SpaceID, error) {
+func (r *spaceRepository) AddSpace(ctx context.Context, operator domain.UserInterface, param *service.AddSpaceParameter) (*domain.SpaceID, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.AddSpace")
 	defer span.End()
 
@@ -164,7 +164,7 @@ func (r *spaceRepository) AddSpace(ctx context.Context, operator service.Operato
 	return spaceID, nil
 }
 
-// func (r *spaceRepository) UpdateSpace(ctx context.Context, operator service.OperatorInterface, spaceID *domain.SpaceID, version int, param *service.SpaceUpdateParameter) error {
+// func (r *spaceRepository) UpdateSpace(ctx context.Context, operator domain.UserInterface, spaceID *domain.SpaceID, version int, param *service.SpaceUpdateParameter) error {
 // 	_, span := tracer.Start(ctx, "spaceRepository.UpdateSpace")
 // 	defer span.End()
 
@@ -185,7 +185,7 @@ func (r *spaceRepository) AddSpace(ctx context.Context, operator service.Operato
 // 	return nil
 // }
 
-func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator service.OperatorInterface) ([]*service.Space, error) {
+func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.SpaceModel, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.FindPublicSpaces")
 	defer span.End()
 
@@ -206,12 +206,13 @@ func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator service
 	return spaces, nil
 }
 
-func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, keyName string) (*service.Space, error) {
+func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, operator domain.UserInterface, keyName string) (*domain.SpaceModel, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.FindPublicSpaceByKey")
 	defer span.End()
 
 	var spaceE spaceEntity
 	if result := r.db.Model(&spaceE).
+		Where("organization_id = ?", uint(operator.GetOrganizationID().Value)).
 		Where("key_name = ?", keyName).
 		Where("space_type = ?", "public").
 		First(&spaceE); result.Error != nil {
@@ -222,7 +223,7 @@ func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, keyName stri
 		return nil, liberrors.Errorf("spaceRepository.FindPublicSpaceByKey: %w", result.Error)
 	}
 
-	space, err := spaceE.toSpace()
+	space, err := spaceE.toSpaceModel()
 	if err != nil {
 		return nil, liberrors.Errorf("spaceE.toSpace: %w", err)
 	}
@@ -230,7 +231,7 @@ func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, keyName stri
 	return space, nil
 }
 
-func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.OperatorInterface, spaceID *domain.SpaceID) (*service.Space, error) {
+func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator domain.UserInterface, spaceID *domain.SpaceID) (*domain.SpaceModel, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.GetSpaceByID")
 	defer span.End()
 
@@ -248,7 +249,7 @@ func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator service.Ope
 		return nil, liberrors.Errorf("spaceRepository.GetSpaceByID: %w", result.Error)
 	}
 
-	space, err := spaceE.toSpace()
+	space, err := spaceE.toSpaceModel()
 	if err != nil {
 		return nil, liberrors.Errorf("spaceE.toSpace: %w", err)
 	}

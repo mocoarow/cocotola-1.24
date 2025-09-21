@@ -9,7 +9,6 @@ import (
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -95,7 +94,7 @@ func NewCardRepository(db *gorm.DB) service.CardRepository {
 	}
 }
 
-func (r *cardRepository) AddCard(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddCardParameter) (*domain.CardID, error) { //nolint:dupl
+func (r *cardRepository) AddCard(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddCardParameter) (*domain.CardID, error) { //nolint:dupl
 	_, span := tracer.Start(ctx, "cardRepository.AddCard")
 	defer span.End()
 
@@ -123,7 +122,7 @@ func (r *cardRepository) AddCard(ctx context.Context, operator mbuserservice.Ope
 	return cardID, nil
 }
 
-func (r *cardRepository) FindCardsByDeckID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) ([]*service.Card, error) {
+func (r *cardRepository) FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*service.Card, error) {
 	_, span := tracer.Start(ctx, "cardRepository.FindCardsByDeckID")
 	defer span.End()
 

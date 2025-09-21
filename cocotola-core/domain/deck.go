@@ -6,8 +6,6 @@ import (
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
-
-	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 )
 
 type DeckID struct {
@@ -38,12 +36,12 @@ type DeckModel struct {
 	FolderID               *FolderID                    `validate:"required"`
 	Name                   string                       `validate:"required"`
 	TemplateID             *TemplateID                  `validate:"required"`
-	Lang2                  *libdomain.Lang2             `validate:"required"`
+	Lang2                  *mblibdomain.Lang2           `validate:"required"`
 	Description            string
 	OwnerID                *mbuserdomain.UserID `validate:"required"`
 }
 
-func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, folderID *FolderID, name string, templateID *TemplateID, lang2 *libdomain.Lang2, description string, owernID *mbuserdomain.UserID) (*DeckModel, error) {
+func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, folderID *FolderID, name string, templateID *TemplateID, lang2 *mblibdomain.Lang2, description string, owernID *mbuserdomain.UserID) (*DeckModel, error) {
 	if baseModel == nil {
 		return nil, mbliberrors.Errorf("baseModel is nil", mblibdomain.ErrInvalidArgument)
 	}

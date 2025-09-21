@@ -3,6 +3,7 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "initialize",
     srcs = [
+        "func.go",
         "initialize.go",
         "initialize_2.go",
         "initialize_guest.go",
@@ -25,7 +26,9 @@ go_library(
         "//moonbeam/lib/log",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
+        "//moonbeam/user/gateway",
         "//moonbeam/user/service",
+        "//moonbeam/user/usecase",
         "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_contrib_instrumentation_net_http_otelhttp//:otelhttp",

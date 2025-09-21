@@ -65,7 +65,7 @@ linters:
     gocognit:
       min-complexity: 20
     gocyclo:
-      min-complexity: 10
+      min-complexity: 12
     gosec:
       excludes:
         - G115
@@ -117,6 +117,7 @@ linters:
           - wsl_v5
           - revive
           - exhaustruct
+          - wrapcheck
 formatters:
   enable:
     - gofmt

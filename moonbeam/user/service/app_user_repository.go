@@ -9,10 +9,12 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
-var ErrUserNotFound = errors.New("User not found")
-var ErrUserAlreadyExists = errors.New("User already exists")
+var ErrUserNotFound = errors.New("user not found")
+var ErrUserAlreadyExists = errors.New("user already exists")
 
-var ErrSystemOwnerNotFound = errors.New("SystemOwner not found")
+var ErrSystemOwnerNotFound = errors.New("system owner not found")
+
+var ErrUnauthenticated = errors.New("unauthenticated")
 
 // type UserAddParameterInterface interface {
 // 	LoginID() string
@@ -78,25 +80,25 @@ type Option string
 var IncludeGroups Option = "IncludeGroups"
 
 type UserRepository interface {
-	FindSystemOwnerByOrganizationID(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*SystemOwner, error)
+	FindSystemOwnerByOrganizationID(ctx context.Context, operator domain.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.SystemOwner, error)
 
-	FindSystemOwnerByOrganizationName(ctx context.Context, operator SystemAdminInterface, organizationName string, options ...Option) (*SystemOwner, error)
+	FindSystemOwnerByOrganizationName(ctx context.Context, operator domain.SystemAdminInterface, organizationName string, options ...Option) (*domain.SystemOwner, error)
 
-	FindUserByID(ctx context.Context, operator UserInterface, id *domain.UserID, options ...Option) (*User, error)
+	FindUserByID(ctx context.Context, operator domain.UserInterface, id *domain.UserID, options ...Option) (*domain.User, error)
 
-	FindUserByLoginID(ctx context.Context, operator UserInterface, loginID string) (*User, error)
+	FindUserByLoginID(ctx context.Context, operator domain.UserInterface, loginID string) (*domain.User, error)
 
-	FindOwnerByLoginID(ctx context.Context, operator SystemOwnerInterface, loginID string) (*Owner, error)
+	FindOwnerByLoginID(ctx context.Context, operator domain.SystemOwnerInterface, loginID string) (*domain.OwnerModel, error)
 
-	AddUser(ctx context.Context, operator OwnerModelInterface, param *AddUserParameter) (*domain.UserID, error)
+	AddUser(ctx context.Context, operator domain.UserInterface, param *AddUserParameter) (*domain.UserID, error)
 
-	AddSystemOwner(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserID, error)
+	AddSystemOwner(ctx context.Context, operator domain.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserID, error)
 
 	// VerifyPassword(ctx context.Context, operator SystemAdminInterface, organizationID *domain.OrganizationID, loginID, password string) (bool, error)
 
-	VerifyPassword(ctx context.Context, operator SystemOwnerInterface, loginID, password string) (bool, error)
+	VerifyPassword(ctx context.Context, operator domain.SystemOwnerInterface, loginID, password string) (bool, error)
 
-	// AddFirstOwner(ctx context.Context, operator domain.SystemOwnerModel, param FirstOwnerAddParameter) (domain.UserID, error)
+	// AddFirstOwner(ctx context.Context, operator domain.SystemOwner, param FirstOwnerAddParameter) (domain.UserID, error)
 
-	// FindUserIDs(ctx context.Context, operator domain.SystemOwnerModel, pageNo, pageSize int) ([]domain.UserID, error)
+	// FindUserIDs(ctx context.Context, operator domain.SystemOwner, pageNo, pageSize int) ([]domain.UserID, error)
 }

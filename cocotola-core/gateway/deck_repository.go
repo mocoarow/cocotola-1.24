@@ -7,13 +7,11 @@ import (
 
 	"gorm.io/gorm"
 
+	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mblibgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	mbusergateway "github.com/mocoarow/cocotola-1.24/moonbeam/user/gateway"
-	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
-
-	libdomain "github.com/mocoarow/cocotola-1.24/lib/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -68,7 +66,7 @@ func (e *DeckEntity) toModel() (*domain.DeckModel, error) {
 	}
 
 	e.Lang2 = template.HTMLEscapeString(e.Lang2)
-	lang2, err := libdomain.NewLang2(e.Lang2)
+	lang2, err := mblibdomain.NewLang2(e.Lang2)
 	if err != nil {
 		return nil, mbliberrors.Errorf("new lang2(%s): %w", e.Lang2, err)
 	}
@@ -132,7 +130,7 @@ func NewDeckRepository(db *gorm.DB) service.DeckRepository {
 	}
 }
 
-func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
+func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
 	_, span := tracer.Start(ctx, "deckRepository.AddDeck")
 	defer span.End()
 
@@ -168,7 +166,7 @@ func (r *deckRepository) AddDeck(ctx context.Context, operator mbuserservice.Ope
 	return deckID, nil
 }
 
-func (r *deckRepository) UpdateDeck(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error {
+func (r *deckRepository) UpdateDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error {
 	_, span := tracer.Start(ctx, "deckRepository.UpdateDeck")
 	defer span.End()
 
@@ -189,7 +187,7 @@ func (r *deckRepository) UpdateDeck(ctx context.Context, operator mbuserservice.
 	return nil
 }
 
-func (r *deckRepository) FindDecks(ctx context.Context, operator mbuserservice.OperatorInterface, param *service.FindDecksParameter) ([]*service.Deck, error) {
+func (r *deckRepository) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*service.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.FindDecks")
 	defer span.End()
 
@@ -212,7 +210,7 @@ func (r *deckRepository) FindDecks(ctx context.Context, operator mbuserservice.O
 	return decks, nil
 }
 
-func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserservice.OperatorInterface) ([]*service.Deck, error) {
+func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserdomain.UserInterface) ([]*service.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.FindDecksByOwner")
 	defer span.End()
 
@@ -233,7 +231,7 @@ func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserse
 	return decks, nil
 }
 
-func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator mbuserservice.OperatorInterface, deckID *domain.DeckID) (*service.Deck, error) {
+func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*service.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.RetrieveDeckByID")
 	defer span.End()
 
