@@ -54,7 +54,7 @@ func (r *pairOfUserAndSpaceRepository) AddPairOfUserAndSpace(ctx context.Context
 	return nil
 }
 
-func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.SpaceModel, error) {
+func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.Space, error) {
 	spacesE := []spaceEntity{}
 	if result := r.db.WithContext(ctx).Table(SpaceTableName).Select(SpaceTableName+".*").
 		Where(SpaceTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
@@ -69,9 +69,9 @@ func (r *pairOfUserAndSpaceRepository) FindMySpaces(ctx context.Context, operato
 		return nil, result.Error
 	}
 
-	spaces := make([]*domain.SpaceModel, len(spacesE))
+	spaces := make([]*domain.Space, len(spacesE))
 	for i, e := range spacesE {
-		m, err := e.toSpaceModel()
+		m, err := e.toSpace()
 		if err != nil {
 			return nil, err
 		}

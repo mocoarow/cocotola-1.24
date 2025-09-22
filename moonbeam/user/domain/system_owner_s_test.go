@@ -24,9 +24,9 @@ func TestNewSystemOwner(t *testing.T) {
 	require.NoError(t, err)
 	user, err := domain.NewUser(model, userID, organizationID, "LOGIN_ID", "USERNAME", nil)
 	require.NoError(t, err)
-	ower, err := domain.NewOwnerModel(user)
+	ower, err := domain.NewOwner(user)
 	require.NoError(t, err)
-	systemOwner, err := domain.NewSystemOwnerModel(ower)
+	systemOwner, err := domain.NewSystemOwner(ower)
 	require.NoError(t, err)
 	log.Println(systemOwner)
 }

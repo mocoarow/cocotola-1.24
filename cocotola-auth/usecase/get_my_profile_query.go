@@ -26,8 +26,8 @@ func NewGetMyProfileQuery(nonTxManager mbuserservice.TransactionManager) *GetMyP
 }
 
 func (u *GetMyProfileQuery) Execute(ctx context.Context, operator mbuserdomain.UserInterface) (*domain.ProfileModel, error) {
-	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SpaceID, error) {
-		spaceManager, err := rf.NewSpaceManager(ctx)
+	fn := func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SpaceID, error) {
+		spaceManager, err := mbrf.NewSpaceManager(ctx)
 		if err != nil {
 			return nil, mbliberrors.Errorf("NewSpaceManager: %w", err)
 		}

@@ -16,7 +16,7 @@ import (
 
 func Test_userRepository_FindSystemOwnerByOrganizationID_shouldReturnSystemOwner_whenExistingOrganizationIDIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		sysAd := domain.NewSystemAdmin()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
@@ -33,7 +33,7 @@ func Test_userRepository_FindSystemOwnerByOrganizationID_shouldReturnSystemOwner
 
 func Test_userRepository_FindSystemOwnerByOrganizationID_shouldReturnError_whenInvalidOrganizationIDIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		sysAd := domain.NewSystemAdmin()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
@@ -49,7 +49,7 @@ func Test_userRepository_FindSystemOwnerByOrganizationID_shouldReturnError_whenI
 
 func Test_userRepository_FindSystemOwnerByOrganizationName_shouldReturnSystemOwner_whenExistingNameIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		org := getOrganization(t, ctx, ts, orgID)
 		sysAd := domain.NewSystemAdmin()
@@ -68,7 +68,7 @@ func Test_userRepository_FindSystemOwnerByOrganizationName_shouldReturnSystemOwn
 
 func Test_userRepository_FindSystemOwnerByOrganizationName_shouldReturnError_whenInvalidNameIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		sysAd := domain.NewSystemAdmin()
 
@@ -85,7 +85,7 @@ func Test_userRepository_FindSystemOwnerByOrganizationName_shouldReturnError_whe
 
 func Test_userRepository_FindUserByID_shouldReturnUser_whenExistingIDIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
@@ -105,7 +105,7 @@ func Test_userRepository_FindUserByID_shouldReturnUser_whenExistingIDIsSpecified
 
 func Test_userRepository_FindUserByID_shouldReturnError_whenInvaildIDIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
@@ -117,7 +117,7 @@ func Test_userRepository_FindUserByID_shouldReturnError_whenInvaildIDIsSpecified
 
 func Test_userRepository_FindUserByLoginID_shouldReturnUser_whenExistingLoginIDIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
@@ -137,7 +137,7 @@ func Test_userRepository_FindUserByLoginID_shouldReturnUser_whenExistingLoginIDI
 
 func Test_userRepository_FindUserByLoginID_shouldReturnError_whenInvalidLoginIDIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
@@ -152,7 +152,7 @@ func Test_userRepository_FindUserByLoginID_shouldReturnError_whenInvalidLoginIDI
 
 func Test_userRepository_FindOwnerByLoginID_shouldReturnOwner_whenExistingOwnerLoginIDIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		require.Equal(t, "OWNER_ID", owner.LoginID)
 		require.Equal(t, "OWNER_NAME", owner.Username)
@@ -172,7 +172,7 @@ func Test_userRepository_FindOwnerByLoginID_shouldReturnOwner_whenExistingOwnerL
 
 func Test_userRepository_FindOwnerByLoginID_shouldReturnError_whenNotOwnerLoginIDIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		require.Equal(t, "OWNER_ID", owner.LoginID)
 		require.Equal(t, "OWNER_NAME", owner.Username)
@@ -193,7 +193,7 @@ func Test_userRepository_FindOwnerByLoginID_shouldReturnError_whenNotOwnerLoginI
 
 func Test_userRepository_VerifyPassword_shouldReturnTrue_whenCorrectPasswordIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		sysAd := domain.NewSystemAdmin()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
@@ -215,7 +215,7 @@ func Test_userRepository_VerifyPassword_shouldReturnTrue_whenCorrectPasswordIsSp
 
 func Test_userRepository_VerifyPassword_shouldReturnFalse_whenWrongPasswordIsSpecified(t *testing.T) {
 	t.Parallel()
-	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.OwnerModel) {
+	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		sysAd := domain.NewSystemAdmin()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)

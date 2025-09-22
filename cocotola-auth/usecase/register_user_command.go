@@ -88,8 +88,8 @@ func (u *RegisterUserCommand) execute(ctx context.Context, operator mbuserdomain
 
 	// 2. add user
 	aoeList := []mbuserusecase.ActionObjectEffect{}
-	if _, err := mblibservice.Do1(ctx, u.mbTxManager, func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.UserID, error) {
-		return mbuserusecase.AddUser(ctx, operator, rf, param, aoeList)
+	if _, err := mblibservice.Do1(ctx, u.mbTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.UserID, error) {
+		return mbuserusecase.AddUser(ctx, operator, mbrf, param, aoeList)
 	}); err != nil {
 		return nil, nil, err //nolint:wrapcheck
 	}

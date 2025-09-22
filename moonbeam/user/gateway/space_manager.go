@@ -88,7 +88,7 @@ func (m *spaceManager) AddUserToSpace(_ context.Context, _ domain.SystemOwnerInt
 	return errors.New("not implemented")
 }
 
-func (m *spaceManager) GetPersonalSpace(ctx context.Context, operator domain.UserInterface) (*domain.SpaceModel, error) {
+func (m *spaceManager) GetPersonalSpace(ctx context.Context, operator domain.UserInterface) (*domain.Space, error) {
 	pairOfUserAndSpaceRepo := NewPairOfUserAndSpaceRepository(ctx, m.dialect, m.db)
 	spaces, err := pairOfUserAndSpaceRepo.FindMySpaces(ctx, operator)
 	if err != nil {

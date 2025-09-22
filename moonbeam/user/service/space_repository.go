@@ -26,9 +26,9 @@ type SpaceRepository interface {
 
 	// UpdateSpace(ctx context.Context, operator UserInterface, deckID *domain.SpaceID, version int, param *SpaceUpdateParameter) error
 
-	FindPublicSpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.SpaceModel, error)
+	FindPublicSpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.Space, error)
 
-	FindPublicSpaceByKey(ctx context.Context, operator domain.UserInterface, key string) (*domain.SpaceModel, error)
+	FindPublicSpaceByKey(ctx context.Context, operator domain.UserInterface, key string) (*domain.Space, error)
 
-	GetSpaceByID(ctx context.Context, operator domain.UserInterface, deckID *domain.SpaceID) (*domain.SpaceModel, error)
+	GetSpaceByID(ctx context.Context, operator domain.UserInterface, deckID *domain.SpaceID) (*domain.Space, error)
 }

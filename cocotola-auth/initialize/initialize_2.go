@@ -45,8 +45,8 @@ func Initialize2(ctx context.Context, systemToken libdomain.SystemToken, dialect
 		return mbliberrors.Errorf("findSystemOwnerByOrganizationID: %w", err)
 	}
 
-	fn := func(rf mbuserservice.RepositoryFactory) error {
-		authorizationManager, err := rf.NewAuthorizationManager(ctx)
+	fn := func(mbrf mbuserservice.RepositoryFactory) error {
+		authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
 		if err != nil {
 			return mbliberrors.Errorf("new authorization manager: %w", err)
 		}

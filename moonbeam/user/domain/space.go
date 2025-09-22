@@ -44,7 +44,7 @@ func (v *SpaceIDs) IDs() []int {
 	return ids
 }
 
-type SpaceModel struct {
+type Space struct {
 	*libdomain.BaseModel
 	SpaceID        *SpaceID        `validate:"required"`
 	OrganizationID *OrganizationID `validate:"required"`
@@ -54,8 +54,8 @@ type SpaceModel struct {
 	SpaceType      string          `validate:"required,oneof=personal private public"`
 }
 
-func NewSpaceModel(baseModel *libdomain.BaseModel, spaceID *SpaceID, organizationID *OrganizationID, owernID *UserID, keyName, name string, spaceType string) (*SpaceModel, error) {
-	m := &SpaceModel{
+func NewSpace(baseModel *libdomain.BaseModel, spaceID *SpaceID, organizationID *OrganizationID, owernID *UserID, keyName, name string, spaceType string) (*Space, error) {
+	m := &Space{
 		BaseModel:      baseModel,
 		SpaceID:        spaceID,
 		OrganizationID: organizationID,
@@ -71,6 +71,6 @@ func NewSpaceModel(baseModel *libdomain.BaseModel, spaceID *SpaceID, organizatio
 
 	return m, nil
 }
-func (m *SpaceModel) IsPrivate() bool {
+func (m *Space) IsPrivate() bool {
 	return m.SpaceType == "private"
 }

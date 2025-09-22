@@ -1,21 +1,21 @@
 package domain
 
-type OwnerModel struct {
+type Owner struct {
 	*User
 }
 
-func NewOwnerModel(user *User) (*OwnerModel, error) {
-	return &OwnerModel{
+func NewOwner(user *User) (*Owner, error) {
+	return &Owner{
 		User: user,
 	}, nil
 }
 
-func (m *OwnerModel) IsOwner() bool {
+func (m *Owner) IsOwner() bool {
 	return true
 }
-func (m *OwnerModel) GetOrganizationID() *OrganizationID {
+func (m *Owner) GetOrganizationID() *OrganizationID {
 	return m.User.GetOrganizationID()
 }
-func (m *OwnerModel) GetUserID() *UserID {
+func (m *Owner) GetUserID() *UserID {
 	return m.User.GetUserID()
 }

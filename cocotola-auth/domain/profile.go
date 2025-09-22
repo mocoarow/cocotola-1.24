@@ -7,7 +7,7 @@ import (
 )
 
 type ProfileModel struct {
-	PrivateSpaceID *mbuserdomain.SpaceID
+	PrivateSpaceID *mbuserdomain.SpaceID `validate:"required"`
 }
 
 func NewProfileModel(privateSpaceID *mbuserdomain.SpaceID) (*ProfileModel, error) {
