@@ -71,7 +71,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ github.sha }}-coverage-result
-          path: ${{ github.sha }}-coverage.lcov
+          path: coverage.lcov
           retention-days: 2
 
   test_typescript:
@@ -147,7 +147,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ github.sha }}-coverage-result
-          path: ${{ github.sha }}-coverage.lcov
+          path: coverage.lcov
 
       - name: SonarQube Scan
         # uses: SonarSource/sonarqube-scan-action@v5
