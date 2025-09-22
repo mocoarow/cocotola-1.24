@@ -63,6 +63,9 @@ jobs:
 
       - run: task test
 
+      - name: Convert coverage to SonarQube format
+        run: task convert-coverage-sonar
+
       - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -71,7 +74,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ github.sha }}-coverage-result
-          path: coverage.lcov
+          path: |
+            coverage.lcov
+            coverage-sonar.xml
           retention-days: 2
 
   test_typescript:
@@ -147,7 +152,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ github.sha }}-coverage-result
-          path: coverage.lcov
+          path: .
 
       - name: SonarQube Scan
         # uses: SonarSource/sonarqube-scan-action@v5
