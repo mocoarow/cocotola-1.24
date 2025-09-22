@@ -18,30 +18,33 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-type AddPersonalSpaceCommand struct {
+type CallbackOnAddUserCommand struct {
 	mbTxManager                mbuserservice.TransactionManager
 	mbNonTxManager             mbuserservice.TransactionManager
 	cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient
 	logger                     *slog.Logger
 }
 
-func NewAddPersonalSpaceCommand(_ context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) *AddPersonalSpaceCommand {
-	return &AddPersonalSpaceCommand{
+func NewCallbackOnAddUserCommand(_ context.Context, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) *CallbackOnAddUserCommand {
+	return &CallbackOnAddUserCommand{
 		mbTxManager:                mbTxManager,
 		mbNonTxManager:             mbNonTxManager,
 		cocotolaCoreCallbackClient: cocotolaCoreCallbackClient,
-		logger:                     slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-AddPersonalspaceCommand")),
+		logger:                     slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-CallbackAddPersonalSpaceCommand")),
 	}
 }
 
-func (u *AddPersonalSpaceCommand) Execute(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
+func (u *CallbackOnAddUserCommand) Execute(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
+	ctx, span := tracer.Start(ctx, "CallbackUsecase.OnAddUser")
+	defer span.End()
+
 	// 1. Check authorization
-	if err := u.checkAuthorization(ctx, operator); err != nil {
+	if err := u.checkAuthorization(ctx, systemOwner); err != nil {
 		return mbliberrors.Errorf("checkAuthorization: %w", err)
 	}
 
 	// 2. Execute
-	if err := u.execute(ctx, operator, organizationID, userID); err != nil {
+	if err := u.execute(ctx, systemOwner, organizationID, userID); err != nil {
 		return mbliberrors.Errorf("execute: %w", err)
 	}
 
@@ -53,17 +56,15 @@ func (u *AddPersonalSpaceCommand) Execute(ctx context.Context, operator mbuserdo
 	return nil
 }
 
-func (u *AddPersonalSpaceCommand) checkAuthorization(_ context.Context, _ mbuserdomain.SystemAdminInterface) error {
+func (u *CallbackOnAddUserCommand) checkAuthorization(_ context.Context, _ mbuserdomain.SystemOwnerInterface) error {
 	return nil
 }
 
-func (u *AddPersonalSpaceCommand) execute(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
-	sysOwner, err := u.findSystemOwnerByOrganizationID(ctx, operator, organizationID)
-	if err != nil {
-		return mbliberrors.Errorf("findSystemOwnerByOrganizationID: %w", err)
-	}
+func (u *CallbackOnAddUserCommand) execute(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
+	ctx, span := tracer.Start(ctx, "CallbackOnAddUserCommand.execute")
+	defer span.End()
 
-	user, err := u.findUserByID(ctx, sysOwner, userID)
+	user, err := u.findUserByID(ctx, systemOwner, userID)
 	if err != nil {
 		return mbliberrors.Errorf("findUserByID: %w", err)
 	}
@@ -79,7 +80,7 @@ func (u *AddPersonalSpaceCommand) execute(ctx context.Context, operator mbuserdo
 			KeyName: libdomain.NewPersonalSpaceKey(user.GetUserID().Int()),
 			Name:    libdomain.NewPersonalSpaceName(user.LoginID),
 		}
-		spaceID, err := spaceManager.AddPersonalSpace(ctx, sysOwner, &param)
+		spaceID, err := spaceManager.AddPersonalSpace(ctx, systemOwner, &param)
 		if err != nil {
 			return nil, mbliberrors.Errorf("AddPersonalSpace: %w", err)
 		}
@@ -103,7 +104,7 @@ func (u *AddPersonalSpaceCommand) execute(ctx context.Context, operator mbuserdo
 			return mbliberrors.Errorf("NewAuthorizationManager: %w", err)
 		}
 		for _, aoe := range aoeList {
-			if err := authorizationManager.AddPolicyToUser(ctx, sysOwner, subject, aoe.Action, aoe.Object, aoe.Effect); err != nil {
+			if err := authorizationManager.AddPolicyToUser(ctx, systemOwner, subject, aoe.Action, aoe.Object, aoe.Effect); err != nil {
 				return mbliberrors.Errorf("AddPolicyToUserBySystemAdmin: %w", err)
 			}
 		}
@@ -120,17 +121,11 @@ func (u *AddPersonalSpaceCommand) execute(ctx context.Context, operator mbuserdo
 	return nil
 }
 
-func (u *AddPersonalSpaceCommand) callback() error {
+func (u *CallbackOnAddUserCommand) callback() error {
 	return nil
 }
 
-func (u *AddPersonalSpaceCommand) findSystemOwnerByOrganizationID(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationID *mbuserdomain.OrganizationID) (*mbuserdomain.SystemOwner, error) {
-	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) { //nolint:wrapcheck
-		return findSystemOwnerByOrganizationID(ctx, mbrf, operator, organizationID)
-	})
-}
-
-func (u *AddPersonalSpaceCommand) findUserByID(ctx context.Context, operator mbuserdomain.UserInterface, userID *mbuserdomain.UserID) (*mbuserdomain.User, error) {
+func (u *CallbackOnAddUserCommand) findUserByID(ctx context.Context, operator mbuserdomain.UserInterface, userID *mbuserdomain.UserID) (*mbuserdomain.User, error) {
 	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) { //nolint:wrapcheck
 		return findUserByID(ctx, mbrf, operator, userID)
 	})

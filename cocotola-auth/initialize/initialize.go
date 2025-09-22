@@ -125,6 +125,9 @@ func newCallbackOnAddUserSpace(cocotolaCoreCallbackClient service.CocotolaCoreCa
 }
 
 func Initialize(ctx context.Context, systemToken libdomain.SystemToken, parent gin.IRouter, dialect mblibgateway.DialectRDBMS, driverName string, db *gorm.DB, logConfig *mblibconfig.LogConfig, authConfig *config.AuthConfig) (*mbuserdomain.OrganizationID, *mbuserdomain.UserID, *mbuserdomain.UserID, *mbuserdomain.SpaceID, error) {
+	ctx, span := tracer.Start(ctx, "Initialize")
+	defer span.End()
+
 	txManager, nonTxManager, err := initApp(ctx, systemToken, parent, dialect, driverName, db, logConfig, authConfig)
 	if err != nil {
 		return nil, nil, nil, nil, mbliberrors.Errorf("initApp: %w", err)
@@ -188,7 +191,7 @@ func initApp(ctx context.Context, systemToken libdomain.SystemToken, parent gin.
 	}
 
 	// init auth middleware
-	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(systemToken, authTokenManager, mbNonTxManager)
+	bearerTokenAuthMiddleware, err := controller.InitBearerTokenAuthMiddleware(systemToken, authTokenManager, mbNonTxManager, mbrf)
 	if err != nil {
 		return nil, nil, mbliberrors.Errorf("InitBearerTokenAuthMiddleware: %w", err)
 	}

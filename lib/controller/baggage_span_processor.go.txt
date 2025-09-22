@@ -1,0 +1,39 @@
+package controller
+
+import (
+	"context"
+
+	"go.opentelemetry.io/otel/baggage"
+	"go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/attribute"
+)
+
+// BaggageSpanProcessor is a SpanProcessor that adds baggage members as span attributes
+type BaggageSpanProcessor struct{}
+
+// NewBaggageSpanProcessor creates a new BaggageSpanProcessor
+func NewBaggageSpanProcessor() *BaggageSpanProcessor {
+	return &BaggageSpanProcessor{}
+}
+
+// OnStart is called when a span is started. It adds baggage members as span attributes.
+func (b *BaggageSpanProcessor) OnStart(parent context.Context, s trace.ReadWriteSpan) {
+	bag := baggage.FromContext(parent)
+	for _, member := range bag.Members() {
+		// Add baggage member as span attribute with "baggage." prefix
+		s.SetAttributes(attribute.String("baggage."+member.Key(), member.Value()))
+	}
+}
+
+// OnEnd is called when a span is ended. No-op for this processor.
+func (b *BaggageSpanProcessor) OnEnd(s trace.ReadOnlySpan) {}
+
+// Shutdown is called when the processor is shutdown. No-op for this processor.
+func (b *BaggageSpanProcessor) Shutdown(ctx context.Context) error {
+	return nil
+}
+
+// ForceFlush is called to flush any buffered data. No-op for this processor.
+func (b *BaggageSpanProcessor) ForceFlush(ctx context.Context) error {
+	return nil
+}

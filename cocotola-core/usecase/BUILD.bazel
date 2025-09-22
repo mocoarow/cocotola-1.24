@@ -3,8 +3,9 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "usecase",
     srcs = [
-        "add_deck_command.go",
+        "callback_on_add_user_space_command.go",
         "callback_usecase.go",
+        "get_my_profile_query.go",
         "init.go",
         "profile_usecase.go",
     ],
@@ -14,13 +15,10 @@ go_library(
         "//cocotola-core/domain",
         "//cocotola-core/service",
         "//lib/api",
-        "//lib/api/auth",
-        "//lib/rbac",
-        "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "//moonbeam/lib/service",
         "//moonbeam/user/domain",
-        "//moonbeam/user/service",
+        "@io_opentelemetry_go_otel//:otel",
     ],
 )

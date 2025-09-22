@@ -7,5 +7,6 @@ import (
 )
 
 type CocotolaAuthClient interface {
-	RetrieveUserInfo(ctx context.Context, bearerToken string) (*apiauth.UserInfoResponse, error)
+	GetUserInfo(ctx context.Context, bearerToken string) (*apiauth.GetUserInfoResponse, error)
+	GetMyProfile(ctx context.Context, obearerToken string) (*apiauth.GetMyProfileResponse, error)
 }

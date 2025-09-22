@@ -37,6 +37,8 @@ import (
 
 const AppName = "cocotola-app"
 
+var tracer = otel.Tracer("github.com/mocoarow/cocotola-1.24/cocotola-app")
+
 func main() {
 	ctx := context.Background()
 
@@ -71,65 +73,69 @@ func main() {
 
 	router := libcontroller.InitRootRouterGroup(ctx, cfg.CORS, cfg.Debug)
 
-	// web
 	{
-		viteStaticFS, err := fs.Sub(web.Web, "flutter")
-		libdomain.CheckError(err)
-		initGinWeb(ctx, router, viteStaticFS, "flutter")
-	}
-	var organizationID *mbuserdomain.OrganizationID
-	var sysOwnerID *mbuserdomain.UserID
-	var guestID *mbuserdomain.UserID
-	var publicDefaultSpaceID *mbuserdomain.SpaceID
-	// auth
-	{
-		auth := router.Group("auth")
-		orgIDTmp, sysOwnerIDTmp, guestIDTmp, publicDefaultSpaceIDTmp, err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth)
-		if err != nil {
+		ctx, span := tracer.Start(ctx, "Initialize")
+		defer span.End()
+		// web
+		{
+			viteStaticFS, err := fs.Sub(web.Web, "flutter")
 			libdomain.CheckError(err)
+			initGinWeb(ctx, router, viteStaticFS, "flutter")
 		}
-		organizationID = orgIDTmp
-		sysOwnerID = sysOwnerIDTmp
-		guestID = guestIDTmp
-		publicDefaultSpaceID = publicDefaultSpaceIDTmp
-	}
-	var rootFolderID mbuserdomain.RBACObject
-	deckIDs := make([]mbuserdomain.RBACObject, 0)
-	// core (<- auth)
-	{
-		core := router.Group("core")
-		authInitParam := coreinit.AuthInitParameter{
-			OrganizationID:       organizationID,
-			SystemOwnerID:        sysOwnerID,
-			GuestID:              guestID,
-			PublicDefaultSpaceID: publicDefaultSpaceID,
+		var organizationID *mbuserdomain.OrganizationID
+		var sysOwnerID *mbuserdomain.UserID
+		var guestID *mbuserdomain.UserID
+		var publicDefaultSpaceID *mbuserdomain.SpaceID
+		// auth
+		{
+			auth := router.Group("auth")
+			orgIDTmp, sysOwnerIDTmp, guestIDTmp, publicDefaultSpaceIDTmp, err := authinit.Initialize(ctx, systemToken, auth, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Auth)
+			if err != nil {
+				libdomain.CheckError(err)
+			}
+			organizationID = orgIDTmp
+			sysOwnerID = sysOwnerIDTmp
+			guestID = guestIDTmp
+			publicDefaultSpaceID = publicDefaultSpaceIDTmp
 		}
-		rootFolderIDTmp, deckIDsTmp, err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Core, &authInitParam)
-		if err != nil {
-			libdomain.CheckError(err)
+		var rootFolderID mbuserdomain.RBACObject
+		deckIDs := make([]mbuserdomain.RBACObject, 0)
+		// core (<- auth)
+		{
+			core := router.Group("core")
+			authInitParam := coreinit.AuthInitParameter{
+				OrganizationID:       organizationID,
+				SystemOwnerID:        sysOwnerID,
+				GuestID:              guestID,
+				PublicDefaultSpaceID: publicDefaultSpaceID,
+			}
+			rootFolderIDTmp, deckIDsTmp, err := coreinit.Initialize(ctx, core, dialect, cfg.DB.DriverName, db, cfg.Log, cfg.App.Core, &authInitParam)
+			if err != nil {
+				libdomain.CheckError(err)
+			}
+			rootFolderID = rootFolderIDTmp.GetRBACObject()
+			for _, deckID := range deckIDsTmp {
+				deckIDs = append(deckIDs, deckID.GetRBACObject())
+			}
 		}
-		rootFolderID = rootFolderIDTmp.GetRBACObject()
-		for _, deckID := range deckIDsTmp {
-			deckIDs = append(deckIDs, deckID.GetRBACObject())
-		}
-	}
-	// auth
-	{
-		parentAhdChildLinks := make([]*authinit.ParentAndChildLink, 0)
+		// auth
+		{
+			parentAhdChildLinks := make([]*authinit.ParentAndChildLink, 0)
 
-		// public default space - root folder - decks
-		parentAhdChildLinks = append(parentAhdChildLinks, &authinit.ParentAndChildLink{
-			Parent: publicDefaultSpaceID.GetRBACObject(),
-			Child:  rootFolderID,
-		})
-		for _, deckID := range deckIDs {
+			// public default space - root folder - decks
 			parentAhdChildLinks = append(parentAhdChildLinks, &authinit.ParentAndChildLink{
-				Parent: rootFolderID,
-				Child:  deckID,
+				Parent: publicDefaultSpaceID.GetRBACObject(),
+				Child:  rootFolderID,
 			})
-		}
-		if err := authinit.Initialize2(ctx, systemToken, dialect, cfg.DB.DriverName, db, organizationID, parentAhdChildLinks); err != nil {
-			libdomain.CheckError(err)
+			for _, deckID := range deckIDs {
+				parentAhdChildLinks = append(parentAhdChildLinks, &authinit.ParentAndChildLink{
+					Parent: rootFolderID,
+					Child:  deckID,
+				})
+			}
+			if err := authinit.Initialize2(ctx, systemToken, dialect, cfg.DB.DriverName, db, organizationID, parentAhdChildLinks); err != nil {
+				libdomain.CheckError(err)
+			}
 		}
 	}
 

@@ -31,40 +31,6 @@ func NewCallbackHandler(callbackUsecase CallbackUsecase) *CallbackHandler {
 	}
 }
 
-// func (h *CallbackHandler) OnAddUser(c *gin.Context) {
-// 	ctx := c.Request.Context()
-// 	var apiReq libapicore.CallbackOnAddUserRequest
-// 	if err := c.ShouldBindJSON(&apiReq); err != nil {
-// 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
-// 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
-// 		return
-// 	}
-
-// 	organizationID, err := mbuserdomain.NewOrganizationID(apiReq.OrganizationID)
-// 	if err != nil {
-// 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
-// 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
-// 		return
-// 	}
-
-// 	userID, err := mbuserdomain.NewUserID(apiReq.UserID)
-// 	if err != nil {
-// 		h.logger.WarnContext(ctx, fmt.Sprintf("invalid parameter: %+v", err))
-// 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
-// 		return
-// 	}
-
-// 	h.logger.Info("OnAddUser", slog.Int("userID", userID.Int()))
-// 	if err := h.callbackUsecase.OnAddUser(ctx, organizationID, userID); err != nil {
-// 		h.logger.ErrorContext(ctx, fmt.Sprintf("on add user: %+v", err))
-// 		c.JSON(http.StatusInternalServerError, gin.H{"message": http.StatusText(http.StatusBadRequest)})
-
-//			return
-//		}
-//	}
 func (h *CallbackHandler) OnAddUserSpace(c *gin.Context) {
 	ctx := c.Request.Context()
 	var apiReq libapicore.CallbackOnAddUserSpaceRequest

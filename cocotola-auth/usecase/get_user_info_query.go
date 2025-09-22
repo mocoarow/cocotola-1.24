@@ -24,6 +24,9 @@ func NewGetUserInfoQuery(mbNonTxManager mbuserservice.TransactionManager, authTo
 }
 
 func (u *GetUserInfoQuery) Execute(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, bearerToken string) (*mbuserdomain.User, error) {
+	ctx, span := tracer.Start(ctx, "GetUserInfoQuery.Execute")
+	defer span.End()
+
 	// TODO: Check whether the token is registered in the Database
 	userInfo, err := u.authTokenManager.GetUserInfo(ctx, bearerToken)
 	if err != nil {
@@ -42,7 +45,7 @@ func (u *GetUserInfoQuery) Execute(ctx context.Context, systemAdmin mbuserdomain
 
 func (u *GetUserInfoQuery) findSystemOwnerByOrganizationName(ctx context.Context, operator mbuserdomain.SystemAdminInterface, organizationName string) (*mbuserdomain.SystemOwner, error) {
 	return mblibservice.Do1(ctx, u.mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) { //nolint:wrapcheck
-		return findSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
+		return service.FindSystemOwnerByOrganizationName(ctx, mbrf, operator, organizationName)
 	})
 }
 

@@ -31,6 +31,7 @@ type RoleUserInterface interface {
 	GetUserID() *mbuserdomain.UserID
 	GetOrganizationID() *mbuserdomain.OrganizationID
 	GetRole() string
+	GetBearerToken() string
 	// LoginID() string
 	// Username() string
 }

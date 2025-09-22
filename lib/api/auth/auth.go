@@ -1,6 +1,6 @@
 package auth
 
-type UserInfoResponse struct {
+type GetUserInfoResponse struct {
 	UserID         int      `json:"userId"`
 	OrganizationID int      `json:"organizationId"`
 	LoginID        string   `json:"loginId"`
@@ -24,4 +24,8 @@ type AuthResponse struct { //nolint:revive
 
 type RefreshTokenParameter struct {
 	RefreshToken string `json:"refreshToken"`
+}
+
+type GetMyProfileResponse struct {
+	PrivateSpaceID int `json:"privateSpaceId"`
 }

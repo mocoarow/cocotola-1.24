@@ -8,6 +8,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	mblibdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
+	"github.com/stretchr/testify/require"
 
 	libapimb "github.com/mocoarow/cocotola-1.24/lib/api/moonbeam"
 )
@@ -191,24 +192,22 @@ func TestAddDeckRequest_shouldUnmarshalSuccessfully_whenGivenValidJSON(t *testin
 func TestAddDeckRequest_shouldMarshalSuccessfully_whenGivenValidStruct(t *testing.T) {
 	t.Parallel()
 	spaceID, err := mbuserdomain.NewSpaceID(123)
-	if err != nil {
-		t.Fatalf("Failed to create SpaceID: %v", err)
-	}
+	require.NoError(t, err)
 
-	templateID, err := domain.NewTemplateID(456)
-	if err != nil {
-		t.Fatalf("Failed to create TemplateID: %v", err)
-	}
+	folderID, err := domain.NewFolderID(456)
+	require.NoError(t, err)
+
+	templateID, err := domain.NewTemplateID(789)
+	require.NoError(t, err)
 
 	lang2, err := mblibdomain.NewLang2("en")
-	if err != nil {
-		t.Fatalf("Failed to create Lang2: %v", err)
-	}
+	require.NoError(t, err)
 
 	req := api.AddDeckRequest{
 		SpaceID:     libapimb.SpaceID{Value: spaceID},
-		Name:        "Test Deck",
+		FolderID:    api.FolderID{Value: folderID},
 		TemplateID:  api.TemplateID{Value: templateID},
+		Name:        "Test Deck",
 		Lang2:       libapimb.Lang2{Value: lang2},
 		Description: "Test description",
 	}
@@ -218,7 +217,7 @@ func TestAddDeckRequest_shouldMarshalSuccessfully_whenGivenValidStruct(t *testin
 		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
 
-	expectedJSON := `{"spaceId":123,"name":"Test Deck","templateId":456,"lang2":"en","description":"Test description"}`
+	expectedJSON := `{"spaceId":123,"folderId":456,"templateId":789,"name":"Test Deck","lang2":"en","description":"Test description"}`
 	if string(jsonData) != expectedJSON {
 		t.Errorf("Marshal result = %s, want %s", string(jsonData), expectedJSON)
 	}
@@ -232,19 +231,23 @@ func TestAddDeckRequest_shouldReturnError_whenGivenInvalidJSON(t *testing.T) {
 	}{
 		{
 			name:     "invalid spaceId type",
-			jsonData: `{"spaceId": "invalid", "name": "Test Deck", "templateId": 456, "lang2": "en"}`,
+			jsonData: `{"spaceId": "invalid", "folderId": 456, "templateId": 789, "name": "Test Deck", "lang2": "en"}`,
+		},
+		{
+			name:     "invalid folderId type",
+			jsonData: `{"spaceId": 123, "folderId": "invalid", "templateId": 789, "name": "Test Deck", "lang2": "en"}`,
 		},
 		{
 			name:     "invalid templateId type",
-			jsonData: `{"spaceId": 123, "name": "Test Deck", "templateId": "invalid", "lang2": "en"}`,
+			jsonData: `{"spaceId": 123, "folderId": 456, "templateId": "invalid", "name": "Test Deck", "lang2": "en"}`,
 		},
 		{
 			name:     "invalid lang2 length",
-			jsonData: `{"spaceId": 123, "name": "Test Deck", "templateId": 456, "lang2": "english"}`,
+			jsonData: `{"spaceId": 123, "folderId": 456, "templateId": 789, "name": "Test Deck", "lang2": "english"}`,
 		},
 		{
 			name:     "invalid lang2 type",
-			jsonData: `{"spaceId": 123, "name": "Test Deck", "templateId": 456, "lang2": 123}`,
+			jsonData: `{"spaceId": 123, "folderId": 456, "templateId": 789, "name": "Test Deck", "lang2": 123}`,
 		},
 		{
 			name:     "malformed json",

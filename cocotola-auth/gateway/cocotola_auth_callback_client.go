@@ -12,6 +12,7 @@ import (
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
+	libapimb "github.com/mocoarow/cocotola-1.24/lib/api/moonbeam"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
@@ -40,8 +41,8 @@ func (c *cocotolaAuthCallbackClient) OnAddUser(ctx context.Context, organization
 	u.Path = path.Join(u.Path, "api", "v1", "callback", "on-add-user")
 
 	apiReq := libapiauth.CallbackOnAddUserRequest{
-		OrganizationID: organizationID.Int(),
-		UserID:         userID.Int(),
+		OrganizationID: libapimb.OrganizationID{Value: organizationID},
+		UserID:         libapimb.UserID{Value: userID},
 	}
 	jsonReq, err := json.Marshal(apiReq)
 	if err != nil {

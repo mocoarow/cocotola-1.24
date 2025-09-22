@@ -75,11 +75,11 @@ func GetPublicRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemTo
 	}, nil
 }
 
-func GetBasicPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager mbuserservice.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) []libcontroller.InitRouterGroupFunc {
+func GetBasicPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, cocotolaCoreCallbackClient service.CocotolaCoreCallbackClient) []libcontroller.InitRouterGroupFunc {
 	// - rbac
-	rbacUsecase := usecase.NewRBACUsecase(systemToken, txManager, nonTxManager)
+	rbacUsecase := usecase.NewRBACUsecase(systemToken, mbTxManager, mbNonTxManager)
 	// - callback
-	callbackUsecase := usecase.NewCallback(systemToken, txManager, nonTxManager, cocotolaCoreCallbackClient)
+	callbackUsecase := usecase.NewCallbackUsecase(systemToken, mbTxManager, mbNonTxManager, cocotolaCoreCallbackClient)
 
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
@@ -88,53 +88,19 @@ func GetBasicPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.Sy
 	}
 }
 
-func GetBearerTokenRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, txManager, nonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager, mbrf mbuserservice.RepositoryFactory) []libcontroller.InitRouterGroupFunc {
-	// - rbac
-	// rbacUsecase := usecase.NewRBACUsecase(txManager, nonTxManager)
+func GetBearerTokenRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager, mbrf mbuserservice.RepositoryFactory) []libcontroller.InitRouterGroupFunc {
 	// - user
-	userUsecase := usecase.NewUserUsecase(systemToken, txManager, nonTxManager, authTokenManager)
+	userUsecase := usecase.NewUserUsecase(systemToken, mbTxManager, mbNonTxManager, authTokenManager)
 	spaceUsecase := gateway.NewSpaceQueryUsecase(mbrf)
-	profileQueryUsecase := gateway.NewProfileQueryUsecase(nonTxManager)
+	profileUsecase := usecase.NewProfileUsecase(mbNonTxManager)
 	return []libcontroller.InitRouterGroupFunc{
 		public.NewInitUserRouterFunc(userUsecase),
 		private.NewInitSpaceRouterFunc(spaceUsecase),
-		private.NewInitProfileRouterFunc(profileQueryUsecase),
+		private.NewInitProfileRouterFunc(profileUsecase),
 		// NewInitRBACRouterFunc(rbacUsecase),
 	}
 }
 
-func InitBearerTokenAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, mbNonTxManager mbuserservice.TransactionManager) (gin.HandlerFunc, error) {
-	return middleware.NewAuthMiddleware(systemToken, authTokenManager, mbNonTxManager), nil
+func InitBearerTokenAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager service.AuthTokenManager, mbNonTxManager mbuserservice.TransactionManager, mbrf mbuserservice.RepositoryFactory) (gin.HandlerFunc, error) {
+	return middleware.NewAuthMiddleware(systemToken, authTokenManager, mbNonTxManager, mbrf), nil
 }
-
-// func InitAuthMiddleware(authConfig *config.AuthConfig) (gin.HandlerFunc, error) {
-// 	authMiddleware := gin.BasicAuth(gin.Accounts{
-// 		authConfig.AuthAPIServer.Username: authConfig.AuthAPIServer.Password,
-// 	})
-// 	return authMiddleware, nil
-// }
-
-// func InitRootRouterGroup(ctx context.Context, rootRouterGroup gin.IRouter, corsConfig cors.Config, debugConfig *libconfig.DebugConfig) {
-// 	rootRouterGroup.Use(cors.New(corsConfig))
-// 	rootRouterGroup.Use(sloggin.New(slog.Default()))
-
-// 	if debugConfig.Wait {
-// 		rootRouterGroup.Use(libmiddleware.NewWaitMiddleware())
-// 	}
-// }
-
-// func InitAPIRouterGroup(ctx context.Context, parentRouterGroup gin.IRouter, initPublicRouterFunc []libcontroller.InitRouterGroupFunc, initPrivateRouterFunc []libcontroller.InitRouterGroupFunc, appName string) error {
-// 	v1 := parentRouterGroup.Group("v1")
-// 	{
-// 		v1.Use(otelgin.Middleware(appName))
-// 		v1.Use(libmiddleware.NewTraceLogMiddleware(appName))
-
-// 		for _, fn := range initPublicRouterFunc {
-// 			if err := fn(v1); err != nil {
-// 				return err
-// 			}
-// 		}
-// 	}
-
-// 	return nil
-// }

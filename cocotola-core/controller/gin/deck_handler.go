@@ -164,15 +164,13 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}
-		param := service.AddDeckParameter{
-			SpaceID:     apiReq.SpaceID.Value,
-			FolderID:    nil,
-			TemplateID:  apiReq.TemplateID.Value,
-			Name:        apiReq.Name,
-			Lang2:       apiReq.Lang2.Value,
-			Description: apiReq.Description,
+		param, err := service.NewAddDeckParameter(apiReq.SpaceID.Value, apiReq.FolderID.Value, apiReq.TemplateID.Value, apiReq.Name, apiReq.Lang2.Value, apiReq.Description)
+		if err != nil {
+			h.logger.WarnContext(ctx, fmt.Sprintf("NewAddDeckParameter: %+v", err))
+			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
+			return nil
 		}
-		deckID, err := h.deckCommandUsecase.AddDeck(ctx, operator, &param)
+		deckID, err := h.deckCommandUsecase.AddDeck(ctx, operator, param)
 		if err != nil {
 			h.logger.ErrorContext(ctx, fmt.Sprintf("add deck: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})

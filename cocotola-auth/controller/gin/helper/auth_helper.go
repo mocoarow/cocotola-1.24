@@ -72,6 +72,8 @@ func HandleUserFunction(c *gin.Context, fn func(ctx context.Context, operator mb
 		"organization_id": strconv.Itoa(organizationID.Int()),
 	}); err == nil {
 		ctx = newCtx
+		// Add baggage members as span attributes
+		liblibcontroller.AddBaggageToCurrentSpan(ctx)
 	}
 
 	logger.InfoContext(ctx, "xxxxxxxx")

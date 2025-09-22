@@ -8,6 +8,54 @@ import (
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
+type OrganizationID struct {
+	Value *mbuserdomain.OrganizationID `validate:"required,gte=1"`
+}
+
+func (m *OrganizationID) UnmarshalJSON(data []byte) error {
+	var v int
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err //nolint:wrapcheck
+	}
+	value, err := mbuserdomain.NewOrganizationID(v)
+	if err != nil {
+		return mbliberrors.Errorf("mbuserdomain.NewOrganizationID: %w", err)
+	}
+	m.Value = value
+	return nil
+}
+
+func (m OrganizationID) MarshalJSON() ([]byte, error) {
+	if m.Value == nil {
+		return json.Marshal(nil) //nolint:wrapcheck
+	}
+	return json.Marshal(m.Value.Value) //nolint:wrapcheck
+}
+
+type UserID struct {
+	Value *mbuserdomain.UserID `validate:"required,gte=1"`
+}
+
+func (m *UserID) UnmarshalJSON(data []byte) error {
+	var v int
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err //nolint:wrapcheck
+	}
+	value, err := mbuserdomain.NewUserID(v)
+	if err != nil {
+		return mbliberrors.Errorf("mbuserdomain.NewOrganizationID: %w", err)
+	}
+	m.Value = value
+	return nil
+}
+
+func (m UserID) MarshalJSON() ([]byte, error) {
+	if m.Value == nil {
+		return json.Marshal(nil) //nolint:wrapcheck
+	}
+	return json.Marshal(m.Value.Value) //nolint:wrapcheck
+}
+
 type SpaceID struct {
 	Value *mbuserdomain.SpaceID `validate:"required,gte=1"`
 }
