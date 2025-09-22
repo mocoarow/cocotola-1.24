@@ -22,7 +22,7 @@ func (v *UserGroupID) IsUserGroupID() bool {
 	return true
 }
 
-type UserGroupModel struct {
+type UserGroup struct {
 	*libdomain.BaseModel
 	UserGroupID    *UserGroupID
 	OrganizationID *OrganizationID
@@ -31,9 +31,9 @@ type UserGroupModel struct {
 	Description    string
 }
 
-// NewUserGroupModel returns a new UserGroupModel
-func NewUserGroupModel(baseModel *libdomain.BaseModel, userGroupID *UserGroupID, organizationID *OrganizationID, key, name, description string) (*UserGroupModel, error) {
-	m := &UserGroupModel{
+// NewUserGroup returns a new UserGroup
+func NewUserGroup(baseModel *libdomain.BaseModel, userGroupID *UserGroupID, organizationID *OrganizationID, key, name, description string) (*UserGroup, error) {
+	m := &UserGroup{
 		BaseModel:      baseModel,
 		UserGroupID:    userGroupID,
 		OrganizationID: organizationID,

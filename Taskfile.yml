@@ -277,6 +277,11 @@ tasks:
         OUTPUT_PATH=$(bazel info output_path)
         cp "${OUTPUT_PATH}/_coverage/_coverage_report.dat" ./coverage.lcov
 
+  convert-coverage-sonar:
+    desc: "Convert LCOV coverage to SonarQube XML format"
+    cmds:
+      - node scripts/convert-lcov-to-sonar.js coverage.lcov coverage-sonar.xml
+
   db-reset-core:
     cmds:
       - migrate -database 'postgres://user:password@127.0.0.1:5432/postgres?sslmode=disable' -source file://src/sqls/postgres/ drop

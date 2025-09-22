@@ -32,7 +32,7 @@ func (o *operator) GetOrganizationID() *mbuserdomain.OrganizationID {
 type SystemAdminInterface interface {
 	UserID() *mbuserdomain.UserID
 	IsSystemAdmin() bool
-	// GetUserGroups() []domain.UserGroupModel
+	// GetUserGroups() []domain.UserGroup
 }
 
 type RBACUsecase interface {

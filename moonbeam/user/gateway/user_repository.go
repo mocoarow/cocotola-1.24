@@ -32,7 +32,7 @@ func (e *userEntity) TableName() string {
 	return UserTableName
 }
 
-func (e *userEntity) toUser(userGroups []*domain.UserGroupModel) (*domain.User, error) {
+func (e *userEntity) toUser(userGroups []*domain.UserGroup) (*domain.User, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, liberrors.Errorf("e.toModel. err: %w", err)
@@ -56,7 +56,7 @@ func (e *userEntity) toUser(userGroups []*domain.UserGroupModel) (*domain.User, 
 	return userModel, nil
 }
 
-func (e *userEntity) toOwnerModel(userGroups []*domain.UserGroupModel) (*domain.OwnerModel, error) {
+func (e *userEntity) toOwnerModel(userGroups []*domain.UserGroup) (*domain.OwnerModel, error) {
 	userModel, err := e.toUser(userGroups)
 	if err != nil {
 		return nil, liberrors.Errorf("e.toUser. err: %w", err)
@@ -70,7 +70,7 @@ func (e *userEntity) toOwnerModel(userGroups []*domain.UserGroupModel) (*domain.
 	return ownerModel, nil
 }
 
-func (e *userEntity) toSystemOwnerModel(_ context.Context, _ service.RepositoryFactory, userGroup []*domain.UserGroupModel) (*domain.SystemOwner, error) {
+func (e *userEntity) toSystemOwnerModel(_ context.Context, _ service.RepositoryFactory, userGroup []*domain.UserGroup) (*domain.SystemOwner, error) {
 	if e.LoginID != service.SystemOwnerLoginID {
 		return nil, liberrors.Errorf("invalid system owner. loginID: %s", e.LoginID)
 	}
@@ -144,7 +144,7 @@ func (r *userRepository) FindSystemOwnerByOrganizationName(ctx context.Context, 
 		return nil, err
 	}
 
-	userGroups := []*domain.UserGroupModel{}
+	userGroups := []*domain.UserGroup{}
 	for _, option := range options {
 		if option == service.IncludeGroups {
 			pairOfUserAndGroupRepo := NewPairOfUserAndGroupRepository(ctx, r.dialect, r.db, r.rf)
@@ -187,7 +187,7 @@ func (r *userRepository) findUserByID(ctx context.Context, organizationID *domai
 		return nil, liberrors.Errorf("toUser: %w", err)
 	}
 
-	userGroups := []*domain.UserGroupModel{}
+	userGroups := []*domain.UserGroup{}
 
 	for _, option := range options {
 		if option == service.IncludeGroups {

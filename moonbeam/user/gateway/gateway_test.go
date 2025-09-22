@@ -219,7 +219,7 @@ func testAddUser(t *testing.T, ctx context.Context, ts testService, owner domain
 	return user1
 }
 
-func testAddUserGroup(t *testing.T, ctx context.Context, ts testService, owner domain.OwnerInterface, key, name, description string) *domain.UserGroupModel {
+func testAddUserGroup(t *testing.T, ctx context.Context, ts testService, owner domain.OwnerInterface, key, name, description string) *domain.UserGroup {
 	t.Helper()
 	userGorupRepo := ts.rf.NewUserGroupRepository(ctx)
 	groupID1, err := userGorupRepo.AddUserGroup(ctx, owner, testNewUserGroupAddParameter(t, key, name, description))
@@ -273,26 +273,26 @@ func testAddUserGroup(t *testing.T, ctx context.Context, ts testService, owner d
 // 	}
 // }
 
-// type testUserGroupModel struct {
-// 	*domain.UserGroupModel
+// type testUserGroup struct {
+// 	*domain.UserGroup
 // }
 
-// func (m *testUserGroupModel) Key() string {
-// 	return m.UserGroupModel.Key
+// func (m *testUserGroup) Key() string {
+// 	return m.UserGroup.Key
 // }
-// func (m *testUserGroupModel) Name() string {
-// 	return m.UserGroupModel.Key
+// func (m *testUserGroup) Name() string {
+// 	return m.UserGroup.Key
 // }
-// func (m *testUserGroupModel) Description() string {
-// 	return m.UserGroupModel.Description
+// func (m *testUserGroup) Description() string {
+// 	return m.UserGroup.Description
 // }
-// func testNewUserGroup(userGroupModel *domain.UserGroupModel) *testUserGroupModel {
-// 	return &testUserGroupModel{
+// func testNewUserGroup(userGroupModel *domain.UserGroup) *testUserGroup {
+// 	return &testUserGroup{
 // 		userGroupModel,
 // 	}
 // }
-// func testNewUserGroups(userGroupModels []*domain.UserGroupModel) []*testUserGroupModel {
-// 	groups := make([]*testUserGroupModel, len(userGroupModels))
+// func testNewUserGroups(userGroupModels []*domain.UserGroup) []*testUserGroup {
+// 	groups := make([]*testUserGroup, len(userGroupModels))
 // 	for i, groupModel := range userGroupModels {
 // 		groups[i] = testNewUserGroup(groupModel)
 // 	}

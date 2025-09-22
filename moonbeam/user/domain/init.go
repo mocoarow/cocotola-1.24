@@ -9,7 +9,7 @@ type ResourceKey string
 type SystemAdminInterface interface {
 	GetUserID() *UserID
 	IsSystemAdmin() bool
-	// GetUserGroups() []domain.UserGroupModel
+	// GetUserGroups() []domain.UserGroup
 }
 
 type UserInterface interface {
@@ -17,19 +17,19 @@ type UserInterface interface {
 	GetOrganizationID() *OrganizationID
 	// LoginID() string
 	// Username() string
-	// GetUserGroups() []domain.UserGroupModel
+	// GetUserGroups() []domain.UserGroup
 }
 
 type OwnerInterface interface {
 	UserInterface
 	IsOwner() bool
-	// GetUserGroups() []domain.UserGroupModel
+	// GetUserGroups() []domain.UserGroup
 }
 
 type SystemOwnerInterface interface {
 	OwnerInterface
 	IsSystemOwner() bool
-	// GetUserGroups() []domain.UserGroupModel
+	// GetUserGroups() []domain.UserGroup
 }
 
 var (
