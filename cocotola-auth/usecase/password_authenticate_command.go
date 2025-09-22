@@ -53,6 +53,7 @@ func (u *PasswordAuthenticateCommand) checkAuthorization(_ context.Context, _ mb
 
 	return nil
 }
+
 func (u *PasswordAuthenticateCommand) execute(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, loginID, password string) (*domain.AuthTokenSet, error) {
 	fn := func(rf mbuserservice.RepositoryFactory) error {
 		userRepo := rf.NewUserRepository(ctx)
