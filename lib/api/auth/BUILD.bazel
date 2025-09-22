@@ -12,11 +12,11 @@ go_library(
     srcs = [
         "auth.go",
         "callback.go",
-        "profile.go",
         "rbac.go",
         "space.go",
         "user.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/lib/api/auth",
     visibility = ["//visibility:public"],
+    deps = ["//lib/api/moonbeam"],
 )
