@@ -28,10 +28,12 @@ smart_go_test(
     srcs = [
         "organization_s_test.go",
         "system_owner_s_test.go",
+        "user_s_test.go",
     ],
     deps = [
         ":domain",
         "//moonbeam/lib/domain",
+        "@com_github_stretchr_testify//assert",
         "@com_github_stretchr_testify//require",
     ],
 )
