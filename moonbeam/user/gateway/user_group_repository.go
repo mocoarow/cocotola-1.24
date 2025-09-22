@@ -25,7 +25,7 @@ func (e *userGroupEntity) TableName() string {
 	return UserGroupTableName
 }
 
-func (e *userGroupEntity) toUserGroupModel() (*domain.UserGroupModel, error) {
+func (e *userGroupEntity) toUserGroup() (*domain.UserGroup, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, liberrors.Errorf("toBaseModel. err: %w", err)
@@ -41,16 +41,16 @@ func (e *userGroupEntity) toUserGroupModel() (*domain.UserGroupModel, error) {
 		return nil, liberrors.Errorf("domain.NewOrganizationID. err: %w", err)
 	}
 
-	userGroupModel, err := domain.NewUserGroupModel(baseModel, userGroupID, organizationID, e.KeyName, e.Name, e.Description)
+	userGroupModel, err := domain.NewUserGroup(baseModel, userGroupID, organizationID, e.KeyName, e.Name, e.Description)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewUserGroupModel. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewUserGroup. err: %w", err)
 	}
 
 	return userGroupModel, nil
 }
 
 // func (e *userGroupEntity) toUserGroup() (*service.UserGroup, error) {
-// 	userGroupModel, err := e.toUserGroupModel()
+// 	userGroupModel, err := e.toUserGroup()
 // 	if err != nil {
 // 		return nil, liberrors.Errorf("e.touserGroupModel. err: %w", err)
 // 	}
@@ -77,7 +77,7 @@ func NewUserGroupRepository(_ context.Context, dialect libgateway.DialectRDBMS, 
 	}
 }
 
-func (r *userGroupRepository) FindAllUserGroups(ctx context.Context, operator domain.UserInterface) ([]*domain.UserGroupModel, error) {
+func (r *userGroupRepository) FindAllUserGroups(ctx context.Context, operator domain.UserInterface) ([]*domain.UserGroup, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.FindAllUserGroups")
 	defer span.End()
 
@@ -88,11 +88,11 @@ func (r *userGroupRepository) FindAllUserGroups(ctx context.Context, operator do
 		return nil, result.Error
 	}
 
-	userGroupModels := make([]*domain.UserGroupModel, len(userGroups))
+	userGroupModels := make([]*domain.UserGroup, len(userGroups))
 	for i, e := range userGroups {
-		m, err := e.toUserGroupModel()
+		m, err := e.toUserGroup()
 		if err != nil {
-			return nil, liberrors.Errorf("toUserGroupModel: %w", err)
+			return nil, liberrors.Errorf("toUserGroup: %w", err)
 		}
 		userGroupModels[i] = m
 	}
@@ -100,7 +100,7 @@ func (r *userGroupRepository) FindAllUserGroups(ctx context.Context, operator do
 	return userGroupModels, nil
 }
 
-func (r *userGroupRepository) FindSystemOwnerGroup(ctx context.Context, _ domain.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserGroupModel, error) {
+func (r *userGroupRepository) FindSystemOwnerGroup(ctx context.Context, _ domain.SystemAdminInterface, organizationID *domain.OrganizationID) (*domain.UserGroup, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.FindSystemOwnerGroup")
 	defer span.End()
 
@@ -112,10 +112,10 @@ func (r *userGroupRepository) FindSystemOwnerGroup(ctx context.Context, _ domain
 		return nil, result.Error
 	}
 
-	return userGroup.toUserGroupModel()
+	return userGroup.toUserGroup()
 }
 
-func (r *userGroupRepository) FindUserGroupByID(ctx context.Context, operator domain.UserInterface, userGroupID *domain.UserGroupID) (*domain.UserGroupModel, error) {
+func (r *userGroupRepository) FindUserGroupByID(ctx context.Context, operator domain.UserInterface, userGroupID *domain.UserGroupID) (*domain.UserGroup, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.FindUserGroupByID")
 	defer span.End()
 
@@ -126,10 +126,10 @@ func (r *userGroupRepository) FindUserGroupByID(ctx context.Context, operator do
 		return nil, result.Error
 	}
 
-	return userGroup.toUserGroupModel()
+	return userGroup.toUserGroup()
 }
 
-func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator domain.UserInterface, key string) (*domain.UserGroupModel, error) {
+func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator domain.UserInterface, key string) (*domain.UserGroup, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.FindUserGroupByKey")
 	defer span.End()
 
@@ -140,7 +140,7 @@ func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator d
 		return nil, result.Error
 	}
 
-	return userGroup.toUserGroupModel()
+	return userGroup.toUserGroup()
 }
 
 func (r *userGroupRepository) addUserGroup(userID *domain.UserID, organizationID *domain.OrganizationID, key, name string) (*domain.UserGroupID, error) {

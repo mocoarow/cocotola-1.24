@@ -31,12 +31,12 @@ func Test_pairOfUserAndGroupRepository_FindUserGroupsByUserID(t *testing.T) {
 		pairOfUserAndGroupRepo := gateway.NewPairOfUserAndGroupRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// - user1 belongs to group1, group2, group3
-		for _, group := range []*domain.UserGroupModel{group1, group2, group3} {
+		for _, group := range []*domain.UserGroup{group1, group2, group3} {
 			err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user1.GetUserID(), group.UserGroupID)
 			require.NoError(t, err)
 		}
 		// - user2 belongs to group1
-		for _, group := range []*domain.UserGroupModel{group1} {
+		for _, group := range []*domain.UserGroup{group1} {
 			err := pairOfUserAndGroupRepo.AddPairOfUserAndGroup(ctx, owner, user2.GetUserID(), group.UserGroupID)
 			require.NoError(t, err)
 		}

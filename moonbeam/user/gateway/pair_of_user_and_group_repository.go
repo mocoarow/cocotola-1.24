@@ -239,7 +239,7 @@ func (r *pairOfUserAndGroupRepository) RemovePairOfUserAndGroup(ctx context.Cont
 // 	return false, nil
 // }
 
-func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator domain.UserInterface, userID *domain.UserID) ([]*domain.UserGroupModel, error) {
+func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Context, operator domain.UserInterface, userID *domain.UserID) ([]*domain.UserGroup, error) {
 	userGroups := []userGroupEntity{}
 	if result := r.db.WithContext(ctx).Table(UserGroupTableName).Select(UserGroupTableName+".*").
 		Where(UserGroupTableName+".organization_id = ?", operator.GetOrganizationID().Int()).
@@ -253,9 +253,9 @@ func (r *pairOfUserAndGroupRepository) FindUserGroupsByUserID(ctx context.Contex
 		return nil, result.Error
 	}
 
-	userGroupModels := make([]*domain.UserGroupModel, len(userGroups))
+	userGroupModels := make([]*domain.UserGroup, len(userGroups))
 	for i, e := range userGroups {
-		m, err := e.toUserGroupModel()
+		m, err := e.toUserGroup()
 		if err != nil {
 			return nil, err
 		}

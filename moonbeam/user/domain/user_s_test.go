@@ -44,7 +44,7 @@ func TestNewUser_shouldReturnUser_whenValidParametersAreSpecified(t *testing.T) 
 	organizationID, _ := userdomain.NewOrganizationID(456)
 	loginID := "test@example.com"
 	username := "testuser"
-	userGroups := []*userdomain.UserGroupModel{}
+	userGroups := []*userdomain.UserGroup{}
 
 	user, err := userdomain.NewUser(baseModel, userID, organizationID, loginID, username, userGroups)
 
@@ -66,7 +66,7 @@ func TestNewUser_shouldReturnError_whenUserIDIsNil(t *testing.T) {
 	organizationID, _ := userdomain.NewOrganizationID(456)
 	loginID := "test@example.com"
 	username := "testuser"
-	userGroups := []*userdomain.UserGroupModel{}
+	userGroups := []*userdomain.UserGroup{}
 
 	user, err := userdomain.NewUser(baseModel, nil, organizationID, loginID, username, userGroups)
 
@@ -82,7 +82,7 @@ func TestNewUser_shouldReturnError_whenOrganizationIDIsNil(t *testing.T) {
 	userID, _ := userdomain.NewUserID(123)
 	loginID := "test@example.com"
 	username := "testuser"
-	userGroups := []*userdomain.UserGroupModel{}
+	userGroups := []*userdomain.UserGroup{}
 
 	user, err := userdomain.NewUser(baseModel, userID, nil, loginID, username, userGroups)
 
@@ -99,7 +99,7 @@ func TestNewUser_shouldReturnError_whenLoginIDIsEmpty(t *testing.T) {
 	organizationID, _ := userdomain.NewOrganizationID(456)
 	loginID := ""
 	username := "testuser"
-	userGroups := []*userdomain.UserGroupModel{}
+	userGroups := []*userdomain.UserGroup{}
 
 	user, err := userdomain.NewUser(baseModel, userID, organizationID, loginID, username, userGroups)
 
@@ -116,7 +116,7 @@ func TestNewUser_shouldReturnError_whenUsernameIsEmpty(t *testing.T) {
 	organizationID, _ := userdomain.NewOrganizationID(456)
 	loginID := "test@example.com"
 	username := ""
-	userGroups := []*userdomain.UserGroupModel{}
+	userGroups := []*userdomain.UserGroup{}
 
 	user, err := userdomain.NewUser(baseModel, userID, organizationID, loginID, username, userGroups)
 

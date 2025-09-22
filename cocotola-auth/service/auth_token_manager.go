@@ -21,7 +21,7 @@ type UserInterface interface {
 	GetOrganizationID() *mbuserdomain.OrganizationID
 	GetLoginID() string
 	GetUsername() string
-	// GetUserGroups() []domain.UserGroupModel
+	// GetUserGroups() []domain.UserGroup
 }
 
 type OrganizationInterface interface {

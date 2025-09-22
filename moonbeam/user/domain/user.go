@@ -31,10 +31,10 @@ type User struct {
 	OrganizationID *OrganizationID `validate:"required"`
 	LoginID        string          `validate:"required"`
 	Username       string          `validate:"required"`
-	UserGroups     []*UserGroupModel
+	UserGroups     []*UserGroup
 }
 
-func NewUser(baseModel *libdomain.BaseModel, userID *UserID, organizationID *OrganizationID, loginID, username string, userGroups []*UserGroupModel) (*User, error) {
+func NewUser(baseModel *libdomain.BaseModel, userID *UserID, organizationID *OrganizationID, loginID, username string, userGroups []*UserGroup) (*User, error) {
 	m := &User{
 		BaseModel:      baseModel,
 		UserID:         userID,
