@@ -1,4 +1,4 @@
-package gateway
+package usecase
 
 import (
 	"context"
@@ -8,16 +8,16 @@ import (
 	mbuserservice "github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
 
-type SpaceQueryUseCase struct {
+type SpaceUsecase struct {
 	mbrf mbuserservice.RepositoryFactory
 }
 
-func NewSpaceQueryUsecase(mbrf mbuserservice.RepositoryFactory) *SpaceQueryUseCase {
-	return &SpaceQueryUseCase{mbrf: mbrf}
+func NewSpaceUsecase(mbrf mbuserservice.RepositoryFactory) *SpaceUsecase {
+	return &SpaceUsecase{mbrf: mbrf}
 }
 
-func (u *SpaceQueryUseCase) FindPublicSpaces(ctx context.Context, operator mbuserdomain.UserInterface) ([]*mbuserdomain.SpaceModel, error) {
-	_, span := tracer.Start(ctx, "SpaceQueryUseCase.FindPublicSpaces")
+func (u *SpaceUsecase) FindPublicSpaces(ctx context.Context, operator mbuserdomain.UserInterface) ([]*mbuserdomain.Space, error) {
+	_, span := tracer.Start(ctx, "SpaceUsecase.FindPublicSpaces")
 	defer span.End()
 
 	spaceRepo := u.mbrf.NewSpaceRepository(ctx)

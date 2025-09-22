@@ -19,7 +19,7 @@ import (
 )
 
 type SpaceQueryUsecase interface {
-	FindPublicSpaces(ctx context.Context, operator mbuserdomain.UserInterface) ([]*mbuserdomain.SpaceModel, error)
+	FindPublicSpaces(ctx context.Context, operator mbuserdomain.UserInterface) ([]*mbuserdomain.Space, error)
 }
 
 type SpaceHandler struct {

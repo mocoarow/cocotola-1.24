@@ -11,8 +11,8 @@ import (
 )
 
 func findOrganizationByName(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, mbNonTxManager mbuserservice.TransactionManager, organizationName string) (*mbuserdomain.Organization, error) {
-	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.Organization, error) {
-		orgRepo := rf.NewOrganizationRepository(ctx)
+	fn := func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.Organization, error) {
+		orgRepo := mbrf.NewOrganizationRepository(ctx)
 		org, err := orgRepo.FindOrganizationByName(ctx, systemAdmin, organizationName)
 		if err != nil {
 			if errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
@@ -31,8 +31,8 @@ func findOrganizationByName(ctx context.Context, systemAdmin mbuserdomain.System
 }
 
 func findSystemOwnerByOrganizationID(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, mbNonTxManager mbuserservice.TransactionManager, organizationID *mbuserdomain.OrganizationID) (*mbuserdomain.SystemOwner, error) {
-	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
-		userRepo := rf.NewUserRepository(ctx)
+	fn := func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
+		userRepo := mbrf.NewUserRepository(ctx)
 		sysOwner, err := userRepo.FindSystemOwnerByOrganizationID(ctx, systemAdmin, organizationID)
 		if err != nil {
 			return nil, mbliberrors.Errorf("find system owner by organization id(%d): %w", organizationID.Int(), err)
@@ -48,8 +48,8 @@ func findSystemOwnerByOrganizationID(ctx context.Context, systemAdmin mbuserdoma
 }
 
 func findSystemOwnerByOrganizationName(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, mbNonTxManager mbuserservice.TransactionManager, organizationName string) (*mbuserdomain.SystemOwner, error) {
-	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
-		userRepo := rf.NewUserRepository(ctx)
+	fn := func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SystemOwner, error) {
+		userRepo := mbrf.NewUserRepository(ctx)
 		sysOwner, err := userRepo.FindSystemOwnerByOrganizationName(ctx, systemAdmin, organizationName)
 		if err != nil {
 			return nil, mbliberrors.Errorf("find system owner by organization name(%s): %w", organizationName, err)
@@ -65,8 +65,8 @@ func findSystemOwnerByOrganizationName(ctx context.Context, systemAdmin mbuserdo
 }
 
 func findUserByLoginID(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, mbNonTxManager mbuserservice.TransactionManager, loginID string) (*mbuserdomain.User, error) {
-	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) {
-		userRepo := rf.NewUserRepository(ctx)
+	fn := func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.User, error) {
+		userRepo := mbrf.NewUserRepository(ctx)
 		user, err := userRepo.FindUserByLoginID(ctx, systemOwner, loginID)
 		if err != nil {
 			return nil, mbliberrors.Errorf("find user by login id(%s): %w", loginID, err)
@@ -81,9 +81,9 @@ func findUserByLoginID(ctx context.Context, systemOwner mbuserdomain.SystemOwner
 	return userModel, nil
 }
 
-func findPublicSpaceByKey(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, mbNonTxManager mbuserservice.TransactionManager, key string) (*mbuserdomain.SpaceModel, error) {
-	fn := func(rf mbuserservice.RepositoryFactory) (*mbuserdomain.SpaceModel, error) {
-		spaceRepo := rf.NewSpaceRepository(ctx)
+func findPublicSpaceByKey(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, mbNonTxManager mbuserservice.TransactionManager, key string) (*mbuserdomain.Space, error) {
+	fn := func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.Space, error) {
+		spaceRepo := mbrf.NewSpaceRepository(ctx)
 		publicDefaultSpace, err := spaceRepo.FindPublicSpaceByKey(ctx, systemOwner, key)
 		if err != nil {
 			return nil, mbliberrors.Errorf("find public default space by key(%s): %w", key, err)
@@ -91,9 +91,9 @@ func findPublicSpaceByKey(ctx context.Context, systemOwner mbuserdomain.SystemOw
 
 		return publicDefaultSpace, nil
 	}
-	publicDefaultSpaceModel, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
+	publicDefaultSpace, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
-	return publicDefaultSpaceModel, nil
+	return publicDefaultSpace, nil
 }

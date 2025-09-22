@@ -63,7 +63,7 @@ func initOrganization(ctx context.Context, systemToken libdomain.SystemToken, mb
 	return orgID2, sysOwner.UserID, publicDefaultSpace2.SpaceID, nil
 }
 
-func findOrganizationAndSystemOwnerAndPublicDefaultSpace(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, mbNonTxManager mbuserservice.TransactionManager, organizationName string) (*mbuserdomain.Organization, *mbuserdomain.SystemOwner, *mbuserdomain.SpaceModel, bool, error) {
+func findOrganizationAndSystemOwnerAndPublicDefaultSpace(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, mbNonTxManager mbuserservice.TransactionManager, organizationName string) (*mbuserdomain.Organization, *mbuserdomain.SystemOwner, *mbuserdomain.Space, bool, error) {
 	organization, err := findOrganizationByName(ctx, systemAdmin, mbNonTxManager, organizationName)
 	if err != nil {
 		if !errors.Is(err, mbuserservice.ErrOrganizationNotFound) {
@@ -109,22 +109,3 @@ func addFirstOwnerToOrganization(ctx context.Context, operator mbuserdomain.Syst
 	}
 	return firstOwnerID, nil
 }
-
-// func newSystemAdminAction(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory) *service.SystemAdminAction {
-// 	systemAdminAction, err := service.NewSystemAdminAction(ctx, systemToken, rf)
-// 	if err != nil {
-// 		libdomain.CheckError(err)
-// 	}
-// 	return systemAdminAction
-// }
-
-// func newSystemOwnerAction(ctx context.Context, systemToken libdomain.SystemToken, rf mbuserservice.RepositoryFactory, organizationName string) *service.SystemOwnerAction {
-// 	systemOwnerAction, err := service.NewSystemOwnerAction(ctx, systemToken, rf,
-// 		service.WithOrganizationByName(organizationName),
-// 		service.WithAuthorizationManager(),
-// 	)
-// 	if err != nil {
-// 		libdomain.CheckError(err)
-// 	}
-// 	return systemOwnerAction
-// }

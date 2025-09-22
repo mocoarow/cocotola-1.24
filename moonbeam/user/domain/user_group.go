@@ -23,12 +23,12 @@ func (v *UserGroupID) IsUserGroupID() bool {
 }
 
 type UserGroup struct {
-	*libdomain.BaseModel
-	UserGroupID    *UserGroupID
-	OrganizationID *OrganizationID
-	Key            string `validate:"required"`
-	Name           string `validate:"required"`
-	Description    string
+	*libdomain.BaseModel `validate:"required"`
+	UserGroupID          *UserGroupID    `validate:"required"`
+	OrganizationID       *OrganizationID `validate:"required"`
+	Key                  string          `validate:"required"`
+	Name                 string          `validate:"required"`
+	Description          string
 }
 
 // NewUserGroup returns a new UserGroup
@@ -43,7 +43,7 @@ func NewUserGroup(baseModel *libdomain.BaseModel, userGroupID *UserGroupID, orga
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("validate user group model: %w", err)
+		return nil, liberrors.Errorf("validate user group: %w", err)
 	}
 
 	return m, nil

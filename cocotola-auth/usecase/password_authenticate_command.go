@@ -55,8 +55,8 @@ func (u *PasswordAuthenticateCommand) checkAuthorization(_ context.Context, _ mb
 }
 
 func (u *PasswordAuthenticateCommand) execute(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, loginID, password string) (*domain.AuthTokenSet, error) {
-	fn := func(rf mbuserservice.RepositoryFactory) error {
-		userRepo := rf.NewUserRepository(ctx)
+	fn := func(mbrf mbuserservice.RepositoryFactory) error {
+		userRepo := mbrf.NewUserRepository(ctx)
 		ok, err := userRepo.VerifyPassword(ctx, systemOwner, loginID, password)
 		if err != nil {
 			return mbliberrors.Errorf("action.userRepo.VerifyPassword: %w", err)

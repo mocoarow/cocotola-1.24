@@ -6,16 +6,16 @@ import (
 )
 
 type SystemOwner struct {
-	*OwnerModel
+	*Owner `validate:"required"`
 }
 
-func NewSystemOwnerModel(user *OwnerModel) (*SystemOwner, error) {
+func NewSystemOwner(user *Owner) (*SystemOwner, error) {
 	m := &SystemOwner{
-		OwnerModel: user,
+		Owner: user,
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("validate system owner model: %w", err)
+		return nil, liberrors.Errorf("validate system owner: %w", err)
 	}
 
 	return m, nil
@@ -28,8 +28,8 @@ func (m *SystemOwner) IsSystemOwner() bool {
 	return true
 }
 func (m *SystemOwner) GetOrganizationID() *OrganizationID {
-	return m.OwnerModel.GetOrganizationID()
+	return m.Owner.GetOrganizationID()
 }
 func (m *SystemOwner) GetUserID() *UserID {
-	return m.OwnerModel.GetUserID()
+	return m.Owner.GetUserID()
 }

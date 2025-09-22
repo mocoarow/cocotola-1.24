@@ -91,7 +91,7 @@ func GetBasicPrivateRouterGroupFuncs(_ context.Context, systemToken libdomain.Sy
 func GetBearerTokenRouterGroupFuncs(_ context.Context, systemToken libdomain.SystemToken, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, authTokenManager service.AuthTokenManager, mbrf mbuserservice.RepositoryFactory) []libcontroller.InitRouterGroupFunc {
 	// - user
 	userUsecase := usecase.NewUserUsecase(systemToken, mbTxManager, mbNonTxManager, authTokenManager)
-	spaceUsecase := gateway.NewSpaceQueryUsecase(mbrf)
+	spaceUsecase := usecase.NewSpaceUsecase(mbrf)
 	profileUsecase := usecase.NewProfileUsecase(mbNonTxManager)
 	return []libcontroller.InitRouterGroupFunc{
 		public.NewInitUserRouterFunc(userUsecase),

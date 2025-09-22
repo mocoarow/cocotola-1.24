@@ -72,7 +72,7 @@ func TestNewUser_shouldReturnError_whenUserIDIsNil(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, user)
-	assert.Contains(t, err.Error(), "validate user model")
+	assert.Contains(t, err.Error(), "validate user")
 }
 
 func TestNewUser_shouldReturnError_whenOrganizationIDIsNil(t *testing.T) {
@@ -88,7 +88,7 @@ func TestNewUser_shouldReturnError_whenOrganizationIDIsNil(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, user)
-	assert.Contains(t, err.Error(), "validate user model")
+	assert.Contains(t, err.Error(), "validate user")
 }
 
 func TestNewUser_shouldReturnError_whenLoginIDIsEmpty(t *testing.T) {
@@ -105,7 +105,7 @@ func TestNewUser_shouldReturnError_whenLoginIDIsEmpty(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, user)
-	assert.Contains(t, err.Error(), "validate user model")
+	assert.Contains(t, err.Error(), "validate user")
 }
 
 func TestNewUser_shouldReturnError_whenUsernameIsEmpty(t *testing.T) {
@@ -122,5 +122,5 @@ func TestNewUser_shouldReturnError_whenUsernameIsEmpty(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, user)
-	assert.Contains(t, err.Error(), "validate user model")
+	assert.Contains(t, err.Error(), "validate user")
 }

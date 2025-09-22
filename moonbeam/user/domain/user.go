@@ -26,12 +26,12 @@ func (v *UserID) GetRBACSubject() RBACSubject {
 }
 
 type User struct {
-	*libdomain.BaseModel
-	UserID         *UserID         `validate:"required"`
-	OrganizationID *OrganizationID `validate:"required"`
-	LoginID        string          `validate:"required"`
-	Username       string          `validate:"required"`
-	UserGroups     []*UserGroup
+	*libdomain.BaseModel `validate:"required"`
+	UserID               *UserID         `validate:"required"`
+	OrganizationID       *OrganizationID `validate:"required"`
+	LoginID              string          `validate:"required"`
+	Username             string          `validate:"required"`
+	UserGroups           []*UserGroup
 }
 
 func NewUser(baseModel *libdomain.BaseModel, userID *UserID, organizationID *OrganizationID, loginID, username string, userGroups []*UserGroup) (*User, error) {
@@ -45,7 +45,7 @@ func NewUser(baseModel *libdomain.BaseModel, userID *UserID, organizationID *Org
 	}
 
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("validate user model: %w", err)
+		return nil, liberrors.Errorf("validate user: %w", err)
 	}
 
 	return m, nil

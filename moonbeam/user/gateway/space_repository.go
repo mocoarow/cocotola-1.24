@@ -27,7 +27,7 @@ func (e *spaceEntity) TableName() string {
 	return SpaceTableName
 }
 
-func (e *spaceEntity) toSpaceModel() (*domain.SpaceModel, error) {
+func (e *spaceEntity) toSpace() (*domain.Space, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, liberrors.Errorf("to base model: %w", err)
@@ -48,7 +48,7 @@ func (e *spaceEntity) toSpaceModel() (*domain.SpaceModel, error) {
 		return nil, liberrors.Errorf("new user id(%d): %w", e.OwnerID, err)
 	}
 
-	spaceModel, err := domain.NewSpaceModel(
+	spaceModel, err := domain.NewSpace(
 		baseModel,
 		spaceID,
 		organizationID,
@@ -78,7 +78,7 @@ func (e *spaceEntity) toSpaceModel() (*domain.SpaceModel, error) {
 // 	return space, nil
 // }
 
-// func (e *spaceEntity) toSpaceModel() (*domain.SpaceModel, error) {
+// func (e *spaceEntity) toSpace() (*domain.Space, error) {
 // 	baseModel, err := e.ToBaseModel()
 // 	if err != nil {
 // 		return nil, liberrors.Errorf("e.toModel. err: %w", err)
@@ -99,7 +99,7 @@ func (e *spaceEntity) toSpaceModel() (*domain.SpaceModel, error) {
 // 		return nil, liberrors.Errorf("domain.NewOrganizationID. err: %w", err)
 // 	}
 
-// 	userModel, err := domain.NewSpaceModel(baseModel, spaceID, organizationID, ownerID, e.KeyName, e.Name, e.SpaceType)
+// 	userModel, err := domain.NewSpace(baseModel, spaceID, organizationID, ownerID, e.KeyName, e.Name, e.SpaceType)
 // 	if err != nil {
 // 		return nil, liberrors.Errorf("domain.NewUser. err: %w", err)
 // 	}
@@ -109,10 +109,10 @@ func (e *spaceEntity) toSpaceModel() (*domain.SpaceModel, error) {
 
 type spaceEntities []spaceEntity
 
-func (e spaceEntities) toSpaces() ([]*domain.SpaceModel, error) {
-	spaces := make([]*domain.SpaceModel, len(e))
+func (e spaceEntities) toSpaces() ([]*domain.Space, error) {
+	spaces := make([]*domain.Space, len(e))
 	for i, spaceE := range e {
-		space, err := spaceE.toSpaceModel()
+		space, err := spaceE.toSpace()
 		if err != nil {
 			return nil, liberrors.Errorf("to space: %w", err)
 		}
@@ -185,7 +185,7 @@ func (r *spaceRepository) AddSpace(ctx context.Context, operator domain.UserInte
 // 	return nil
 // }
 
-func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.SpaceModel, error) {
+func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator domain.UserInterface) ([]*domain.Space, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.FindPublicSpaces")
 	defer span.End()
 
@@ -206,7 +206,7 @@ func (r *spaceRepository) FindPublicSpaces(ctx context.Context, operator domain.
 	return spaces, nil
 }
 
-func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, operator domain.UserInterface, keyName string) (*domain.SpaceModel, error) {
+func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, operator domain.UserInterface, keyName string) (*domain.Space, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.FindPublicSpaceByKey")
 	defer span.End()
 
@@ -223,7 +223,7 @@ func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, operator dom
 		return nil, liberrors.Errorf("spaceRepository.FindPublicSpaceByKey: %w", result.Error)
 	}
 
-	space, err := spaceE.toSpaceModel()
+	space, err := spaceE.toSpace()
 	if err != nil {
 		return nil, liberrors.Errorf("spaceE.toSpace: %w", err)
 	}
@@ -231,7 +231,7 @@ func (r *spaceRepository) FindPublicSpaceByKey(ctx context.Context, operator dom
 	return space, nil
 }
 
-func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator domain.UserInterface, spaceID *domain.SpaceID) (*domain.SpaceModel, error) {
+func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator domain.UserInterface, spaceID *domain.SpaceID) (*domain.Space, error) {
 	_, span := tracer.Start(ctx, "spaceRepository.GetSpaceByID")
 	defer span.End()
 
@@ -249,7 +249,7 @@ func (r *spaceRepository) GetSpaceByID(ctx context.Context, operator domain.User
 		return nil, liberrors.Errorf("spaceRepository.GetSpaceByID: %w", result.Error)
 	}
 
-	space, err := spaceE.toSpaceModel()
+	space, err := spaceE.toSpace()
 	if err != nil {
 		return nil, liberrors.Errorf("spaceE.toSpace: %w", err)
 	}

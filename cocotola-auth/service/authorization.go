@@ -10,8 +10,8 @@ import (
 )
 
 func CheckAuthorization(ctx context.Context, operator mbuserdomain.UserInterface, action mbuserdomain.RBACAction, object mbuserdomain.RBACObject, mbNonTxManager mbuserservice.TransactionManager) (bool, error) {
-	return mblibservice.Do1(ctx, mbNonTxManager, func(rf mbuserservice.RepositoryFactory) (bool, error) { //nolint:wrapcheck
-		authorizationManager, err := rf.NewAuthorizationManager(ctx)
+	return mblibservice.Do1(ctx, mbNonTxManager, func(mbrf mbuserservice.RepositoryFactory) (bool, error) { //nolint:wrapcheck
+		authorizationManager, err := mbrf.NewAuthorizationManager(ctx)
 		if err != nil {
 			return false, mbliberrors.Errorf("NewAuthorizationManager: %w", err)
 		}

@@ -27,8 +27,8 @@ func (v *OrganizationID) GetRBACDomain() RBACDomain {
 
 type Organization struct {
 	*libdomain.BaseModel
-	OrganizationID *OrganizationID
-	Name           string `validate:"required"`
+	OrganizationID *OrganizationID `validate:"required"`
+	Name           string          `validate:"required"`
 }
 
 func NewOrganizationModel(basemodel *libdomain.BaseModel, organizationID *OrganizationID, name string) (*Organization, error) {
@@ -38,7 +38,7 @@ func NewOrganizationModel(basemodel *libdomain.BaseModel, organizationID *Organi
 		Name:           name,
 	}
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("validate organization model: %w", err)
+		return nil, liberrors.Errorf("validate organization: %w", err)
 	}
 
 	return m, nil
