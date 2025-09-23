@@ -135,20 +135,14 @@ func initEnglishWord(ctx context.Context, txManager service.TransactionManager, 
 	}
 
 	fn := func(rf service.RepositoryFactory) ([]*domain.DeckID, error) {
-		deckRepo, err := rf.NewDeckRepository(ctx)
-		if err != nil {
-			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
-		}
+		deckRepo := rf.NewDeckRepository(ctx)
 
 		decks, err := deckRepo.FindDecksByOwner(ctx, operator)
 		if err != nil {
 			return nil, mbliberrors.Errorf("FindDecksByOwner: %w", err)
 		}
 
-		cardRepo, err := rf.NewCardRepository(ctx)
-		if err != nil {
-			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
-		}
+		cardRepo := rf.NewCardRepository(ctx)
 
 		nameToDecks := make(map[string]*domain.Deck, len(decks))
 		for _, deck := range decks {

@@ -3,15 +3,14 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "guest",
     srcs = [
-        "card_query_usecase.go",
-        "deck_query_usecase.go",
+        "card_usecase.go",
+        "deck_usecase.go",
         "init.go",
     ],
-    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/guest",
+    importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/guest",
     visibility = ["//visibility:public"],
     deps = [
         "//cocotola-core/domain",
-        "//cocotola-core/gateway",
         "//cocotola-core/service",
         "//lib/api",
         "//lib/api/auth",
@@ -19,7 +18,6 @@ go_library(
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "//moonbeam/user/domain",
-        "@io_gorm_gorm//:gorm",
         "@io_opentelemetry_go_otel//:otel",
     ],
 )
