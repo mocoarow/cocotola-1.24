@@ -2,9 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
+
+var ErrPairOfUserAndGroupAlreadyExists = errors.New("pair of user and group already exists")
+var ErrPairOfUserAndGroupNotFound = errors.New("pair of user and group not found")
 
 type PairOfUserAndGroupRepository interface {
 	AddPairOfUserAndGroupBySystemAdmin(ctx context.Context, operator domain.SystemAdminInterface, organizationID *domain.OrganizationID, userID *domain.UserID, userGroupID *domain.UserGroupID) error

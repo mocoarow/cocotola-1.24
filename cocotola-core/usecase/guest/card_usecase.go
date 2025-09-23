@@ -21,7 +21,7 @@ func NewCardUsecase(mbrf service.RepositoryFactory) *CardUsecase {
 }
 
 func (u *CardUsecase) FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.Card, error) {
-	_, span := tracer.Start(ctx, "CardQueryUseCase.FindDecks")
+	_, span := tracer.Start(ctx, "CardUsecase.FindDecks")
 	defer span.End()
 
 	// check RBAC

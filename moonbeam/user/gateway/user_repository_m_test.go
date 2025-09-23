@@ -66,6 +66,7 @@ func Test_userRepository_FindSystemOwnerByOrganizationName_shouldReturnSystemOwn
 
 func Test_userRepository_FindSystemOwnerByOrganizationName_shouldReturnError_whenInvalidNameIsSpecified(t *testing.T) {
 	t.Parallel()
+
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 

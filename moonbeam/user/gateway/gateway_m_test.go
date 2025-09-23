@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"log/slog"
 	"math/big"
 	"testing"
 	"time"
@@ -45,6 +46,7 @@ func outputOrganization(t *testing.T, db *gorm.DB) {
 		s += fmt.Sprintf("\n%5d,%8d,%20s,%20s,%10d,%10d,%10s", result.ID, result.Version, result.CreatedAt.Format(time.RFC3339), result.UpdatedAt.Format(time.RFC3339), result.CreatedBy, result.UpdatedBy, result.Name)
 	}
 	t.Log(s)
+	slog.Default().Info(s)
 }
 
 func outputCasbinRule(t *testing.T, db *gorm.DB) {
@@ -124,6 +126,9 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 	orgName := RandString(orgNameLength)
 	sysAd := domain.NewSystemAdmin()
 
+	slog.Default().Info("========================== " + t.Name() + ", " + orgName + " =========================")
+	t.Log("--------------------------" + t.Name() + ", " + orgName)
+
 	firstOwnerAddParam, err := service.NewAddUserParameter("OWNER_ID", "OWNER_NAME", "OWNER_PASSWORD", "", "", "", "")
 	require.NoError(t, err)
 	// orgAddParam, err := service.NewOrganizationAddParameter(orgName, firstOwnerAddParam)
@@ -136,13 +141,17 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 	require.NoError(t, err)
 
 	// 1. add organization
+	t.Logf("add organization: %s", orgName)
 	orgID, err := orgRepo.AddOrganization(ctx, sysAd, orgName)
 	if err != nil {
 		outputOrganization(t, ts.db)
+		require.NoError(t, err)
 	}
+	outputOrganization(t, ts.db)
 	require.NoError(t, err)
 	assert.Positive(t, orgID.Int())
 
+	t.Logf("organization(%d, %s)", orgID.Int(), orgName)
 	// 2. add "system-owner" user
 	sysOwnerID, err := userRepo.AddSystemOwner(ctx, sysAd, orgID)
 	require.NoError(t, err)
@@ -159,13 +168,14 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 	// - "system-owner" "can" "set" "all-user-roles"
 	err = authorizationManager.AddPolicyToUserBySystemAdmin(ctx, sysAd, orgID, rbacSysOwner, service.RBACSetAction, rbacAllUserRolesObject, service.RBACAllowEffect)
 	require.NoError(t, err)
-	outputCasbinRule(t, ts.db)
+	// outputCasbinRule(t, ts.db)
 
 	// - "system-owner" "can" "unset" "all-user-roles"
 	err = authorizationManager.AddPolicyToUserBySystemAdmin(ctx, sysAd, orgID, rbacSysOwner, service.RBACUnsetAction, rbacAllUserRolesObject, service.RBACAllowEffect)
 	require.NoError(t, err)
 
 	// 4. add owner-group
+	t.Logf("add owner group in organization(%d)", orgID.Int())
 	ownerGroupID, err := userGorupRepo.AddOwnerGroup(ctx, sysOwner, orgID)
 	require.NoError(t, err)
 
@@ -199,12 +209,17 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 func teardownOrganization(t *testing.T, ts testService, orgID *domain.OrganizationID) {
 	t.Helper()
 	// delete all organizations
-	// ts.db.Exec("delete from space where organization_id = ?", orgID.Int())
+	ts.db.Exec("delete from mb_user_n_space where organization_id = ?", orgID.Int())
+	ts.db.Exec("delete from mb_space where organization_id = ?", orgID.Int())
+	ts.db.Exec("delete from mb_group_n_group where organization_id = ?", orgID.Int())
+	ts.db.Exec("delete from mb_user_n_group where organization_id = ?", orgID.Int())
+	ts.db.Exec("delete from mb_user_group where organization_id = ?", orgID.Int())
 	ts.db.Exec("delete from mb_user where organization_id = ?", orgID.Int())
 	ts.db.Exec("delete from mb_organization where id = ?", orgID.Int())
 	// db.Where("true").Delete(&spaceEntity{})
 	// db.Where("true").Delete(&userEntity{})
 	// db.Where("true").Delete(&organizationEntity{})
+	slog.Default().Info("teardown organization", "orgID", orgID.Int())
 }
 
 func testAddUser(t *testing.T, ctx context.Context, ts testService, owner domain.OwnerInterface, loginID, username, password string) *domain.User {

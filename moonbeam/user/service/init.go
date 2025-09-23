@@ -19,6 +19,10 @@ const (
 	PublicDefaultSpaceName = "Public Default Space"
 )
 
+// func NewSystemOwnerLoginID(organizationID *domain.OrganizationID) string {
+// 	return systemOwnerLoginID + strconv.Itoa(organizationID.Int())
+// }
+
 var RBACSetAction = domain.NewRBACAction("Set")
 var RBACUnsetAction = domain.NewRBACAction("Unset")
 

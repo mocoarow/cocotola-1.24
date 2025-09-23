@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	libdomain "github.com/mocoarow/cocotola-1.24/moonbeam/lib/domain"
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
@@ -9,11 +10,8 @@ import (
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 )
 
-// type UserGroupAddParameterInterface interface {
-// 	Key() string
-// 	Name() string
-// 	Description() string
-// }
+var ErrUserGroupNotFound = errors.New("user group not found")
+var ErrUserGroupAlreadyExists = errors.New("user group already exists")
 
 type AddUserGroupParameter struct {
 	Key         string
