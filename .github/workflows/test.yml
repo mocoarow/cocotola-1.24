@@ -60,6 +60,8 @@ jobs:
       - run: bazel info
 
       - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - run: task test
 
@@ -107,6 +109,8 @@ jobs:
           version: 9
 
       - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       # - run: task build-web-react
 
@@ -136,6 +140,8 @@ jobs:
       - run: flutter --version
 
       - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - run: task test-mobile
 
