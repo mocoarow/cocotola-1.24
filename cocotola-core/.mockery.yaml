@@ -17,3 +17,8 @@ packages:
       dir: controller/gin/mocks
     interfaces:
       CardQueryUsecase:
+  github.com/mocoarow/cocotola-1.24/cocotola-core/service:
+    config:
+      dir: service/mocks
+    interfaces:
+      DeckRepository:

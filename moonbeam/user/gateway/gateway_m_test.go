@@ -325,7 +325,7 @@ func testNewAddUserParameter(t *testing.T, loginID, username, password string) *
 
 func testNewUserGroupAddParameter(t *testing.T, key, name, description string) *service.AddUserGroupParameter {
 	t.Helper()
-	p, err := service.NewUserGroupAddParameter(key, name, description)
+	p, err := service.NewAddUserGroupParameter(key, name, description)
 	require.NoError(t, err)
 
 	return p

@@ -19,7 +19,7 @@ type AddUserGroupParameter struct {
 	Description string
 }
 
-func NewUserGroupAddParameter(key, name, description string) (*AddUserGroupParameter, error) {
+func NewAddUserGroupParameter(key, name, description string) (*AddUserGroupParameter, error) {
 	m := &AddUserGroupParameter{
 		Key:         key,
 		Name:        name,
@@ -31,16 +31,6 @@ func NewUserGroupAddParameter(key, name, description string) (*AddUserGroupParam
 
 	return m, nil
 }
-
-// func (p *UserGroupAddParameter) Key() string {
-// 	return p.KeyInternal
-// }
-// func (p *UserGroupAddParameter) Name() string {
-// 	return p.NameInternal
-// }
-// func (p *UserGroupAddParameter) Description() string {
-// 	return p.DescriptionInternal
-// }
 
 type UserGroupRepository interface {
 	FindAllUserGroups(ctx context.Context, operator domain.UserInterface) ([]*domain.UserGroup, error)
