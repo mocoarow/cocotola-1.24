@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"gorm.io/gorm"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 
@@ -20,10 +19,8 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/controller/gin/middleware"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/usecase"
-
-	guestgatgeway "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/guest"
-	resourcemanagergateway "github.com/mocoarow/cocotola-1.24/cocotola-core/gateway/resource_manager"
-	resourcemanager "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/resource_manager"
+	guestusecase "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/guest"
+	resourcemanagerusecase "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/resource_manager"
 )
 
 // type NewIteratorFunc func(ctx context.Context, workbookID appD.WorkbookID, problemType appD.ProblemTypeName, reader io.Reader) (appS.ProblemAddParameterIterator, error)
@@ -40,8 +37,8 @@ func NewInitTestRouterFunc() libcontroller.InitRouterGroupFunc {
 	}
 }
 
-func GetPublicRouterGroupFuncs(_ context.Context, db *gorm.DB) []libcontroller.InitRouterGroupFunc {
-	cardQueryUsecase := guestgatgeway.NewCardQueryUsecase(db)
+func GetPublicRouterGroupFuncs(_ context.Context, rf service.RepositoryFactory) []libcontroller.InitRouterGroupFunc {
+	cardQueryUsecase := guestusecase.NewCardUsecase(rf)
 	// public router
 	return []libcontroller.InitRouterGroupFunc{
 		// controller.NewInitTestRouterFunc(),
@@ -49,17 +46,15 @@ func GetPublicRouterGroupFuncs(_ context.Context, db *gorm.DB) []libcontroller.I
 	}
 }
 
-func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, db *gorm.DB, txManager, nonTxManager service.TransactionManager, rbacClient libapi.CocotolaRBACClient, authClient libapi.CocotolaAuthClient) ([]libcontroller.InitRouterGroupFunc, error) {
+func GetBearerTokenPrivateRouterGroupFuncs(_ context.Context, rf service.RepositoryFactory, txManager, nonTxManager service.TransactionManager, rbacClient libapi.CocotolaRBACClient, authClient libapi.CocotolaAuthClient) ([]libcontroller.InitRouterGroupFunc, error) {
 	// - workbookQueryUsecase
-	guestDeckQueryUsecase := guestgatgeway.NewDeckQueryUsecase(db, rbacClient)
-	studentDeckQueryUsecase := resourcemanagergateway.NewDeckQueryUsecase(db)
-	// - workbookCommandUsecase
-	deckCommandUsecase := resourcemanager.NewDeckCommandUsecase(txManager, nonTxManager, rbacClient)
+	guestDeckUsecase := guestusecase.NewDeckUsecase(rf, rbacClient)
+	studentDeckUsecase := resourcemanagerusecase.NewDeckUsecase(rf, txManager, nonTxManager, rbacClient)
 
 	profileUsecase := usecase.NewProfileUsecase(nonTxManager, authClient)
 	// private router
 	return []libcontroller.InitRouterGroupFunc{
-		NewInitDeckRouterFunc(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase, rbacClient),
+		NewInitDeckRouterFunc(guestDeckUsecase, studentDeckUsecase, rbacClient),
 		NewInitProfileRouterFunc(profileUsecase),
 	}, nil
 }

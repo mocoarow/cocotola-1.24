@@ -4,31 +4,29 @@ import (
 	"context"
 	"fmt"
 
-	"gorm.io/gorm"
-
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
+	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-type CardQueryUsecase struct {
-	db *gorm.DB
+type CardUsecase struct {
+	mbrf service.RepositoryFactory
 }
 
-func NewCardQueryUsecase(db *gorm.DB) *CardQueryUsecase {
-	return &CardQueryUsecase{
-		db: db,
+func NewCardUsecase(mbrf service.RepositoryFactory) *CardUsecase {
+	return &CardUsecase{
+		mbrf: mbrf,
 	}
 }
 
-func (u *CardQueryUsecase) FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.Card, error) {
-	_, span := tracer.Start(ctx, "CardQueryUseCase.FindDecks")
+func (u *CardUsecase) FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.Card, error) {
+	_, span := tracer.Start(ctx, "CardUsecase.FindDecks")
 	defer span.End()
 
 	// check RBAC
 
-	cardRepo := gateway.NewCardRepository(u.db)
+	cardRepo := u.mbrf.NewCardRepository(ctx)
 	cards, err := cardRepo.FindCardsByDeckID(ctx, operator, deckID)
 	if err != nil {
 		return nil, fmt.Errorf("cardRepo.FindCardsByDeckID: %w", err)

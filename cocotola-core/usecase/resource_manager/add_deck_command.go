@@ -70,19 +70,16 @@ func (u *AddDeckCommand) checkAuthorization(ctx context.Context, operator mbuser
 }
 func (u *AddDeckCommand) execute(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) (*domain.DeckID, error) {
 	deckID, err := mblibservice.Do1(ctx, u.txManager, func(rf service.RepositoryFactory) (*domain.DeckID, error) {
-		folderRepo, err := rf.NewFolderRepository(ctx)
-		if err != nil {
-			return nil, mbliberrors.Errorf("NewFolderRepository:%w", err)
-		}
-		folder, err := folderRepo.RetrieveRooFolderBySpaceID(ctx, operator, param.SpaceID)
-		if err != nil {
-			return nil, mbliberrors.Errorf("retrieve root folder by space id(%d): %w", param.SpaceID.Int(), err)
-		}
-		param.FolderID = folder.FolderID
-		deckRepo, err := rf.NewDeckRepository(ctx)
-		if err != nil {
-			return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
-		}
+		// folderRepo, err := rf.NewFolderRepository(ctx)
+		// if err != nil {
+		// 	return nil, mbliberrors.Errorf("NewFolderRepository:%w", err)
+		// }
+		// folder, err := folderRepo.RetrieveRooFolderBySpaceID(ctx, operator, param.SpaceID)
+		// if err != nil {
+		// 	return nil, mbliberrors.Errorf("retrieve root folder by space id(%d): %w", param.SpaceID.Int(), err)
+		// }
+		// param.FolderID = folder.FolderID
+		deckRepo := rf.NewDeckRepository(ctx)
 		deckID, err := deckRepo.AddDeck(ctx, operator, param)
 		if err != nil {
 			return nil, mbliberrors.Errorf("deckRepo.AddDeck: %w", err)

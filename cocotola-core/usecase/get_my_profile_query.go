@@ -41,10 +41,7 @@ func (u *GetMyProfileQuery) Execute(ctx context.Context, operator mbuserdomain.U
 	}
 
 	fn := func(rf service.RepositoryFactory) (*domain.FolderID, error) {
-		folderRepo, err := rf.NewFolderRepository(ctx)
-		if err != nil {
-			return nil, mbliberrors.Errorf("NewFolderRepository: %w", err)
-		}
+		folderRepo := rf.NewFolderRepository(ctx)
 		folder, err := folderRepo.RetrieveRooFolderBySpaceID(ctx, operator, spaceID)
 		if err != nil {
 			return nil, mbliberrors.Errorf("RetrieveRooFolderBySpaceID: %w", err)

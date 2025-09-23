@@ -56,10 +56,7 @@ func (u *CallbackOnAddUserSpaceCommand) checkAuthorization(_ context.Context, _ 
 
 func (u *CallbackOnAddUserSpaceCommand) execute(ctx context.Context, operator mbuserdomain.UserInterface, spaceID *mbuserdomain.SpaceID) error {
 	fn := func(rf service.RepositoryFactory) error {
-		folderRepo, err := rf.NewFolderRepository(ctx)
-		if err != nil {
-			return mbliberrors.Errorf("NewSpaceRepository: %w", err)
-		}
+		folderRepo := rf.NewFolderRepository(ctx)
 
 		param := service.AddFolderParameter{
 			SpaceID:  spaceID,

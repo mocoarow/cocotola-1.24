@@ -78,11 +78,11 @@ func initApp(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Diale
 	authClient := initCocotolaAuthClient(coreConfig.AuthAPIClient)
 
 	rff := func(ctx context.Context, db *gorm.DB) (service.RepositoryFactory, error) {
-		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, rbacClient)
+		return gateway.NewRepositoryFactory(ctx, dialect, driverName, db, time.UTC, rbacClient), nil
 	}
 	rf, err := rff(ctx, db)
 	if err != nil {
-		return nil, mbliberrors.Errorf("rff: %w", err)
+		return nil, mbliberrors.Errorf("NewRepositoryFactory: %w", err)
 	}
 
 	// init transaction manager
@@ -106,9 +106,9 @@ func initApp(ctx context.Context, parent gin.IRouter, dialect mblibgateway.Diale
 	})
 
 	// init public and private router group functions
-	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs(ctx, db)
+	publicRouterGroupFuncs := controller.GetPublicRouterGroupFuncs(ctx, rf)
 
-	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, db, txManager, nonTxManager, rbacClient, authClient)
+	bearerTokenPrivateRouterGroupFuncs, err := controller.GetBearerTokenPrivateRouterGroupFuncs(ctx, rf, txManager, nonTxManager, rbacClient, authClient)
 	if err != nil {
 		return nil, mbliberrors.Errorf("GetBearerTokenPrivateRouterGroupFuncs: %w", err)
 	}

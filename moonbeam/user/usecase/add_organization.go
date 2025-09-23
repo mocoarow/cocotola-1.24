@@ -68,7 +68,7 @@ func (u *AddOrganizationCommand) Execute(ctx context.Context, operator domain.Sy
 
 		// 7. add public-group
 		if _, err := userGroupRepo.AddPublicGroup(ctx, systemOwner, organizationID); err != nil {
-			return nil, liberrors.Errorf("AddOwnerGroup: %w", err)
+			return nil, liberrors.Errorf("AddPublicGroup: %w", err)
 		}
 
 		// 9. add public default space
@@ -120,6 +120,7 @@ func (u *AddOrganizationCommand) addSystemOwnerToOrganization(ctx context.Contex
 }
 
 func (u *AddOrganizationCommand) addOwnergroupToOrganization(ctx context.Context, operator domain.SystemOwnerInterface, userGroupRepo service.UserGroupRepository, authorizationManager service.AuthorizationManager, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
+	u.logger.InfoContext(ctx, "addOwnergroupToOrganization", "organizationID", organizationID.Int())
 	// 4. add owner-group
 	ownerGroupID, err := userGroupRepo.AddOwnerGroup(ctx, operator, organizationID)
 	if err != nil {

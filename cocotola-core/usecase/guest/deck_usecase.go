@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"gorm.io/gorm"
-
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	mbliblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
 	mbuserdomain "github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
@@ -16,25 +14,24 @@ import (
 	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
-	"github.com/mocoarow/cocotola-1.24/cocotola-core/gateway"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-type DeckQueryUseCase struct {
-	db         *gorm.DB
+type DeckUsecase struct {
+	rf         service.RepositoryFactory
 	rbacClient libapi.CocotolaRBACClient
 	logger     *slog.Logger
 }
 
-func NewDeckQueryUsecase(db *gorm.DB, rbacClient libapi.CocotolaRBACClient) *DeckQueryUseCase {
-	return &DeckQueryUseCase{
-		db:         db,
+func NewDeckUsecase(rf service.RepositoryFactory, rbacClient libapi.CocotolaRBACClient) *DeckUsecase {
+	return &DeckUsecase{
+		rf:         rf,
 		rbacClient: rbacClient,
-		logger:     slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckQueryUseCase")),
+		logger:     slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckUsecase")),
 	}
 }
 
-func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator mbuserdomain.UserInterface, action mbuserdomain.RBACAction, spaceIDs []*mbuserdomain.SpaceID) ([]*mbuserdomain.SpaceID, error) {
+func (u *DeckUsecase) filterSpaces(ctx context.Context, operator mbuserdomain.UserInterface, action mbuserdomain.RBACAction, spaceIDs []*mbuserdomain.SpaceID) ([]*mbuserdomain.SpaceID, error) {
 	filteredSpaceIDs := make([]*mbuserdomain.SpaceID, 0, len(spaceIDs))
 	for _, spaceID := range spaceIDs {
 		action := action
@@ -55,7 +52,7 @@ func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator mbuserdoma
 	return filteredSpaceIDs, nil
 }
 
-func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.Deck, error) {
+func (u *DeckUsecase) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.Deck, error) {
 	_, span := tracer.Start(ctx, "DeckQueryUseCase.FindDecks")
 	defer span.End()
 
@@ -69,7 +66,7 @@ func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserdomain.
 		return []*domain.Deck{}, nil
 	}
 
-	deckRepo := gateway.NewDeckRepository(u.db)
+	deckRepo := u.rf.NewDeckRepository(ctx)
 	repoParam := service.FindDecksParameter{
 		SpaceIDs: filterSpaceIDs,
 	}

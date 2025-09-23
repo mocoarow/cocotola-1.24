@@ -24,37 +24,32 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-type GuestDeckQueryUsecase interface {
+type GuestDeckUsecase interface {
 	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.Deck, error)
 
 	// RetrieveDeckByID(ctx context.Context, operator domain.UserInterface, deckID *domain.DeckID) (*domain.Deck, error)
 }
-type StudentDeckQueryUsecase interface {
+type StudentDeckUsecase interface {
 	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface) ([]*domain.Deck, error)
 
 	RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*domain.Deck, error)
-}
-
-type DeckCommandUsecase interface {
 	AddDeck(ctx context.Context, operator mbuserdomain.UserInterface, param *service.AddDeckParameter) (*domain.DeckID, error)
 	UpdateDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID, version int, param *service.UpdateDeckParameter) error
 }
 
 type DeckHandler struct {
-	guestDeckQueryUsecase   GuestDeckQueryUsecase
-	studentDeckQueryUsecase StudentDeckQueryUsecase
-	deckCommandUsecase      DeckCommandUsecase
-	rbacClient              libapi.CocotolaRBACClient
-	logger                  *slog.Logger
+	guestDeckUsecase   GuestDeckUsecase
+	studentDeckUsecase StudentDeckUsecase
+	rbacClient         libapi.CocotolaRBACClient
+	logger             *slog.Logger
 }
 
-func NewDeckHandler(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase, rbacClient libapi.CocotolaRBACClient) *DeckHandler {
+func NewDeckHandler(guestDeckUsecase GuestDeckUsecase, studentDeckUsecase StudentDeckUsecase, rbacClient libapi.CocotolaRBACClient) *DeckHandler {
 	return &DeckHandler{
-		guestDeckQueryUsecase:   guestDeckQueryUsecase,
-		studentDeckQueryUsecase: studentDeckQueryUsecase,
-		deckCommandUsecase:      deckCommandUsecase,
-		rbacClient:              rbacClient,
-		logger:                  slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckHandler")),
+		guestDeckUsecase:   guestDeckUsecase,
+		studentDeckUsecase: studentDeckUsecase,
+		rbacClient:         rbacClient,
+		logger:             slog.Default().With(slog.String(mbliblog.LoggerNameKey, "DeckHandler")),
 	}
 }
 
@@ -92,7 +87,7 @@ func (h *DeckHandler) findDecksAsGuest(ctx context.Context, c *gin.Context, oper
 	param := service.FindDecksParameter{SpaceIDs: spaceIDs}
 
 	h.logger.InfoContext(ctx, fmt.Sprintf("findDecksAsGuest: %+v", param.SpaceIDs.IDs()))
-	result, err := h.guestDeckQueryUsecase.FindDecks(ctx, operator, &param)
+	result, err := h.guestDeckUsecase.FindDecks(ctx, operator, &param)
 	if err != nil {
 		return mbliberrors.Errorf("FindDecks: %w", err)
 	}
@@ -121,7 +116,7 @@ func (h *DeckHandler) findDecksAsStudent(ctx context.Context, c *gin.Context, op
 	_, span := tracer.Start(ctx, "DeckHandler.findDecksAsStudent")
 	defer span.End()
 
-	result, err := h.studentDeckQueryUsecase.FindDecks(ctx, operator)
+	result, err := h.studentDeckUsecase.FindDecks(ctx, operator)
 	if err != nil {
 		return mbliberrors.Errorf("FindDecks: %w", err)
 	}
@@ -146,7 +141,7 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 			return nil
 		}
 
-		result, err := h.studentDeckQueryUsecase.RetrieveDeckByID(ctx, operator, deckID)
+		result, err := h.studentDeckUsecase.RetrieveDeckByID(ctx, operator, deckID)
 		if err != nil {
 			return mbliberrors.Errorf("RetrieveDeckByID: %w", err)
 		}
@@ -170,7 +165,7 @@ func (h *DeckHandler) AddDeck(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 			return nil
 		}
-		deckID, err := h.deckCommandUsecase.AddDeck(ctx, operator, param)
+		deckID, err := h.studentDeckUsecase.AddDeck(ctx, operator, param)
 		if err != nil {
 			h.logger.ErrorContext(ctx, fmt.Sprintf("add deck: %+v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -208,7 +203,7 @@ func (h *DeckHandler) UpdateDeck(c *gin.Context) {
 			Description: apiReq.Description,
 		}
 
-		if err := h.deckCommandUsecase.UpdateDeck(ctx, operator, deckID, version, &param); err != nil {
+		if err := h.studentDeckUsecase.UpdateDeck(ctx, operator, deckID, version, &param); err != nil {
 			return mbliberrors.Errorf("update deck: %w", err)
 		}
 
@@ -234,10 +229,10 @@ func (h *DeckHandler) errorHandle(ctx context.Context, c *gin.Context, err error
 	return false
 }
 
-func NewInitDeckRouterFunc(guestDeckQueryUsecase GuestDeckQueryUsecase, studentDeckQueryUsecase StudentDeckQueryUsecase, deckCommandUsecase DeckCommandUsecase, rbacClient libapi.CocotolaRBACClient) libcontroller.InitRouterGroupFunc {
+func NewInitDeckRouterFunc(guestDeckUsecase GuestDeckUsecase, studentDeckUsecase StudentDeckUsecase, rbacClient libapi.CocotolaRBACClient) libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
 		deck := parentRouterGroup.Group("deck")
-		deckHandler := NewDeckHandler(guestDeckQueryUsecase, studentDeckQueryUsecase, deckCommandUsecase, rbacClient)
+		deckHandler := NewDeckHandler(guestDeckUsecase, studentDeckUsecase, rbacClient)
 		for _, m := range middleware {
 			deck.Use(m)
 		}

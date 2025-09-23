@@ -2,11 +2,14 @@ package gateway
 
 import (
 	"context"
+	"log/slog"
 
 	"gorm.io/gorm"
 
 	liberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
 	libgateway "github.com/mocoarow/cocotola-1.24/moonbeam/lib/gateway"
+	liblog "github.com/mocoarow/cocotola-1.24/moonbeam/lib/log"
+
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/domain"
 	"github.com/mocoarow/cocotola-1.24/moonbeam/user/service"
 )
@@ -52,6 +55,7 @@ func (e *userGroupEntity) toUserGroup() (*domain.UserGroup, error) {
 type userGroupRepository struct {
 	dialect libgateway.DialectRDBMS
 	db      *gorm.DB
+	logger  *slog.Logger
 }
 
 var _ service.UserGroupRepository = (*userGroupRepository)(nil)
@@ -60,6 +64,7 @@ func NewUserGroupRepository(_ context.Context, dialect libgateway.DialectRDBMS, 
 	return &userGroupRepository{
 		dialect: dialect,
 		db:      db,
+		logger:  slog.Default().With(slog.String(liblog.LoggerNameKey, "UserGroupRepository")),
 	}
 }
 
@@ -130,6 +135,7 @@ func (r *userGroupRepository) FindUserGroupByKey(ctx context.Context, operator d
 }
 
 func (r *userGroupRepository) addUserGroup(userID *domain.UserID, organizationID *domain.OrganizationID, key, name string) (*domain.UserGroupID, error) {
+	r.logger.InfoContext(context.Background(), "addUserGroup", "key", key, "name", name, "organizationID", organizationID.Int(), "userID", userID.Int())
 	userGroup := userGroupEntity{ //nolint:exhaustruct
 		BaseModelEntity: BaseModelEntity{ //nolint:exhaustruct
 			Version:   1,
@@ -141,7 +147,7 @@ func (r *userGroupRepository) addUserGroup(userID *domain.UserID, organizationID
 		Name:           name,
 	}
 	if result := r.db.Create(&userGroup); result.Error != nil {
-		return nil, liberrors.Errorf(": %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
+		return nil, liberrors.Errorf("create user group(%s): %w", key, libgateway.ConvertDuplicatedError(result.Error, service.ErrUserGroupAlreadyExists))
 	}
 
 	userGroupID, err := domain.NewUserGroupID(userGroup.ID)
@@ -156,21 +162,39 @@ func (r *userGroupRepository) AddSystemOwnerGroup(ctx context.Context, operator 
 	_, span := tracer.Start(ctx, "userGroupRepository.AddSystemOwnerGroup")
 	defer span.End()
 
-	return r.addUserGroup(operator.GetUserID(), organizationID, service.SystemOwnerGroupKey, service.SystemOwnerGroupName)
+	r.logger.InfoContext(context.Background(), "AddSystemOwnerGroup", "organizationID", organizationID.Int())
+	userGroupID, err := r.addUserGroup(operator.GetUserID(), organizationID, service.SystemOwnerGroupKey, service.SystemOwnerGroupName)
+	if err != nil {
+		return nil, liberrors.Errorf("addUserGroup: %w", err)
+	}
+
+	return userGroupID, nil
 }
 
 func (r *userGroupRepository) AddOwnerGroup(ctx context.Context, operator domain.SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.AddOwnerGroup")
 	defer span.End()
 
-	return r.addUserGroup(operator.GetUserID(), organizationID, service.OwnerGroupKey, service.OwnerGroupName)
+	r.logger.InfoContext(ctx, "AddOwnerGroup", "organizationID", organizationID.Int())
+	userGroupID, err := r.addUserGroup(operator.GetUserID(), organizationID, service.OwnerGroupKey, service.OwnerGroupName)
+	if err != nil {
+		return nil, liberrors.Errorf("addUserGroup: %w", err)
+	}
+
+	return userGroupID, nil
 }
 
 func (r *userGroupRepository) AddPublicGroup(ctx context.Context, operator domain.SystemOwnerInterface, organizationID *domain.OrganizationID) (*domain.UserGroupID, error) {
 	_, span := tracer.Start(ctx, "userGroupRepository.AddPublicGroup")
 	defer span.End()
 
-	return r.addUserGroup(operator.GetUserID(), organizationID, service.PublicGroupKey, service.PublicGroupName)
+	r.logger.InfoContext(context.Background(), "AddPublicGroup", "organizationID", organizationID.Int())
+	userGroupID, err := r.addUserGroup(operator.GetUserID(), organizationID, service.PublicGroupKey, service.PublicGroupName)
+	if err != nil {
+		return nil, liberrors.Errorf("addUserGroup: %w", err)
+	}
+
+	return userGroupID, nil
 }
 
 func (r *userGroupRepository) AddUserGroup(ctx context.Context, operator domain.OwnerInterface, param *service.AddUserGroupParameter) (*domain.UserGroupID, error) {
@@ -189,7 +213,7 @@ func (r *userGroupRepository) AddUserGroup(ctx context.Context, operator domain.
 		Description:    param.Description,
 	}
 	if result := r.db.Create(&userGroup); result.Error != nil {
-		return nil, liberrors.Errorf(": %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
+		return nil, liberrors.Errorf(": %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserGroupAlreadyExists))
 	}
 
 	userGroupID, err := domain.NewUserGroupID(userGroup.ID)
