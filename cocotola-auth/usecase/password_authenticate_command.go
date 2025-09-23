@@ -103,6 +103,6 @@ func (u *PasswordAuthenticateCommand) getOrganization(ctx context.Context, opera
 	})
 }
 
-func (u *PasswordAuthenticateCommand) createTokenSet(ctx context.Context, userModel *mbuserdomain.User, organizationModel *mbuserdomain.Organization) (*domain.AuthTokenSet, error) {
-	return createTokenSet(ctx, u.authTokenManager, userModel, organizationModel)
+func (u *PasswordAuthenticateCommand) createTokenSet(ctx context.Context, user *mbuserdomain.User, organization *mbuserdomain.Organization) (*domain.AuthTokenSet, error) {
+	return createTokenSet(ctx, u.authTokenManager, user, organization)
 }

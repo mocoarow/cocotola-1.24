@@ -55,7 +55,7 @@ func (m *authorizationManager) AddUserToGroupBySystemAdmin(ctx context.Context, 
 
 	// app-user belongs to user-role
 	if err := m.rbacRepo.AddSubjectGroupingPolicy(ctx, rbacDomain, rbacUser, rbacUserRole); err != nil {
-		return liberrors.Errorf("rbacRepo.AddSubjectGroupingPolicy. err: %w", err)
+		return liberrors.Errorf("rbacRepo.AddSubjectGroupingPolicy: %w", err)
 	}
 
 	return nil
@@ -76,7 +76,7 @@ func (m *authorizationManager) AddUserToGroup(ctx context.Context, operator doma
 
 	// app-user belongs to user-role
 	if err := m.rbacRepo.AddSubjectGroupingPolicy(ctx, rbacDomain, rbacUser, rbacUserRole); err != nil {
-		return liberrors.Errorf("rbacRepo.AddNamedGroupingPolicy. err: %w", err)
+		return liberrors.Errorf("rbacRepo.AddNamedGroupingPolicy: %w", err)
 	}
 
 	return nil
@@ -89,7 +89,7 @@ func (m *authorizationManager) AddPolicyToUser(ctx context.Context, operator dom
 	rbacDomain := domain.NewRBACDomainFromOrganization(operator.GetOrganizationID())
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
-		return liberrors.Errorf("rbacRepo.AddNamedPolicy. priv: read, err: %w", err)
+		return liberrors.Errorf("rbacRepo.AddPolicy. priv: read: %w", err)
 	}
 
 	return nil
@@ -99,7 +99,7 @@ func (m *authorizationManager) AddPolicyToUserBySystemAdmin(ctx context.Context,
 	rbacDomain := domain.NewRBACDomainFromOrganization(organizationID)
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
-		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
+		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read: %w", err)
 	}
 
 	return nil
@@ -109,7 +109,7 @@ func (m *authorizationManager) AddPolicyToUserBySystemOwner(ctx context.Context,
 	rbacDomain := domain.NewRBACDomainFromOrganization(organizationID)
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
-		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
+		return liberrors.Errorf("Failed to AddPolicy. priv: read: %w", err)
 	}
 
 	return nil
@@ -119,7 +119,7 @@ func (m *authorizationManager) AddPolicyToGroup(ctx context.Context, operator do
 	rbacDomain := domain.NewRBACDomainFromOrganization(operator.GetOrganizationID())
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
-		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
+		return liberrors.Errorf("Failed to AddPolicy. priv: read: %w", err)
 	}
 
 	return nil
@@ -129,7 +129,7 @@ func (m *authorizationManager) AddPolicyToGroupBySystemAdmin(ctx context.Context
 	rbacDomain := domain.NewRBACDomainFromOrganization(organizationID)
 
 	if err := m.rbacRepo.AddPolicy(ctx, rbacDomain, subject, action, object, effect); err != nil {
-		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
+		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read: %w", err)
 	}
 
 	return nil
@@ -139,7 +139,7 @@ func (m *authorizationManager) AddObjectToObject(ctx context.Context, operator d
 	rbacDomain := domain.NewRBACDomainFromOrganization(operator.GetOrganizationID())
 
 	if err := m.rbacRepo.AddObjectGroupingPolicy(ctx, rbacDomain, child, parent); err != nil {
-		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read, err: %w", err)
+		return liberrors.Errorf("Failed to AddNamedPolicy. priv: read: %w", err)
 	}
 
 	return nil

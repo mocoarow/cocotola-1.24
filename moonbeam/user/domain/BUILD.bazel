@@ -27,6 +27,7 @@ smart_go_test(
     srcs = [
         "organization_s_test.go",
         "owner_s_test.go",
+        "space_s_test.go",
         "system_admin_s_test.go",
         "system_owner_s_test.go",
         "user_group_s_test.go",

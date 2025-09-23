@@ -28,7 +28,7 @@ func (v *CardID) GetRBACObject() mbuserdomain.RBACObject {
 	return mbuserdomain.NewRBACObject("card:" + fmt.Sprint(v.Value))
 }
 
-type CardModel struct {
+type Card struct {
 	*mblibdomain.BaseModel `validate:"required"`
 	CardID                 *CardID                      `validate:"required"`
 	OrganizationID         *mbuserdomain.OrganizationID `validate:"required"`
@@ -38,8 +38,8 @@ type CardModel struct {
 	OwnerID                *mbuserdomain.UserID         `validate:"required"`
 }
 
-func NewCardModel(baseModel *mblibdomain.BaseModel, cardID *CardID, organizationID *mbuserdomain.OrganizationID, deckID *DeckID, templateID *TemplateID, content string, owernID *mbuserdomain.UserID) (*CardModel, error) {
-	m := &CardModel{
+func NewCard(baseModel *mblibdomain.BaseModel, cardID *CardID, organizationID *mbuserdomain.OrganizationID, deckID *DeckID, templateID *TemplateID, content string, owernID *mbuserdomain.UserID) (*Card, error) {
+	m := &Card{
 		BaseModel:      baseModel,
 		CardID:         cardID,
 		OrganizationID: organizationID,

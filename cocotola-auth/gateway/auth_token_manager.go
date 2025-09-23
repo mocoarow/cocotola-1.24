@@ -84,11 +84,11 @@ func NewAuthTokenManager(_ context.Context, firebaseAuthClient service.FirebaseC
 func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string) (*domain.AuthTokenSet, error) {
 	token, err := m.firebaseAuthClient.VerifyIDToken(ctx, idToken)
 	if err != nil {
-		return nil, mbliberrors.Errorf("m.firebaseAuthClient.VerifyIDToken. err: %w", err)
+		return nil, mbliberrors.Errorf("m.firebaseAuthClient.VerifyIDToken: %w", err)
 	}
 	userRecord, err := m.firebaseAuthClient.GetUser(ctx, token.UID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("m.firebaseAuthClient.GetUser. err: %w", err)
+		return nil, mbliberrors.Errorf("m.firebaseAuthClient.GetUser: %w", err)
 	}
 	loginID := userRecord.UID
 	username := "Anonymous"
@@ -99,7 +99,7 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 
 	organizationID, err := mbuserdomain.NewOrganizationID(1)
 	if err != nil {
-		return nil, mbliberrors.Errorf("mbuserdomain.NewOrganizationID. err: %w", err)
+		return nil, mbliberrors.Errorf("mbuserdomain.NewOrganizationID: %w", err)
 	}
 
 	user := user{
@@ -116,7 +116,7 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 
 	tokenSet, err := m.CreateTokenSet(ctx, &user, &organization)
 	if err != nil {
-		return nil, mbliberrors.Errorf("m.CreateTokenSet. err: %w", err)
+		return nil, mbliberrors.Errorf("m.CreateTokenSet: %w", err)
 	}
 
 	return tokenSet, nil
@@ -124,7 +124,7 @@ func (m *AuthTokenManager) SignInWithIDToken(ctx context.Context, idToken string
 
 func (m *AuthTokenManager) CreateTokenSet(ctx context.Context, user service.UserInterface, organization service.OrganizationInterface) (*domain.AuthTokenSet, error) {
 	if user == nil {
-		return nil, mbliberrors.Errorf("user is nil. err: %w", mblibdomain.ErrInvalidArgument)
+		return nil, mbliberrors.Errorf("user is nil: %w", mblibdomain.ErrInvalidArgument)
 	}
 	accessToken, err := m.createJWT(ctx, user, organization, m.TokenTimeout, "access")
 	if err != nil {
@@ -166,7 +166,7 @@ func (m *AuthTokenManager) createJWT(ctx context.Context, user service.UserInter
 	token := jwt.NewWithClaims(m.SigningMethod, claims)
 	signed, err := token.SignedString(m.SigningKey)
 	if err != nil {
-		return "", mbliberrors.Errorf(". err: %w", err)
+		return "", mbliberrors.Errorf("token.SignedString: %w", err)
 	}
 
 	return signed, nil
@@ -175,7 +175,7 @@ func (m *AuthTokenManager) createJWT(ctx context.Context, user service.UserInter
 func (m *AuthTokenManager) GetUserInfo(ctx context.Context, tokenString string) (*service.UserInfo, error) {
 	currentClaims, err := m.parseToken(ctx, tokenString)
 	if err != nil {
-		return nil, fmt.Errorf("parseToken(%s). err: %w", err.Error(), domain.ErrUnauthenticated)
+		return nil, fmt.Errorf("parseToken(%s): %w", err.Error(), domain.ErrUnauthenticated)
 	}
 
 	return &service.UserInfo{
@@ -195,7 +195,6 @@ func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (
 	currentToken, err := jwt.ParseWithClaims(tokenString, &UserClaims{}, keyFunc) //nolint:exhaustruct
 	if err != nil {
 		m.logger.InfoContext(ctx, fmt.Sprintf("%v", err))
-		// return nil, fmt.Errorf("jwt.ParseWithClaims. err: %w", domain.ErrUnauthenticated)
 		return nil, mbliberrors.Errorf("ParseWithClaims: %w", err)
 	}
 	if !currentToken.Valid {
@@ -209,7 +208,7 @@ func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (
 
 	v := jwt.NewValidator()
 	if err := v.Validate(currentClaims); err != nil {
-		return nil, mbliberrors.Errorf("Validate: %w", err)
+		return nil, mbliberrors.Errorf("validate claims: %w", err)
 	}
 
 	return currentClaims, nil
@@ -218,11 +217,11 @@ func (m *AuthTokenManager) parseToken(ctx context.Context, tokenString string) (
 func (m *AuthTokenManager) RefreshToken(ctx context.Context, tokenString string) (string, error) {
 	currentClaims, err := m.parseToken(ctx, tokenString)
 	if err != nil {
-		return "", fmt.Errorf("parseToken(%s). err: %w", err.Error(), domain.ErrUnauthenticated)
+		return "", fmt.Errorf("parseToken(%s): %w", err.Error(), domain.ErrUnauthenticated)
 	}
 
 	if currentClaims.TokenType != "refresh" {
-		return "", fmt.Errorf("invalid token type. err: %w", domain.ErrUnauthenticated)
+		return "", fmt.Errorf("invalid token type: %w", domain.ErrUnauthenticated)
 	}
 
 	// userID, err := mbuserdomain.NewUserID(currentClaims.UserID)
@@ -249,7 +248,7 @@ func (m *AuthTokenManager) RefreshToken(ctx context.Context, tokenString string)
 
 	accessToken, err := m.createJWT(ctx, user, organization, m.TokenTimeout, "access")
 	if err != nil {
-		return "", mbliberrors.Errorf("m.createJWT. err: %w", err)
+		return "", mbliberrors.Errorf("m.createJWT: %w", err)
 	}
 
 	return accessToken, nil

@@ -33,12 +33,12 @@ func (e *organizationEntity) toModel() (*domain.Organization, error) {
 		return nil, liberrors.Errorf("domain.NewOrganizationID. err: %w", err)
 	}
 
-	organizationModel, err := domain.NewOrganizationModel(baseModel, organizationID, e.Name)
+	organization, err := domain.NewOrganizationModel(baseModel, organizationID, e.Name)
 	if err != nil {
 		return nil, liberrors.Errorf("domain.NewOrganizationModel. err: %w", err)
 	}
 
-	return organizationModel, nil
+	return organization, nil
 }
 
 type organizationRepository struct {

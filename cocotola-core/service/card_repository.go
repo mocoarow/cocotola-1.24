@@ -21,5 +21,5 @@ type AddCardParameter struct {
 type CardRepository interface {
 	AddCard(ctx context.Context, operator mbuserdomain.UserInterface, param *AddCardParameter) (*domain.CardID, error)
 
-	FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*Card, error)
+	FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.Card, error)
 }

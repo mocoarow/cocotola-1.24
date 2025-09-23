@@ -28,7 +28,7 @@ func (v *DeckID) GetRBACObject() mbuserdomain.RBACObject {
 	return mbuserdomain.NewRBACObject("deck:" + fmt.Sprint(v.Value))
 }
 
-type DeckModel struct {
+type Deck struct {
 	*mblibdomain.BaseModel `validate:"required"`
 	DeckID                 *DeckID                      `validate:"required"`
 	OrganizationID         *mbuserdomain.OrganizationID `validate:"required"`
@@ -41,7 +41,7 @@ type DeckModel struct {
 	OwnerID                *mbuserdomain.UserID `validate:"required"`
 }
 
-func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, folderID *FolderID, name string, templateID *TemplateID, lang2 *mblibdomain.Lang2, description string, owernID *mbuserdomain.UserID) (*DeckModel, error) {
+func NewDeck(baseModel *mblibdomain.BaseModel, deckID *DeckID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, folderID *FolderID, name string, templateID *TemplateID, lang2 *mblibdomain.Lang2, description string, owernID *mbuserdomain.UserID) (*Deck, error) {
 	if baseModel == nil {
 		return nil, mbliberrors.Errorf("baseModel is nil", mblibdomain.ErrInvalidArgument)
 	}
@@ -63,7 +63,7 @@ func NewDeckModel(baseModel *mblibdomain.BaseModel, deckID *DeckID, organization
 	if lang2 == nil {
 		return nil, mbliberrors.Errorf("lang2 is nil", mblibdomain.ErrInvalidArgument)
 	}
-	m := &DeckModel{
+	m := &Deck{
 		BaseModel:      baseModel,
 		DeckID:         deckID,
 		OrganizationID: organizationID,

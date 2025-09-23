@@ -22,12 +22,12 @@ func findOrganizationByName(ctx context.Context, systemAdmin mbuserdomain.System
 		}
 		return org, nil
 	}
-	orgModel, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
+	org, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
 
-	return orgModel, nil
+	return org, nil
 }
 
 func findSystemOwnerByOrganizationID(ctx context.Context, systemAdmin mbuserdomain.SystemAdminInterface, mbNonTxManager mbuserservice.TransactionManager, organizationID *mbuserdomain.OrganizationID) (*mbuserdomain.SystemOwner, error) {
@@ -74,11 +74,11 @@ func findUserByLoginID(ctx context.Context, systemOwner mbuserdomain.SystemOwner
 
 		return user, nil
 	}
-	userModel, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
+	user, err := mblibservice.Do1(ctx, mbNonTxManager, fn)
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
-	return userModel, nil
+	return user, nil
 }
 
 func findPublicSpaceByKey(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, mbNonTxManager mbuserservice.TransactionManager, key string) (*mbuserdomain.Space, error) {

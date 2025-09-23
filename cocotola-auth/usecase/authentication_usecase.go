@@ -56,12 +56,12 @@ func (u *Authentication) SignInWithIDToken(ctx context.Context, idToken string) 
 func (u *Authentication) GetUserInfo(ctx context.Context, bearerToken string) (*mbuserdomain.User, error) {
 	sysAdmin := service.NewSystemAdmin(u.systemToken)
 	query := NewGetUserInfoQuery(u.transactionManager, u.authTokenManager)
-	userModel, err := query.Execute(ctx, sysAdmin, bearerToken)
+	user, err := query.Execute(ctx, sysAdmin, bearerToken)
 	if err != nil {
 		return nil, mbliberrors.Errorf("GetUserInfox: %w", err)
 	}
 
-	return userModel, nil
+	return user, nil
 }
 
 func (u *Authentication) RefreshToken(ctx context.Context, refreshToken string) (string, error) {

@@ -36,13 +36,13 @@ func NewAuthMiddleware(systemToken libdomain.SystemToken, authTokenManager servi
 		}
 
 		bearerToken := authorization[len("Bearer "):]
-		userModel, err := getUserInfoQuery.Execute(ctx, sysAdmin, bearerToken)
+		user, err := getUserInfoQuery.Execute(ctx, sysAdmin, bearerToken)
 		if err != nil {
 			logger.WarnContext(ctx, fmt.Sprintf("getUserInfo: %v", err))
 			return
 		}
 
-		c.Set("AuthorizedUser", userModel.UserID.Int())
-		c.Set("OrganizationID", userModel.OrganizationID.Int())
+		c.Set("AuthorizedUser", user.UserID.Int())
+		c.Set("OrganizationID", user.OrganizationID.Int())
 	}
 }

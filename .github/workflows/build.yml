@@ -66,6 +66,8 @@ jobs:
       - run: bazel info
 
       - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       # - run: ls -la ${GOOGLE_GHA_CREDS_PATH}
 

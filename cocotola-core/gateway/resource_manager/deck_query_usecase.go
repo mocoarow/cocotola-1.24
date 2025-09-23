@@ -23,25 +23,23 @@ func NewDeckQueryUsecase(db *gorm.DB) *DeckQueryUseCase {
 	}
 }
 
-func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface) ([]*domain.DeckModel, error) {
+func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface) ([]*domain.Deck, error) {
+	deckRepo := gateway.NewDeckRepository(u.db)
 	// TODO: filter by spaceIDs
-	decks, err := gateway.NewDeckRepository(u.db).FindDecks(ctx, operator, &service.FindDecksParameter{}) //nolint:exhaustruct
+	decks, err := deckRepo.FindDecks(ctx, operator, &service.FindDecksParameter{}) //nolint:exhaustruct
 	if err != nil {
-		return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
-	}
-	deckModels := make([]*domain.DeckModel, len(decks))
-	for i, deck := range decks {
-		deckModels[i] = deck.DeckModel
+		return nil, mbliberrors.Errorf("FindDecks: %w", err)
 	}
 
-	return deckModels, nil
+	return decks, nil
 }
 
-func (u *DeckQueryUseCase) RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*domain.DeckModel, error) {
-	deck, err := gateway.NewDeckRepository(u.db).RetrieveDeckByID(ctx, operator, deckID)
+func (u *DeckQueryUseCase) RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*domain.Deck, error) {
+	deckRepo := gateway.NewDeckRepository(u.db)
+	deck, err := deckRepo.RetrieveDeckByID(ctx, operator, deckID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("NewDeckRepository: %w", err)
+		return nil, mbliberrors.Errorf("RetrieveDeckByID: %w", err)
 	}
 
-	return deck.DeckModel, nil
+	return deck, nil
 }

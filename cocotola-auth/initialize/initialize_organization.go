@@ -98,7 +98,7 @@ func addOrganization(ctx context.Context, operator mbuserdomain.SystemAdminInter
 }
 
 func addFirstOwnerToOrganization(ctx context.Context, operator mbuserdomain.SystemOwnerInterface, mbTxManager, mbNonTxManager mbuserservice.TransactionManager, loginID, password string) (*mbuserdomain.UserID, error) {
-	firstOwnerAddParam, err := mbuserservice.NewUserAddParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
+	firstOwnerAddParam, err := mbuserservice.NewAddUserParameter(loginID, "Owner(cocotola)", password, "", "", "", "")
 	if err != nil {
 		return nil, mbliberrors.Errorf("new UserAddParameter: %w", err)
 	}

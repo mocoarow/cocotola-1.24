@@ -28,40 +28,26 @@ func (e *userGroupEntity) TableName() string {
 func (e *userGroupEntity) toUserGroup() (*domain.UserGroup, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
-		return nil, liberrors.Errorf("toBaseModel. err: %w", err)
+		return nil, liberrors.Errorf("toBaseModel: %w", err)
 	}
 
 	userGroupID, err := domain.NewUserGroupID(e.ID)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewUser. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewUser: %w", err)
 	}
 
 	organizationID, err := domain.NewOrganizationID(e.OrganizationID)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewOrganizationID. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewOrganizationID: %w", err)
 	}
 
 	userGroupModel, err := domain.NewUserGroup(baseModel, userGroupID, organizationID, e.KeyName, e.Name, e.Description)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewUserGroup. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewUserGroup: %w", err)
 	}
 
 	return userGroupModel, nil
 }
-
-// func (e *userGroupEntity) toUserGroup() (*service.UserGroup, error) {
-// 	userGroupModel, err := e.toUserGroup()
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("e.touserGroupModel. err: %w", err)
-// 	}
-
-// 	userGroup, err := service.NewUserGroup(userGroupModel)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("service.NewUserGroup. err: %w", err)
-// 	}
-
-// 	return userGroup, nil
-// }
 
 type userGroupRepository struct {
 	dialect libgateway.DialectRDBMS
@@ -155,7 +141,7 @@ func (r *userGroupRepository) addUserGroup(userID *domain.UserID, organizationID
 		Name:           name,
 	}
 	if result := r.db.Create(&userGroup); result.Error != nil {
-		return nil, liberrors.Errorf(". err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
+		return nil, liberrors.Errorf(": %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
 	}
 
 	userGroupID, err := domain.NewUserGroupID(userGroup.ID)
@@ -203,7 +189,7 @@ func (r *userGroupRepository) AddUserGroup(ctx context.Context, operator domain.
 		Description:    param.Description,
 	}
 	if result := r.db.Create(&userGroup); result.Error != nil {
-		return nil, liberrors.Errorf(". err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
+		return nil, liberrors.Errorf(": %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
 	}
 
 	userGroupID, err := domain.NewUserGroupID(userGroup.ID)

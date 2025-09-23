@@ -22,24 +22,19 @@ func NewCardQueryUsecase(db *gorm.DB) *CardQueryUsecase {
 	}
 }
 
-func (u *CardQueryUsecase) FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.CardModel, error) {
+func (u *CardQueryUsecase) FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.Card, error) {
 	_, span := tracer.Start(ctx, "CardQueryUseCase.FindDecks")
 	defer span.End()
 
 	// check RBAC
 
 	cardRepo := gateway.NewCardRepository(u.db)
-	desks, err := cardRepo.FindCardsByDeckID(ctx, operator, deckID)
+	cards, err := cardRepo.FindCardsByDeckID(ctx, operator, deckID)
 	if err != nil {
-		return nil, fmt.Errorf("cardRepo.FindCardsByDeckID. err: %w", err)
+		return nil, fmt.Errorf("cardRepo.FindCardsByDeckID: %w", err)
 	}
 
-	cardModels := make([]*domain.CardModel, 0, len(desks))
-	for _, d := range desks {
-		cardModels = append(cardModels, d.CardModel)
-	}
-
-	return cardModels, nil
+	return cards, nil
 }
 
 /*

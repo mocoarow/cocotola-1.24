@@ -47,7 +47,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 			return nil
 		}
 
-		param, err := mbuserservice.NewUserAddParameter(apiParam.LoginID, apiParam.Username, apiParam.Password, "", "", "", "")
+		param, err := mbuserservice.NewAddUserParameter(apiParam.LoginID, apiParam.Username, apiParam.Password, "", "", "", "")
 		if err != nil {
 			h.logger.InfoContext(ctx, fmt.Sprintf("invalid parameter: %v", err))
 			c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
@@ -85,17 +85,17 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 
 func (h *UserHandler) errorHandle(ctx context.Context, c *gin.Context, err error) bool {
 	if errors.Is(err, mblibdomain.ErrInvalidArgument) {
-		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler err: %+v", err))
+		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 		return true
 	}
 	if errors.Is(err, mbuserservice.ErrUserNotFound) {
-		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler err: %+v", err))
+		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler: %+v", err))
 		c.JSON(http.StatusNotFound, gin.H{"message": http.StatusText(http.StatusNotFound)})
 		return true
 	}
 	if errors.Is(err, mbuserservice.ErrUserAlreadyExists) {
-		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler err: %+v", err))
+		h.logger.WarnContext(ctx, fmt.Sprintf("UserHandler: %+v", err))
 		c.JSON(http.StatusConflict, gin.H{"message": http.StatusText(http.StatusConflict)})
 		return true
 	}

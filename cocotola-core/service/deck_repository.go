@@ -52,9 +52,9 @@ type DeckRepository interface {
 
 	UpdateDeck(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID, version int, param *UpdateDeckParameter) error
 
-	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *FindDecksParameter) ([]*Deck, error)
+	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *FindDecksParameter) ([]*domain.Deck, error)
 
-	FindDecksByOwner(ctx context.Context, operator mbuserdomain.UserInterface) ([]*Deck, error)
+	FindDecksByOwner(ctx context.Context, operator mbuserdomain.UserInterface) ([]*domain.Deck, error)
 
-	RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*Deck, error)
+	RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*domain.Deck, error)
 }

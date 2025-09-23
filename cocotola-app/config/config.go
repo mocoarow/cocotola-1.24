@@ -48,17 +48,17 @@ func LoadConfig() (*Config, error) {
 	filename := "config.yml"
 	confContent, err := config.ReadFile(filename)
 	if err != nil {
-		return nil, mbliberrors.Errorf("config.ReadFile. filename: %s, err: %w", filename, err)
+		return nil, mbliberrors.Errorf("read config file(%s): %w", filename, err)
 	}
 
 	confContent = []byte(os.Expand(string(confContent), mblibconfig.ExpandEnvWithDefaults))
 	var conf Config
 	if err := yaml.Unmarshal(confContent, &conf); err != nil {
-		return nil, mbliberrors.Errorf("yaml.Unmarshal. filename: %s, err: %w", filename, err)
+		return nil, mbliberrors.Errorf("unmarshal file(%s): %w", filename, err)
 	}
 
 	if err := mblibdomain.Validator.Struct(&conf); err != nil {
-		return nil, mbliberrors.Errorf("Validator.Struct. filename: %s, err: %w", filename, err)
+		return nil, mbliberrors.Errorf("validate file(%s): %w", filename, err)
 	}
 
 	return &conf, nil

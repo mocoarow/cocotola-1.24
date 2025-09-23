@@ -18,10 +18,10 @@ func Test_userRepository_FindSystemOwnerByOrganizationID_shouldReturnSystemOwner
 	t.Parallel()
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
-		sysAd := domain.NewSystemAdmin()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
+		sysAd := domain.NewSystemAdmin()
 		testSysOwner, err := userRepo.FindSystemOwnerByOrganizationID(ctx, sysAd, orgID)
 
 		// then
@@ -35,7 +35,6 @@ func Test_userRepository_FindSystemOwnerByOrganizationID_shouldReturnError_whenI
 	t.Parallel()
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
-		sysAd := domain.NewSystemAdmin()
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
 		// when
@@ -52,7 +51,6 @@ func Test_userRepository_FindSystemOwnerByOrganizationName_shouldReturnSystemOwn
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
 		org := getOrganization(t, ctx, ts, orgID)
-		sysAd := domain.NewSystemAdmin()
 
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 
@@ -70,7 +68,6 @@ func Test_userRepository_FindSystemOwnerByOrganizationName_shouldReturnError_whe
 	t.Parallel()
 	fn := func(t *testing.T, ctx context.Context, ts testService, orgID *domain.OrganizationID, sysOwner *domain.SystemOwner, owner *domain.Owner) {
 		t.Helper()
-		sysAd := domain.NewSystemAdmin()
 
 		userRepo := gateway.NewUserRepository(ctx, ts.dialect, ts.db, ts.rf)
 

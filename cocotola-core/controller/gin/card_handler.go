@@ -23,7 +23,7 @@ import (
 )
 
 type CardQueryUsecase interface {
-	FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.CardModel, error)
+	FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.Card, error)
 }
 
 type CardHandler struct {

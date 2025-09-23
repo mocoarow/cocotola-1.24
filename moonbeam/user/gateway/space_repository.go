@@ -58,54 +58,11 @@ func (e *spaceEntity) toSpace() (*domain.Space, error) {
 		e.SpaceType,
 	)
 	if err != nil {
-		return nil, liberrors.Errorf("new space model: %w", err)
+		return nil, liberrors.Errorf("new space: %w", err)
 	}
 
 	return spaceModel, nil
 }
-
-// func (e *spaceEntity) toSpace() (*service.Space, error) {
-// 	spaceModel, err := e.ToModel()
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("to space model: %w", err)
-// 	}
-
-// 	space, err := service.NewSpace(spaceModel)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("new space: %w", err)
-// 	}
-
-// 	return space, nil
-// }
-
-// func (e *spaceEntity) toSpace() (*domain.Space, error) {
-// 	baseModel, err := e.ToBaseModel()
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("e.toModel. err: %w", err)
-// 	}
-
-// 	spaceID, err := domain.NewSpaceID(e.ID)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("new space id(%d). err: %w", e.ID, err)
-// 	}
-
-// 	ownerID, err := domain.NewUserID(e.OwnerID)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("domain.NewUser. err: %w", err)
-// 	}
-
-// 	organizationID, err := domain.NewOrganizationID(e.OrganizationID)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("domain.NewOrganizationID. err: %w", err)
-// 	}
-
-// 	userModel, err := domain.NewSpace(baseModel, spaceID, organizationID, ownerID, e.KeyName, e.Name, e.SpaceType)
-// 	if err != nil {
-// 		return nil, liberrors.Errorf("domain.NewUser. err: %w", err)
-// 	}
-
-// 	return userModel, nil
-// }
 
 type spaceEntities []spaceEntity
 

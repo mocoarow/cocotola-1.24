@@ -18,6 +18,7 @@ var (
 	loc = time.UTC
 )
 var (
+	sysAd         *domain.SystemAdmin
 	invalidOrgID  *domain.OrganizationID
 	invalidUserID *domain.UserID
 )
@@ -50,6 +51,7 @@ var (
 // }
 
 func init() {
+	sysAd = domain.NewSystemAdmin()
 	invalidOrgIDTmp, err := domain.NewOrganizationID(99999)
 	if err != nil {
 		panic(err)
