@@ -25,14 +25,14 @@ import (
 )
 
 type GuestDeckQueryUsecase interface {
-	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error)
+	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.Deck, error)
 
-	// RetrieveDeckByID(ctx context.Context, operator domain.UserInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
+	// RetrieveDeckByID(ctx context.Context, operator domain.UserInterface, deckID *domain.DeckID) (*domain.Deck, error)
 }
 type StudentDeckQueryUsecase interface {
-	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface) ([]*domain.DeckModel, error)
+	FindDecks(ctx context.Context, operator mbuserdomain.UserInterface) ([]*domain.Deck, error)
 
-	RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*domain.DeckModel, error)
+	RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*domain.Deck, error)
 }
 
 type DeckCommandUsecase interface {
@@ -134,14 +134,14 @@ func (h *DeckHandler) RetrieveDeckByID(c *gin.Context) {
 	helper.HandleUserFunction(c, func(ctx context.Context, operator mbuserdomain.UserInterface) error {
 		deckIDInt, err := helper.GetIntFromPath(c, "deckID")
 		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("GetIntFromPath. err: %+v", err))
+			h.logger.WarnContext(ctx, fmt.Sprintf("GetIntFromPath: %+v", err))
 			c.Status(http.StatusBadRequest)
 			return nil
 		}
 
 		deckID, err := domain.NewDeckID(deckIDInt)
 		if err != nil {
-			h.logger.WarnContext(ctx, fmt.Sprintf("NewDeckID. err: %+v", err))
+			h.logger.WarnContext(ctx, fmt.Sprintf("NewDeckID: %+v", err))
 			c.Status(http.StatusBadRequest)
 			return nil
 		}
@@ -220,7 +220,7 @@ func (h *DeckHandler) UpdateDeck(c *gin.Context) {
 
 func (h *DeckHandler) errorHandle(ctx context.Context, c *gin.Context, err error) bool {
 	if errors.Is(err, mblibdomain.ErrInvalidArgument) {
-		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler err: %+v", err))
+		h.logger.WarnContext(ctx, fmt.Sprintf("PrivateDeckHandler: %+v", err))
 		c.JSON(http.StatusBadRequest, gin.H{"message": http.StatusText(http.StatusBadRequest)})
 		return true
 	}

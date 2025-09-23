@@ -53,19 +53,19 @@ func InitSQLiteInFile(fs embed.FS) (*gorm.DB, error) {
 	os.Remove(testDBFile)
 	db, err := openSQLiteForTest()
 	if err != nil {
-		return nil, liberrors.Errorf("openSQLiteForTest. err: %w", err)
+		return nil, liberrors.Errorf("openSQLiteForTest: %w", err)
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, liberrors.Errorf("db.DB. err: %w", err)
+		return nil, liberrors.Errorf("db.DB: %w", err)
 	}
 
 	if err := sqlDB.Ping(); err != nil {
-		return nil, liberrors.Errorf("sqlDB.ping. err: %w", err)
+		return nil, liberrors.Errorf("sqlDB.ping: %w", err)
 	}
 
 	if err := libgateway.MigrateSQLite3DB(db, fs); err != nil {
-		return nil, liberrors.Errorf("migrate. err: %w", err)
+		return nil, liberrors.Errorf("migrate: %w", err)
 	}
 
 	return db, nil

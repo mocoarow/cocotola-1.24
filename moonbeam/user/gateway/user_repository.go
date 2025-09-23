@@ -35,36 +35,36 @@ func (e *userEntity) TableName() string {
 func (e *userEntity) toUser(userGroups []*domain.UserGroup) (*domain.User, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
-		return nil, liberrors.Errorf("e.toModel. err: %w", err)
+		return nil, liberrors.Errorf("e.toModel: %w", err)
 	}
 
 	userID, err := domain.NewUserID(e.ID)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewUser. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewUser: %w", err)
 	}
 
 	organizationID, err := domain.NewOrganizationID(e.OrganizationID)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewOrganizationID. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewOrganizationID: %w", err)
 	}
 
-	userModel, err := domain.NewUser(baseModel, userID, organizationID, e.LoginID, e.Username, userGroups)
+	user, err := domain.NewUser(baseModel, userID, organizationID, e.LoginID, e.Username, userGroups)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewUser. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewUser: %w", err)
 	}
 
-	return userModel, nil
+	return user, nil
 }
 
 func (e *userEntity) toOwner(userGroups []*domain.UserGroup) (*domain.Owner, error) {
-	userModel, err := e.toUser(userGroups)
+	user, err := e.toUser(userGroups)
 	if err != nil {
-		return nil, liberrors.Errorf("e.toUser. err: %w", err)
+		return nil, liberrors.Errorf("e.toUser: %w", err)
 	}
 
-	ownerModel, err := domain.NewOwner(userModel)
+	ownerModel, err := domain.NewOwner(user)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewOwner. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewOwner: %w", err)
 	}
 
 	return ownerModel, nil
@@ -77,12 +77,12 @@ func (e *userEntity) toSystemOwner(_ context.Context, _ service.RepositoryFactor
 
 	ownerModel, err := e.toOwner(userGroup)
 	if err != nil {
-		return nil, liberrors.Errorf("e.toOwner(). err: %w", err)
+		return nil, liberrors.Errorf("e.toOwner(): %w", err)
 	}
 
 	systemOwner, err := domain.NewSystemOwner(ownerModel)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewSystemOwner. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewSystemOwner: %w", err)
 	}
 
 	return systemOwner, nil
@@ -273,7 +273,7 @@ func (r *userRepository) addUser(ctx context.Context, userEntity *userEntity) (*
 	defer span.End()
 
 	if result := r.db.Create(userEntity); result.Error != nil {
-		return nil, liberrors.Errorf("db.Create. err: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
+		return nil, liberrors.Errorf("db.Create: %w", libgateway.ConvertDuplicatedError(result.Error, service.ErrUserAlreadyExists))
 	}
 
 	userID, err := domain.NewUserID(userEntity.ID)
@@ -292,7 +292,7 @@ func (r *userRepository) AddUser(ctx context.Context, operator domain.UserInterf
 	if len(param.Password) != 0 {
 		hashedPasswordTmp, err := libgateway.HashPassword(param.Password)
 		if err != nil {
-			return nil, liberrors.Errorf("libgateway.HashPassword. err: %w", err)
+			return nil, liberrors.Errorf("libgateway.HashPassword: %w", err)
 		}
 
 		hashedPassword = hashedPasswordTmp

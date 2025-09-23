@@ -36,7 +36,7 @@ type AddUserParameter struct {
 	providerRefreshToken string
 }
 
-func NewUserAddParameter(loginID, username, password, provider, providerLoginID, providerAuthToken, providerRefreshToken string) (*AddUserParameter, error) {
+func NewAddUserParameter(loginID, username, password, provider, providerLoginID, providerAuthToken, providerRefreshToken string) (*AddUserParameter, error) {
 	m := &AddUserParameter{
 		LoginID:              loginID,
 		Username:             username,
@@ -47,7 +47,7 @@ func NewUserAddParameter(loginID, username, password, provider, providerLoginID,
 		providerRefreshToken: providerRefreshToken,
 	}
 	if err := libdomain.Validator.Struct(m); err != nil {
-		return nil, liberrors.Errorf("libdomain.Validator.Struct. err: %w", err)
+		return nil, liberrors.Errorf("new add user parameter: %w", err)
 	}
 
 	return m, nil

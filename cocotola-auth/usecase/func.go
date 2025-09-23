@@ -14,7 +14,7 @@ func findUserByID(ctx context.Context, mbrf mbuserservice.RepositoryFactory, ope
 	userRepo := mbrf.NewUserRepository(ctx)
 	user, err := userRepo.FindUserByID(ctx, operator, userID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("FindUserByLoginID(%d). err: %w", userID.Int(), err)
+		return nil, mbliberrors.Errorf("find user by id(%d): %w", userID.Int(), err)
 	}
 	return user, nil
 }
@@ -23,7 +23,7 @@ func findUserbyLoginID(ctx context.Context, mbrf mbuserservice.RepositoryFactory
 	userRepo := mbrf.NewUserRepository(ctx)
 	user, err := userRepo.FindUserByLoginID(ctx, operator, loginID)
 	if err != nil {
-		return nil, mbliberrors.Errorf("FindUserByLoginID(%s). err: %w", loginID, err)
+		return nil, mbliberrors.Errorf("find user by login id(%s): %w", loginID, err)
 	}
 	return user, nil
 }
@@ -32,22 +32,22 @@ func getOrganization(ctx context.Context, mbrf mbuserservice.RepositoryFactory, 
 	orgRepo := mbrf.NewOrganizationRepository(ctx)
 	org, err := orgRepo.GetOrganization(ctx, operator)
 	if err != nil {
-		return nil, mbliberrors.Errorf("GetOrganization(). err: %w", err)
+		return nil, mbliberrors.Errorf("get organization: %w", err)
 	}
 
 	return org, nil
 }
 
-func createTokenSet(ctx context.Context, authTokenManager service.AuthTokenManager, userModel *mbuserdomain.User, organizationModel *mbuserdomain.Organization) (*domain.AuthTokenSet, error) {
-	targetUser := &user{
-		userID:         userModel.UserID,
-		organizationID: userModel.OrganizationID,
-		loginID:        userModel.LoginID,
-		username:       userModel.Username,
+func createTokenSet(ctx context.Context, authTokenManager service.AuthTokenManager, user *mbuserdomain.User, organization *mbuserdomain.Organization) (*domain.AuthTokenSet, error) {
+	targetUser := &usecaseUser{
+		userID:         user.UserID,
+		organizationID: user.OrganizationID,
+		loginID:        user.LoginID,
+		username:       user.Username,
 	}
-	targetOorganization := &organization{
-		organizationID: organizationModel.OrganizationID,
-		name:           organizationModel.Name,
+	targetOorganization := &usecaseOrganization{
+		organizationID: organization.OrganizationID,
+		name:           organization.Name,
 	}
 
 	tokenSet, err := authTokenManager.CreateTokenSet(ctx, targetUser, targetOorganization)

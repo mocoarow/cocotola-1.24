@@ -55,7 +55,7 @@ func (u *DeckQueryUseCase) filterSpaces(ctx context.Context, operator mbuserdoma
 	return filteredSpaceIDs, nil
 }
 
-func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.DeckModel, error) {
+func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.Deck, error) {
 	_, span := tracer.Start(ctx, "DeckQueryUseCase.FindDecks")
 	defer span.End()
 
@@ -66,24 +66,19 @@ func (u *DeckQueryUseCase) FindDecks(ctx context.Context, operator mbuserdomain.
 	}
 	if len(filterSpaceIDs) == 0 {
 		u.logger.InfoContext(ctx, "no accessible space")
-		return []*domain.DeckModel{}, nil
+		return []*domain.Deck{}, nil
 	}
 
 	deckRepo := gateway.NewDeckRepository(u.db)
 	repoParam := service.FindDecksParameter{
 		SpaceIDs: filterSpaceIDs,
 	}
-	desks, err := deckRepo.FindDecks(ctx, operator, &repoParam)
+	decks, err := deckRepo.FindDecks(ctx, operator, &repoParam)
 	if err != nil {
 		return nil, fmt.Errorf("deckRepo.FindDecksInPublicSpace. err: %w", err)
 	}
 
-	deckModels := make([]*domain.DeckModel, 0, len(desks))
-	for _, d := range desks {
-		deckModels = append(deckModels, d.DeckModel)
-	}
-
-	return deckModels, nil
+	return decks, nil
 }
 
 /*

@@ -86,6 +86,6 @@ func (u *GuestAuthenticateCommand) getOrganization(ctx context.Context, operator
 	})
 }
 
-func (u *GuestAuthenticateCommand) createTokenSet(ctx context.Context, userModel *mbuserdomain.User, organizationModel *mbuserdomain.Organization) (*domain.AuthTokenSet, error) {
-	return createTokenSet(ctx, u.authTokenManager, userModel, organizationModel)
+func (u *GuestAuthenticateCommand) createTokenSet(ctx context.Context, user *mbuserdomain.User, organization *mbuserdomain.Organization) (*domain.AuthTokenSet, error) {
+	return createTokenSet(ctx, u.authTokenManager, user, organization)
 }

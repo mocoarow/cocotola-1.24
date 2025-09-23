@@ -20,7 +20,7 @@ type ProfileUsecase struct {
 func NewProfileUsecase(nonTxManager mbuserservice.TransactionManager) *ProfileUsecase {
 	return &ProfileUsecase{
 		nonTxManager: nonTxManager,
-		logger:       slog.Default().With(slog.String(mbliblog.LoggerNameKey, "ProfileQueryUsecase")),
+		logger:       slog.Default().With(slog.String(mbliblog.LoggerNameKey, "ProfileUsecase")),
 	}
 }
 

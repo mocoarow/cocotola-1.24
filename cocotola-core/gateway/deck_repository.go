@@ -34,7 +34,7 @@ func (e *DeckEntity) TableName() string {
 	return "core_deck"
 }
 
-func (e *DeckEntity) toModel() (*domain.DeckModel, error) {
+func (e *DeckEntity) toModel() (*domain.Deck, error) {
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, mbliberrors.Errorf("to base model: %w", err)
@@ -76,7 +76,7 @@ func (e *DeckEntity) toModel() (*domain.DeckModel, error) {
 		return nil, mbliberrors.Errorf("new user id(%d): %w", e.OwnerID, err)
 	}
 
-	deckModel, err := domain.NewDeckModel(
+	deckModel, err := domain.NewDeck(
 		baseModel,
 		deckID,
 		organizationID,
@@ -95,20 +95,19 @@ func (e *DeckEntity) toModel() (*domain.DeckModel, error) {
 	return deckModel, nil
 }
 
-func (e *DeckEntity) toDeck() (*service.Deck, error) {
-	deckModel, err := e.toModel()
+func (e *DeckEntity) toDeck() (*domain.Deck, error) {
+	deck, err := e.toModel()
 	if err != nil {
 		return nil, mbliberrors.Errorf("to deck model: %w", err)
 	}
-	deck := &service.Deck{DeckModel: deckModel}
 
 	return deck, nil
 }
 
 type DeckEntities []DeckEntity
 
-func (e DeckEntities) toDecks() ([]*service.Deck, error) {
-	decks := make([]*service.Deck, len(e))
+func (e DeckEntities) toDecks() ([]*domain.Deck, error) {
+	decks := make([]*domain.Deck, len(e))
 	for i, deckE := range e {
 		deck, err := deckE.toDeck()
 		if err != nil {
@@ -187,7 +186,7 @@ func (r *deckRepository) UpdateDeck(ctx context.Context, operator mbuserdomain.U
 	return nil
 }
 
-func (r *deckRepository) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*service.Deck, error) {
+func (r *deckRepository) FindDecks(ctx context.Context, operator mbuserdomain.UserInterface, param *service.FindDecksParameter) ([]*domain.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.FindDecks")
 	defer span.End()
 
@@ -210,7 +209,7 @@ func (r *deckRepository) FindDecks(ctx context.Context, operator mbuserdomain.Us
 	return decks, nil
 }
 
-func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserdomain.UserInterface) ([]*service.Deck, error) {
+func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserdomain.UserInterface) ([]*domain.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.FindDecksByOwner")
 	defer span.End()
 
@@ -231,7 +230,7 @@ func (r *deckRepository) FindDecksByOwner(ctx context.Context, operator mbuserdo
 	return decks, nil
 }
 
-func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*service.Deck, error) {
+func (r *deckRepository) RetrieveDeckByID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) (*domain.Deck, error) {
 	_, span := tracer.Start(ctx, "deckRepository.RetrieveDeckByID")
 	defer span.End()
 

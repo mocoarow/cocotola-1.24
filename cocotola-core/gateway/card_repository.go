@@ -28,7 +28,7 @@ func (e *CardEntity) TableName() string {
 	return "core_card"
 }
 
-func (e *CardEntity) ToModel() (*domain.CardModel, error) { //nolint:dupl
+func (e *CardEntity) toCard() (*domain.Card, error) { //nolint:dupl
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, mbliberrors.Errorf("to base model: %w", err)
@@ -58,7 +58,7 @@ func (e *CardEntity) ToModel() (*domain.CardModel, error) { //nolint:dupl
 		return nil, mbliberrors.Errorf("new user id(%d): %w", e.OwnerID, err)
 	}
 
-	cardModel, err := domain.NewCardModel(
+	card, err := domain.NewCard(
 		baseModel,
 		cardID,
 		organizationID,
@@ -70,16 +70,6 @@ func (e *CardEntity) ToModel() (*domain.CardModel, error) { //nolint:dupl
 	if err != nil {
 		return nil, mbliberrors.Errorf("new card model: %w", err)
 	}
-
-	return cardModel, nil
-}
-
-func (e *CardEntity) toCard() (*service.Card, error) {
-	cardModel, err := e.ToModel()
-	if err != nil {
-		return nil, mbliberrors.Errorf("to card model: %w", err)
-	}
-	card := &service.Card{CardModel: cardModel}
 
 	return card, nil
 }
@@ -122,7 +112,7 @@ func (r *cardRepository) AddCard(ctx context.Context, operator mbuserdomain.User
 	return cardID, nil
 }
 
-func (r *cardRepository) FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*service.Card, error) {
+func (r *cardRepository) FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.Card, error) {
 	_, span := tracer.Start(ctx, "cardRepository.FindCardsByDeckID")
 	defer span.End()
 
@@ -135,7 +125,7 @@ func (r *cardRepository) FindCardsByDeckID(ctx context.Context, operator mbuserd
 		return nil, mbliberrors.Errorf("cardRepository.FindCardsByDeckID: %w", result.Error)
 	}
 
-	cards := make([]*service.Card, 0, len(cardsE))
+	cards := make([]*domain.Card, 0, len(cardsE))
 	for _, cardE := range cardsE {
 		card, err := cardE.toCard()
 		if err != nil {

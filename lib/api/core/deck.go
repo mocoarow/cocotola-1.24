@@ -6,7 +6,7 @@ package core
 // 	PageSize int
 // }
 
-// type DeckFindDeckModel struct {
+// type DeckFindDeck struct {
 // 	ID   int    `json:"id"`
 // 	Name string `json:"name"`
 // }

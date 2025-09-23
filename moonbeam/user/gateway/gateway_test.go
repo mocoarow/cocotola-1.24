@@ -124,7 +124,7 @@ func setupOrganization(ctx context.Context, t *testing.T, ts testService) (*doma
 	orgName := RandString(orgNameLength)
 	sysAd := domain.NewSystemAdmin()
 
-	firstOwnerAddParam, err := service.NewUserAddParameter("OWNER_ID", "OWNER_NAME", "OWNER_PASSWORD", "", "", "", "")
+	firstOwnerAddParam, err := service.NewAddUserParameter("OWNER_ID", "OWNER_NAME", "OWNER_PASSWORD", "", "", "", "")
 	require.NoError(t, err)
 	// orgAddParam, err := service.NewOrganizationAddParameter(orgName, firstOwnerAddParam)
 	// require.NoError(t, err)
@@ -210,7 +210,7 @@ func teardownOrganization(t *testing.T, ts testService, orgID *domain.Organizati
 func testAddUser(t *testing.T, ctx context.Context, ts testService, owner domain.OwnerInterface, loginID, username, password string) *domain.User {
 	t.Helper()
 	userRepo := ts.rf.NewUserRepository(ctx)
-	userID1, err := userRepo.AddUser(ctx, owner, testNewUserAddParameter(t, loginID, username, password))
+	userID1, err := userRepo.AddUser(ctx, owner, testNewAddUserParameter(t, loginID, username, password))
 	require.NoError(t, err)
 	user1, err := userRepo.FindUserByID(ctx, owner, userID1)
 	require.NoError(t, err)
@@ -267,9 +267,9 @@ func testAddUserGroup(t *testing.T, ctx context.Context, ts testService, owner d
 // //	func (m *testUser) Username() string {
 // //		return m.User.Username
 // //	}
-// func testNewUser(userModel *domain.User) *testUser {
+// func testNewUser(user *domain.User) *testUser {
 // 	return &testUser{
-// 		userModel,
+// 		user,
 // 	}
 // }
 
@@ -300,9 +300,9 @@ func testAddUserGroup(t *testing.T, ctx context.Context, ts testService, owner d
 // 	return groups
 // }
 
-func testNewUserAddParameter(t *testing.T, loginID, username, password string) *service.AddUserParameter {
+func testNewAddUserParameter(t *testing.T, loginID, username, password string) *service.AddUserParameter {
 	t.Helper()
-	p, err := service.NewUserAddParameter(loginID, username, password, "", "", "", "")
+	p, err := service.NewAddUserParameter(loginID, username, password, "", "", "", "")
 	require.NoError(t, err)
 
 	return p
@@ -323,10 +323,10 @@ func getOrganization(t *testing.T, ctx context.Context, ts testService, orgID *d
 	baseModel, err := libdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
 	require.NoError(t, err)
 	userID, _ := domain.NewUserID(1)
-	userModel, err := domain.NewUser(baseModel, userID, orgID, "login_id", "username", nil)
+	user, err := domain.NewUser(baseModel, userID, orgID, "login_id", "username", nil)
 	require.NoError(t, err)
 
-	org, err := orgRepo.GetOrganization(ctx, userModel)
+	org, err := orgRepo.GetOrganization(ctx, user)
 	require.NoError(t, err)
 	require.Len(t, org.Name, orgNameLength)
 

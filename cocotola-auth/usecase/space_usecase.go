@@ -23,7 +23,7 @@ func (u *SpaceUsecase) FindPublicSpaces(ctx context.Context, operator mbuserdoma
 	spaceRepo := u.mbrf.NewSpaceRepository(ctx)
 	spaces, err := spaceRepo.FindPublicSpaces(ctx, operator)
 	if err != nil {
-		return nil, fmt.Errorf("spaceRepo.FindPublicSpaces. err: %w", err)
+		return nil, fmt.Errorf("spaceRepo.FindPublicSpaces: %w", err)
 	}
 
 	return spaces, nil

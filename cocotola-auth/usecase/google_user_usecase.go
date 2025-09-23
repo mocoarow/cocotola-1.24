@@ -16,38 +16,6 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-auth/service"
 )
 
-type organization struct {
-	organizationID *mbuserdomain.OrganizationID
-	name           string
-}
-
-func (m *organization) GetOrganizationID() *mbuserdomain.OrganizationID {
-	return m.organizationID
-}
-func (m *organization) GetName() string {
-	return m.name
-}
-
-type user struct {
-	userID         *mbuserdomain.UserID
-	organizationID *mbuserdomain.OrganizationID
-	loginID        string
-	username       string
-}
-
-func (m *user) GetUserID() *mbuserdomain.UserID {
-	return m.userID
-}
-func (m *user) GetOrganizationID() *mbuserdomain.OrganizationID {
-	return m.organizationID
-}
-func (m *user) GetUsername() string {
-	return m.username
-}
-func (m *user) GetLoginID() string {
-	return m.loginID
-}
-
 type TokenSet struct {
 	AccessToken  string
 	RefreshToken string
@@ -134,7 +102,7 @@ func (u *GoogleUserUsecase) doesStateExist(ctx context.Context, state string) er
 	}
 
 	if !matched {
-		return mbliberrors.Errorf("invalid state. err: %w", domain.ErrUnauthenticated)
+		return mbliberrors.Errorf("invalid state: %w", domain.ErrUnauthenticated)
 	}
 
 	return nil
@@ -143,12 +111,12 @@ func (u *GoogleUserUsecase) doesStateExist(ctx context.Context, state string) er
 func (u *GoogleUserUsecase) getTokensAndUserInfo(ctx context.Context, code string) (string, string, *domain.UserInfo, error) {
 	resp, err := u.googleAuthClient.RetrieveAccessToken(ctx, code)
 	if err != nil {
-		return "", "", nil, mbliberrors.Errorf(". err: %w", err)
+		return "", "", nil, mbliberrors.Errorf("retrieve access token: %w", err)
 	}
 
 	info, err := u.googleAuthClient.RetrieveUserInfo(ctx, resp.AccessToken)
 	if err != nil {
-		return "", "", nil, mbliberrors.Errorf(". err: %w", err)
+		return "", "", nil, mbliberrors.Errorf("retrieve user info: %w", err)
 	}
 
 	return resp.AccessToken, resp.RefreshToken, info, nil
@@ -161,7 +129,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 
 	accessToken, refreshToken, info, err := u.getTokensAndUserInfo(ctx, code)
 	if err != nil {
-		return nil, mbliberrors.Errorf("get tokens and user info err: %w", err)
+		return nil, mbliberrors.Errorf("get tokens and user info: %w", err)
 	}
 	systemAdmin := service.NewSystemAdmin(u.systemToken)
 	sysOwner, err := u.findSystemOwnerByOrganizationName(ctx, systemAdmin, organizationName)
@@ -170,7 +138,7 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 	}
 
 	command := NewRegisterUserCommand(ctx, u.mbTxManager, u.mbNonTxManager, u.authTokenManager)
-	param, err := mbuserservice.NewUserAddParameter(
+	param, err := mbuserservice.NewAddUserParameter(
 		info.Email, //googleUserInfo.Email,
 		info.Name,  //googleUserInfo.Name,
 		"",
@@ -180,11 +148,11 @@ func (u *GoogleUserUsecase) Authorize(ctx context.Context, state, code, organiza
 		refreshToken, // googleAuthResponse.RefreshToken,
 	)
 	if err != nil {
-		return nil, mbliberrors.Errorf("NewUserAddParameter. err: %w", err)
+		return nil, mbliberrors.Errorf("NewAddUserParameter: %w", err)
 	}
 	tokenSet, err := command.Execute(ctx, sysOwner, param)
 	if err != nil {
-		return nil, mbliberrors.Errorf("s.authTokenManager.CreateTokenSet. err: %w", err)
+		return nil, mbliberrors.Errorf("s.authTokenManager.CreateTokenSet: %w", err)
 	}
 
 	return tokenSet, nil

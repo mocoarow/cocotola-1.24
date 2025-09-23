@@ -40,23 +40,23 @@ func (_m *MockCardQueryUsecase) EXPECT() *MockCardQueryUsecase_Expecter {
 }
 
 // FindCardsByDeckID provides a mock function for the type MockCardQueryUsecase
-func (_mock *MockCardQueryUsecase) FindCardsByDeckID(ctx context.Context, operator domain.UserInterface, deckID *domain0.DeckID) ([]*domain0.CardModel, error) {
+func (_mock *MockCardQueryUsecase) FindCardsByDeckID(ctx context.Context, operator domain.UserInterface, deckID *domain0.DeckID) ([]*domain0.Card, error) {
 	ret := _mock.Called(ctx, operator, deckID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindCardsByDeckID")
 	}
 
-	var r0 []*domain0.CardModel
+	var r0 []*domain0.Card
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.UserInterface, *domain0.DeckID) ([]*domain0.CardModel, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.UserInterface, *domain0.DeckID) ([]*domain0.Card, error)); ok {
 		return returnFunc(ctx, operator, deckID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.UserInterface, *domain0.DeckID) []*domain0.CardModel); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.UserInterface, *domain0.DeckID) []*domain0.Card); ok {
 		r0 = returnFunc(ctx, operator, deckID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*domain0.CardModel)
+			r0 = ret.Get(0).([]*domain0.Card)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.UserInterface, *domain0.DeckID) error); ok {
@@ -87,12 +87,12 @@ func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Run(run func(ctx context.
 	return _c
 }
 
-func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Return(cardModels []*domain0.CardModel, err error) *MockCardQueryUsecase_FindCardsByDeckID_Call {
+func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Return(cardModels []*domain0.Card, err error) *MockCardQueryUsecase_FindCardsByDeckID_Call {
 	_c.Call.Return(cardModels, err)
 	return _c
 }
 
-func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) RunAndReturn(run func(ctx context.Context, operator domain.UserInterface, deckID *domain0.DeckID) ([]*domain0.CardModel, error)) *MockCardQueryUsecase_FindCardsByDeckID_Call {
+func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) RunAndReturn(run func(ctx context.Context, operator domain.UserInterface, deckID *domain0.DeckID) ([]*domain0.Card, error)) *MockCardQueryUsecase_FindCardsByDeckID_Call {
 	_c.Call.Return(run)
 	return _c
 }

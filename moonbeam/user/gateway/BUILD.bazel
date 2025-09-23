@@ -60,7 +60,6 @@ smart_go_test(
         "//moonbeam/testlib/gateway",
         "//moonbeam/user/domain",
         "//moonbeam/user/service",
-        "@com_github_casbin_casbin_v2//:casbin",
         "@com_github_stretchr_testify//assert",
         "@com_github_stretchr_testify//require",
         "@io_gorm_gorm//:gorm",

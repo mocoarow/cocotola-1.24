@@ -14,7 +14,7 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 )
 
-func TestNewDeckModel_Valid(t *testing.T) {
+func TestNewDeck_Valid(t *testing.T) {
 	t.Parallel()
 
 	baseModel, err := mblibdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
@@ -41,7 +41,7 @@ func TestNewDeckModel_Valid(t *testing.T) {
 	lang2, err := mblibdomain.NewLang2("en")
 	require.NoError(t, err)
 
-	deckModel, err := domain.NewDeckModel(
+	deckModel, err := domain.NewDeck(
 		baseModel,
 		deckID,
 		organizationID,
@@ -62,7 +62,7 @@ func TestNewDeckModel_Valid(t *testing.T) {
 	require.Equal(t, "Test Description", deckModel.Description)
 }
 
-func TestNewDeckModel_Invalid(t *testing.T) {
+func TestNewDeck_Invalid(t *testing.T) {
 	t.Parallel()
 
 	baseModel, err := mblibdomain.NewBaseModel(1, time.Now(), time.Now(), 1, 1)
@@ -203,7 +203,7 @@ func TestNewDeckModel_Invalid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, err := domain.NewDeckModel(
+			_, err := domain.NewDeck(
 				tt.baseModel,
 				tt.deckID,
 				tt.organizationID,

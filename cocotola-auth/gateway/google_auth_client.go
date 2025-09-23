@@ -59,32 +59,32 @@ func (c *GoogleAuthClient) RetrieveAccessToken(ctx context.Context, code string)
 
 	paramBytes, err := json.Marshal(paramMap)
 	if err != nil {
-		return nil, mbliberrors.Errorf("json.Marshal. err: %w", err)
+		return nil, mbliberrors.Errorf("json.Marshal: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://accounts.google.com/o/oauth2/token", bytes.NewBuffer(paramBytes))
 	if err != nil {
-		return nil, mbliberrors.Errorf("http.NewRequestWithContext. err: %w", err)
+		return nil, mbliberrors.Errorf("http.NewRequestWithContext: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, mbliberrors.Errorf("retrieve access token.err: %w", err)
+		return nil, mbliberrors.Errorf("retrieve access token: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		respBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return nil, mbliberrors.Errorf("io.ReadAll. err: %w", err)
+			return nil, mbliberrors.Errorf("io.ReadAll: %w", err)
 		}
 
 		if 400 <= resp.StatusCode && resp.StatusCode < 500 {
 			c.logger.InfoContext(ctx, fmt.Sprintf("retrieve access token. status: %d, param: %s, body:%s", resp.StatusCode, string(paramBytes), string(respBytes)))
 
-			return nil, mbliberrors.Errorf("retrieve access token. err: %w", domain.ErrUnauthenticated)
+			return nil, mbliberrors.Errorf("retrieve access token: %w", domain.ErrUnauthenticated)
 		}
 
 		return nil, fmt.Errorf("retrieve access token. status: %d, body:%s", resp.StatusCode, string(respBytes))
@@ -92,7 +92,7 @@ func (c *GoogleAuthClient) RetrieveAccessToken(ctx context.Context, code string)
 
 	var googleAuthResponse googleAuthResponse
 	if err := json.NewDecoder(resp.Body).Decode(&googleAuthResponse); err != nil {
-		return nil, mbliberrors.Errorf("json.NewDecoder. err: %w", err)
+		return nil, mbliberrors.Errorf("decode google auth response: %w", err)
 	}
 
 	return &domain.AuthTokenSet{
@@ -107,7 +107,7 @@ func (c *GoogleAuthClient) RetrieveUserInfo(ctx context.Context, accessToken str
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://www.googleapis.com/oauth2/v1/userinfo", http.NoBody)
 	if err != nil {
-		return nil, mbliberrors.Errorf("http.NewRequestWithContext. err: %w", err)
+		return nil, mbliberrors.Errorf("http.NewRequestWithContext: %w", err)
 	}
 
 	q := req.URL.Query()
@@ -117,7 +117,7 @@ func (c *GoogleAuthClient) RetrieveUserInfo(ctx context.Context, accessToken str
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, mbliberrors.Errorf("c.client.Do. err: %w", err)
+		return nil, mbliberrors.Errorf("c.client.Do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -125,11 +125,11 @@ func (c *GoogleAuthClient) RetrieveUserInfo(ctx context.Context, accessToken str
 	// logger.Debugf("status:%d", resp.StatusCode)
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return nil, mbliberrors.Errorf("retrieve user info. err: %w", domain.ErrUnauthenticated)
+		return nil, mbliberrors.Errorf("retrieve user info: %w", domain.ErrUnauthenticated)
 	} else if resp.StatusCode != http.StatusOK {
 		respBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return nil, mbliberrors.Errorf("io.ReadAll. err: %w", err)
+			return nil, mbliberrors.Errorf("io.ReadAll: %w", err)
 		}
 
 		return nil, fmt.Errorf("retrieve user info. status: %d, body:%s", resp.StatusCode, string(respBytes))
@@ -137,7 +137,7 @@ func (c *GoogleAuthClient) RetrieveUserInfo(ctx context.Context, accessToken str
 
 	var googleUserInfo googleUserInfo
 	if err := json.NewDecoder(resp.Body).Decode(&googleUserInfo); err != nil {
-		return nil, mbliberrors.Errorf("json.NewDecoder. err: %w", err)
+		return nil, mbliberrors.Errorf("decode googl user info: %w", err)
 	}
 
 	return &domain.UserInfo{

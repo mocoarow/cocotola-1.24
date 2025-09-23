@@ -34,7 +34,7 @@ func (u *PasswordUsecae) Authenticate(ctx context.Context, loginID, password, or
 	sysAdmin := service.NewSystemAdmin(u.systemToken)
 	sysOwner, err := u.findSystemOwnerByOrganizationName(ctx, sysAdmin, organizationName)
 	if err != nil {
-		return nil, mbliberrors.Errorf("Do1: %w", err)
+		return nil, mbliberrors.Errorf("findSystemOwnerByOrganizationName: %w", err)
 	}
 
 	command := NewPasswordAuthenticateCommand(ctx, u.mbTxManager, u.mbNonTxManager, u.authTokenManager)
