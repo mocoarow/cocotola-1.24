@@ -13,14 +13,9 @@ import (
 var ErrOrganizationNotFound = errors.New("organization not found")
 var ErrOrganizationAlreadyExists = errors.New("organization already exists")
 
-// type OrganizationAddParameterInterface interface {
-// 	Name() string
-// 	FirstOwner() *AddUserParameter
-// }
-
 type AddOrganizationParameter struct {
-	Name       string `validate:"required"`
-	FirstOwner *AddUserParameter
+	Name       string            `validate:"required"`
+	FirstOwner *AddUserParameter `validate:"required"`
 }
 
 func NewOrganizationAddParameter(name string, firstOwner *AddUserParameter) (*AddOrganizationParameter, error) {
@@ -34,13 +29,6 @@ func NewOrganizationAddParameter(name string, firstOwner *AddUserParameter) (*Ad
 
 	return m, nil
 }
-
-// func (p *AddOrganizationParameter) Name() string {
-// 	return p.NameInternal
-// }
-// func (p *OrganizationAddParameter) FirstOwner() *AddUserParameter {
-// 	return p.FirstOwnerInternal
-// }
 
 type OrganizationRepository interface {
 	GetOrganization(ctx context.Context, operator domain.UserInterface) (*domain.Organization, error)

@@ -87,8 +87,8 @@ func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Run(run func(ctx context.
 	return _c
 }
 
-func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Return(cardModels []*domain0.Card, err error) *MockCardQueryUsecase_FindCardsByDeckID_Call {
-	_c.Call.Return(cardModels, err)
+func (_c *MockCardQueryUsecase_FindCardsByDeckID_Call) Return(cards []*domain0.Card, err error) *MockCardQueryUsecase_FindCardsByDeckID_Call {
+	_c.Call.Return(cards, err)
 	return _c
 }
 

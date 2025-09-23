@@ -23,12 +23,9 @@ go_library(
 
 smart_go_test(
     name = "domain_s_test",
-    size = "small",
-    srcs = ["deck_test.go"],
-    gotags = ["small"],
+    srcs = ["deck_s_test.go"],
     deps = [
         ":domain",
-        "//lib/domain",
         "//moonbeam/lib/domain",
         "//moonbeam/user/domain",
         "@com_github_stretchr_testify//require",
@@ -37,7 +34,7 @@ smart_go_test(
 
 smart_go_test(
     name = "domain_test",
-    srcs = ["deck_test.go"],
+    srcs = ["deck_s_test.go"],
     deps = [
         ":domain",
         "//moonbeam/lib/domain",

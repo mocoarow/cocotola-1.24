@@ -1,13 +1,14 @@
 load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
 
 go_library(
     name = "usecase",
     srcs = [
-        "add_first_owner.go",
-        "add_guest.go",
-        "add_organization.go",
-        "add_user.go",
-        "verify_password.go",
+        "add_first_owner_command.go",
+        "add_guest_command.go",
+        "add_organization_command.go",
+        "add_user_command.go",
+        "verify_password_command.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/moonbeam/user/usecase",
     visibility = ["//visibility:public"],
@@ -19,4 +20,9 @@ go_library(
         "//moonbeam/user/domain",
         "//moonbeam/user/service",
     ],
+)
+
+smart_go_test(
+    name = "usecase_test",
+    srcs = ["verify_password_command_s_test.go"],
 )

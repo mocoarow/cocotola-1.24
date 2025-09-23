@@ -16,20 +16,10 @@ var ErrSystemOwnerNotFound = errors.New("system owner not found")
 
 var ErrUnauthenticated = errors.New("unauthenticated")
 
-// type UserAddParameterInterface interface {
-// 	LoginID() string
-// 	Username() string
-// 	Password() string
-// 	Provider() string
-// 	ProviderLoginID() string
-// 	ProviderAuthToken() string
-// 	ProviderRefreshToken() string
-// }
-
 type AddUserParameter struct {
-	LoginID              string
-	Username             string
-	Password             string
+	LoginID              string `validate:"required,max=255"`
+	Username             string `validate:"required,max=255"`
+	Password             string `validate:"required,min=8,max=255"`
 	Provider             string
 	ProviderLoginID      string
 	ProviderAuthToken    string

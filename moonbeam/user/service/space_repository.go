@@ -16,11 +16,6 @@ type AddSpaceParameter struct {
 	SpaceType string
 }
 
-// type SpaceUpdateParameter struct {
-// 	Name     string
-// 	IsPublic bool
-// }
-
 type SpaceRepository interface {
 	AddSpace(ctx context.Context, operator domain.UserInterface, param *AddSpaceParameter) (*domain.SpaceID, error)
 

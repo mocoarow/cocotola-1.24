@@ -1,4 +1,5 @@
 load("@rules_go//go:def.bzl", "go_library")
+load("//bazel:go_test.bzl", "smart_go_test")
 
 go_library(
     name = "service",
@@ -24,4 +25,9 @@ go_library(
         "//moonbeam/user/domain",
         "@com_github_casbin_casbin_v2//:casbin",
     ],
+)
+
+smart_go_test(
+    name = "service_test",
+    srcs = ["user_repository_s_test.go"],
 )

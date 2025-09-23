@@ -26,6 +26,15 @@ go_library(
 
 smart_go_test(
     name = "service_test",
-    srcs = ["service_s_test.go"],
-    deps = [":service"],
+    srcs = [
+        "deck_repository_s_test.go",
+        "service_s_test.go",
+    ],
+    deps = [
+        ":service",
+        "//cocotola-core/domain",
+        "//moonbeam/lib/domain",
+        "//moonbeam/user/domain",
+        "@com_github_stretchr_testify//require",
+    ],
 )
