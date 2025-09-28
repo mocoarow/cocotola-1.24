@@ -36,14 +36,14 @@ func TestNewOrganizationID_shouldReturnOrganizationID_whenMinimumValueIsSpecifie
 	assert.True(t, organizationID.IsOrganizationID())
 }
 
-func TestNewOrganizationModel_shouldReturnOrganization_whenValidParametersAreSpecified(t *testing.T) {
+func TestNewOrganization_shouldReturnOrganization_whenValidParametersAreSpecified(t *testing.T) {
 	t.Parallel()
 
 	baseModel := &domain.BaseModel{Version: 1}
 	organizationID, _ := userdomain.NewOrganizationID(123)
 	name := "Test Organization"
 
-	organization, err := userdomain.NewOrganizationModel(baseModel, organizationID, name)
+	organization, err := userdomain.NewOrganization(baseModel, organizationID, name)
 
 	require.NoError(t, err)
 	assert.Equal(t, baseModel, organization.BaseModel)
@@ -51,27 +51,27 @@ func TestNewOrganizationModel_shouldReturnOrganization_whenValidParametersAreSpe
 	assert.Equal(t, name, organization.Name)
 }
 
-func TestNewOrganizationModel_shouldReturnError_whenOrganizationIDIsNil(t *testing.T) {
+func TestNewOrganization_shouldReturnError_whenOrganizationIDIsNil(t *testing.T) {
 	t.Parallel()
 
 	baseModel := &domain.BaseModel{Version: 1}
 	name := "Test Organization"
 
-	organization, err := userdomain.NewOrganizationModel(baseModel, nil, name)
+	organization, err := userdomain.NewOrganization(baseModel, nil, name)
 
 	require.Error(t, err)
 	assert.Nil(t, organization)
 	assert.Contains(t, err.Error(), "validate organization")
 }
 
-func TestNewOrganizationModel_shouldReturnError_whenNameIsEmpty(t *testing.T) {
+func TestNewOrganization_shouldReturnError_whenNameIsEmpty(t *testing.T) {
 	t.Parallel()
 
 	baseModel := &domain.BaseModel{Version: 1}
 	organizationID, _ := userdomain.NewOrganizationID(123)
 	name := ""
 
-	organization, err := userdomain.NewOrganizationModel(baseModel, organizationID, name)
+	organization, err := userdomain.NewOrganization(baseModel, organizationID, name)
 
 	require.Error(t, err)
 	assert.Nil(t, organization)

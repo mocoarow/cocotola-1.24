@@ -29,7 +29,7 @@ func (e *FolderEntity) TableName() string {
 	return "core_folder"
 }
 
-func (e *FolderEntity) toModel() (*domain.FolderModel, error) { //nolint:dupl
+func (e *FolderEntity) toFolder() (*domain.Folder, error) { //nolint:dupl
 	baseModel, err := e.ToBaseModel()
 	if err != nil {
 		return nil, mbliberrors.Errorf("to base model: %w", err)
@@ -60,7 +60,7 @@ func (e *FolderEntity) toModel() (*domain.FolderModel, error) { //nolint:dupl
 		return nil, mbliberrors.Errorf("new user id(%d): %w", e.OwnerID, err)
 	}
 
-	folderModel, err := domain.NewFolderModel(
+	folder, err := domain.NewFolder(
 		baseModel,
 		folderID,
 		organizationID,
@@ -72,16 +72,6 @@ func (e *FolderEntity) toModel() (*domain.FolderModel, error) { //nolint:dupl
 	if err != nil {
 		return nil, mbliberrors.Errorf("new folder model: %w", err)
 	}
-
-	return folderModel, nil
-}
-
-func (e *FolderEntity) toFolder() (*service.Folder, error) {
-	folderModel, err := e.toModel()
-	if err != nil {
-		return nil, mbliberrors.Errorf("to folder model: %w", err)
-	}
-	folder := &service.Folder{FolderModel: folderModel}
 
 	return folder, nil
 }
@@ -96,7 +86,7 @@ func NewFolderRepository(db *gorm.DB) service.FolderRepository {
 	}
 }
 
-func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserdomain.UserInterface, spaceID *mbuserdomain.SpaceID) (*service.Folder, error) {
+func (r *folderRepository) RetrieveRooFolderBySpaceID(ctx context.Context, operator mbuserdomain.UserInterface, spaceID *mbuserdomain.SpaceID) (*domain.Folder, error) {
 	_, span := tracer.Start(ctx, "folderRepository.FindRooFolderBySpaceID")
 	defer span.End()
 

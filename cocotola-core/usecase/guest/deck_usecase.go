@@ -2,7 +2,6 @@ package guest
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	mbliberrors "github.com/mocoarow/cocotola-1.24/moonbeam/lib/errors"
@@ -11,7 +10,6 @@ import (
 
 	libapi "github.com/mocoarow/cocotola-1.24/lib/api"
 	libapiauth "github.com/mocoarow/cocotola-1.24/lib/api/auth"
-	librbac "github.com/mocoarow/cocotola-1.24/lib/rbac"
 
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/domain"
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
@@ -56,25 +54,11 @@ func (u *DeckUsecase) FindDecks(ctx context.Context, operator mbuserdomain.UserI
 	_, span := tracer.Start(ctx, "DeckQueryUseCase.FindDecks")
 	defer span.End()
 
-	// Check RBAC
-	filterSpaceIDs, err := u.filterSpaces(ctx, operator, librbac.ListDecksAction, param.SpaceIDs)
+	query := NewFindDecksQuery(u.rf, u.rbacClient)
+	decks, err := query.Execute(ctx, operator, param)
 	if err != nil {
-		return nil, mbliberrors.Errorf("filterSpaces: %w", err)
+		return nil, mbliberrors.Errorf("FindDecksQuery.Execute: %w", err)
 	}
-	if len(filterSpaceIDs) == 0 {
-		u.logger.InfoContext(ctx, "no accessible space")
-		return []*domain.Deck{}, nil
-	}
-
-	deckRepo := u.rf.NewDeckRepository(ctx)
-	repoParam := service.FindDecksParameter{
-		SpaceIDs: filterSpaceIDs,
-	}
-	decks, err := deckRepo.FindDecks(ctx, operator, &repoParam)
-	if err != nil {
-		return nil, fmt.Errorf("deckRepo.FindDecksInPublicSpace. err: %w", err)
-	}
-
 	return decks, nil
 }
 

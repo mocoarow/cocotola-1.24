@@ -48,26 +48,26 @@ func (e *userEntity) toUser(userGroups []*domain.UserGroup) (*domain.User, error
 		return nil, liberrors.Errorf("domain.NewOrganizationID. err: %w", err)
 	}
 
-	userModel, err := domain.NewUser(baseModel, userID, organizationID, e.LoginID, e.Username, userGroups)
+	user, err := domain.NewUser(baseModel, userID, organizationID, e.LoginID, e.Username, userGroups)
 	if err != nil {
 		return nil, liberrors.Errorf("domain.NewUser. err: %w", err)
 	}
 
-	return userModel, nil
+	return user, nil
 }
 
 func (e *userEntity) toOwner(userGroups []*domain.UserGroup) (*domain.Owner, error) {
-	userModel, err := e.toUser(userGroups)
+	user, err := e.toUser(userGroups)
 	if err != nil {
 		return nil, liberrors.Errorf("e.toUser. err: %w", err)
 	}
 
-	ownerModel, err := domain.NewOwner(userModel)
+	owner, err := domain.NewOwner(user)
 	if err != nil {
 		return nil, liberrors.Errorf("domain.NewOwner. err: %w", err)
 	}
 
-	return ownerModel, nil
+	return owner, nil
 }
 
 func (e *userEntity) toSystemOwner(_ context.Context, _ service.RepositoryFactory, userGroup []*domain.UserGroup) (*domain.SystemOwner, error) {
@@ -75,12 +75,12 @@ func (e *userEntity) toSystemOwner(_ context.Context, _ service.RepositoryFactor
 		return nil, liberrors.Errorf("invalid system owner. loginID: %s", e.LoginID)
 	}
 
-	ownerModel, err := e.toOwner(userGroup)
+	owner, err := e.toOwner(userGroup)
 	if err != nil {
 		return nil, liberrors.Errorf("e.toOwner(). err: %w", err)
 	}
 
-	systemOwner, err := domain.NewSystemOwner(ownerModel)
+	systemOwner, err := domain.NewSystemOwner(owner)
 	if err != nil {
 		return nil, liberrors.Errorf("domain.NewSystemOwner. err: %w", err)
 	}
