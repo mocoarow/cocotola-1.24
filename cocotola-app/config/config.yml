@@ -58,6 +58,8 @@ db:
     database: ${APP_POSTGRES_DATABASE:-postgres}
 trace:
   exporter: ${TRACE_EXPORTER:-none}
+  google:
+    projectId: ${TRACE_GOOGLE_PROJECT_ID}
   otlp:
     endpoint: ${TRACE_OTLP_ENDPOINT}
     insecure: ${TRACE_OTLP_INSECURE:-true}

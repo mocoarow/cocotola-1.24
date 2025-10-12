@@ -42,6 +42,8 @@ trace:
   otlp:
     endpoint: ${TRACE_OTLP_ENDPOINT}
     insecure: ${TRACE_OTLP_INSECURE:-true}
+    useGoogleAuth: ${TRACE_OTLP_USE_GOOGLE_AUTH:-false}
+    googleAuthAudienceUrl: ${TRACE_OTLP_GOOGLE_AUTH_AUDIENCE_URL:-https://cloudtrace.googleapis.com/}
 cors:
   allowOrigins:
     - ${CORS_ALLOW_ORIGINS:-'*'}
