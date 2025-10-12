@@ -66,7 +66,7 @@ func addGuestUser(ctx context.Context, mbTxManager, mbNonTxManager mbuserservice
 	}
 
 	addGuestCommand := mbuserusecase.NewAddGuestCommand(mbTxManager, mbNonTxManager)
-	addUserParam, err := mbuserservice.NewAddUserParameter(guestLoginID, guestUserName, "", "", "", "", "")
+	addUserParam, err := mbuserservice.NewAddUserParameter(guestLoginID, guestUserName, "DUMMY_PASSWORD", "", "", "", "")
 	if err != nil {
 		libdomain.CheckError(err)
 	}
