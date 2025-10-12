@@ -22,19 +22,19 @@ import (
 	"github.com/mocoarow/cocotola-1.24/cocotola-core/service"
 )
 
-type CardQueryUsecase interface {
+type CardUsecase interface {
 	FindCardsByDeckID(ctx context.Context, operator mbuserdomain.UserInterface, deckID *domain.DeckID) ([]*domain.Card, error)
 }
 
 type CardHandler struct {
-	cardQueryUsecase CardQueryUsecase
-	logger           *slog.Logger
+	cardUsecase CardUsecase
+	logger      *slog.Logger
 }
 
-func NewCardHandler(cardQueryUsecase CardQueryUsecase) *CardHandler {
+func NewCardHandler(cardQueryUsecase CardUsecase) *CardHandler {
 	return &CardHandler{
-		cardQueryUsecase: cardQueryUsecase,
-		logger:           slog.Default().With(slog.String(mbliblog.LoggerNameKey, "CardHandler")),
+		cardUsecase: cardQueryUsecase,
+		logger:      slog.Default().With(slog.String(mbliblog.LoggerNameKey, "CardHandler")),
 	}
 }
 
@@ -45,7 +45,7 @@ func (h *CardHandler) FindCards(c *gin.Context) {
 			return nil
 		}
 
-		cards, err := h.cardQueryUsecase.FindCardsByDeckID(ctx, operator, deckID)
+		cards, err := h.cardUsecase.FindCardsByDeckID(ctx, operator, deckID)
 		if err != nil {
 			return mbliberrors.Errorf("FindDecks: %w", err)
 		}
@@ -86,10 +86,10 @@ func (h *CardHandler) errorHandle(ctx context.Context, c *gin.Context, err error
 	return false
 }
 
-func NewInitCardRouterFunc(cardQueryUsecase CardQueryUsecase) libcontroller.InitRouterGroupFunc {
+func NewInitCardRouterFunc(cardUsecase CardUsecase) libcontroller.InitRouterGroupFunc {
 	return func(parentRouterGroup gin.IRouter, middleware ...gin.HandlerFunc) {
 		card := parentRouterGroup.Group("card")
-		cardkHandler := NewCardHandler(cardQueryUsecase)
+		cardkHandler := NewCardHandler(cardUsecase)
 		for _, m := range middleware {
 			card.Use(m)
 		}

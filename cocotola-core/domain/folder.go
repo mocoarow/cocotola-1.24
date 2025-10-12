@@ -30,7 +30,7 @@ func (v *FolderID) GetRBACObject() mbuserdomain.RBACObject {
 
 var EmptyFolderID = &FolderID{Value: 0}
 
-type FolderModel struct {
+type Folder struct {
 	*mblibdomain.BaseModel `validate:"required"`
 	FolderID               *FolderID                    `validate:"required"`
 	OrganizationID         *mbuserdomain.OrganizationID `validate:"required"`
@@ -40,7 +40,7 @@ type FolderModel struct {
 	OwnerID                *mbuserdomain.UserID         `validate:"required"`
 }
 
-func NewFolderModel(baseModel *mblibdomain.BaseModel, folderID *FolderID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, parentID *FolderID, name string, owernID *mbuserdomain.UserID) (*FolderModel, error) {
+func NewFolder(baseModel *mblibdomain.BaseModel, folderID *FolderID, organizationID *mbuserdomain.OrganizationID, spaceID *mbuserdomain.SpaceID, parentID *FolderID, name string, owernID *mbuserdomain.UserID) (*Folder, error) {
 	if baseModel == nil {
 		return nil, mbliberrors.Errorf("baseModel is nil", mblibdomain.ErrInvalidArgument)
 	}
@@ -56,7 +56,7 @@ func NewFolderModel(baseModel *mblibdomain.BaseModel, folderID *FolderID, organi
 	if parentID == nil {
 		return nil, mbliberrors.Errorf("parentID is nil", mblibdomain.ErrInvalidArgument)
 	}
-	m := &FolderModel{
+	m := &Folder{
 		BaseModel:      baseModel,
 		FolderID:       folderID,
 		OrganizationID: organizationID,
@@ -67,7 +67,7 @@ func NewFolderModel(baseModel *mblibdomain.BaseModel, folderID *FolderID, organi
 	}
 
 	if err := mblibdomain.Validator.Struct(m); err != nil {
-		return nil, mbliberrors.Errorf("validate folder model: %w", err)
+		return nil, mbliberrors.Errorf("validate folder: %w", err)
 	}
 
 	return m, nil

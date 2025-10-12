@@ -33,9 +33,9 @@ func (e *organizationEntity) toModel() (*domain.Organization, error) {
 		return nil, liberrors.Errorf("domain.NewOrganizationID. err: %w", err)
 	}
 
-	organization, err := domain.NewOrganizationModel(baseModel, organizationID, e.Name)
+	organization, err := domain.NewOrganization(baseModel, organizationID, e.Name)
 	if err != nil {
-		return nil, liberrors.Errorf("domain.NewOrganizationModel. err: %w", err)
+		return nil, liberrors.Errorf("domain.NewOrganization. err: %w", err)
 	}
 
 	return organization, nil

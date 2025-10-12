@@ -31,7 +31,7 @@ type Organization struct {
 	Name           string          `validate:"required"`
 }
 
-func NewOrganizationModel(basemodel *libdomain.BaseModel, organizationID *OrganizationID, name string) (*Organization, error) {
+func NewOrganization(basemodel *libdomain.BaseModel, organizationID *OrganizationID, name string) (*Organization, error) {
 	m := &Organization{
 		BaseModel:      basemodel,
 		OrganizationID: organizationID,

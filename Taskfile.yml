@@ -225,9 +225,6 @@ tasks:
           - cocotola-empty
           - cocotola-auth
           - cocotola-core
-          # - cocotola-import
-          # - cocotola-synthesizer
-          # - cocotola-tatoeba
           - third-party-library
         task: build-project
         vars:
@@ -252,7 +249,7 @@ tasks:
   push:
     cmds:
       - for:
-          # - cocotola-synthesizer
+          - cocotola-app
           - cocotola-empty
           - cocotola-auth
         task: push-project

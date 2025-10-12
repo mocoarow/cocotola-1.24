@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "card_usecase.go",
         "deck_usecase.go",
+        "find_cards_by_deck_id_query.go",
+        "find_decks_query.go",
         "init.go",
     ],
     importpath = "github.com/mocoarow/cocotola-1.24/cocotola-core/usecase/guest",
@@ -15,6 +17,7 @@ go_library(
         "//lib/api",
         "//lib/api/auth",
         "//lib/rbac",
+        "//moonbeam/lib/domain",
         "//moonbeam/lib/errors",
         "//moonbeam/lib/log",
         "//moonbeam/user/domain",
