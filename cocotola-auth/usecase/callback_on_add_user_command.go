@@ -30,12 +30,12 @@ func NewCallbackOnAddUserCommand(_ context.Context, mbTxManager, mbNonTxManager 
 		mbTxManager:                mbTxManager,
 		mbNonTxManager:             mbNonTxManager,
 		cocotolaCoreCallbackClient: cocotolaCoreCallbackClient,
-		logger:                     slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-CallbackAddPersonalSpaceCommand")),
+		logger:                     slog.Default().With(slog.String(mbliblog.LoggerNameKey, domain.AppName+"-CallbackOnAddUserCommand")),
 	}
 }
 
 func (u *CallbackOnAddUserCommand) Execute(ctx context.Context, systemOwner mbuserdomain.SystemOwnerInterface, organizationID *mbuserdomain.OrganizationID, userID *mbuserdomain.UserID) error {
-	ctx, span := tracer.Start(ctx, "CallbackUsecase.OnAddUser")
+	ctx, span := tracer.Start(ctx, "CallbackOnAddUserCommand.Execute")
 	defer span.End()
 
 	// 1. Check authorization
@@ -69,6 +69,7 @@ func (u *CallbackOnAddUserCommand) execute(ctx context.Context, systemOwner mbus
 		return mbliberrors.Errorf("findUserByID: %w", err)
 	}
 
+	// 1. add personal space
 	fn1 := func(mbrf mbuserservice.RepositoryFactory) (*mbuserdomain.SpaceID, error) {
 		spaceManager, err := mbrf.NewSpaceManager(ctx)
 		if err != nil {
@@ -91,6 +92,7 @@ func (u *CallbackOnAddUserCommand) execute(ctx context.Context, systemOwner mbus
 		return err //nolint:wrapcheck
 	}
 
+	// 2. add RBAC policy
 	subject := userID.GetRBACSubject()
 	object := spaceID.GetRBACObject()
 	effect := mbuserservice.RBACAllowEffect
@@ -114,6 +116,7 @@ func (u *CallbackOnAddUserCommand) execute(ctx context.Context, systemOwner mbus
 		return err //nolint:wrapcheck
 	}
 
+	// 3. callback to cocotola-core
 	if err := u.cocotolaCoreCallbackClient.OnAddUserSpace(ctx, organizationID, userID, spaceID); err != nil {
 		return mbliberrors.Errorf("cocotolaCoreCallbackClient.OnAddUserSpace: %w", err)
 	}
